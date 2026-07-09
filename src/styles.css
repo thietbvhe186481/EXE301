@@ -2817,6 +2817,11 @@ body:has(.portfolio-header) .challenge-card p {
 }
 
 /* Admin console */
+body:has(.app-shell.page-admin),
+body:has(.app-shell.page-mentor) {
+  overflow-y: auto !important;
+}
+
 .app-shell.page-admin,
 .app-shell.page-mentor {
   height: auto !important;
@@ -2829,6 +2834,7 @@ body:has(.portfolio-header) .challenge-card p {
   height: auto !important;
   min-height: calc(100vh - 64px) !important;
   overflow: visible !important;
+  padding-bottom: 24px;
 }
 
 .admin-page {
