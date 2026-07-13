@@ -5,6 +5,6 @@ import path from 'node:path';
 
 export default defineConfig({
   plugins: [react()],
+  base: '/EXE301/',
   cacheDir: path.join(os.tmpdir(), 'portfolio-career-vite-cache')
 });
-

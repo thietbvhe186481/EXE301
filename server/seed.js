@@ -4,6 +4,9 @@ import mongoose from 'mongoose';
 import { connectDb } from './config/db.js';
 import { AdminAccount, Category, Challenge, Major, MentorAccount, MentorFeedback, Notification, Resource, Submission, SubmissionRule, UserProfile } from './models.js';
 import { adminAccounts, categories, challenges, majors, mentorAccounts, mentorFeedback, notifications, resources, submissionRules, submissions, userProfiles } from './seed-data.js';
+import { augmentSeedData } from './supplemental-data.js';
+
+augmentSeedData({ adminAccounts, categories, challenges, majors, mentorAccounts, mentorFeedback, notifications, resources, submissions, userProfiles });
 
 async function withHashedPasswords(accounts) {
   return Promise.all(accounts.map(async (account) => ({

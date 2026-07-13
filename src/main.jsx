@@ -1281,7 +1281,22 @@ function MentorPage({ apiStatus, data, currentUser, refreshData, createFeedback,
   const submissionsData = data?.submissions ?? [];
   const challengesData = data?.challenges ?? [];
   const feedbackData = data?.mentorFeedback ?? [];
-  const students = data?.demoUser ? [data.demoUser] : [];
+  const students = data?.users?.length ? data.users : data?.demoUser ? [data.demoUser] : [];
+  const [activeSubmission, setActiveSubmission] = useState(null);
+  const [mentorFilters, setMentorFilters] = useState({
+    keyword: '',
+    status: 'all',
+    majorKey: 'all',
+    track: 'all',
+    studentId: 'all'
+  });
+  const [reviewForm, setReviewForm] = useState({
+    score: 88,
+    title: 'Portfolio-ready review',
+    strengths: 'Bài làm bám đúng yêu cầu\nCó minh chứng rõ ràng\nCó thể đưa vào portfolio',
+    improvements: 'Bổ sung số liệu đo lường\nGiải thích trade-off ngắn gọn hơn\nThêm ảnh hoặc video walkthrough',
+    decision: 'approved'
+  });
   const mentorProfile = data?.mentors?.find((item) => item.id === currentUser?.user?.id) ?? currentUser?.user ?? {};
   const pending = submissionsData.filter((item) => ['submitted', 'draft'].includes(item.status));
   const reviewed = submissionsData.filter((item) => item.status === 'reviewed' || feedbackData.some((feedback) => feedback.challengeId === item.challengeId && feedback.userId === item.userId));
@@ -1290,11 +1305,75 @@ function MentorPage({ apiStatus, data, currentUser, refreshData, createFeedback,
     : 0;
   const challengeName = (id) => challengesData.find((item) => item.id === id)?.title ?? id;
   const studentName = (id) => students.find((item) => item.id === id)?.name ?? id;
+  const activeChallenge = activeSubmission ? challengesData.find((item) => item.id === activeSubmission.challengeId) : null;
+  const activeStudent = activeSubmission ? students.find((item) => item.id === activeSubmission.userId) : null;
+  const mentorMajorOptions = [...new Set(challengesData.map((item) => item.majorKey).filter(Boolean))];
+  const mentorTrackOptions = [...new Set(challengesData.map((item) => item.track).filter(Boolean))];
+  const updateMentorFilter = (key, value) => setMentorFilters((current) => ({ ...current, [key]: value }));
+  const resetMentorFilters = () => setMentorFilters({ keyword: '', status: 'all', majorKey: 'all', track: 'all', studentId: 'all' });
+  const matchMentorSubmission = (submission) => {
+    const challenge = challengesData.find((item) => item.id === submission.challengeId);
+    const student = students.find((item) => item.id === submission.userId);
+    const keyword = mentorFilters.keyword.trim().toLowerCase();
+    if (mentorFilters.status !== 'all' && submission.status !== mentorFilters.status) return false;
+    if (mentorFilters.majorKey !== 'all' && challenge?.majorKey !== mentorFilters.majorKey) return false;
+    if (mentorFilters.track !== 'all' && challenge?.track !== mentorFilters.track) return false;
+    if (mentorFilters.studentId !== 'all' && submission.userId !== mentorFilters.studentId) return false;
+    if (!keyword) return true;
+    return [
+      challenge?.title,
+      challenge?.track,
+      challenge?.majorKey,
+      student?.name,
+      student?.email,
+      submission.status,
+      submission.notes
+    ].some((value) => String(value ?? '').toLowerCase().includes(keyword));
+  };
+  const filteredPending = pending.filter(matchMentorSubmission);
+  const filteredReviewed = reviewed.filter(matchMentorSubmission);
 
   const reviewSubmission = (submission) => {
-    createFeedback(submission.challengeId, submission.userId);
-    setNotice(`Mentor đã review ${challengeName(submission.challengeId)}`);
-    setTimeout(refreshData, 700);
+    const challenge = challengesData.find((item) => item.id === submission.challengeId);
+    const existingFeedback = feedbackData.find((item) => item.challengeId === submission.challengeId && item.userId === submission.userId);
+    setActiveSubmission(submission);
+    setReviewForm({
+      score: existingFeedback?.score ?? 88,
+      title: existingFeedback?.title ?? `Review cho ${challenge?.title ?? submission.challengeId}`,
+      strengths: (existingFeedback?.strengths ?? ['Bài làm bám đúng yêu cầu', 'Có minh chứng rõ ràng', 'Có thể đưa vào portfolio']).join('\n'),
+      improvements: (existingFeedback?.improvements ?? ['Bổ sung số liệu đo lường', 'Giải thích trade-off ngắn gọn hơn', 'Thêm ảnh hoặc video walkthrough']).join('\n'),
+      decision: 'approved'
+    });
+    setNotice(`Đang mở bài nộp của ${studentName(submission.userId)} để review`);
+    setTimeout(() => document.querySelector('.mentor-review-workspace')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 80);
+  };
+
+  const updateReviewForm = (key, value) => {
+    setReviewForm((current) => ({ ...current, [key]: value }));
+  };
+
+  const submitMentorReview = () => {
+    if (!activeSubmission) return;
+    fetch(`${API_BASE_URL}/api/feedback`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        userId: activeSubmission.userId,
+        challengeId: activeSubmission.challengeId,
+        score: Number(reviewForm.score || 0),
+        title: reviewForm.title,
+        strengths: reviewForm.strengths.split('\n').map((item) => item.trim()).filter(Boolean),
+        improvements: reviewForm.improvements.split('\n').map((item) => item.trim()).filter(Boolean),
+        reviewer: mentorProfile.name ?? currentUser?.user?.name ?? 'Mentor Demo'
+      })
+    })
+      .then((response) => response.ok ? response.json() : Promise.reject(new Error('review failed')))
+      .then(() => {
+        setNotice(`Đã chấm ${studentName(activeSubmission.userId)} - ${challengeName(activeSubmission.challengeId)}`);
+        setActiveSubmission(null);
+        refreshData();
+      })
+      .catch(() => setNotice('Không lưu được feedback. Kiểm tra API/MongoDB.'));
   };
 
   const rejectSubmission = (submission) => {
@@ -1309,6 +1388,7 @@ function MentorPage({ apiStatus, data, currentUser, refreshData, createFeedback,
     })
       .then(() => {
         setNotice(`Đã yêu cầu nộp lại ${challengeName(submission.challengeId)}`);
+        if (activeSubmission?.id === submission.id) setActiveSubmission(null);
         refreshData();
       })
       .catch(() => setNotice('Không cập nhật được trạng thái submission'));
@@ -1361,21 +1441,156 @@ function MentorPage({ apiStatus, data, currentUser, refreshData, createFeedback,
         <StatCard icon={Star} title="Average score" value={averageScore || '-'} />
       </div>
 
+      <section className="management-filters">
+        <div>
+          <p className="mono-label">Bộ lọc mentor</p>
+          <strong>{filteredPending.length} bài chờ · {filteredReviewed.length} bài đã review</strong>
+        </div>
+        <label>
+          Tìm kiếm
+          <input value={mentorFilters.keyword} onChange={(event) => updateMentorFilter('keyword', event.target.value)} placeholder="Tên học sinh, challenge, ghi chú..." />
+        </label>
+        <label>
+          Trạng thái
+          <select value={mentorFilters.status} onChange={(event) => updateMentorFilter('status', event.target.value)}>
+            <option value="all">Tất cả</option>
+            <option value="draft">Draft</option>
+            <option value="submitted">Submitted</option>
+            <option value="reviewed">Reviewed</option>
+            <option value="rejected">Rejected</option>
+          </select>
+        </label>
+        <label>
+          Ngành
+          <select value={mentorFilters.majorKey} onChange={(event) => updateMentorFilter('majorKey', event.target.value)}>
+            <option value="all">Tất cả</option>
+            {mentorMajorOptions.map((item) => <option value={item} key={item}>{item}</option>)}
+          </select>
+        </label>
+        <label>
+          Chuyên ngành
+          <select value={mentorFilters.track} onChange={(event) => updateMentorFilter('track', event.target.value)}>
+            <option value="all">Tất cả</option>
+            {mentorTrackOptions.map((item) => <option value={item} key={item}>{item}</option>)}
+          </select>
+        </label>
+        <label>
+          Học sinh
+          <select value={mentorFilters.studentId} onChange={(event) => updateMentorFilter('studentId', event.target.value)}>
+            <option value="all">Tất cả</option>
+            {students.map((student) => <option value={student.id} key={student.id}>{student.name}</option>)}
+          </select>
+        </label>
+        <button className="ghost-action compact" onClick={resetMentorFilters}>
+          <Filter size={16} />
+          Xóa lọc
+        </button>
+      </section>
+
+      {activeSubmission && (
+        <section className="mentor-review-workspace">
+          <div className="review-main-panel">
+            <div className="section-heading inline">
+              <div>
+                <p className="mono-label">Review workspace</p>
+                <h2>{activeChallenge?.title ?? activeSubmission.challengeId}</h2>
+                <p>{activeChallenge?.summary ?? 'Mentor xem bài làm, đối chiếu yêu cầu và chấm điểm trước khi gửi feedback.'}</p>
+              </div>
+              <button className="ghost-action compact" onClick={() => setActiveSubmission(null)}>
+                <X size={16} />
+                Đóng
+              </button>
+            </div>
+
+            <div className="submission-evidence-grid">
+              <article>
+                <p className="mono-label">Học sinh</p>
+                <h3>{activeStudent?.name ?? activeSubmission.userId}</h3>
+                <span>{activeStudent?.email ?? 'Không có email'} · {activeStudent?.selectedMajorKey ?? 'unknown'}</span>
+              </article>
+              <article>
+                <p className="mono-label">Trạng thái</p>
+                <h3>{activeSubmission.status}</h3>
+                <span>Cập nhật: {activeSubmission.updatedAt ?? 'Chưa rõ'}</span>
+              </article>
+              <article>
+                <p className="mono-label">Challenge</p>
+                <h3>{activeChallenge?.difficulty ?? 'Review'}</h3>
+                <span>{activeChallenge?.track ?? 'Portfolio'} · {activeChallenge?.xp ?? 0} XP</span>
+              </article>
+            </div>
+
+            <div className="submission-links">
+              <a href={activeSubmission.primaryLink || '#'} target="_blank" rel="noreferrer">
+                <Github size={17} />
+                Repository / file chính
+              </a>
+              <a href={activeSubmission.secondaryLink || '#'} target="_blank" rel="noreferrer">
+                <LinkIcon size={17} />
+                Demo / tài liệu phụ
+              </a>
+            </div>
+
+            <article className="review-notes">
+              <h3>Ghi chú bài nộp</h3>
+              <p>{activeSubmission.notes || 'Học sinh chưa ghi chú thêm. Mentor nên kiểm tra README, demo và bằng chứng trong link nộp bài.'}</p>
+            </article>
+
+            <article className="review-notes">
+              <h3>Rubric gợi ý</h3>
+              {(activeChallenge?.rubric ?? ['Đúng yêu cầu', 'Chất lượng minh chứng', 'Khả năng trình bày portfolio', 'Hướng cải thiện tiếp theo']).map((item) => (
+                <div className="activity-row" key={item}><Check size={15} /><span>{item}</span></div>
+              ))}
+            </article>
+          </div>
+
+          <aside className="review-score-panel">
+            <p className="mono-label">Chấm điểm</p>
+            <label>
+              Điểm
+              <input type="number" min="0" max="100" value={reviewForm.score} onChange={(event) => updateReviewForm('score', event.target.value)} />
+            </label>
+            <label>
+              Tiêu đề feedback
+              <input value={reviewForm.title} onChange={(event) => updateReviewForm('title', event.target.value)} />
+            </label>
+            <label>
+              Điểm mạnh
+              <textarea value={reviewForm.strengths} onChange={(event) => updateReviewForm('strengths', event.target.value)} />
+            </label>
+            <label>
+              Cần cải thiện
+              <textarea value={reviewForm.improvements} onChange={(event) => updateReviewForm('improvements', event.target.value)} />
+            </label>
+            <div className="review-action-row">
+              <button className="primary-action" onClick={submitMentorReview}>
+                <BadgeCheck size={17} />
+                Lưu feedback
+              </button>
+              <button className="ghost-action" onClick={() => rejectSubmission(activeSubmission)}>
+                <X size={17} />
+                Yêu cầu nộp lại
+              </button>
+            </div>
+          </aside>
+        </section>
+      )}
+
       <div className="admin-grid">
         <article className="admin-panel">
           <h2>Bài đang chờ review</h2>
           <div className="admin-list">
-            {pending.map((submission) => (
+            {filteredPending.map((submission) => (
               <div className="admin-row review-row" key={`${submission.userId}-${submission.challengeId}`}>
                 <div>
                   <strong>{challengeName(submission.challengeId)}</strong>
                   <span>{studentName(submission.userId)} · {submission.status} · {submission.updatedAt}</span>
                 </div>
-                <button onClick={() => reviewSubmission(submission)}>Accept</button>
+                <button onClick={() => reviewSubmission(submission)}>Mở bài</button>
                 <button onClick={() => rejectSubmission(submission)}>Reject</button>
               </div>
             ))}
-            {!pending.length && <div className="empty-state">Không còn bài cần review.</div>}
+            {!filteredPending.length && <div className="empty-state">Không có bài phù hợp với bộ lọc.</div>}
           </div>
         </article>
 
@@ -1398,7 +1613,7 @@ function MentorPage({ apiStatus, data, currentUser, refreshData, createFeedback,
       <div className="admin-grid compact">
         <article className="admin-panel">
           <h2>Active students</h2>
-          {students.map((student) => (
+          {students.filter((student) => mentorFilters.studentId === 'all' || student.id === mentorFilters.studentId).map((student) => (
             <div className="admin-row" key={student.id}>
               <div>
                 <strong>{student.name}</strong>
@@ -1409,7 +1624,10 @@ function MentorPage({ apiStatus, data, currentUser, refreshData, createFeedback,
         </article>
         <article className="admin-panel">
           <h2>Feedback đã tạo</h2>
-          {feedbackData.map((feedback) => (
+          {feedbackData.filter((feedback) => {
+            const submission = submissionsData.find((item) => item.userId === feedback.userId && item.challengeId === feedback.challengeId) ?? { userId: feedback.userId, challengeId: feedback.challengeId, status: 'reviewed' };
+            return matchMentorSubmission(submission);
+          }).map((feedback) => (
             <div className="admin-row" key={feedback.id}>
               <div>
                 <strong>{challengeName(feedback.challengeId)}</strong>
@@ -1437,9 +1655,21 @@ function AdminPage({ apiStatus, data, notice, currentUser, refreshData, setAdmin
     summary: ''
   });
   const [editingId, setEditingId] = useState('');
+  const [adminFilters, setAdminFilters] = useState({
+    challengeKeyword: '',
+    challengeMajor: 'all',
+    challengeTrack: 'all',
+    challengeDifficulty: 'all',
+    challengeMentor: 'all',
+    userKeyword: '',
+    userMajor: 'all',
+    submissionKeyword: '',
+    submissionStatus: 'all',
+    submissionMajor: 'all'
+  });
   const isAdmin = currentUser?.type === 'admin';
   const challengesData = data?.challenges ?? [];
-  const users = data?.demoUser ? [data.demoUser] : [];
+  const users = data?.users?.length ? data.users : data?.demoUser ? [data.demoUser] : [];
   const submissionsData = data?.submissions ?? [];
   const categories = data?.categories ?? [];
   const mentors = data?.mentors ?? [];
@@ -1450,6 +1680,52 @@ function AdminPage({ apiStatus, data, notice, currentUser, refreshData, setAdmin
     submissions: submissionsData.length,
     users: users.length
   };
+  const adminMajorOptions = [...new Set(challengesData.map((item) => item.majorKey).filter(Boolean))];
+  const adminTrackOptions = [...new Set(challengesData.map((item) => item.track).filter(Boolean))];
+  const adminDifficultyOptions = [...new Set(challengesData.map((item) => item.difficulty).filter(Boolean))];
+  const adminMentorOptions = [...new Set(challengesData.map((item) => item.mentor).filter(Boolean))];
+  const updateAdminFilter = (key, value) => setAdminFilters((current) => ({ ...current, [key]: value }));
+  const resetAdminFilters = () => setAdminFilters({
+    challengeKeyword: '',
+    challengeMajor: 'all',
+    challengeTrack: 'all',
+    challengeDifficulty: 'all',
+    challengeMentor: 'all',
+    userKeyword: '',
+    userMajor: 'all',
+    submissionKeyword: '',
+    submissionStatus: 'all',
+    submissionMajor: 'all'
+  });
+  const challengeById = (id) => challengesData.find((item) => item.id === id);
+  const userById = (id) => users.find((item) => item.id === id);
+  const filteredChallenges = challengesData.filter((challenge) => {
+    const keyword = adminFilters.challengeKeyword.trim().toLowerCase();
+    if (adminFilters.challengeMajor !== 'all' && challenge.majorKey !== adminFilters.challengeMajor) return false;
+    if (adminFilters.challengeTrack !== 'all' && challenge.track !== adminFilters.challengeTrack) return false;
+    if (adminFilters.challengeDifficulty !== 'all' && challenge.difficulty !== adminFilters.challengeDifficulty) return false;
+    if (adminFilters.challengeMentor !== 'all' && challenge.mentor !== adminFilters.challengeMentor) return false;
+    if (!keyword) return true;
+    return [challenge.title, challenge.summary, challenge.track, challenge.majorKey, challenge.mentor, challenge.tags?.join(' ')]
+      .some((value) => String(value ?? '').toLowerCase().includes(keyword));
+  });
+  const filteredUsers = users.filter((user) => {
+    const keyword = adminFilters.userKeyword.trim().toLowerCase();
+    if (adminFilters.userMajor !== 'all' && user.selectedMajorKey !== adminFilters.userMajor) return false;
+    if (!keyword) return true;
+    return [user.name, user.email, user.selectedMajorKey, user.careerGoal, user.badges?.join(' ')]
+      .some((value) => String(value ?? '').toLowerCase().includes(keyword));
+  });
+  const filteredSubmissions = submissionsData.filter((submission) => {
+    const keyword = adminFilters.submissionKeyword.trim().toLowerCase();
+    const challenge = challengeById(submission.challengeId);
+    const user = userById(submission.userId);
+    if (adminFilters.submissionStatus !== 'all' && submission.status !== adminFilters.submissionStatus) return false;
+    if (adminFilters.submissionMajor !== 'all' && challenge?.majorKey !== adminFilters.submissionMajor) return false;
+    if (!keyword) return true;
+    return [submission.challengeId, submission.userId, submission.status, submission.notes, challenge?.title, challenge?.track, user?.name, user?.email]
+      .some((value) => String(value ?? '').toLowerCase().includes(keyword));
+  });
 
   const updateForm = (key, value) => setForm((current) => ({ ...current, [key]: value }));
   const resetForm = () => {
@@ -1539,6 +1815,81 @@ function AdminPage({ apiStatus, data, notice, currentUser, refreshData, setAdmin
         <StatCard icon={GraduationCap} title="Mentor" value={mentors.length} />
       </div>
 
+      <section className="management-filters admin-management-filters">
+        <div>
+          <p className="mono-label">Bộ lọc admin</p>
+          <strong>{filteredChallenges.length} challenges · {filteredUsers.length} users · {filteredSubmissions.length} submissions</strong>
+        </div>
+        <label>
+          Tìm challenge
+          <input value={adminFilters.challengeKeyword} onChange={(event) => updateAdminFilter('challengeKeyword', event.target.value)} placeholder="Tên, tag, mentor..." />
+        </label>
+        <label>
+          Ngành challenge
+          <select value={adminFilters.challengeMajor} onChange={(event) => updateAdminFilter('challengeMajor', event.target.value)}>
+            <option value="all">Tất cả</option>
+            {adminMajorOptions.map((item) => <option value={item} key={item}>{item}</option>)}
+          </select>
+        </label>
+        <label>
+          Chuyên ngành
+          <select value={adminFilters.challengeTrack} onChange={(event) => updateAdminFilter('challengeTrack', event.target.value)}>
+            <option value="all">Tất cả</option>
+            {adminTrackOptions.map((item) => <option value={item} key={item}>{item}</option>)}
+          </select>
+        </label>
+        <label>
+          Độ khó
+          <select value={adminFilters.challengeDifficulty} onChange={(event) => updateAdminFilter('challengeDifficulty', event.target.value)}>
+            <option value="all">Tất cả</option>
+            {adminDifficultyOptions.map((item) => <option value={item} key={item}>{item}</option>)}
+          </select>
+        </label>
+        <label>
+          Mentor
+          <select value={adminFilters.challengeMentor} onChange={(event) => updateAdminFilter('challengeMentor', event.target.value)}>
+            <option value="all">Tất cả</option>
+            {adminMentorOptions.map((item) => <option value={item} key={item}>{item}</option>)}
+          </select>
+        </label>
+        <label>
+          Tìm user
+          <input value={adminFilters.userKeyword} onChange={(event) => updateAdminFilter('userKeyword', event.target.value)} placeholder="Tên, email, mục tiêu..." />
+        </label>
+        <label>
+          Ngành user
+          <select value={adminFilters.userMajor} onChange={(event) => updateAdminFilter('userMajor', event.target.value)}>
+            <option value="all">Tất cả</option>
+            {adminMajorOptions.map((item) => <option value={item} key={item}>{item}</option>)}
+          </select>
+        </label>
+        <label>
+          Tìm submission
+          <input value={adminFilters.submissionKeyword} onChange={(event) => updateAdminFilter('submissionKeyword', event.target.value)} placeholder="Học sinh, bài tập, ghi chú..." />
+        </label>
+        <label>
+          Trạng thái nộp
+          <select value={adminFilters.submissionStatus} onChange={(event) => updateAdminFilter('submissionStatus', event.target.value)}>
+            <option value="all">Tất cả</option>
+            <option value="draft">Draft</option>
+            <option value="submitted">Submitted</option>
+            <option value="reviewed">Reviewed</option>
+            <option value="rejected">Rejected</option>
+          </select>
+        </label>
+        <label>
+          Ngành bài nộp
+          <select value={adminFilters.submissionMajor} onChange={(event) => updateAdminFilter('submissionMajor', event.target.value)}>
+            <option value="all">Tất cả</option>
+            {adminMajorOptions.map((item) => <option value={item} key={item}>{item}</option>)}
+          </select>
+        </label>
+        <button className="ghost-action compact" onClick={resetAdminFilters}>
+          <Filter size={16} />
+          Xóa lọc
+        </button>
+      </section>
+
       <div className="admin-grid">
         <article className="admin-panel">
           <h2>{editingId ? 'Sửa challenge' : 'Thêm challenge'}</h2>
@@ -1569,7 +1920,7 @@ function AdminPage({ apiStatus, data, notice, currentUser, refreshData, setAdmin
         <article className="admin-panel">
           <h2>Challenge đang có</h2>
           <div className="admin-list">
-            {challengesData.map((challenge) => (
+            {filteredChallenges.map((challenge) => (
               <div className="admin-row" key={challenge.id}>
                 <div>
                   <strong>{challenge.title}</strong>
@@ -1579,6 +1930,7 @@ function AdminPage({ apiStatus, data, notice, currentUser, refreshData, setAdmin
                 <button onClick={() => deleteChallenge(challenge.id)}>Xóa</button>
               </div>
             ))}
+            {!filteredChallenges.length && <div className="empty-state">Không có challenge phù hợp với bộ lọc.</div>}
           </div>
         </article>
       </div>
@@ -1586,7 +1938,7 @@ function AdminPage({ apiStatus, data, notice, currentUser, refreshData, setAdmin
       <div className="admin-grid compact">
         <article className="admin-panel">
           <h2>Người dùng</h2>
-          {users.map((user) => (
+          {filteredUsers.map((user) => (
             <div className="admin-row" key={user.id}>
               <div>
                 <strong>{user.name}</strong>
@@ -1594,14 +1946,15 @@ function AdminPage({ apiStatus, data, notice, currentUser, refreshData, setAdmin
               </div>
             </div>
           ))}
+          {!filteredUsers.length && <div className="empty-state">Không có người dùng phù hợp.</div>}
         </article>
         <article className="admin-panel">
           <h2>Lịch sử nộp bài</h2>
-          {submissionsData.map((submission) => (
+          {filteredSubmissions.map((submission) => (
             <div className="admin-row" key={`${submission.userId}-${submission.challengeId}`}>
               <div>
-                <strong>{submission.challengeId}</strong>
-                <span>{submission.userId} · {submission.status} · {submission.updatedAt}</span>
+                <strong>{challengeById(submission.challengeId)?.title ?? submission.challengeId}</strong>
+                <span>{userById(submission.userId)?.name ?? submission.userId} · {submission.status} · {submission.updatedAt}</span>
               </div>
               <button onClick={() => {
                 createFeedback(submission.challengeId, submission.userId);
@@ -1612,6 +1965,7 @@ function AdminPage({ apiStatus, data, notice, currentUser, refreshData, setAdmin
               </button>
             </div>
           ))}
+          {!filteredSubmissions.length && <div className="empty-state">Không có bài nộp phù hợp.</div>}
         </article>
       </div>
 

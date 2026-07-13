@@ -101,6 +101,7 @@ app.get('/api/bootstrap', async (_req, res, next) => {
       challenges,
       submissionRules: normalizeRules(rules),
       demoUser: profiles[0] ? cleanDoc(profiles[0]) : null,
+      users: profiles.map(cleanDoc),
       admins: admins.map(cleanDoc),
       mentors: mentors.map(cleanDoc),
       mentorFeedback: feedback,

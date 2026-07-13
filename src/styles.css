@@ -2915,6 +2915,58 @@ body:has(.app-shell.page-mentor) {
   font-size: 24px;
 }
 
+.management-filters {
+  display: grid;
+  grid-template-columns: minmax(190px, 1.25fr) repeat(5, minmax(130px, 1fr)) auto;
+  gap: 10px;
+  align-items: end;
+  padding: 13px;
+  border: 1px solid rgba(96, 165, 250, 0.24);
+  border-radius: 8px;
+  background: rgba(15, 23, 42, 0.82);
+  box-shadow: var(--shadow);
+}
+
+.admin-management-filters {
+  grid-template-columns: minmax(200px, 1.25fr) repeat(5, minmax(130px, 1fr));
+}
+
+.management-filters > div {
+  display: grid;
+  gap: 4px;
+  align-self: center;
+}
+
+.management-filters strong {
+  color: var(--text);
+  font-size: 15px;
+}
+
+.management-filters label {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 850;
+}
+
+.management-filters input,
+.management-filters select {
+  width: 100%;
+  min-width: 0;
+  border: 1px solid var(--border-soft);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.055);
+  color: var(--text);
+  padding: 10px 11px;
+  font: inherit;
+}
+
+.management-filters button {
+  min-height: 42px;
+}
+
 .admin-form {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -3001,6 +3053,118 @@ body:has(.app-shell.page-mentor) {
   grid-template-columns: minmax(0, 1fr) auto auto;
 }
 
+.mentor-review-workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(320px, 0.65fr);
+  gap: 16px;
+  align-items: start;
+  padding: 16px;
+  border: 1px solid rgba(139, 92, 246, 0.36);
+  border-radius: 10px;
+  background:
+    linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(16, 185, 129, 0.08)),
+    var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.review-main-panel,
+.review-score-panel {
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+}
+
+.submission-evidence-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.submission-evidence-grid article,
+.review-notes {
+  display: grid;
+  gap: 6px;
+  padding: 13px;
+  border: 1px solid var(--border-soft);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.055);
+}
+
+.submission-evidence-grid h3,
+.review-notes h3 {
+  margin: 0;
+  font-size: 19px;
+}
+
+.submission-evidence-grid span,
+.review-notes p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.submission-links {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.submission-links a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 1px solid rgba(96, 165, 250, 0.36);
+  border-radius: 8px;
+  background: rgba(96, 165, 250, 0.1);
+  color: #dbeafe;
+  font-weight: 900;
+  text-decoration: none;
+}
+
+.submission-links a:hover {
+  background: rgba(96, 165, 250, 0.18);
+  color: #fff;
+}
+
+.review-score-panel {
+  padding: 15px;
+  border: 1px solid var(--border-soft);
+  border-radius: 9px;
+  background: rgba(8, 13, 30, 0.88);
+}
+
+.review-score-panel label {
+  display: grid;
+  gap: 6px;
+  color: var(--text);
+  font-weight: 850;
+}
+
+.review-score-panel input,
+.review-score-panel textarea {
+  width: 100%;
+  min-width: 0;
+  border: 1px solid var(--border-soft);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text);
+  padding: 10px 12px;
+  font: inherit;
+}
+
+.review-score-panel textarea {
+  min-height: 92px;
+  resize: vertical;
+}
+
+.review-action-row {
+  display: grid;
+  gap: 9px;
+}
+
 .empty-state {
   padding: 18px;
   border: 1px dashed var(--border-soft);
@@ -3013,7 +3177,15 @@ body:has(.app-shell.page-mentor) {
   .admin-stats,
   .admin-grid,
   .admin-grid.compact,
+  .management-filters,
+  .admin-management-filters,
+  .mentor-review-workspace,
   .mentor-profile-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .submission-evidence-grid,
+  .submission-links {
     grid-template-columns: 1fr;
   }
 }

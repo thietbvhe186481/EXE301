@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 
 function flexibleSchema() {
-  return new mongoose.Schema({}, { strict: false });
+  return new mongoose.Schema({}, { strict: false, id: false });
 }
 
 export const Major = mongoose.model('Major', flexibleSchema());
