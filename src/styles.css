@@ -3736,6 +3736,29 @@ b,
   color: #083344 !important;
 }
 
+.app-shell[data-theme="light"] .status-banner.warning,
+.status-banner.warning {
+  color: #92400e !important;
+}
+
+.app-shell[data-theme="light"] .card-topline strong,
+.app-shell[data-theme="light"] .selected-major-note span,
+.app-shell[data-theme="light"] .submit-status-line span,
+.app-shell[data-theme="light"] .focus-meta span,
+.app-shell[data-theme="light"] .detail-stats .stat strong,
+.app-shell[data-theme="light"] .detail-stats .stat span,
+.app-shell[data-theme="light"] .path-card span,
+.app-shell[data-theme="light"] .custom-role-card .mono-label {
+  color: #0f2f45 !important;
+}
+
+.app-shell[data-theme="light"] .major-card.active,
+.app-shell[data-theme="light"] .vertical-roadmap button.active,
+.app-shell[data-theme="light"] .path-card,
+.app-shell[data-theme="light"] .custom-role-card {
+  background: rgba(255, 255, 255, 0.9) !important;
+}
+
 .score-ring,
 .feedback-score span {
   color: #063b2f !important;
@@ -3751,7 +3774,12 @@ textarea::placeholder {
   grid-template-columns: auto minmax(0, 1fr) minmax(150px, 260px) auto !important;
 }
 
-.theme-toggle {
+.topbar:has(.logout-chip) {
+  grid-template-columns: auto minmax(0, 1fr) minmax(150px, 260px) auto auto !important;
+}
+
+.theme-toggle,
+.logout-chip {
   display: inline-flex;
   align-items: center;
   justify-content: center;

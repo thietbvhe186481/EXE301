@@ -17,6 +17,7 @@ import {
   LayoutDashboard,
   Link as LinkIcon,
   LockKeyhole,
+  LogOut,
   MessageSquareText,
   Moon,
   MoveDown,
@@ -259,6 +260,7 @@ function App() {
   const [savedPathName, setSavedPathName] = useState('');
   const [joinedChallengeIds, setJoinedChallengeIds] = useState([]);
   const [submissionStatus, setSubmissionStatus] = useState({});
+  const currentRole = currentUser?.type ?? currentUser?.user?.role ?? null;
 
   const loadBootstrap = () => {
     const controller = new AbortController();
@@ -298,22 +300,24 @@ function App() {
   const catalog = remoteData?.majors?.length ? remoteData.majors : majorCatalog;
   const challengeList = remoteData?.challenges?.length ? remoteData.challenges : challenges;
   const rulesByMajor = remoteData?.submissionRules && Object.keys(remoteData.submissionRules).length ? remoteData.submissionRules : submissionRules;
-  const demoUser = currentUser?.type === 'student' ? currentUser.user : remoteData?.demoUser;
+  const demoUser = currentRole === 'student' ? currentUser.user : remoteData?.demoUser;
   const userId = demoUser?.id ?? 'demo-student';
   const submissionList = remoteData?.submissions ?? [];
   const feedbackList = remoteData?.mentorFeedback ?? [];
-  const userMajorKey = currentUser?.type === 'student' ? currentUser.user.selectedMajorKey : null;
+  const userMajorKey = currentRole === 'student' ? (currentUser.user.selectedMajorKey ?? selectedMajorKey) : null;
 
   useEffect(() => {
     if (!remoteData?.demoUser) return;
 
-    if (currentUser?.type === 'student' && currentUser.user?.path?.length) {
+    const activeRole = currentUser?.type ?? currentUser?.user?.role;
+
+    if (activeRole === 'student' && currentUser.user?.path?.length) {
       setSelectedMajorKey(currentUser.user.selectedMajorKey ?? 'dev');
       setPath(currentUser.user.path);
     } else if (!currentUser && remoteData.demoUser.path?.length) {
       setPath(remoteData.demoUser.path);
     }
-    const activeUser = currentUser?.type === 'student' ? currentUser.user : remoteData.demoUser;
+    const activeUser = activeRole === 'student' ? currentUser.user : remoteData.demoUser;
     const userSubmissions = (remoteData.submissions ?? []).filter((item) => item.userId === activeUser?.id);
 
     if (activeUser?.joinedChallengeIds?.length) {
@@ -329,7 +333,7 @@ function App() {
   }, [remoteData, currentUser]);
 
   const currentMajor = catalog.find((item) => item.key === selectedMajorKey) ?? catalog[0];
-  const canBuildPath = currentUser?.type === 'student' && currentMajor?.key === userMajorKey;
+  const canBuildPath = currentRole === 'student' && currentMajor?.key === userMajorKey;
   const careerColumns = currentMajor.columns;
   const allRoles = useMemo(() => [
     ...careerColumns.flatMap((column) => column.roles),
@@ -350,7 +354,7 @@ function App() {
     setSelectedMajorKey(majorKey);
     setSelectedRoleId(nextRole.id);
     if (!currentUser || majorKey === userMajorKey) {
-      setPath(currentUser?.type === 'student' && currentUser.user.path?.length ? currentUser.user.path : nextPath);
+      setPath(currentRole === 'student' && currentUser.user.path?.length ? currentUser.user.path : nextPath);
     }
     setActiveTrack('Tất cả');
     setSelectedChallengeId(nextChallenge?.id ?? selectedChallengeId);
@@ -428,28 +432,33 @@ function App() {
     })
       .then((response) => response.ok ? response.json() : Promise.reject(new Error('login failed')))
       .then((data) => {
-        setCurrentUser(data);
-        if (data.type === 'admin') {
+        const normalizedData = {
+          ...data,
+          type: data.type ?? data.user?.role ?? type,
+          user: { ...data.user, role: data.user?.role ?? data.type ?? type }
+        };
+        setCurrentUser(normalizedData);
+        if (normalizedData.type === 'admin') {
           setAdminNotice('Đã đăng nhập admin demo');
           setPage('admin');
           return;
         }
-        if (data.type === 'mentor') {
+        if (normalizedData.type === 'mentor') {
           setAdminNotice('Đã đăng nhập mentor demo');
           setPage('mentor');
           return;
         }
         const loginMajor = catalog.find((item) => item.key === selectedMajorKey) ?? catalog[0];
-        const loginPath = data.user.selectedMajorKey === selectedMajorKey && data.user.path?.length
-          ? data.user.path
+        const loginPath = normalizedData.user.selectedMajorKey === selectedMajorKey && normalizedData.user.path?.length
+          ? normalizedData.user.path
           : loginMajor.columns.slice(0, 3).map((column, index) => column.roles[Math.min(index + 1, levels.length - 1)].id);
-        const studentUser = { ...data.user, selectedMajorKey, path: loginPath };
+        const studentUser = { ...normalizedData.user, role: 'student', selectedMajorKey, path: loginPath };
         setCurrentUser({ type: 'student', user: studentUser });
         setSelectedMajorKey(selectedMajorKey);
         setPath(loginPath);
-        setJoinedChallengeIds(data.user.joinedChallengeIds ?? []);
+        setJoinedChallengeIds(normalizedData.user.joinedChallengeIds ?? []);
         if (apiStatus === 'mongo') {
-          fetch(`${API_BASE_URL}/api/users/${data.user.id}/path`, {
+          fetch(`${API_BASE_URL}/api/users/${normalizedData.user.id}/path`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ path: loginPath, selectedMajorKey, careerGoal: loginPath[loginPath.length - 1] })
@@ -469,6 +478,7 @@ function App() {
   };
 
   useEffect(() => {
+    const activeRole = currentUser?.type ?? currentUser?.user?.role;
     const rolePages = {
       student: ['roadmap', 'hub', 'join', 'submit', 'feedback', 'portfolio'],
       mentor: ['mentor'],
@@ -479,11 +489,11 @@ function App() {
       return;
     }
     if (currentUser && page === 'auth') {
-      setPage(currentUser.type === 'student' ? 'roadmap' : currentUser.type);
+      setPage(activeRole === 'student' ? 'roadmap' : activeRole);
       return;
     }
-    if (currentUser && !rolePages[currentUser.type]?.includes(page)) {
-      setPage(currentUser.type === 'student' ? 'roadmap' : currentUser.type);
+    if (currentUser && !rolePages[activeRole]?.includes(page)) {
+      setPage(activeRole === 'student' ? 'roadmap' : activeRole);
     }
   }, [currentUser, page]);
 
@@ -618,10 +628,22 @@ function App() {
       return next;
     });
   };
+  const logout = () => {
+    fetch(`${API_BASE_URL}/api/auth/logout`, {
+      method: 'POST',
+      credentials: 'include'
+    }).catch(() => undefined);
+    setCurrentUser(null);
+    setAdminNotice('');
+    setJoinedChallengeIds([]);
+    setSubmissionStatus({});
+    setSavedPathName('');
+    setPage('auth');
+  };
 
   return (
     <div className={`app-shell page-${page}`} data-theme={theme}>
-      <Header page={page} go={go} currentUser={currentUser} theme={theme} setTheme={setTheme} />
+      <Header page={page} go={go} currentUser={currentUser} theme={theme} setTheme={setTheme} logout={logout} />
       <main>
         {page === 'auth' && (
           <AuthPage
@@ -685,17 +707,18 @@ function App() {
   );
 }
 
-function Header({ page, go, currentUser, theme, setTheme }) {
-  const roleFlow = currentUser?.type === 'student'
+function Header({ page, go, currentUser, theme, setTheme, logout }) {
+  const currentRole = currentUser?.type ?? currentUser?.user?.role;
+  const roleFlow = currentRole === 'student'
     ? flow.filter((item) => ['roadmap', 'hub', 'join', 'submit', 'feedback', 'portfolio'].includes(item.id))
-    : currentUser?.type === 'mentor'
+    : currentRole === 'mentor'
       ? flow.filter((item) => item.id === 'mentor')
-      : currentUser?.type === 'admin'
+      : currentRole === 'admin'
         ? flow.filter((item) => item.id === 'admin')
         : flow.filter((item) => item.id === 'auth');
   const activeIndex = roleFlow.findIndex((item) => item.id === page);
-  const homePage = currentUser?.type === 'student' ? 'roadmap' : currentUser?.type ?? 'auth';
-  const roleLabel = currentUser ? `${currentUser.type.toUpperCase()} · ${currentUser.user?.name ?? currentUser.user?.email}` : 'Guest';
+  const homePage = currentRole === 'student' ? 'roadmap' : currentRole ?? 'auth';
+  const roleLabel = currentUser ? `${(currentRole ?? 'student').toUpperCase()} · ${currentUser.user?.name ?? currentUser.user?.email}` : 'Guest';
   return (
     <header className="topbar">
       <button className="brand" onClick={() => go(homePage)} aria-label="Mở trang chính">
@@ -722,6 +745,12 @@ function Header({ page, go, currentUser, theme, setTheme }) {
         <UserRound size={15} />
         <span>{roleLabel}</span>
       </div>
+      {currentUser && (
+        <button className="logout-chip" type="button" onClick={logout} title="Đăng xuất để test tài khoản khác">
+          <LogOut size={15} />
+          <span>Đăng xuất</span>
+        </button>
+      )}
       <button
         className="theme-toggle"
         type="button"
@@ -1036,7 +1065,7 @@ function CareerMapPage({ majors, currentMajor, changeMajor, columns, levels, sel
             <h3>Ngành đã chọn: {userMajorKey?.toUpperCase()}</h3>
           </div>
           <span>Chuyển về ngành của bạn để thêm vị trí, sắp xếp và lưu lộ trình.</span>
-          <button className="primary-action compact" onClick={() => changeMajor(userMajorKey)}>
+          <button className="primary-action compact" disabled={!userMajorKey} onClick={() => userMajorKey && changeMajor(userMajorKey)}>
             Về ngành của tôi
             <Compass size={16} />
           </button>
@@ -1760,7 +1789,7 @@ function AdminPage({ apiStatus, data, notice, currentUser, refreshData, setAdmin
     submissionStatus: 'all',
     submissionMajor: 'all'
   });
-  const isAdmin = currentUser?.type === 'admin';
+  const isAdmin = (currentUser?.type ?? currentUser?.user?.role) === 'admin';
   const challengesData = data?.challenges ?? [];
   const users = data?.users?.length ? data.users : data?.demoUser ? [data.demoUser] : [];
   const submissionsData = data?.submissions ?? [];
