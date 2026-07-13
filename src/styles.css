@@ -3776,6 +3776,107 @@ textarea::placeholder {
   background: rgba(207, 250, 254, 0.9);
 }
 
+/* Light theme card readability safety net */
+.app-shell[data-theme="light"] :is(
+  .auth-visual,
+  .auth-panel,
+  .mission-panel,
+  .side-card,
+  .submission-form,
+  .feedback-score,
+  .feedback-grid article,
+  .portfolio-header,
+  .stat-card,
+  .project-card,
+  .profile-panel,
+  .skill-card,
+  .challenge-card,
+  .timeline-panel,
+  .specialization-panel,
+  .detail-panel,
+  .path-builder,
+  .admin-panel,
+  .mentor-hero-card,
+  .management-filters,
+  .mentor-review-workspace,
+  .review-score-panel,
+  .submission-evidence-grid article,
+  .review-notes,
+  .career-planner,
+  .major-card,
+  .selected-major-note,
+  .login-rule-box,
+  .auth-helper,
+  .submit-rule-card,
+  .profile-summary article,
+  .resource-card,
+  .metric-card,
+  .path-card,
+  .admin-row,
+  .activity-row,
+  .empty-state,
+  .rubric-grid article,
+  .join-status-grid .stat,
+  .detail-stats .stat
+) :is(h1, h2, h3, h4, strong, b, label) {
+  color: #071d2f !important;
+  opacity: 1 !important;
+}
+
+.app-shell[data-theme="light"] :is(
+  .auth-visual,
+  .auth-panel,
+  .mission-panel,
+  .side-card,
+  .submission-form,
+  .feedback-score,
+  .feedback-grid article,
+  .portfolio-header,
+  .stat-card,
+  .project-card,
+  .profile-panel,
+  .skill-card,
+  .challenge-card,
+  .timeline-panel,
+  .specialization-panel,
+  .detail-panel,
+  .path-builder,
+  .admin-panel,
+  .mentor-hero-card,
+  .management-filters,
+  .mentor-review-workspace,
+  .review-score-panel,
+  .submission-evidence-grid article,
+  .review-notes,
+  .career-planner,
+  .major-card,
+  .selected-major-note,
+  .login-rule-box,
+  .auth-helper,
+  .submit-rule-card,
+  .profile-summary article,
+  .resource-card,
+  .metric-card,
+  .path-card,
+  .admin-row,
+  .activity-row,
+  .empty-state,
+  .rubric-grid article,
+  .join-status-grid .stat,
+  .detail-stats .stat
+) :is(p, span, small, i, li) {
+  color: #334e68 !important;
+  opacity: 1 !important;
+}
+
+.app-shell[data-theme="light"] :is(.primary-action, .primary-action *, .flow-pill.active, .flow-pill.active *, .segmented button.active, .tabs button.active, .major-switcher button.active, .major-switcher button.active *) {
+  color: #fff !important;
+}
+
+.app-shell[data-theme="light"] :is(.tag-row span, .major-card span, .hero-map-art span, .vertical-roadmap b, .path-card b) {
+  color: #075985 !important;
+}
+
 /* Dark mode: high contrast panels and readable text */
 :root[data-theme="dark"] {
   color-scheme: dark;
