@@ -230,6 +230,134 @@ const feedbackItems = [
   { file: 'portfolio/trinh-bay:44', title: 'Trình bày gọn hơn', detail: 'Rút gọn mô tả dự án và đưa kết quả nổi bật lên đầu.' }
 ];
 
+const demoUsers = [
+  {
+    id: 'demo-student',
+    name: 'Quang Nguyễn',
+    email: 'student@portfolio.vn',
+    role: 'student',
+    selectedMajorKey: 'dev',
+    careerGoal: 'Senior Architect',
+    path: ['dev-frontend-so-cap', 'dev-fullstack-trung-cap', 'dev-architecture-cao-cap'],
+    joinedChallengeIds: ['dev-api', 'dev-dashboard', 'dev-devops'],
+    stats: { completedChallenges: 6, mentorRating: 4.8, portfolioProjects: 4, verifiedSkills: 18 },
+    portfolio: {
+      headline: 'Developer Portfolio - Backend/API oriented',
+      bio: 'Sinh viên đang xây portfolio theo hướng Full Stack và Software Architecture.',
+      publishedProjects: ['API thương mại điện tử', 'Dashboard nghề nghiệp', 'Case study kiến trúc booking'],
+      links: ['https://github.com/demo/portfolio-api', 'https://portfolio.demo']
+    },
+    badges: ['Xây lộ trình', 'Sẵn sàng thử thách', 'Đã được góp ý', 'Có minh chứng portfolio']
+  },
+  {
+    id: 'student-dev-backend',
+    name: 'Bao Le',
+    email: 'bao.backend@portfolio.vn',
+    role: 'student',
+    selectedMajorKey: 'dev',
+    careerGoal: 'Lead Backend',
+    path: ['dev-backend-so-cap', 'dev-devops-trung-cap', 'dev-architecture-cao-cap'],
+    joinedChallengeIds: ['dev-api', 'dev-devops']
+  },
+  {
+    id: 'student-design-ui',
+    name: 'Oanh Do',
+    email: 'oanh.ui@portfolio.vn',
+    role: 'student',
+    selectedMajorKey: 'design',
+    careerGoal: 'Senior Product Designer',
+    path: ['design-ui-so-cap', 'design-product-trung-cap', 'design-brand-cao-cap'],
+    joinedChallengeIds: ['design-ui', 'design-product']
+  },
+  {
+    id: 'student-mkt-seo',
+    name: 'Khanh Tran',
+    email: 'khanh.seo@portfolio.vn',
+    role: 'student',
+    selectedMajorKey: 'mkt',
+    careerGoal: 'Growth Lead',
+    path: ['mkt-seo-so-cap', 'mkt-content-trung-cap', 'mkt-growth-cao-cap'],
+    joinedChallengeIds: ['mkt-seo', 'mkt-ads']
+  }
+];
+
+const demoMentors = [
+  {
+    id: 'mentor-demo',
+    name: 'Anh Tran',
+    email: 'mentor@portfolio.vn',
+    role: 'mentor',
+    expertise: ['Backend', 'Full Stack', 'Software Architecture', 'DevOps'],
+    strongestField: 'Backend API & System Design',
+    level: 'Senior Mentor',
+    jobTitle: 'Solution Architect',
+    currentCompany: 'FinTech SaaS Lab',
+    yearsOfExperience: 8,
+    strongestTools: ['Node.js', 'MongoDB', 'Docker', 'AWS', 'System Design'],
+    reviewCapacity: 12,
+    menteeLevels: ['Junior', 'Mid-level', 'Senior'],
+    languages: ['Vietnamese', 'English'],
+    education: ['B.S. Computer Science', 'AWS Solutions Architect Associate', 'MongoDB Node.js Developer Path'],
+    workHistory: [
+      { company: 'FPT Software', role: 'Backend Engineer', period: '2018-2020' },
+      { company: 'Tiki', role: 'Senior Backend Developer', period: '2020-2023' },
+      { company: 'FinTech SaaS Lab', role: 'Solution Architect', period: '2023-2026' }
+    ],
+    domains: ['E-commerce', 'Booking system', 'Payment workflow', 'Career platform', 'API Security'],
+    reviewStyle: 'Review theo checklist: đúng yêu cầu, kiến trúc, bảo mật, README, khả năng đưa vào portfolio.',
+    availability: 'Tue/Thu/Sun 19:30-22:00',
+    rating: 4.9,
+    activeStudents: ['demo-student', 'student-dev-backend']
+  },
+  {
+    id: 'mentor-design-ui',
+    name: 'Vy Hoang',
+    email: 'vy.ui@portfolio.vn',
+    role: 'mentor',
+    expertise: ['UI Design', 'Product Design', 'Brand Design'],
+    strongestField: 'Product Interface Systems',
+    level: 'Lead Mentor',
+    currentCompany: 'FinTech Design',
+    yearsOfExperience: 7,
+    rating: 4.8
+  }
+];
+
+const demoAdmins = [
+  {
+    id: 'admin-demo',
+    name: 'Portfolio Admin',
+    email: 'admin@portfolio.vn',
+    role: 'admin',
+    title: 'Platform Operations Manager',
+    department: 'Career Platform Operations',
+    seniority: 'Head Admin',
+    permissions: ['manage_challenges', 'manage_users', 'review_submissions', 'edit_content', 'manage_mentors', 'view_reports'],
+    responsibilities: ['Quản lý danh mục ngành và thử thách', 'Theo dõi tiến độ nộp bài', 'Điều phối mentor và báo cáo vận hành'],
+    operatingMetrics: { weeklyActiveStudents: 126, pendingReviews: 18, publishedChallenges: 103, activeMentors: 10 },
+    status: 'active'
+  }
+];
+
+const demoSubmissions = [
+  { id: 'sub-demo-dev-api', userId: 'demo-student', challengeId: 'dev-api', status: 'submitted', primaryLink: 'https://github.com/demo/portfolio-api', secondaryLink: 'https://portfolio-api.demo/swagger', notes: 'API có auth, product/order modules, seed data và Swagger docs.', updatedAt: '09:30' },
+  { id: 'sub-demo-dashboard', userId: 'demo-student', challengeId: 'dev-dashboard', status: 'reviewed', primaryLink: 'https://github.com/demo/career-dashboard', secondaryLink: 'https://career-dashboard.demo', notes: 'Dashboard có filter, trạng thái trống và responsive.', updatedAt: '15:10' },
+  { id: 'sub-bao-backend', userId: 'student-dev-backend', challengeId: 'dev-api', status: 'submitted', primaryLink: 'https://github.com/demo/student-dev-backend-api-review', secondaryLink: 'https://student-dev-backend-api-review.demo', notes: 'Cần review database design, validation flow và storytelling.', updatedAt: '10:45' },
+  { id: 'sub-oanh-ui', userId: 'student-design-ui', challengeId: 'design-ui', status: 'submitted', primaryLink: 'https://figma.com/demo/onboarding-ui', secondaryLink: 'https://behance.net/demo/onboarding-case', notes: 'Prototype onboarding 4 bước với component states.', updatedAt: '11:20' },
+  { id: 'sub-khanh-seo', userId: 'student-mkt-seo', challengeId: 'mkt-seo', status: 'rejected', primaryLink: 'https://docs.google.com/demo/seo-audit', secondaryLink: 'https://lookerstudio.google.com/demo/seo', notes: 'Cần bổ sung benchmark đối thủ và timeline 30 ngày.', updatedAt: '13:50' }
+];
+
+const demoMentorFeedback = [
+  { id: 'fb-demo-dashboard', userId: 'demo-student', challengeId: 'dev-dashboard', score: 86, title: 'Dashboard đã đủ minh chứng portfolio', strengths: ['Luồng filter rõ', 'Có trạng thái trống', 'UI dễ scan'], improvements: ['Thêm số liệu trước-sau', 'Bổ sung test responsive'], reviewer: 'Anh Tran', createdAt: '15:10' },
+  { id: 'fb-khanh-seo', userId: 'student-mkt-seo', challengeId: 'mkt-seo', score: 72, title: 'Cần bổ sung dữ liệu cạnh tranh', strengths: ['Keyword map rõ', 'Có cấu trúc audit'], improvements: ['Thêm benchmark đối thủ', 'Bổ sung timeline 30 ngày'], reviewer: 'Duy Lam', createdAt: '13:50' }
+];
+
+const demoCategories = [
+  { id: 'cat-dev', name: 'Software Engineering', majorKey: 'dev', description: 'Web, backend, mobile, cloud, AI and system design.' },
+  { id: 'cat-design', name: 'UI/UX Design', majorKey: 'design', description: 'Product design, interface design, research and motion.' },
+  { id: 'cat-mkt', name: 'Digital Marketing', majorKey: 'mkt', description: 'SEO, content, paid ads, CRM, brand and growth.' }
+];
+
 const statusLabels = {
   draft: 'Bản nháp',
   submitted: 'Đang review',
@@ -260,6 +388,24 @@ function App() {
   const [joinedChallengeIds, setJoinedChallengeIds] = useState([]);
   const [submissionStatus, setSubmissionStatus] = useState({});
   const currentRole = currentUser?.type ?? currentUser?.user?.role ?? null;
+  const fallbackData = useMemo(() => ({
+    majors: majorCatalog,
+    challenges,
+    submissionRules,
+    demoUser: demoUsers[0],
+    users: demoUsers,
+    admins: demoAdmins,
+    mentors: demoMentors,
+    mentorFeedback: demoMentorFeedback,
+    submissions: demoSubmissions,
+    categories: demoCategories,
+    resources: [],
+    notifications: [
+      { id: 'noti-demo-review', userId: 'mentor-demo', role: 'mentor', title: '3 bài đang chờ mentor review', unread: true, createdAt: '09:00' },
+      { id: 'noti-demo-admin', userId: 'admin-demo', role: 'admin', title: 'Dashboard demo đã có user, mentor, challenge và submissions', unread: true, createdAt: '09:15' }
+    ]
+  }), []);
+  const appData = remoteData ?? fallbackData;
 
   const loadBootstrap = () => {
     const controller = new AbortController();
@@ -296,28 +442,28 @@ function App() {
     }
   }, [theme]);
 
-  const catalog = remoteData?.majors?.length ? remoteData.majors : majorCatalog;
-  const challengeList = remoteData?.challenges?.length ? remoteData.challenges : challenges;
-  const rulesByMajor = remoteData?.submissionRules && Object.keys(remoteData.submissionRules).length ? remoteData.submissionRules : submissionRules;
-  const demoUser = currentRole === 'student' ? currentUser.user : remoteData?.demoUser;
+  const catalog = appData?.majors?.length ? appData.majors : majorCatalog;
+  const challengeList = appData?.challenges?.length ? appData.challenges : challenges;
+  const rulesByMajor = appData?.submissionRules && Object.keys(appData.submissionRules).length ? appData.submissionRules : submissionRules;
+  const demoUser = currentRole === 'student' ? currentUser.user : appData?.demoUser;
   const userId = demoUser?.id ?? 'demo-student';
-  const submissionList = remoteData?.submissions ?? [];
-  const feedbackList = remoteData?.mentorFeedback ?? [];
+  const submissionList = appData?.submissions ?? [];
+  const feedbackList = appData?.mentorFeedback ?? [];
   const userMajorKey = currentRole === 'student' ? (currentUser.user.selectedMajorKey ?? selectedMajorKey) : null;
 
   useEffect(() => {
-    if (!remoteData?.demoUser) return;
+    if (!appData?.demoUser) return;
 
     const activeRole = currentUser?.type ?? currentUser?.user?.role;
 
     if (activeRole === 'student' && currentUser.user?.path?.length) {
       setSelectedMajorKey(currentUser.user.selectedMajorKey ?? 'dev');
       setPath(currentUser.user.path);
-    } else if (!currentUser && remoteData.demoUser.path?.length) {
-      setPath(remoteData.demoUser.path);
+    } else if (!currentUser && appData.demoUser.path?.length) {
+      setPath(appData.demoUser.path);
     }
-    const activeUser = activeRole === 'student' ? currentUser.user : remoteData.demoUser;
-    const userSubmissions = (remoteData.submissions ?? []).filter((item) => item.userId === activeUser?.id);
+    const activeUser = activeRole === 'student' ? currentUser.user : appData.demoUser;
+    const userSubmissions = (appData.submissions ?? []).filter((item) => item.userId === activeUser?.id);
 
     if (activeUser?.joinedChallengeIds?.length) {
       setJoinedChallengeIds(activeUser.joinedChallengeIds);
@@ -329,7 +475,7 @@ function App() {
         [item.challengeId]: { status: item.status, updatedAt: item.updatedAt }
       }), {}));
     }
-  }, [remoteData, currentUser]);
+  }, [appData, currentUser]);
 
   const currentMajor = catalog.find((item) => item.key === selectedMajorKey) ?? catalog[0];
   const canBuildPath = currentRole === 'student' && currentMajor?.key === userMajorKey;
@@ -443,10 +589,10 @@ function App() {
       })
       .catch(() => {
         const fallback = type === 'admin'
-          ? { type: 'admin', user: { id: 'admin-demo', name: 'Portfolio Admin', email: 'admin@portfolio.vn', role: 'admin' } }
+          ? { type: 'admin', user: demoAdmins[0] }
           : type === 'mentor'
-            ? { type: 'mentor', user: { id: 'mentor-demo', name: 'Anh Trần', email: 'mentor@portfolio.vn', role: 'mentor' } }
-            : { type: 'student', user: remoteData?.demoUser ?? { id: 'demo-student', name: 'Quang Nguyễn', email: 'student@portfolio.vn' } };
+            ? { type: 'mentor', user: demoMentors[0] }
+            : { type: 'student', user: appData?.demoUser ?? demoUsers[0] };
         setCurrentUser(fallback);
         setPage(type === 'admin' ? 'admin' : type === 'mentor' ? 'mentor' : 'roadmap');
       });
@@ -674,8 +820,8 @@ function App() {
         {page === 'submit' && <SubmitProjectPage challenge={selectedChallenge} currentMajor={currentMajor} joined={joinedChallengeIds.includes(selectedChallenge.id)} submission={submissionStatus[selectedChallenge.id]} joinChallenge={joinChallenge} saveDraft={saveDraft} submitChallenge={submitChallenge} submissionRulesData={rulesByMajor} go={go} />}
         {page === 'feedback' && <MentorFeedbackPage go={go} challenge={selectedChallenge} submission={submissionList.find((item) => item.userId === userId && item.challengeId === selectedChallenge.id)} feedback={feedbackList.find((item) => item.userId === userId && item.challengeId === selectedChallenge.id)} createFeedback={() => createFeedback(selectedChallenge.id, userId)} />}
         {page === 'portfolio' && <PortfolioPage pathRoles={pathRoles} currentMajor={currentMajor} go={go} demoUser={demoUser} apiStatus={apiStatus} submissions={submissionList} challenges={challengeList} updatePortfolio={updatePortfolio} />}
-        {page === 'mentor' && <MentorPage apiStatus={apiStatus} data={remoteData} currentUser={currentUser} refreshData={refreshData} createFeedback={createFeedback} setNotice={setAdminNotice} notice={adminNotice} />}
-        {page === 'admin' && <AdminPage apiStatus={apiStatus} data={remoteData} notice={adminNotice} currentUser={currentUser} refreshData={refreshData} setAdminNotice={setAdminNotice} createFeedback={createFeedback} />}
+        {page === 'mentor' && <MentorPage apiStatus={apiStatus} data={appData} currentUser={currentUser} refreshData={refreshData} createFeedback={createFeedback} setNotice={setAdminNotice} notice={adminNotice} />}
+        {page === 'admin' && <AdminPage apiStatus={apiStatus} data={appData} notice={adminNotice} currentUser={currentUser} refreshData={refreshData} setAdminNotice={setAdminNotice} createFeedback={createFeedback} />}
       </main>
     </div>
   );
