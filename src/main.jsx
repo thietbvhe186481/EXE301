@@ -732,7 +732,7 @@ function AuthPage({ authMode, setAuthMode, majors, selectedMajorKey, changeMajor
           ))}
         </div>
         <p className="mono-label">Bản đồ nghề Portfolio</p>
-        <h1>Chọn ngành lớn, khám phá chuyên ngành hẹp.</h1>
+        <h1>Định hình sự nghiệp, xây portfolio chứng minh năng lực.</h1>
         <p className="lead">Portfolio giúp người học chọn Dev, Tiếp thị hoặc Thiết kế, sau đó mở bản đồ nghề chi tiết để xây lộ trình, làm thử thách và cập nhật hồ sơ cá nhân.</p>
         <div className="hero-stats">
           <Stat value="3" label="ngành lớn" />
