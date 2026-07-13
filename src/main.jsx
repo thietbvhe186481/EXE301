@@ -18,6 +18,7 @@ import {
   Link as LinkIcon,
   LockKeyhole,
   MessageSquareText,
+  Moon,
   MoveDown,
   MoveUp,
   Plus,
@@ -28,6 +29,7 @@ import {
   ShieldCheck,
   Sparkles,
   Star,
+  Sun,
   Trash2,
   Trophy,
   UserRound,
@@ -230,6 +232,13 @@ const feedbackItems = [
 function App() {
   const [page, setPage] = useState('auth');
   const [authMode, setAuthMode] = useState('login');
+  const [theme, setTheme] = useState(() => {
+    try {
+      return localStorage.getItem('portfolio-theme') || 'light';
+    } catch {
+      return 'light';
+    }
+  });
   const [remoteData, setRemoteData] = useState(null);
   const [apiStatus, setApiStatus] = useState('local');
   const [currentUser, setCurrentUser] = useState(null);
@@ -269,6 +278,15 @@ function App() {
     const controller = loadBootstrap();
     return () => controller.abort();
   }, []);
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    try {
+      localStorage.setItem('portfolio-theme', theme);
+    } catch {
+      // Ignore storage errors in restricted browser contexts.
+    }
+  }, [theme]);
 
   const catalog = remoteData?.majors?.length ? remoteData.majors : majorCatalog;
   const challengeList = remoteData?.challenges?.length ? remoteData.challenges : challenges;
@@ -588,8 +606,8 @@ function App() {
   };
 
   return (
-    <div className={`app-shell page-${page}`}>
-      <Header page={page} go={go} currentUser={currentUser} />
+    <div className={`app-shell page-${page}`} data-theme={theme}>
+      <Header page={page} go={go} currentUser={currentUser} theme={theme} setTheme={setTheme} />
       <main>
         {page === 'auth' && (
           <AuthPage
@@ -653,7 +671,7 @@ function App() {
   );
 }
 
-function Header({ page, go, currentUser }) {
+function Header({ page, go, currentUser, theme, setTheme }) {
   const roleFlow = currentUser?.type === 'student'
     ? flow.filter((item) => ['roadmap', 'hub', 'join', 'submit', 'feedback', 'portfolio'].includes(item.id))
     : currentUser?.type === 'mentor'
@@ -690,6 +708,15 @@ function Header({ page, go, currentUser }) {
         <UserRound size={15} />
         <span>{roleLabel}</span>
       </div>
+      <button
+        className="theme-toggle"
+        type="button"
+        onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+        title={theme === 'dark' ? 'Chuyển sang Light mode' : 'Chuyển sang Dark mode'}
+      >
+        {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+        <span>{theme === 'dark' ? 'Light' : 'Dark'}</span>
+      </button>
     </header>
   );
 }

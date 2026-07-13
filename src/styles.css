@@ -3296,3 +3296,720 @@ body:has(.app-shell.page-mentor) {
     display: none;
   }
 }
+
+/* Modern light aqua theme */
+:root {
+  color-scheme: light;
+  background: #f3fbff;
+  color: #102033;
+  --app-bg: #f3fbff;
+  --panel: rgba(255, 255, 255, 0.78);
+  --panel-strong: rgba(255, 255, 255, 0.94);
+  --surface: rgba(255, 255, 255, 0.76);
+  --surface-soft: rgba(236, 253, 255, 0.74);
+  --surface-hover: rgba(224, 242, 254, 0.9);
+  --border-soft: rgba(14, 116, 144, 0.18);
+  --line: rgba(14, 116, 144, 0.18);
+  --muted: #5d7188;
+  --text: #102033;
+  --violet: #2563eb;
+  --emerald: #0fba9f;
+  --cyan: #06b6d4;
+  --amber: #f59e0b;
+  --rose: #e11d48;
+  --shadow: 0 18px 48px rgba(14, 116, 144, 0.14);
+}
+
+html,
+body,
+#root {
+  background: #f3fbff !important;
+}
+
+body {
+  color: var(--text) !important;
+  background:
+    radial-gradient(circle at 8% -8%, rgba(6, 182, 212, 0.24), transparent 32%),
+    radial-gradient(circle at 92% 4%, rgba(15, 186, 159, 0.2), transparent 30%),
+    linear-gradient(135deg, #f8fdff 0%, #ecfeff 42%, #eef6ff 100%) !important;
+}
+
+.app-shell {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(240, 253, 250, 0.4)),
+    transparent !important;
+}
+
+.topbar {
+  border-bottom: 1px solid rgba(14, 116, 144, 0.16) !important;
+  background: rgba(255, 255, 255, 0.74) !important;
+  backdrop-filter: blur(22px) saturate(1.35) !important;
+  box-shadow: 0 10px 28px rgba(14, 116, 144, 0.1);
+}
+
+.brand {
+  color: #0f2f45 !important;
+}
+
+.brand-mark {
+  background: linear-gradient(135deg, #06b6d4, #10b981) !important;
+  color: #fff !important;
+  box-shadow: 0 12px 24px rgba(6, 182, 212, 0.24);
+}
+
+.flow-pill,
+.role-chip,
+.search-box,
+.locked-path {
+  border: 1px solid rgba(14, 116, 144, 0.16) !important;
+  background: rgba(255, 255, 255, 0.64) !important;
+  color: #446076 !important;
+  box-shadow: 0 8px 22px rgba(14, 116, 144, 0.08);
+}
+
+.flow-pill.visited,
+.role-chip span {
+  color: #155e75 !important;
+}
+
+.flow-pill.active,
+.segmented button.active,
+.tabs button.active,
+.major-switcher button.active {
+  background: linear-gradient(135deg, #06b6d4, #2563eb) !important;
+  box-shadow: 0 14px 28px rgba(37, 99, 235, 0.2) !important;
+  color: #fff !important;
+}
+
+.auth-visual,
+.auth-panel,
+.mission-panel,
+.side-card,
+.submission-form,
+.feedback-score,
+.feedback-grid article,
+.portfolio-header,
+.stat-card,
+.project-card,
+.profile-panel,
+.skill-card,
+.challenge-card,
+.timeline-panel,
+.specialization-panel,
+.detail-panel,
+.path-builder,
+.admin-panel,
+.mentor-hero-card,
+.management-filters,
+.mentor-review-workspace,
+.review-score-panel,
+.submission-evidence-grid article,
+.review-notes,
+.career-planner,
+.major-switcher,
+.major-card,
+.selected-major-note,
+.login-rule-box,
+.auth-helper {
+  border-color: rgba(14, 116, 144, 0.18) !important;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.86), rgba(240, 253, 250, 0.68)) !important;
+  color: var(--text) !important;
+  box-shadow: var(--shadow) !important;
+  backdrop-filter: blur(18px) saturate(1.18);
+}
+
+.mentor-hero-card {
+  background:
+    linear-gradient(135deg, rgba(6, 182, 212, 0.16), rgba(16, 185, 129, 0.12)),
+    rgba(255, 255, 255, 0.84) !important;
+}
+
+.hero-map-art span,
+.submit-rule-card,
+.profile-summary article,
+.resource-card,
+.metric-card,
+.path-card,
+.admin-row,
+.activity-row,
+.empty-state {
+  border-color: rgba(14, 116, 144, 0.14) !important;
+  background: rgba(255, 255, 255, 0.62) !important;
+  color: var(--text) !important;
+}
+
+.primary-action {
+  background: linear-gradient(135deg, #06b6d4, #2563eb) !important;
+  color: #fff !important;
+  box-shadow: 0 16px 28px rgba(37, 99, 235, 0.22) !important;
+}
+
+.ghost-action,
+.admin-row button,
+.filter-row button,
+.path-actions button,
+.next-roles button {
+  border: 1px solid rgba(14, 116, 144, 0.18) !important;
+  background: rgba(255, 255, 255, 0.72) !important;
+  color: #155e75 !important;
+}
+
+.ghost-action:hover,
+.admin-row button:hover,
+.filter-row button:hover,
+.path-actions button:hover,
+.next-roles button:hover {
+  background: rgba(207, 250, 254, 0.86) !important;
+}
+
+input,
+select,
+textarea,
+.admin-form input,
+.admin-form select,
+.admin-form textarea,
+.management-filters input,
+.management-filters select,
+.review-score-panel input,
+.review-score-panel textarea,
+.auth-fields input {
+  border-color: rgba(14, 116, 144, 0.18) !important;
+  background: rgba(255, 255, 255, 0.8) !important;
+  color: #102033 !important;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #7a8da3 !important;
+}
+
+p,
+.admin-row span,
+.challenge-meta,
+.save-note,
+.major-card i,
+.specialization-list small,
+.timeline-row small,
+.path-card small,
+.submission-evidence-grid span,
+.review-notes p,
+.mentor-hero-card p,
+.management-filters label,
+.stat-card span {
+  color: var(--muted) !important;
+}
+
+h1,
+h2,
+h3,
+strong,
+.mono-label,
+.admin-panel h2,
+.mentor-hero-card h2,
+.portfolio-header h1 {
+  color: #0f2f45 !important;
+}
+
+.mono-label,
+.mentor-hero-card strong,
+.status-banner {
+  color: #047857 !important;
+}
+
+.status-banner {
+  border-color: rgba(16, 185, 129, 0.24) !important;
+  background: rgba(220, 252, 231, 0.76) !important;
+}
+
+.status-banner.muted {
+  border-color: rgba(14, 116, 144, 0.16) !important;
+  background: rgba(236, 253, 255, 0.7) !important;
+  color: #5d7188 !important;
+}
+
+.submission-links a {
+  border-color: rgba(6, 182, 212, 0.25) !important;
+  background: rgba(224, 242, 254, 0.78) !important;
+  color: #075985 !important;
+}
+
+.submission-links a:hover {
+  background: rgba(186, 230, 253, 0.92) !important;
+  color: #0c4a6e !important;
+}
+
+.review-score-panel {
+  background: rgba(255, 255, 255, 0.82) !important;
+}
+
+.logout-chip {
+  border-color: rgba(225, 29, 72, 0.22) !important;
+  background: rgba(255, 241, 242, 0.78) !important;
+  color: #be123c !important;
+}
+
+.logout-chip:hover {
+  background: rgba(255, 228, 230, 0.95) !important;
+  color: #9f1239 !important;
+}
+
+/* Light theme typography contrast pass */
+:root {
+  --text: #0b1f33;
+  --muted: #40566f;
+  --muted-strong: #243b53;
+  --label-blue: #075985;
+  --label-green: #047857;
+}
+
+body,
+button,
+input,
+textarea,
+select {
+  color: var(--text) !important;
+}
+
+h1,
+h2,
+h3,
+h4,
+.auth-title h2,
+.section-heading h1,
+.timeline-head h2,
+.detail-panel h2,
+.admin-panel h2,
+.mentor-hero-card h2,
+.portfolio-header h1,
+.brand span,
+.major-card strong,
+.challenge-card h3,
+.project-card h3,
+.profile-panel h2,
+.side-card h3,
+.review-notes h3,
+.submission-evidence-grid h3 {
+  color: #071d2f !important;
+  text-shadow: none !important;
+}
+
+p,
+small,
+.lead,
+.section-heading p:not(.mono-label),
+.challenge-card p,
+.project-card p,
+.profile-panel p,
+.side-card p,
+.mentor-hero-card p,
+.review-notes p,
+.submission-evidence-grid span,
+.admin-row span,
+.activity-row span,
+.challenge-meta,
+.save-note,
+.major-card i,
+.specialization-list small,
+.vertical-roadmap small,
+.journey-lane small,
+.path-card small,
+.role-node i,
+.management-filters label,
+.stat-card span {
+  color: var(--muted) !important;
+}
+
+strong,
+b,
+.admin-row strong,
+.activity-row strong,
+.path-card strong,
+.vertical-roadmap strong,
+.journey-lane strong,
+.challenge-card strong,
+.project-card strong,
+.submit-rule-card strong,
+.selected-major-note strong,
+.rubric-grid strong {
+  color: var(--muted-strong) !important;
+}
+
+.mono-label,
+.vertical-roadmap span,
+.map-legend,
+.management-filters .mono-label,
+.auth-title .mono-label {
+  color: var(--label-blue) !important;
+  font-weight: 800 !important;
+}
+
+.mentor-hero-card strong,
+.status-banner,
+.path-card b,
+.project-row strong {
+  color: var(--label-green) !important;
+}
+
+.flow-pill,
+.role-chip,
+.ghost-action,
+.admin-row button,
+.filter-row button,
+.tabs button,
+.segmented button,
+.next-roles button,
+.path-actions button {
+  color: #164e63 !important;
+}
+
+.flow-pill svg,
+.role-chip svg,
+.ghost-action svg,
+.admin-row button svg,
+.filter-row button svg,
+.tabs button svg,
+.segmented button svg,
+.next-roles button svg,
+.path-actions button svg {
+  color: currentColor !important;
+}
+
+.primary-action,
+.primary-action *,
+.flow-pill.active,
+.flow-pill.active *,
+.segmented button.active,
+.tabs button.active,
+.major-switcher button.active,
+.major-switcher button.active * {
+  color: #fff !important;
+}
+
+.brand-mark,
+.brand-mark * {
+  color: #fff !important;
+}
+
+.major-card span,
+.tag-row span,
+.challenge-card .difficulty,
+.hot-label,
+.status-pill,
+.hero-map-art span {
+  color: #075985 !important;
+  background: rgba(224, 242, 254, 0.84) !important;
+  border-color: rgba(14, 116, 144, 0.18) !important;
+}
+
+.major-card.active span,
+.timeline-panel [style*="--accent"] span,
+.vertical-roadmap b {
+  color: #083344 !important;
+}
+
+.score-ring,
+.feedback-score span {
+  color: #063b2f !important;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #64748b !important;
+  opacity: 1 !important;
+}
+
+.topbar:has(.theme-toggle) {
+  grid-template-columns: auto minmax(0, 1fr) minmax(150px, 260px) auto !important;
+}
+
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 38px;
+  padding: 9px 12px;
+  border: 1px solid rgba(14, 116, 144, 0.18);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.72);
+  color: #155e75;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: 0 8px 22px rgba(14, 116, 144, 0.08);
+}
+
+.theme-toggle:hover {
+  background: rgba(207, 250, 254, 0.9);
+}
+
+/* Dark mode: high contrast panels and readable text */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --app-bg: #07111f;
+  --panel: rgba(11, 24, 42, 0.88);
+  --panel-strong: rgba(8, 19, 34, 0.96);
+  --surface: rgba(12, 27, 47, 0.88);
+  --surface-soft: rgba(20, 40, 66, 0.78);
+  --surface-hover: rgba(30, 64, 100, 0.82);
+  --border-soft: rgba(125, 211, 252, 0.22);
+  --line: rgba(125, 211, 252, 0.18);
+  --text: #eef8ff;
+  --muted: #bdd4e7;
+  --muted-strong: #e0f2fe;
+  --label-blue: #67e8f9;
+  --label-green: #86efac;
+  --shadow: 0 18px 52px rgba(2, 8, 23, 0.42);
+}
+
+html[data-theme="dark"],
+html[data-theme="dark"] body,
+html[data-theme="dark"] #root {
+  background: #07111f !important;
+}
+
+html[data-theme="dark"] body {
+  color: var(--text) !important;
+  background:
+    radial-gradient(circle at 8% -8%, rgba(34, 211, 238, 0.2), transparent 30%),
+    radial-gradient(circle at 92% 4%, rgba(16, 185, 129, 0.16), transparent 32%),
+    linear-gradient(135deg, #07111f 0%, #0b1830 48%, #08111f 100%) !important;
+}
+
+.app-shell[data-theme="dark"] {
+  background:
+    linear-gradient(180deg, rgba(8, 19, 34, 0.72), rgba(7, 17, 31, 0.9)),
+    transparent !important;
+  color: var(--text) !important;
+}
+
+.app-shell[data-theme="dark"] .topbar {
+  border-bottom-color: rgba(125, 211, 252, 0.18) !important;
+  background: rgba(7, 17, 31, 0.78) !important;
+  box-shadow: 0 12px 32px rgba(2, 8, 23, 0.42);
+}
+
+.app-shell[data-theme="dark"] .brand,
+.app-shell[data-theme="dark"] .brand span {
+  color: #f0f9ff !important;
+}
+
+.app-shell[data-theme="dark"] .flow-pill,
+.app-shell[data-theme="dark"] .role-chip,
+.app-shell[data-theme="dark"] .theme-toggle,
+.app-shell[data-theme="dark"] .search-box,
+.app-shell[data-theme="dark"] .locked-path {
+  border-color: rgba(125, 211, 252, 0.2) !important;
+  background: rgba(15, 35, 59, 0.72) !important;
+  color: #d9f2ff !important;
+  box-shadow: 0 10px 26px rgba(2, 8, 23, 0.28);
+}
+
+.app-shell[data-theme="dark"] .flow-pill.visited,
+.app-shell[data-theme="dark"] .role-chip span,
+.app-shell[data-theme="dark"] .theme-toggle span {
+  color: #e0f2fe !important;
+}
+
+.app-shell[data-theme="dark"] .auth-visual,
+.app-shell[data-theme="dark"] .auth-panel,
+.app-shell[data-theme="dark"] .mission-panel,
+.app-shell[data-theme="dark"] .side-card,
+.app-shell[data-theme="dark"] .submission-form,
+.app-shell[data-theme="dark"] .feedback-score,
+.app-shell[data-theme="dark"] .feedback-grid article,
+.app-shell[data-theme="dark"] .portfolio-header,
+.app-shell[data-theme="dark"] .stat-card,
+.app-shell[data-theme="dark"] .project-card,
+.app-shell[data-theme="dark"] .profile-panel,
+.app-shell[data-theme="dark"] .skill-card,
+.app-shell[data-theme="dark"] .challenge-card,
+.app-shell[data-theme="dark"] .timeline-panel,
+.app-shell[data-theme="dark"] .specialization-panel,
+.app-shell[data-theme="dark"] .detail-panel,
+.app-shell[data-theme="dark"] .path-builder,
+.app-shell[data-theme="dark"] .admin-panel,
+.app-shell[data-theme="dark"] .mentor-hero-card,
+.app-shell[data-theme="dark"] .management-filters,
+.app-shell[data-theme="dark"] .mentor-review-workspace,
+.app-shell[data-theme="dark"] .review-score-panel,
+.app-shell[data-theme="dark"] .submission-evidence-grid article,
+.app-shell[data-theme="dark"] .review-notes,
+.app-shell[data-theme="dark"] .career-planner,
+.app-shell[data-theme="dark"] .major-switcher,
+.app-shell[data-theme="dark"] .major-card,
+.app-shell[data-theme="dark"] .selected-major-note,
+.app-shell[data-theme="dark"] .login-rule-box,
+.app-shell[data-theme="dark"] .auth-helper {
+  border-color: rgba(125, 211, 252, 0.2) !important;
+  background:
+    linear-gradient(180deg, rgba(15, 35, 59, 0.88), rgba(10, 25, 44, 0.82)) !important;
+  color: var(--text) !important;
+  box-shadow: var(--shadow) !important;
+}
+
+.app-shell[data-theme="dark"] .hero-map-art span,
+.app-shell[data-theme="dark"] .submit-rule-card,
+.app-shell[data-theme="dark"] .profile-summary article,
+.app-shell[data-theme="dark"] .resource-card,
+.app-shell[data-theme="dark"] .metric-card,
+.app-shell[data-theme="dark"] .path-card,
+.app-shell[data-theme="dark"] .admin-row,
+.app-shell[data-theme="dark"] .activity-row,
+.app-shell[data-theme="dark"] .empty-state {
+  border-color: rgba(125, 211, 252, 0.18) !important;
+  background: rgba(17, 42, 70, 0.7) !important;
+  color: var(--text) !important;
+}
+
+.app-shell[data-theme="dark"] h1,
+.app-shell[data-theme="dark"] h2,
+.app-shell[data-theme="dark"] h3,
+.app-shell[data-theme="dark"] h4,
+.app-shell[data-theme="dark"] .auth-title h2,
+.app-shell[data-theme="dark"] .section-heading h1,
+.app-shell[data-theme="dark"] .timeline-head h2,
+.app-shell[data-theme="dark"] .detail-panel h2,
+.app-shell[data-theme="dark"] .admin-panel h2,
+.app-shell[data-theme="dark"] .mentor-hero-card h2,
+.app-shell[data-theme="dark"] .portfolio-header h1,
+.app-shell[data-theme="dark"] .major-card strong,
+.app-shell[data-theme="dark"] .challenge-card h3,
+.app-shell[data-theme="dark"] .project-card h3,
+.app-shell[data-theme="dark"] .profile-panel h2,
+.app-shell[data-theme="dark"] .side-card h3,
+.app-shell[data-theme="dark"] .review-notes h3,
+.app-shell[data-theme="dark"] .submission-evidence-grid h3 {
+  color: #f8fcff !important;
+}
+
+.app-shell[data-theme="dark"] p,
+.app-shell[data-theme="dark"] small,
+.app-shell[data-theme="dark"] .lead,
+.app-shell[data-theme="dark"] .section-heading p:not(.mono-label),
+.app-shell[data-theme="dark"] .challenge-card p,
+.app-shell[data-theme="dark"] .project-card p,
+.app-shell[data-theme="dark"] .profile-panel p,
+.app-shell[data-theme="dark"] .side-card p,
+.app-shell[data-theme="dark"] .mentor-hero-card p,
+.app-shell[data-theme="dark"] .review-notes p,
+.app-shell[data-theme="dark"] .submission-evidence-grid span,
+.app-shell[data-theme="dark"] .admin-row span,
+.app-shell[data-theme="dark"] .activity-row span,
+.app-shell[data-theme="dark"] .challenge-meta,
+.app-shell[data-theme="dark"] .save-note,
+.app-shell[data-theme="dark"] .major-card i,
+.app-shell[data-theme="dark"] .specialization-list small,
+.app-shell[data-theme="dark"] .vertical-roadmap small,
+.app-shell[data-theme="dark"] .journey-lane small,
+.app-shell[data-theme="dark"] .path-card small,
+.app-shell[data-theme="dark"] .role-node i,
+.app-shell[data-theme="dark"] .management-filters label,
+.app-shell[data-theme="dark"] .stat-card span {
+  color: var(--muted) !important;
+}
+
+.app-shell[data-theme="dark"] strong,
+.app-shell[data-theme="dark"] b,
+.app-shell[data-theme="dark"] .admin-row strong,
+.app-shell[data-theme="dark"] .activity-row strong,
+.app-shell[data-theme="dark"] .path-card strong,
+.app-shell[data-theme="dark"] .vertical-roadmap strong,
+.app-shell[data-theme="dark"] .journey-lane strong,
+.app-shell[data-theme="dark"] .challenge-card strong,
+.app-shell[data-theme="dark"] .project-card strong,
+.app-shell[data-theme="dark"] .submit-rule-card strong,
+.app-shell[data-theme="dark"] .selected-major-note strong,
+.app-shell[data-theme="dark"] .rubric-grid strong {
+  color: var(--muted-strong) !important;
+}
+
+.app-shell[data-theme="dark"] .mono-label,
+.app-shell[data-theme="dark"] .vertical-roadmap span,
+.app-shell[data-theme="dark"] .map-legend,
+.app-shell[data-theme="dark"] .management-filters .mono-label,
+.app-shell[data-theme="dark"] .auth-title .mono-label {
+  color: var(--label-blue) !important;
+}
+
+.app-shell[data-theme="dark"] .mentor-hero-card strong,
+.app-shell[data-theme="dark"] .status-banner,
+.app-shell[data-theme="dark"] .path-card b,
+.app-shell[data-theme="dark"] .project-row strong {
+  color: var(--label-green) !important;
+}
+
+.app-shell[data-theme="dark"] input,
+.app-shell[data-theme="dark"] select,
+.app-shell[data-theme="dark"] textarea,
+.app-shell[data-theme="dark"] .admin-form input,
+.app-shell[data-theme="dark"] .admin-form select,
+.app-shell[data-theme="dark"] .admin-form textarea,
+.app-shell[data-theme="dark"] .management-filters input,
+.app-shell[data-theme="dark"] .management-filters select,
+.app-shell[data-theme="dark"] .review-score-panel input,
+.app-shell[data-theme="dark"] .review-score-panel textarea,
+.app-shell[data-theme="dark"] .auth-fields input {
+  border-color: rgba(125, 211, 252, 0.22) !important;
+  background: rgba(8, 19, 34, 0.82) !important;
+  color: #f0f9ff !important;
+}
+
+.app-shell[data-theme="dark"] input::placeholder,
+.app-shell[data-theme="dark"] textarea::placeholder {
+  color: #8fb7cc !important;
+}
+
+.app-shell[data-theme="dark"] .ghost-action,
+.app-shell[data-theme="dark"] .admin-row button,
+.app-shell[data-theme="dark"] .filter-row button,
+.app-shell[data-theme="dark"] .tabs button,
+.app-shell[data-theme="dark"] .segmented button,
+.app-shell[data-theme="dark"] .next-roles button,
+.app-shell[data-theme="dark"] .path-actions button {
+  border-color: rgba(125, 211, 252, 0.22) !important;
+  background: rgba(15, 35, 59, 0.8) !important;
+  color: #d9f2ff !important;
+}
+
+.app-shell[data-theme="dark"] .major-card span,
+.app-shell[data-theme="dark"] .tag-row span,
+.app-shell[data-theme="dark"] .challenge-card .difficulty,
+.app-shell[data-theme="dark"] .hot-label,
+.app-shell[data-theme="dark"] .status-pill {
+  border-color: rgba(125, 211, 252, 0.22) !important;
+  background: rgba(14, 116, 144, 0.25) !important;
+  color: #e0f2fe !important;
+}
+
+.app-shell[data-theme="dark"] .status-banner {
+  border-color: rgba(134, 239, 172, 0.28) !important;
+  background: rgba(20, 83, 45, 0.35) !important;
+}
+
+.app-shell[data-theme="dark"] .submission-links a {
+  border-color: rgba(125, 211, 252, 0.28) !important;
+  background: rgba(14, 116, 144, 0.24) !important;
+  color: #e0f2fe !important;
+}
+
+.app-shell[data-theme="dark"] .logout-chip {
+  border-color: rgba(251, 113, 133, 0.32) !important;
+  background: rgba(127, 29, 29, 0.34) !important;
+  color: #fecdd3 !important;
+}
+
+@media (max-width: 760px) {
+  .topbar:has(.theme-toggle) {
+    display: flex !important;
+  }
+
+  .theme-toggle {
+    max-width: 44px;
+    padding: 9px;
+  }
+
+  .theme-toggle span {
+    display: none;
+  }
+}
