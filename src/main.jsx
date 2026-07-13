@@ -229,6 +229,13 @@ const feedbackItems = [
   { file: 'portfolio/trinh-bay:44', title: 'Trình bày gọn hơn', detail: 'Rút gọn mô tả dự án và đưa kết quả nổi bật lên đầu.' }
 ];
 
+const statusLabels = {
+  draft: 'Bản nháp',
+  submitted: 'Đang review',
+  reviewed: 'Đã có feedback',
+  rejected: 'Cần nộp lại'
+};
+
 function App() {
   const [page, setPage] = useState('auth');
   const [authMode, setAuthMode] = useState('login');
@@ -306,12 +313,15 @@ function App() {
     } else if (!currentUser && remoteData.demoUser.path?.length) {
       setPath(remoteData.demoUser.path);
     }
-    if (remoteData.demoUser.joinedChallengeIds?.length) {
-      setJoinedChallengeIds(remoteData.demoUser.joinedChallengeIds);
+    const activeUser = currentUser?.type === 'student' ? currentUser.user : remoteData.demoUser;
+    const userSubmissions = (remoteData.submissions ?? []).filter((item) => item.userId === activeUser?.id);
+
+    if (activeUser?.joinedChallengeIds?.length) {
+      setJoinedChallengeIds(activeUser.joinedChallengeIds);
     }
-    if (remoteData.submissions?.length) {
-      setJoinedChallengeIds(remoteData.submissions.map((item) => item.challengeId));
-      setSubmissionStatus(remoteData.submissions.reduce((acc, item) => ({
+    if (userSubmissions.length) {
+      setJoinedChallengeIds((current) => [...new Set([...current, ...userSubmissions.map((item) => item.challengeId)])]);
+      setSubmissionStatus(userSubmissions.reduce((acc, item) => ({
         ...acc,
         [item.challengeId]: { status: item.status, updatedAt: item.updatedAt }
       }), {}));
@@ -403,12 +413,12 @@ function App() {
     setSelectedRoleId(nextRole.id);
     setPath((current) => [...current, nextRole.id]);
   };
-  const loginAs = (type) => {
-    const payload = type === 'admin'
+  const loginAs = (type, customPayload = null) => {
+    const payload = customPayload ?? (type === 'admin'
       ? { email: 'admin@portfolio.vn', password: 'admin123' }
       : type === 'mentor'
         ? { email: 'mentor@portfolio.vn', password: 'mentor123' }
-        : { email: 'student@portfolio.vn', password: '123456' };
+        : { email: 'student@portfolio.vn', password: '123456' });
 
     fetch(`${API_BASE_URL}/api/auth/login`, {
       method: 'POST',
@@ -506,9 +516,13 @@ function App() {
         setRemoteData((current) => ({
           ...current,
           submissions: [
-            ...(current?.submissions ?? []).filter((item) => item.challengeId !== challengeId),
+            ...(current?.submissions ?? []).filter((item) => !(item.userId === submission.userId && item.challengeId === challengeId)),
             submission
           ]
+        }));
+        setSubmissionStatus((current) => ({
+          ...current,
+          [challengeId]: { status: submission.status, updatedAt: submission.updatedAt }
         }));
       })
       .catch(() => undefined);
@@ -529,7 +543,7 @@ function App() {
       body: JSON.stringify({
         portfolio,
         stats: {
-          completedChallenges: Object.values(submissionStatus).filter((item) => item.status === 'submitted').length,
+          completedChallenges: Object.values(submissionStatus).filter((item) => ['submitted', 'reviewed'].includes(item.status)).length,
           mentorRating: 4.8,
           portfolioProjects: portfolio.publishedProjects.length,
           verifiedSkills: Math.max(18, pathRoles.length * 4)
@@ -723,6 +737,15 @@ function Header({ page, go, currentUser, theme, setTheme }) {
 
 function AuthPage({ authMode, setAuthMode, majors, selectedMajorKey, changeMajor, submissionRulesData, loginAs, go }) {
   const selectedMajor = majors.find((item) => item.key === selectedMajorKey) ?? majors[0];
+  const [credentials, setCredentials] = useState({
+    email: 'student@portfolio.vn',
+    password: '123456'
+  });
+  const updateCredentials = (key, value) => setCredentials((current) => ({ ...current, [key]: value }));
+  const submitLogin = () => {
+    if (!credentials.email || !credentials.password) return;
+    loginAs('student', credentials);
+  };
   return (
     <section className="auth-page page-grid">
       <div className="auth-visual">
@@ -754,8 +777,8 @@ function AuthPage({ authMode, setAuthMode, majors, selectedMajorKey, changeMajor
           <button className={authMode === 'signup' ? 'active' : ''} onClick={() => setAuthMode('signup')}>Đăng ký</button>
         </div>
         <div className="auth-fields">
-          <label>Email<input type="email" placeholder="ban@example.com" /></label>
-          <label>Mật khẩu<input type="password" placeholder="Nhập mật khẩu" /></label>
+          <label>Email<input type="email" value={credentials.email} onChange={(event) => updateCredentials('email', event.target.value)} placeholder="ban@example.com" /></label>
+          <label>Mật khẩu<input type="password" value={credentials.password} onChange={(event) => updateCredentials('password', event.target.value)} placeholder="Nhập mật khẩu" /></label>
         </div>
         <div className="auth-helper">
           <span>Demo account</span>
@@ -780,9 +803,13 @@ function AuthPage({ authMode, setAuthMode, majors, selectedMajorKey, changeMajor
           <strong>{selectedMajor.title}</strong>
           <span>{selectedMajor.columns.length} specializations · {submissionRulesData[selectedMajor.key].accepted}</span>
         </div>
-        <button className="primary-action" onClick={() => loginAs('student')}>
+        <button className="primary-action" onClick={submitLogin}>
+          <LockKeyhole size={18} />
+          Đăng nhập bằng tài khoản đã nhập
+        </button>
+        <button className="ghost-action" onClick={() => loginAs('student')}>
           <Rocket size={18} />
-          Đăng nhập student và vào bản đồ {selectedMajor.short}
+          Student demo vào bản đồ {selectedMajor.short}
         </button>
         <button className="ghost-action" onClick={() => loginAs('admin')}>
           <ShieldCheck size={18} />
@@ -941,6 +968,31 @@ function CareerMapPage({ majors, currentMajor, changeMajor, columns, levels, sel
             <Plus size={18} />
             {canBuildPath ? 'Thêm vào lộ trình' : 'Chỉ xem tham khảo'}
           </button>
+          {canBuildPath && (
+            <div className="custom-role-card">
+              <p className="mono-label">Vị trí tự tạo</p>
+              <input value={customTitle} onChange={(event) => setCustomTitle(event.target.value)} placeholder="VD: AI Product Engineer" />
+              <div className="custom-role-row">
+                <select value={customTrack} onChange={(event) => setCustomTrack(event.target.value)}>
+                  {columns.map((column) => <option key={column.key} value={column.title}>{column.title}</option>)}
+                </select>
+                <select value={customLevel} onChange={(event) => setCustomLevel(event.target.value)}>
+                  {levels.map((level) => <option key={level.key} value={level.key}>{level.label}</option>)}
+                </select>
+              </div>
+              <button
+                className="ghost-action compact"
+                onClick={() => {
+                  if (!customTitle.trim()) return;
+                  addCustomRole(customTitle.trim(), customTrack, customLevel);
+                  setCustomTitle('');
+                }}
+              >
+                <Plus size={16} />
+                Thêm vị trí riêng
+              </button>
+            </div>
+          )}
         </aside>
       </div>
 
@@ -1017,7 +1069,7 @@ function ChallengeHubPage({ currentMajor, activeTrack, setActiveTrack, visibleCh
             <article className="challenge-card" key={challenge.id}>
               <div className="card-topline">
                 <span>{challenge.track}</span>
-                <strong>{submission?.status === 'reviewed' ? 'Đã có feedback' : submission?.status === 'submitted' ? 'Đã nộp' : joined ? 'Đã tham gia' : `${challenge.xp} XP`}</strong>
+                <strong>{submission?.status ? statusLabels[submission.status] ?? submission.status : joined ? 'Đã tham gia' : `${challenge.xp} XP`}</strong>
               </div>
               <h2>{challenge.title}</h2>
               <p>{challenge.summary}</p>
@@ -1047,6 +1099,8 @@ function ChallengeHubPage({ currentMajor, activeTrack, setActiveTrack, visibleCh
 
 function JoinChallengePage({ challenge, currentMajor, joined, submission, joinChallenge, go }) {
   const isSubmitted = submission?.status === 'submitted';
+  const isReviewed = submission?.status === 'reviewed';
+  const isRejected = submission?.status === 'rejected';
   return (
     <section className="content-page two-column">
       <div className="mission-panel">
@@ -1057,7 +1111,7 @@ function JoinChallengePage({ challenge, currentMajor, joined, submission, joinCh
         <div className="join-status-grid">
           <Stat value={challenge.due} label="hạn nộp" />
           <Stat value={challenge.xp} label="điểm XP" />
-          <Stat value={joined ? 'Đã tham gia' : 'Chưa tham gia'} label="trạng thái" />
+          <Stat value={submission?.status ? statusLabels[submission.status] ?? submission.status : joined ? 'Đã tham gia' : 'Chưa tham gia'} label="trạng thái" />
         </div>
         <h3>Điều kiện trước khi tham gia</h3>
         {[
@@ -1085,8 +1139,10 @@ function JoinChallengePage({ challenge, currentMajor, joined, submission, joinCh
         <p>Mentor còn 4 slot review trong tuần. Sau khi tham gia, hệ thống tạo bản nháp nộp bài theo ngành {currentMajor.title}.</p>
         {joined && <div className="status-banner"><Check size={17} /> Đã tham gia thử thách. Sẵn sàng nộp bài.</div>}
         {isSubmitted && <div className="status-banner"><Check size={17} /> Đã nộp lúc {submission.updatedAt}. Có thể xem góp ý mentor.</div>}
-        <button className="primary-action" onClick={() => { joinChallenge(challenge.id); go('submit'); }}>
-          {isSubmitted ? 'Xem bài đã nộp' : joined ? 'Tiếp tục nộp bài' : 'Tham gia và mở form nộp'}
+        {isRejected && <div className="status-banner warning"><X size={17} /> Mentor yêu cầu bổ sung. Hãy mở form nộp bài để cập nhật phiên bản mới.</div>}
+        {isReviewed && <div className="status-banner"><BadgeCheck size={17} /> Bài đã được review. Có thể mở góp ý để cập nhật portfolio.</div>}
+        <button className="primary-action" onClick={() => { joinChallenge(challenge.id); go(isReviewed ? 'feedback' : 'submit'); }}>
+          {isReviewed ? 'Xem bài và feedback' : isRejected ? 'Nộp lại bài' : isSubmitted ? 'Xem bài đã nộp' : joined ? 'Tiếp tục nộp bài' : 'Tham gia và mở form nộp'}
           <Send size={17} />
         </button>
       </aside>
@@ -1099,6 +1155,7 @@ function SubmitProjectPage({ challenge, currentMajor, joined, submission, joinCh
   const isSubmitted = submission?.status === 'submitted';
   const isReviewed = submission?.status === 'reviewed';
   const isDraft = submission?.status === 'draft';
+  const isRejected = submission?.status === 'rejected';
   const [form, setForm] = useState({
     primaryLink: submission?.primaryLink ?? '',
     secondaryLink: submission?.secondaryLink ?? '',
@@ -1114,7 +1171,7 @@ function SubmitProjectPage({ challenge, currentMajor, joined, submission, joinCh
         <p>Form nộp bài tự thay đổi theo ngành {currentMajor.title}. Định dạng chấp nhận: {rules.accepted}.</p>
         <div className="submit-status-line">
           <span>{joined ? 'Đã tham gia' : 'Chưa tham gia'}</span>
-          <span>{isReviewed ? `Đã được góp ý ${submission.updatedAt}` : isSubmitted ? `Đã nộp ${submission.updatedAt}` : isDraft ? `Bản nháp ${submission.updatedAt}` : 'Chưa có bản nháp'}</span>
+          <span>{isReviewed ? `Đã được góp ý ${submission.updatedAt}` : isSubmitted ? `Đã nộp ${submission.updatedAt}` : isRejected ? `Cần nộp lại ${submission.updatedAt}` : isDraft ? `Bản nháp ${submission.updatedAt}` : 'Chưa có bản nháp'}</span>
           <span>{challenge.track}</span>
         </div>
       </div>
@@ -1139,14 +1196,23 @@ function SubmitProjectPage({ challenge, currentMajor, joined, submission, joinCh
         </div>
         {isDraft && <div className="status-banner"><Save size={17} /> Đã lưu bản nháp lúc {submission.updatedAt}. Bạn có thể nộp khi đã đủ checklist.</div>}
         {isSubmitted && <div className="status-banner"><Check size={17} /> Đã nộp sản phẩm lúc {submission.updatedAt}. Góp ý từ người hướng dẫn đã sẵn sàng để demo.</div>}
+        {isRejected && <div className="status-banner warning"><X size={17} /> Mentor yêu cầu bổ sung minh chứng. Cập nhật link hoặc ghi chú rồi nộp lại.</div>}
         {isReviewed && <div className="status-banner"><Check size={17} /> Mentor đã nhận xét bài này. Mở trang góp ý để cập nhật portfolio.</div>}
         <div className="submit-actions">
           <button className="ghost-action" onClick={() => { joinChallenge(challenge.id); saveDraft(challenge.id, form); }}>
             <Save size={17} />
             Lưu bản nháp
           </button>
-          <button className="primary-action" onClick={() => { joinChallenge(challenge.id); submitChallenge(challenge.id, form); go('feedback'); }}>
-            {isReviewed ? 'Xem góp ý mentor' : 'Gửi người hướng dẫn góp ý'}
+          <button className="primary-action" onClick={() => {
+            if (isReviewed) {
+              go('feedback');
+              return;
+            }
+            joinChallenge(challenge.id);
+            submitChallenge(challenge.id, form);
+            go('feedback');
+          }}>
+            {isReviewed ? 'Xem góp ý mentor' : isRejected ? 'Nộp lại cho mentor' : 'Gửi người hướng dẫn góp ý'}
             <Send size={17} />
           </button>
         </div>
@@ -1325,7 +1391,7 @@ function MentorPage({ apiStatus, data, currentUser, refreshData, createFeedback,
     decision: 'approved'
   });
   const mentorProfile = data?.mentors?.find((item) => item.id === currentUser?.user?.id) ?? currentUser?.user ?? {};
-  const pending = submissionsData.filter((item) => ['submitted', 'draft'].includes(item.status));
+  const pending = submissionsData.filter((item) => item.status === 'submitted');
   const reviewed = submissionsData.filter((item) => item.status === 'reviewed' || feedbackData.some((feedback) => feedback.challengeId === item.challengeId && feedback.userId === item.userId));
   const averageScore = feedbackData.length
     ? Math.round(feedbackData.reduce((sum, item) => sum + Number(item.score || 0), 0) / feedbackData.length)
@@ -1813,6 +1879,23 @@ function AdminPage({ apiStatus, data, notice, currentUser, refreshData, setAdmin
       })
       .catch(() => setAdminNotice('Không xóa được challenge. Kiểm tra API/MongoDB.'));
   };
+  const updateUser = (id, updates) => {
+    if (!isAdmin) {
+      setAdminNotice('Cần đăng nhập admin demo để quản lý user');
+      return;
+    }
+    fetch(`${API_BASE_URL}/api/users/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updates)
+    })
+      .then((response) => response.ok ? response.json() : Promise.reject(new Error('user update failed')))
+      .then(() => {
+        setAdminNotice('Đã cập nhật user');
+        refreshData();
+      })
+      .catch(() => setAdminNotice('Không cập nhật được user. Kiểm tra API/MongoDB.'));
+  };
 
   return (
     <section className="content-page admin-page">
@@ -1969,8 +2052,14 @@ function AdminPage({ apiStatus, data, notice, currentUser, refreshData, setAdmin
             <div className="admin-row" key={user.id}>
               <div>
                 <strong>{user.name}</strong>
-                <span>{user.email} · {user.selectedMajorKey} · {user.path?.length ?? 0} vị trí</span>
+                <span>{user.email} · {user.selectedMajorKey} · {user.status ?? 'active'} · {user.path?.length ?? 0} vị trí</span>
               </div>
+              <button onClick={() => updateUser(user.id, { status: user.status === 'locked' ? 'active' : 'locked' })}>
+                {user.status === 'locked' ? 'Mở khóa' : 'Khóa'}
+              </button>
+              <button onClick={() => updateUser(user.id, { selectedMajorKey: user.selectedMajorKey === 'dev' ? 'mkt' : user.selectedMajorKey === 'mkt' ? 'design' : 'dev', path: [] })}>
+                Đổi ngành
+              </button>
             </div>
           ))}
           {!filteredUsers.length && <div className="empty-state">Không có người dùng phù hợp.</div>}

@@ -3260,6 +3260,34 @@ body:has(.app-shell.page-mentor) {
   color: var(--muted);
 }
 
+.status-banner.warning {
+  border-color: rgba(245, 158, 11, 0.36);
+  background: rgba(245, 158, 11, 0.12);
+  color: #92400e;
+}
+
+.custom-role-card {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+  padding: 13px;
+  border: 1px solid var(--border-soft);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.custom-role-card input,
+.custom-role-card select {
+  width: 100%;
+  min-width: 0;
+}
+
+.custom-role-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(120px, 0.7fr);
+  gap: 8px;
+}
+
 .vertical-roadmap i.disabled {
   opacity: 0.55;
   cursor: not-allowed;
@@ -3907,6 +3935,12 @@ html[data-theme="dark"] body {
 .app-shell[data-theme="dark"] .management-filters label,
 .app-shell[data-theme="dark"] .stat-card span {
   color: var(--muted) !important;
+}
+
+.app-shell[data-theme="dark"] .status-banner.warning {
+  border-color: rgba(245, 158, 11, 0.42);
+  background: rgba(245, 158, 11, 0.15);
+  color: #fde68a;
 }
 
 .app-shell[data-theme="dark"] strong,

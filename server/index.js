@@ -76,6 +76,14 @@ function normalizeRules(rows) {
   }, {});
 }
 
+function dedupeBy(rows, keyFn) {
+  const map = new Map();
+  rows.forEach((row) => {
+    map.set(keyFn(row), row);
+  });
+  return [...map.values()];
+}
+
 app.get('/api/health', async (_req, res) => {
   res.json({ ok: true, service: 'portfolio-api', time: new Date().toISOString() });
 });
@@ -96,6 +104,9 @@ app.get('/api/bootstrap', async (_req, res, next) => {
       Notification.find({}).lean()
     ]);
 
+    const cleanSubmissions = dedupeBy(submissions, (item) => `${item.userId}:${item.challengeId}`);
+    const cleanFeedback = dedupeBy(feedback, (item) => `${item.userId}:${item.challengeId}`);
+
     res.json({
       majors,
       challenges,
@@ -104,8 +115,8 @@ app.get('/api/bootstrap', async (_req, res, next) => {
       users: profiles.map(cleanDoc),
       admins: admins.map(cleanDoc),
       mentors: mentors.map(cleanDoc),
-      mentorFeedback: feedback,
-      submissions,
+      mentorFeedback: cleanFeedback,
+      submissions: cleanSubmissions,
       categories,
       resources,
       notifications
@@ -443,7 +454,8 @@ app.post('/api/users/:id/joined-challenges', async (req, res, next) => {
 app.get('/api/submissions', async (req, res, next) => {
   try {
     const filter = req.query.userId ? { userId: req.query.userId } : {};
-    res.json(await Submission.find(filter).sort({ updatedAt: -1 }).lean());
+    const submissions = await Submission.find(filter).sort({ updatedAt: -1 }).lean();
+    res.json(dedupeBy(submissions, (item) => `${item.userId}:${item.challengeId}`));
   } catch (error) {
     next(error);
   }
