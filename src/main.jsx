@@ -1509,6 +1509,31 @@ function MentorPage({ apiStatus, data, currentUser, refreshData, createFeedback,
         <StatCard icon={Star} title="Average score" value={averageScore || '-'} />
       </div>
 
+      <div className="admin-grid compact">
+        <article className="admin-panel">
+          <p className="mono-label">Công việc hiện tại</p>
+          <div className="admin-list">
+            <div className="admin-row">
+              <div>
+                <strong>{mentorProfile.jobTitle ?? mentorProfile.level ?? 'Senior Mentor'}</strong>
+                <span>{mentorProfile.currentCompany ?? 'Portfolio Mentor Network'} · {mentorProfile.yearsOfExperience ?? 5}+ năm kinh nghiệm</span>
+              </div>
+            </div>
+            <div className="tag-row">
+              {(mentorProfile.strongestTools ?? ['Portfolio Review', 'Career Coaching']).map((item) => <span key={item}>{item}</span>)}
+            </div>
+          </div>
+        </article>
+        <article className="admin-panel">
+          <p className="mono-label">Năng lực review</p>
+          <div className="admin-list">
+            <div className="activity-row"><BadgeCheck size={16} /><span>{mentorProfile.reviewCapacity ?? 8} bài / tuần</span></div>
+            <div className="activity-row"><UserRound size={16} /><span>Level phù hợp: {(mentorProfile.menteeLevels ?? ['Junior', 'Mid-level']).join(', ')}</span></div>
+            <div className="activity-row"><BookOpen size={16} /><span>Ngôn ngữ: {(mentorProfile.languages ?? ['Vietnamese']).join(', ')}</span></div>
+          </div>
+        </article>
+      </div>
+
       <section className="management-filters">
         <div>
           <p className="mono-label">Bộ lọc mentor</p>
@@ -1742,6 +1767,7 @@ function AdminPage({ apiStatus, data, notice, currentUser, refreshData, setAdmin
   const categories = data?.categories ?? [];
   const mentors = data?.mentors ?? [];
   const notifications = data?.notifications ?? [];
+  const adminProfile = data?.admins?.find((item) => item.id === currentUser?.user?.id) ?? currentUser?.user ?? {};
   const overview = {
     majors: data?.majors?.length ?? 0,
     challenges: challengesData.length,
@@ -1898,6 +1924,50 @@ function AdminPage({ apiStatus, data, notice, currentUser, refreshData, setAdmin
         <StatCard icon={UserRound} title="Người dùng" value={overview.users} />
         <StatCard icon={FileUp} title="Lượt nộp bài" value={overview.submissions} />
         <StatCard icon={GraduationCap} title="Mentor" value={mentors.length} />
+      </div>
+
+      <div className="admin-grid compact">
+        <article className="admin-panel">
+          <p className="mono-label">Admin profile</p>
+          <h2>{adminProfile.name ?? 'Portfolio Admin'}</h2>
+          <div className="admin-list">
+            <div className="admin-row">
+              <div>
+                <strong>{adminProfile.title ?? 'Platform Operations Manager'}</strong>
+                <span>{adminProfile.department ?? 'Career Platform Operations'} · {adminProfile.seniority ?? 'Head Admin'}</span>
+              </div>
+            </div>
+            <div className="tag-row">
+              {(adminProfile.permissions ?? ['manage_challenges', 'manage_users', 'view_reports']).map((item) => <span key={item}>{item}</span>)}
+            </div>
+          </div>
+        </article>
+        <article className="admin-panel">
+          <p className="mono-label">Nghiệp vụ quản trị</p>
+          <div className="admin-list">
+            {(adminProfile.responsibilities ?? ['Quản lý thử thách', 'Theo dõi submission', 'Điều phối mentor']).map((item) => (
+              <div className="activity-row" key={item}><ShieldCheck size={16} /><span>{item}</span></div>
+            ))}
+          </div>
+        </article>
+        <article className="admin-panel">
+          <p className="mono-label">Vận hành demo</p>
+          <div className="admin-list">
+            {Object.entries(adminProfile.operatingMetrics ?? {
+              weeklyActiveStudents: users.length,
+              pendingReviews: submissionsData.filter((item) => item.status === 'submitted').length,
+              publishedChallenges: challengesData.length,
+              activeMentors: mentors.length
+            }).map(([key, value]) => (
+              <div className="admin-row" key={key}>
+                <div>
+                  <strong>{value}</strong>
+                  <span>{key}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </article>
       </div>
 
       <section className="management-filters admin-management-filters">

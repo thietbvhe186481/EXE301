@@ -51,6 +51,15 @@ function pushUniqueById(target, rows) {
   });
 }
 
+function upsertById(target, row) {
+  const index = target.findIndex((item) => item.id === row.id);
+  if (index >= 0) {
+    target[index] = { ...target[index], ...row };
+    return;
+  }
+  target.push(row);
+}
+
 function findMajor(majors, key) {
   return majors.find((major) => major.key === key);
 }
@@ -80,6 +89,72 @@ function challengeById(challenges, id) {
 
 export function augmentSeedData(seed) {
   const { adminAccounts, categories, challenges, majors, mentorAccounts, mentorFeedback, notifications, resources, submissions, userProfiles } = seed;
+
+  upsertById(adminAccounts, {
+    id: 'admin-demo',
+    name: 'Portfolio Admin',
+    email: 'admin@portfolio.vn',
+    password: 'admin123',
+    role: 'admin',
+    title: 'Platform Operations Manager',
+    department: 'Career Platform Operations',
+    seniority: 'Head Admin',
+    permissions: ['manage_challenges', 'manage_users', 'review_submissions', 'edit_content', 'manage_mentors', 'view_reports'],
+    responsibilities: [
+      'Quản lý danh mục ngành, chuyên ngành và thử thách',
+      'Theo dõi tiến độ nộp bài và chất lượng feedback',
+      'Phân quyền mentor, kiểm tra dữ liệu demo và báo cáo vận hành'
+    ],
+    managedModules: ['Career Map', 'Challenge Hub', 'Submissions', 'Mentor Reviews', 'User Portfolio'],
+    operatingMetrics: {
+      weeklyActiveStudents: 126,
+      pendingReviews: 18,
+      publishedChallenges: 103,
+      activeMentors: 10
+    },
+    activityLog: [
+      'Cập nhật bộ lọc quản lý challenge',
+      'Duyệt mentor cho track Backend và Product Design',
+      'Kiểm tra 18 submission đang chờ review'
+    ],
+    status: 'active'
+  });
+
+  upsertById(mentorAccounts, {
+    id: 'mentor-demo',
+    name: 'Anh Tran',
+    email: 'mentor@portfolio.vn',
+    password: 'mentor123',
+    role: 'mentor',
+    expertise: ['Backend', 'Full Stack', 'Software Architecture', 'DevOps'],
+    strongestField: 'Backend API & System Design',
+    level: 'Senior Mentor',
+    education: [
+      'B.S. Computer Science - University of Engineering and Technology',
+      'AWS Solutions Architect Associate',
+      'MongoDB Node.js Developer Path'
+    ],
+    workHistory: [
+      { company: 'FPT Software', role: 'Backend Engineer', period: '2018-2020' },
+      { company: 'Tiki', role: 'Senior Backend Developer', period: '2020-2023' },
+      { company: 'FinTech SaaS Lab', role: 'Solution Architect', period: '2023-2026' }
+    ],
+    companies: ['FPT Software', 'Tiki', 'FinTech SaaS Lab'],
+    domains: ['E-commerce', 'Booking system', 'Payment workflow', 'Career platform', 'API Security'],
+    reviewStyle: 'Review theo checklist: đúng yêu cầu, kiến trúc, bảo mật, README, khả năng đưa vào portfolio.',
+    achievements: ['Reviewed 180+ student projects', 'Designed 12 production APIs', 'Mentored 35 junior developers'],
+    availability: 'Tue/Thu/Sun 19:30-22:00',
+    currentCompany: 'FinTech SaaS Lab',
+    jobTitle: 'Solution Architect',
+    yearsOfExperience: 8,
+    strongestTools: ['Node.js', 'MongoDB', 'Docker', 'AWS', 'System Design'],
+    reviewCapacity: 12,
+    reviewQueue: ['dev-api', 'auto-dev-backend-case-study', 'auto-dev-fullstack-capstone'],
+    menteeLevels: ['Junior', 'Mid-level', 'Senior'],
+    languages: ['Vietnamese', 'English'],
+    rating: 4.9,
+    activeStudents: ['demo-student', 'student-dev-backend', 'student-dev-devops']
+  });
 
   pushUniqueById(challenges, majors.flatMap((major) => major.columns.flatMap((column) => (
     challengeTemplates.map((template, index) => {
@@ -190,6 +265,38 @@ export function augmentSeedData(seed) {
   ));
 
   pushUniqueById(submissions, generatedSubmissions);
+  pushUniqueById(submissions, [
+    {
+      id: 'sub-demo-mentor-review-dev-api',
+      userId: 'demo-student',
+      challengeId: 'dev-api',
+      status: 'submitted',
+      primaryLink: 'https://github.com/demo/portfolio-api',
+      secondaryLink: 'https://portfolio-api.demo/swagger',
+      notes: 'Demo submission for mentor account: API has auth, product/order modules, seed data, and Swagger docs.',
+      updatedAt: '09:30'
+    },
+    {
+      id: 'sub-student-dev-backend-mentor-review',
+      userId: 'student-dev-backend',
+      challengeId: 'auto-dev-backend-case-study',
+      status: 'submitted',
+      primaryLink: 'https://github.com/demo/student-dev-backend-api-review',
+      secondaryLink: 'https://student-dev-backend-api-review.demo',
+      notes: 'Needs mentor review on database design, validation flow, and portfolio storytelling.',
+      updatedAt: '10:45'
+    },
+    {
+      id: 'sub-student-dev-devops-mentor-review',
+      userId: 'student-dev-devops',
+      challengeId: 'auto-dev-devops-capstone',
+      status: 'submitted',
+      primaryLink: 'https://github.com/demo/student-devops-pipeline',
+      secondaryLink: 'https://student-devops-pipeline.demo',
+      notes: 'CI/CD pipeline with Docker, health check, rollback note, and monitoring screenshot.',
+      updatedAt: '13:20'
+    }
+  ]);
 
   pushUniqueById(mentorFeedback, generatedSubmissions
     .filter((submission, index) => submission.status === 'reviewed' || (submission.status === 'submitted' && index % 4 === 0))
@@ -207,12 +314,37 @@ export function augmentSeedData(seed) {
         createdAt: timeCycle[index % timeCycle.length]
       };
     }));
+  pushUniqueById(mentorFeedback, [
+    {
+      id: 'fb-demo-mentor-dev-dashboard',
+      userId: 'demo-student',
+      challengeId: 'dev-dashboard',
+      score: 86,
+      title: 'Dashboard đã đủ minh chứng portfolio',
+      strengths: ['Luồng filter rõ', 'Có trạng thái trống', 'UI dễ scan'],
+      improvements: ['Thêm số liệu trước-sau', 'Bổ sung test responsive', 'Viết README gọn hơn'],
+      reviewer: 'Anh Tran',
+      createdAt: '15:10'
+    },
+    {
+      id: 'fb-student-devops-pipeline-history',
+      userId: 'student-dev-devops',
+      challengeId: 'auto-dev-devops-audit',
+      score: 90,
+      title: 'Pipeline evidence rõ ràng',
+      strengths: ['Có sơ đồ deploy', 'Có rollback plan', 'Log minh chứng đầy đủ'],
+      improvements: ['Thêm alert threshold', 'Làm rõ quyền môi trường production'],
+      reviewer: 'Anh Tran',
+      createdAt: '16:35'
+    }
+  ]);
 
   mentorAccounts.forEach((mentor) => {
-    mentor.activeStudents = userProfiles
+    const computedStudents = userProfiles
       .filter((student) => student.joinedChallengeIds?.some((challengeId) => challengeById(challenges, challengeId)?.mentor === mentor.name))
       .slice(0, 8)
       .map((student) => student.id);
+    mentor.activeStudents = computedStudents.length ? computedStudents : (mentor.activeStudents ?? []);
   });
 
   pushUniqueById(resources, majors.flatMap((major) => major.columns.flatMap((column) => ([

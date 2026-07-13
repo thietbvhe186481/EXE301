@@ -210,7 +210,28 @@ export const adminAccounts = [
     email: 'admin@portfolio.vn',
     password: 'admin123',
     role: 'admin',
-    permissions: ['manage_challenges', 'manage_users', 'review_submissions', 'edit_content']
+    title: 'Platform Operations Manager',
+    department: 'Career Platform Operations',
+    seniority: 'Head Admin',
+    permissions: ['manage_challenges', 'manage_users', 'review_submissions', 'edit_content', 'manage_mentors', 'view_reports'],
+    responsibilities: [
+      'Quản lý danh mục ngành, chuyên ngành và thử thách',
+      'Theo dõi tiến độ nộp bài và chất lượng feedback',
+      'Phân quyền mentor, kiểm tra dữ liệu demo và báo cáo vận hành'
+    ],
+    managedModules: ['Career Map', 'Challenge Hub', 'Submissions', 'Mentor Reviews', 'User Portfolio'],
+    operatingMetrics: {
+      weeklyActiveStudents: 126,
+      pendingReviews: 18,
+      publishedChallenges: 103,
+      activeMentors: 10
+    },
+    activityLog: [
+      'Cập nhật bộ lọc quản lý challenge',
+      'Duyệt mentor cho track Backend và Product Design',
+      'Kiểm tra 18 submission đang chờ review'
+    ],
+    status: 'active'
   }
 ];
 
@@ -238,8 +259,16 @@ export const mentorAccounts = [
     reviewStyle: 'Review theo checklist: đúng yêu cầu, kiến trúc, bảo mật, README, khả năng đưa vào portfolio.',
     achievements: ['Reviewed 180+ student projects', 'Designed 12 production APIs', 'Mentored 35 junior developers'],
     availability: 'Thứ 3, Thứ 5, Chủ nhật - 19:30 đến 22:00',
+    currentCompany: 'FinTech SaaS Lab',
+    jobTitle: 'Solution Architect',
+    yearsOfExperience: 8,
+    strongestTools: ['Node.js', 'MongoDB', 'Docker', 'AWS', 'System Design'],
+    reviewCapacity: 12,
+    reviewQueue: ['dev-api', 'auto-dev-backend-case-study', 'auto-dev-fullstack-capstone'],
+    menteeLevels: ['Junior', 'Mid-level', 'Senior'],
+    languages: ['Vietnamese', 'English'],
     rating: 4.9,
-    activeStudents: ['demo-student']
+    activeStudents: ['demo-student', 'student-dev-backend', 'student-dev-devops']
   }
 ];
 
