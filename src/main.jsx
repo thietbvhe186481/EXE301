@@ -256,7 +256,6 @@ function App() {
   const [path, setPath] = useState(['dev-frontend-so-cap', 'dev-fullstack-trung-cap', 'dev-architecture-cao-cap']);
   const [selectedChallengeId, setSelectedChallengeId] = useState('dev-api');
   const [activeTrack, setActiveTrack] = useState('Tất cả');
-  const [customRoles, setCustomRoles] = useState([]);
   const [savedPathName, setSavedPathName] = useState('');
   const [joinedChallengeIds, setJoinedChallengeIds] = useState([]);
   const [submissionStatus, setSubmissionStatus] = useState({});
@@ -335,10 +334,7 @@ function App() {
   const currentMajor = catalog.find((item) => item.key === selectedMajorKey) ?? catalog[0];
   const canBuildPath = currentRole === 'student' && currentMajor?.key === userMajorKey;
   const careerColumns = currentMajor.columns;
-  const allRoles = useMemo(() => [
-    ...careerColumns.flatMap((column) => column.roles),
-    ...customRoles.filter((item) => item.majorKey === selectedMajorKey)
-  ], [careerColumns, customRoles, selectedMajorKey]);
+  const allRoles = useMemo(() => careerColumns.flatMap((column) => column.roles), [careerColumns]);
   const selectedRole = allRoles.find((item) => item.id === selectedRoleId) ?? allRoles[0];
   const visibleChallenges = challengeList.filter((item) => item.majorKey === selectedMajorKey && (activeTrack === 'Tất cả' || item.track === activeTrack));
   const selectedChallenge = challengeList.find((item) => item.id === selectedChallengeId) ?? visibleChallenges[0] ?? challengeList[0];
@@ -395,27 +391,6 @@ function App() {
         })
         .catch(() => undefined);
     }
-  };
-  const addCustomRole = (title, track, levelKey) => {
-    if (!canBuildPath) return;
-    const level = levels.find((item) => item.key === levelKey) ?? levels[1];
-    const nextRole = role(
-      `custom-${selectedMajorKey}-${Date.now()}`,
-      title,
-      level.label,
-      level.key,
-      track,
-      selectedMajorKey,
-      'Thỏa thuận VND',
-      'Tự đặt',
-      ['Mục tiêu kỹ năng tự định nghĩa', 'Minh chứng trong portfolio', 'Kế hoạch luyện tập'],
-      ['Nghiên cứu vị trí', 'Bối cảnh ngành', 'Nguồn học phù hợp'],
-      ['Lập kế hoạch', 'Kiên trì', 'Chủ động nhận feedback'],
-      ['Notion', 'Portfolio', 'Ghi chú hướng dẫn', 'Bảng lộ trình']
-    );
-    setCustomRoles((current) => [...current, nextRole]);
-    setSelectedRoleId(nextRole.id);
-    setPath((current) => [...current, nextRole.id]);
   };
   const loginAs = (type, customPayload = null) => {
     const payload = customPayload ?? (type === 'admin'
@@ -677,7 +652,6 @@ function App() {
             clearPath={clearPath}
             savePath={savePath}
             savedPathName={savedPathName}
-            addCustomRole={addCustomRole}
             canBuildPath={canBuildPath}
             userMajorKey={userMajorKey}
             go={go}
@@ -853,12 +827,9 @@ function AuthPage({ authMode, setAuthMode, majors, selectedMajorKey, changeMajor
   );
 }
 
-function CareerMapPage({ majors, currentMajor, changeMajor, columns, levels, selectedColumn, selectedRole, selectedRoleId, setSelectedRoleId, path, pathRoles, allRoles, addToPath, removeFromPath, movePath, clearPath, savePath, savedPathName, addCustomRole, canBuildPath, userMajorKey, go }) {
+function CareerMapPage({ majors, currentMajor, changeMajor, columns, levels, selectedColumn, selectedRole, selectedRoleId, setSelectedRoleId, path, pathRoles, allRoles, addToPath, removeFromPath, movePath, clearPath, savePath, savedPathName, canBuildPath, userMajorKey, go }) {
   const [tab, setTab] = useState('skills');
   const [query, setQuery] = useState('');
-  const [customTitle, setCustomTitle] = useState('');
-  const [customTrack, setCustomTrack] = useState(columns[0]?.title ?? '');
-  const [customLevel, setCustomLevel] = useState('so-cap');
   const filteredRoleIds = useMemo(() => {
     const normalized = query.trim().toLowerCase();
     if (!normalized) return null;
@@ -890,7 +861,7 @@ function CareerMapPage({ majors, currentMajor, changeMajor, columns, levels, sel
         </div>
         <div className="major-switcher">
           {majors.map((major) => (
-            <button key={major.key} className={currentMajor.key === major.key ? 'active' : ''} onClick={() => { changeMajor(major.key); setCustomTrack(major.columns[0].title); }}>
+            <button key={major.key} className={currentMajor.key === major.key ? 'active' : ''} onClick={() => changeMajor(major.key)}>
               {major.short}
             </button>
           ))}
@@ -997,31 +968,6 @@ function CareerMapPage({ majors, currentMajor, changeMajor, columns, levels, sel
             <Plus size={18} />
             {canBuildPath ? 'Thêm vào lộ trình' : 'Chỉ xem tham khảo'}
           </button>
-          {canBuildPath && (
-            <div className="custom-role-card">
-              <p className="mono-label">Vị trí tự tạo</p>
-              <input value={customTitle} onChange={(event) => setCustomTitle(event.target.value)} placeholder="VD: AI Product Engineer" />
-              <div className="custom-role-row">
-                <select value={customTrack} onChange={(event) => setCustomTrack(event.target.value)}>
-                  {columns.map((column) => <option key={column.key} value={column.title}>{column.title}</option>)}
-                </select>
-                <select value={customLevel} onChange={(event) => setCustomLevel(event.target.value)}>
-                  {levels.map((level) => <option key={level.key} value={level.key}>{level.label}</option>)}
-                </select>
-              </div>
-              <button
-                className="ghost-action compact"
-                onClick={() => {
-                  if (!customTitle.trim()) return;
-                  addCustomRole(customTitle.trim(), customTrack, customLevel);
-                  setCustomTitle('');
-                }}
-              >
-                <Plus size={16} />
-                Thêm vị trí riêng
-              </button>
-            </div>
-          )}
         </aside>
       </div>
 

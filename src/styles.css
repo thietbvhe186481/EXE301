@@ -3266,28 +3266,6 @@ body:has(.app-shell.page-mentor) {
   color: #92400e;
 }
 
-.custom-role-card {
-  display: grid;
-  gap: 10px;
-  margin-top: 14px;
-  padding: 13px;
-  border: 1px solid var(--border-soft);
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.07);
-}
-
-.custom-role-card input,
-.custom-role-card select {
-  width: 100%;
-  min-width: 0;
-}
-
-.custom-role-row {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(120px, 0.7fr);
-  gap: 8px;
-}
-
 .vertical-roadmap i.disabled {
   opacity: 0.55;
   cursor: not-allowed;
@@ -3748,14 +3726,13 @@ b,
 .app-shell[data-theme="light"] .detail-stats .stat strong,
 .app-shell[data-theme="light"] .detail-stats .stat span,
 .app-shell[data-theme="light"] .path-card span,
-.app-shell[data-theme="light"] .custom-role-card .mono-label {
+.app-shell[data-theme="light"] .path-card .mono-label {
   color: #0f2f45 !important;
 }
 
 .app-shell[data-theme="light"] .major-card.active,
 .app-shell[data-theme="light"] .vertical-roadmap button.active,
-.app-shell[data-theme="light"] .path-card,
-.app-shell[data-theme="light"] .custom-role-card {
+.app-shell[data-theme="light"] .path-card {
   background: rgba(255, 255, 255, 0.9) !important;
 }
 
