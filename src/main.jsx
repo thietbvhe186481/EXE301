@@ -413,6 +413,45 @@ function isPremiumChallenge(challenge) {
   return ['Senior', 'Lead', 'Cao cấp'].includes(challenge?.difficulty) || Number(challenge?.xp ?? 0) >= 700;
 }
 
+function getChallengeGuide(challenge, currentMajor) {
+  const tags = challenge?.tags ?? [];
+  const baseDeliverables = {
+    dev: ['Repository có README chạy được', 'Link demo hoặc API docs', 'Video walkthrough luồng chính', 'Ghi chú trade-off kỹ thuật'],
+    mkt: ['Slide chiến dịch/case study', 'Bảng KPI và ngân sách', 'File nghiên cứu/persona', 'Báo cáo đo lường kết quả'],
+    design: ['File Figma có prototype', 'Case study giải thích quyết định', 'Design system/component states', 'Ảnh/video demo luồng chính']
+  };
+  const guideByMajor = {
+    dev: {
+      techTitle: 'Công nghệ và kiến trúc bắt buộc',
+      technologies: [...tags, 'Auth flow', 'Data model', 'Validation', 'Deploy/Demo'],
+      skills: ['Tách module rõ ràng', 'Xử lý trạng thái loading/error/empty', 'Thiết kế luồng dữ liệu', 'Viết README để người khác chạy được'],
+      businessRules: challenge?.track === 'Mobile'
+        ? ['Người dùng đăng nhập mới được đặt lịch', 'Khung giờ đã được đặt không thể đặt trùng', 'Lịch có trạng thái: pending, confirmed, cancelled, completed', 'Người dùng xem được lịch sử và có thể hủy lịch trước giờ hẹn', 'Form phải validate ngày, giờ, ghi chú và thông tin liên hệ']
+        : ['Phân quyền người dùng theo vai trò', 'Dữ liệu đầu vào phải được validate trước khi lưu', 'Không làm mất dữ liệu khi refresh hoặc lỗi mạng', 'Có trạng thái rỗng và thông báo lỗi để người dùng biết cần làm gì', 'Luôn có minh chứng cho hành động quan trọng'],
+      steps: ['Phân tích user flow và vẽ sơ đồ màn hình/API', 'Tạo schema dữ liệu và rule validation', 'Làm luồng chính trước, sau đó bổ sung edge case', 'Test với 5-8 tình huống thật', 'Viết README, chụp ảnh và quay demo ngắn'],
+      acceptance: ['Chạy được từ đầu theo hướng dẫn', 'Luôn có feedback khi thành công/thất bại', 'Code chia component/module để review', 'Có dữ liệu mẫu cho mentor test nhanh']
+    },
+    mkt: {
+      techTitle: 'Công cụ và tài liệu cần có',
+      technologies: [...tags, 'Google Sheets', 'Slides', 'GA4/Looker Studio', 'Persona canvas'],
+      skills: ['Phân tích insight khách hàng', 'Đặt KPI đo được', 'Lập timeline và ngân sách', 'Giải thích lý do chọn kênh'],
+      businessRules: ['Mỗi chiến dịch phải có mục tiêu kinh doanh rõ', 'KPI phải gắn với funnel: awareness, activation, conversion, retention', 'Ngân sách cần chia theo kênh và có lý do ưu tiên', 'Nội dung phải khớp persona và pain point', 'Báo cáo phải có phương án tối ưu sau khi có dữ liệu'],
+      steps: ['Chọn sản phẩm và nhóm khách hàng mục tiêu', 'Viết persona, insight và thông điệp chính', 'Thiết kế funnel, kênh triển khai và lịch nội dung', 'Lập bảng KPI, ngân sách, rủi ro', 'Đóng gói thành slide/case study có số liệu'],
+      acceptance: ['Có bảng KPI trước/sau', 'Có ít nhất 3 nội dung mẫu', 'Có timeline triển khai theo ngày/tuần', 'Có đề xuất hành động nếu kết quả thấp']
+    },
+    design: {
+      techTitle: 'Công cụ và artifact thiết kế',
+      technologies: [...tags, 'Figma', 'Prototype', 'Design system', 'Usability notes'],
+      skills: ['Xây user flow', 'Thiết kế component có state', 'Giải thích visual hierarchy', 'Kiểm tra tính dễ dùng'],
+      businessRules: ['Màn hình phải giải quyết đúng vấn đề người dùng', 'Mỗi CTA chính cần có trạng thái mặc định, hover, disabled/loading', 'Prototype phải bấm được luồng chính', 'Thiết kế cần tính đến empty/error/success state', 'Case study phải nói rõ trade-off và lý do ra quyết định'],
+      steps: ['Xác định problem statement và user goal', 'Vẽ flow và wireframe trước khi làm UI', 'Tạo component/token và các state quan trọng', 'Làm prototype, test nhanh với 3-5 tình huống', 'Viết case study gồm problem, process, result'],
+      acceptance: ['Prototype có thể click hết luồng chính', 'Có component states và responsive note', 'Có before/after hoặc lý do cải tiến', 'File Figma sắp xếp để mentor review']
+    }
+  };
+  const selected = guideByMajor[currentMajor?.key] ?? guideByMajor.dev;
+  return { ...selected, deliverables: baseDeliverables[currentMajor?.key] ?? baseDeliverables.dev };
+}
+
 function formatVnd(value) {
   return `${Number(value || 0).toLocaleString('vi-VN')}đ`;
 }
@@ -1312,6 +1351,7 @@ function JoinChallengePage({ challenge, currentMajor, joined, submission, joinCh
   const isReviewed = submission?.status === 'reviewed';
   const isRejected = submission?.status === 'rejected';
   const locked = isPremiumChallenge(challenge) && !isPremium;
+  const guide = getChallengeGuide(challenge, currentMajor);
   return (
     <section className="content-page two-column">
       <div className="mission-panel">
@@ -1334,6 +1374,55 @@ function JoinChallengePage({ challenge, currentMajor, joined, submission, joinCh
           <div className="requirement-item" key={item}><ShieldCheck size={18} /><span>{item}</span></div>
         ))}
         <h3>Rubric chấm điểm</h3>
+        <div className="challenge-deep-grid">
+          <article className="challenge-detail-card">
+            <p className="mono-label">Technology requirements</p>
+            <h3>{guide.techTitle}</h3>
+            <div className="tech-stack-list">
+              {guide.technologies.map((item) => <span key={item}>{item}</span>)}
+            </div>
+          </article>
+          <article className="challenge-detail-card">
+            <p className="mono-label">Skills evidence</p>
+            <h3>Kỹ năng cần chứng minh</h3>
+            {guide.skills.map((item) => (
+              <div className="requirement-item compact" key={item}><BadgeCheck size={16} /><span>{item}</span></div>
+            ))}
+          </article>
+          <article className="challenge-detail-card wide">
+            <p className="mono-label">Business logic</p>
+            <h3>Nghiệp vụ thực tế phải xử lý</h3>
+            <div className="business-rule-list">
+              {guide.businessRules.map((item, index) => (
+                <div className="business-rule-item" key={item}>
+                  <b>{String(index + 1).padStart(2, '0')}</b>
+                  <span>{item}</span>
+                </div>
+              ))}
+            </div>
+          </article>
+          <article className="challenge-detail-card">
+            <p className="mono-label">How to solve</p>
+            <h3>Quy trình làm bài gợi ý</h3>
+            <ol className="process-list">
+              {guide.steps.map((item) => <li key={item}>{item}</li>)}
+            </ol>
+          </article>
+          <article className="challenge-detail-card">
+            <p className="mono-label">Acceptance</p>
+            <h3>Tiêu chí nghiệm thu</h3>
+            {guide.acceptance.map((item) => (
+              <div className="requirement-item compact" key={item}><Check size={16} /><span>{item}</span></div>
+            ))}
+          </article>
+          <article className="challenge-detail-card wide">
+            <p className="mono-label">Submission package</p>
+            <h3>Minh chứng cần chuẩn bị khi nộp</h3>
+            <div className="deliverable-grid">
+              {guide.deliverables.map((item) => <span key={item}><FileUp size={15} />{item}</span>)}
+            </div>
+          </article>
+        </div>
         <div className="rubric-grid">
           {['Đúng yêu cầu', 'Chất lượng trình bày', 'Minh chứng rõ ràng', 'Khả năng đưa vào portfolio'].map((item, index) => (
             <article key={item}>

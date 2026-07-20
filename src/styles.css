@@ -2489,6 +2489,142 @@ body:has(.portfolio-header) .profile-deep-grid {
   overflow: hidden;
 }
 
+body:has(.mission-panel) {
+  overflow-y: auto !important;
+}
+
+body:has(.mission-panel) .app-shell,
+body:has(.mission-panel) main {
+  height: auto !important;
+  min-height: 100vh !important;
+  overflow: visible !important;
+}
+
+body:has(.mission-panel) .content-page.two-column {
+  align-items: start;
+  height: auto !important;
+  min-height: calc(100vh - 64px);
+  overflow: visible !important;
+  padding-bottom: 40px;
+}
+
+body:has(.mission-panel) .side-card {
+  position: sticky;
+  top: 92px;
+}
+
+.challenge-deep-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 18px 0 22px;
+}
+
+.challenge-detail-card {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid var(--border-soft);
+  border-radius: 10px;
+  background: var(--surface-soft);
+}
+
+.challenge-detail-card.wide {
+  grid-column: 1 / -1;
+}
+
+.challenge-detail-card h3 {
+  margin: 0;
+  font-size: clamp(20px, 2vw, 26px);
+}
+
+.tech-stack-list,
+.deliverable-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tech-stack-list span,
+.deliverable-grid span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 34px;
+  padding: 7px 10px;
+  border: 1px solid rgba(14, 116, 144, 0.2);
+  border-radius: 999px;
+  background: rgba(224, 242, 254, 0.78);
+  color: #075985;
+  font-weight: 900;
+}
+
+.requirement-item.compact {
+  min-height: 42px;
+  padding: 9px 10px;
+}
+
+.business-rule-list {
+  display: grid;
+  gap: 8px;
+}
+
+.business-rule-item {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: 10px;
+  padding: 11px;
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.58);
+}
+
+.business-rule-item b {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #06b6d4, #2563eb);
+  color: #fff;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 13px;
+}
+
+.business-rule-item span {
+  color: var(--muted-strong);
+  line-height: 1.45;
+}
+
+.process-list {
+  display: grid;
+  gap: 9px;
+  margin: 0;
+  padding-left: 22px;
+}
+
+.process-list li {
+  color: var(--muted-strong);
+  line-height: 1.45;
+  padding-left: 2px;
+}
+
+@media (max-width: 960px) {
+  body:has(.mission-panel) .content-page.two-column {
+    grid-template-columns: 1fr;
+  }
+
+  body:has(.mission-panel) .side-card {
+    position: static;
+  }
+
+  .challenge-deep-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .portfolio-body,
 .profile-deep-grid {
   overflow: visible;
@@ -3923,6 +4059,8 @@ textarea::placeholder {
   .auth-helper,
   .pricing-card,
   .premium-current,
+  .challenge-detail-card,
+  .business-rule-item,
   .submit-rule-card,
   .profile-summary article,
   .resource-card,
@@ -3971,6 +4109,8 @@ textarea::placeholder {
   .auth-helper,
   .pricing-card,
   .premium-current,
+  .challenge-detail-card,
+  .business-rule-item,
   .submit-rule-card,
   .profile-summary article,
   .resource-card,
@@ -4094,7 +4234,8 @@ html[data-theme="dark"] body {
 .app-shell[data-theme="dark"] .login-rule-box,
 .app-shell[data-theme="dark"] .auth-helper,
 .app-shell[data-theme="dark"] .pricing-card,
-.app-shell[data-theme="dark"] .premium-current {
+.app-shell[data-theme="dark"] .premium-current,
+.app-shell[data-theme="dark"] .challenge-detail-card {
   border-color: rgba(125, 211, 252, 0.2) !important;
   background:
     linear-gradient(180deg, rgba(15, 35, 59, 0.88), rgba(10, 25, 44, 0.82)) !important;
@@ -4110,6 +4251,7 @@ html[data-theme="dark"] body {
 .app-shell[data-theme="dark"] .path-card,
 .app-shell[data-theme="dark"] .admin-row,
 .app-shell[data-theme="dark"] .activity-row,
+.app-shell[data-theme="dark"] .business-rule-item,
 .app-shell[data-theme="dark"] .empty-state {
   border-color: rgba(125, 211, 252, 0.18) !important;
   background: rgba(17, 42, 70, 0.7) !important;
