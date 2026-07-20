@@ -10,6 +10,8 @@ import {
   ChevronsUp,
   CircleDollarSign,
   Compass,
+  CreditCard,
+  Crown,
   FileUp,
   Filter,
   Github,
@@ -49,6 +51,7 @@ const flow = [
   { id: 'submit', label: 'Nộp bài', icon: FileUp },
   { id: 'feedback', label: 'Góp ý', icon: MessageSquareText },
   { id: 'portfolio', label: 'Hồ sơ', icon: UserRound },
+  { id: 'premium', label: 'Premium', icon: Crown },
   { id: 'mentor', label: 'Mentor', icon: GraduationCap },
   { id: 'admin', label: 'Admin', icon: ShieldCheck }
 ];
@@ -240,6 +243,7 @@ const demoUsers = [
     careerGoal: 'Senior Architect',
     path: ['dev-frontend-so-cap', 'dev-fullstack-trung-cap', 'dev-architecture-cao-cap'],
     joinedChallengeIds: ['dev-api', 'dev-dashboard', 'dev-devops'],
+    subscription: { planId: 'free', planName: 'Free', status: 'free', expiresAt: null },
     stats: { completedChallenges: 6, mentorRating: 4.8, portfolioProjects: 4, verifiedSkills: 18 },
     portfolio: {
       headline: 'Developer Portfolio - Backend/API oriented',
@@ -257,7 +261,8 @@ const demoUsers = [
     selectedMajorKey: 'dev',
     careerGoal: 'Lead Backend',
     path: ['dev-backend-so-cap', 'dev-devops-trung-cap', 'dev-architecture-cao-cap'],
-    joinedChallengeIds: ['dev-api', 'dev-devops']
+    joinedChallengeIds: ['dev-api', 'dev-devops'],
+    subscription: { planId: 'premium-month', planName: 'Premium Tháng', status: 'active', expiresAt: '10/08/2026' }
   },
   {
     id: 'student-design-ui',
@@ -267,7 +272,8 @@ const demoUsers = [
     selectedMajorKey: 'design',
     careerGoal: 'Senior Product Designer',
     path: ['design-ui-so-cap', 'design-product-trung-cap', 'design-brand-cao-cap'],
-    joinedChallengeIds: ['design-ui', 'design-product']
+    joinedChallengeIds: ['design-ui', 'design-product'],
+    subscription: { planId: 'premium-year', planName: 'Premium Năm', status: 'active', expiresAt: '15/06/2027' }
   },
   {
     id: 'student-mkt-seo',
@@ -277,7 +283,8 @@ const demoUsers = [
     selectedMajorKey: 'mkt',
     careerGoal: 'Growth Lead',
     path: ['mkt-seo-so-cap', 'mkt-content-trung-cap', 'mkt-growth-cao-cap'],
-    joinedChallengeIds: ['mkt-seo', 'mkt-ads']
+    joinedChallengeIds: ['mkt-seo', 'mkt-ads'],
+    subscription: { planId: 'free', planName: 'Free', status: 'free', expiresAt: null }
   }
 ];
 
@@ -358,6 +365,58 @@ const demoCategories = [
   { id: 'cat-mkt', name: 'Digital Marketing', majorKey: 'mkt', description: 'SEO, content, paid ads, CRM, brand and growth.' }
 ];
 
+const premiumPlans = [
+  {
+    id: 'premium-month',
+    name: 'Premium Tháng',
+    price: 79000,
+    displayPrice: '79.000đ',
+    duration: '1 tháng',
+    highlight: 'Dùng thử nghiêm túc',
+    description: 'Phù hợp sinh viên muốn thử mentor feedback và mở khóa thêm challenge.',
+    features: ['10 challenge/tháng', 'Mentor feedback cơ bản', 'Lưu nhiều lộ trình', 'Xem đầy đủ skills/knowledge/tools'],
+    limits: ['Chưa có public portfolio nâng cao', 'Chưa ưu tiên mentor chuyên ngành']
+  },
+  {
+    id: 'premium-quarter',
+    name: 'Premium 3 Tháng',
+    price: 199000,
+    displayPrice: '199.000đ',
+    duration: '3 tháng',
+    badge: 'Được chọn nhiều nhất',
+    highlight: 'Hoàn thiện portfolio',
+    description: 'Tối ưu cho một chu kỳ xây portfolio có review, chỉnh sửa và nộp lại.',
+    features: ['Không giới hạn challenge trong 3 tháng', 'Mentor review ưu tiên', 'Nộp lại nhiều lần', 'Gợi ý bài tập theo career goal', 'Export portfolio template đẹp'],
+    limits: ['Chưa có báo cáo tiến độ dài hạn']
+  },
+  {
+    id: 'premium-year',
+    name: 'Premium Năm',
+    price: 499000,
+    displayPrice: '499.000đ',
+    duration: '12 tháng',
+    highlight: 'Theo lộ trình dài hạn',
+    description: 'Dành cho sinh viên theo một ngành đến khi có portfolio đủ mạnh để ứng tuyển.',
+    features: ['Không giới hạn toàn bộ', 'Public portfolio chuyên nghiệp', 'Báo cáo tiến độ theo tháng', 'Badge xác thực kỹ năng', 'Ưu tiên mentor theo chuyên ngành', 'Chứng nhận hoàn thành lộ trình'],
+    limits: []
+  }
+];
+
+const demoPremiumSubscriptions = [
+  { id: 'sub-premium-1', userId: 'demo-student', userName: 'Quang Nguyễn', planId: 'premium-quarter', planName: 'Premium 3 Tháng', status: 'active', startedAt: '01/07/2026', expiresAt: '01/10/2026', revenue: 199000 },
+  { id: 'sub-premium-2', userId: 'student-dev-backend', userName: 'Bao Le', planId: 'premium-month', planName: 'Premium Tháng', status: 'active', startedAt: '10/07/2026', expiresAt: '10/08/2026', revenue: 79000 },
+  { id: 'sub-premium-3', userId: 'student-design-ui', userName: 'Oanh Do', planId: 'premium-year', planName: 'Premium Năm', status: 'active', startedAt: '15/06/2026', expiresAt: '15/06/2027', revenue: 499000 },
+  { id: 'sub-premium-4', userId: 'student-mkt-seo', userName: 'Khanh Tran', planId: 'free', planName: 'Free', status: 'free', startedAt: '-', expiresAt: '-', revenue: 0 }
+];
+
+function isPremiumChallenge(challenge) {
+  return ['Senior', 'Lead', 'Cao cấp'].includes(challenge?.difficulty) || Number(challenge?.xp ?? 0) >= 700;
+}
+
+function formatVnd(value) {
+  return `${Number(value || 0).toLocaleString('vi-VN')}đ`;
+}
+
 const statusLabels = {
   draft: 'Bản nháp',
   submitted: 'Đang review',
@@ -398,6 +457,8 @@ function App() {
     mentors: demoMentors,
     mentorFeedback: demoMentorFeedback,
     submissions: demoSubmissions,
+    premiumPlans,
+    premiumSubscriptions: demoPremiumSubscriptions,
     categories: demoCategories,
     resources: [],
     notifications: [
@@ -450,6 +511,30 @@ function App() {
   const submissionList = appData?.submissions ?? [];
   const feedbackList = appData?.mentorFeedback ?? [];
   const userMajorKey = currentRole === 'student' ? (currentUser.user.selectedMajorKey ?? selectedMajorKey) : null;
+  const activeSubscription = currentRole === 'student'
+    ? (currentUser.user.subscription ?? { planId: 'free', planName: 'Free', status: 'free' })
+    : { planId: 'free', planName: 'Free', status: 'free' };
+  const isPremium = activeSubscription.status === 'active' && activeSubscription.planId !== 'free';
+  const upgradePlan = (plan) => {
+    const expiresAt = plan.id === 'premium-month' ? '20/08/2026' : plan.id === 'premium-quarter' ? '20/10/2026' : '20/07/2027';
+    setCurrentUser((current) => {
+      if (!current?.user) return current;
+      return {
+        ...current,
+        user: {
+          ...current.user,
+          subscription: {
+            planId: plan.id,
+            planName: plan.name,
+            status: 'active',
+            startedAt: '20/07/2026',
+            expiresAt
+          }
+        }
+      };
+    });
+    setAdminNotice(`Đã nâng cấp ${plan.name}. Các tính năng Premium đã được mở khóa.`);
+  };
 
   useEffect(() => {
     if (!appData?.demoUser) return;
@@ -601,7 +686,7 @@ function App() {
   useEffect(() => {
     const activeRole = currentUser?.type ?? currentUser?.user?.role;
     const rolePages = {
-      student: ['roadmap', 'hub', 'join', 'submit', 'feedback', 'portfolio'],
+      student: ['roadmap', 'hub', 'join', 'submit', 'feedback', 'portfolio', 'premium'],
       mentor: ['mentor'],
       admin: ['admin']
     };
@@ -813,13 +898,15 @@ function App() {
             joinedChallengeIds={joinedChallengeIds}
             submissionStatus={submissionStatus}
             joinChallenge={joinChallenge}
+            isPremium={isPremium}
             go={go}
           />
         )}
-        {page === 'join' && <JoinChallengePage challenge={selectedChallenge} currentMajor={currentMajor} joined={joinedChallengeIds.includes(selectedChallenge.id)} submission={submissionStatus[selectedChallenge.id]} joinChallenge={joinChallenge} go={go} />}
-        {page === 'submit' && <SubmitProjectPage challenge={selectedChallenge} currentMajor={currentMajor} joined={joinedChallengeIds.includes(selectedChallenge.id)} submission={submissionStatus[selectedChallenge.id]} joinChallenge={joinChallenge} saveDraft={saveDraft} submitChallenge={submitChallenge} submissionRulesData={rulesByMajor} go={go} />}
+        {page === 'join' && <JoinChallengePage challenge={selectedChallenge} currentMajor={currentMajor} joined={joinedChallengeIds.includes(selectedChallenge.id)} submission={submissionStatus[selectedChallenge.id]} joinChallenge={joinChallenge} isPremium={isPremium} go={go} />}
+        {page === 'submit' && <SubmitProjectPage challenge={selectedChallenge} currentMajor={currentMajor} joined={joinedChallengeIds.includes(selectedChallenge.id)} submission={submissionStatus[selectedChallenge.id]} joinChallenge={joinChallenge} saveDraft={saveDraft} submitChallenge={submitChallenge} submissionRulesData={rulesByMajor} isPremium={isPremium} go={go} />}
         {page === 'feedback' && <MentorFeedbackPage go={go} challenge={selectedChallenge} submission={submissionList.find((item) => item.userId === userId && item.challengeId === selectedChallenge.id)} feedback={feedbackList.find((item) => item.userId === userId && item.challengeId === selectedChallenge.id)} createFeedback={() => createFeedback(selectedChallenge.id, userId)} />}
-        {page === 'portfolio' && <PortfolioPage pathRoles={pathRoles} currentMajor={currentMajor} go={go} demoUser={demoUser} apiStatus={apiStatus} submissions={submissionList} challenges={challengeList} updatePortfolio={updatePortfolio} />}
+        {page === 'portfolio' && <PortfolioPage pathRoles={pathRoles} currentMajor={currentMajor} go={go} demoUser={demoUser} apiStatus={apiStatus} submissions={submissionList} challenges={challengeList} updatePortfolio={updatePortfolio} isPremium={isPremium} />}
+        {page === 'premium' && <PremiumPage plans={premiumPlans} activeSubscription={activeSubscription} upgradePlan={upgradePlan} go={go} />}
         {page === 'mentor' && <MentorPage apiStatus={apiStatus} data={appData} currentUser={currentUser} refreshData={refreshData} createFeedback={createFeedback} setNotice={setAdminNotice} notice={adminNotice} />}
         {page === 'admin' && <AdminPage apiStatus={apiStatus} data={appData} notice={adminNotice} currentUser={currentUser} refreshData={refreshData} setAdminNotice={setAdminNotice} createFeedback={createFeedback} />}
       </main>
@@ -830,7 +917,7 @@ function App() {
 function Header({ page, go, currentUser, theme, setTheme, logout }) {
   const currentRole = currentUser?.type ?? currentUser?.user?.role;
   const roleFlow = currentRole === 'student'
-    ? flow.filter((item) => ['roadmap', 'hub', 'join', 'submit', 'feedback', 'portfolio'].includes(item.id))
+    ? flow.filter((item) => ['roadmap', 'hub', 'join', 'submit', 'feedback', 'portfolio', 'premium'].includes(item.id))
     : currentRole === 'mentor'
       ? flow.filter((item) => item.id === 'mentor')
       : currentRole === 'admin'
@@ -1167,7 +1254,7 @@ function CareerMapPage({ majors, currentMajor, changeMajor, columns, levels, sel
   );
 }
 
-function ChallengeHubPage({ currentMajor, activeTrack, setActiveTrack, visibleChallenges, setSelectedChallengeId, joinedChallengeIds, submissionStatus, joinChallenge, go }) {
+function ChallengeHubPage({ currentMajor, activeTrack, setActiveTrack, visibleChallenges, setSelectedChallengeId, joinedChallengeIds, submissionStatus, joinChallenge, isPremium, go }) {
   const tracks = ['Tất cả', ...currentMajor.columns.map((item) => item.title)];
   return (
     <section className="content-page">
@@ -1186,14 +1273,16 @@ function ChallengeHubPage({ currentMajor, activeTrack, setActiveTrack, visibleCh
         {visibleChallenges.map((challenge) => {
           const joined = joinedChallengeIds.includes(challenge.id);
           const submission = submissionStatus[challenge.id];
+          const locked = isPremiumChallenge(challenge) && !isPremium;
           return (
-            <article className="challenge-card" key={challenge.id}>
+            <article className={`challenge-card ${locked ? 'premium-locked-card' : ''}`} key={challenge.id}>
               <div className="card-topline">
                 <span>{challenge.track}</span>
-                <strong>{submission?.status ? statusLabels[submission.status] ?? submission.status : joined ? 'Đã tham gia' : `${challenge.xp} XP`}</strong>
+                <strong>{locked ? 'Premium' : submission?.status ? statusLabels[submission.status] ?? submission.status : joined ? 'Đã tham gia' : `${challenge.xp} XP`}</strong>
               </div>
               <h2>{challenge.title}</h2>
               <p>{challenge.summary}</p>
+              {locked && <div className="status-banner premium-banner"><Crown size={16} /> Challenge nâng cao cần Premium để nộp bài và nhận mentor review.</div>}
               <div className="tag-row">{challenge.tags.map((tag) => <span key={tag}>{tag}</span>)}</div>
               <div className="challenge-meta">
                 <span><GraduationCap size={16} /> {challenge.mentor}</span>
@@ -1201,12 +1290,12 @@ function ChallengeHubPage({ currentMajor, activeTrack, setActiveTrack, visibleCh
                 <span><Sparkles size={16} /> {challenge.due}</span>
               </div>
               <div className="card-actions">
-                <button className="ghost-action compact" onClick={() => { setSelectedChallengeId(challenge.id); joinChallenge(challenge.id); go('join'); }}>
-                  {joined ? 'Xem chi tiết' : 'Tham gia'}
+                <button className="ghost-action compact" onClick={() => { setSelectedChallengeId(challenge.id); if (!locked) joinChallenge(challenge.id); go(locked ? 'premium' : 'join'); }}>
+                  {locked ? 'Xem gói' : joined ? 'Xem chi tiết' : 'Tham gia'}
                   <Rocket size={16} />
                 </button>
-                <button className="primary-action compact" onClick={() => { setSelectedChallengeId(challenge.id); joinChallenge(challenge.id); go(submission?.status === 'reviewed' ? 'feedback' : 'submit'); }}>
-                  {submission?.status === 'reviewed' ? 'Xem feedback' : submission?.status === 'submitted' ? 'Xem bài nộp' : 'Nộp bài'}
+                <button className="primary-action compact" onClick={() => { setSelectedChallengeId(challenge.id); if (locked) { go('premium'); return; } joinChallenge(challenge.id); go(submission?.status === 'reviewed' ? 'feedback' : 'submit'); }}>
+                  {locked ? 'Mở khóa Premium' : submission?.status === 'reviewed' ? 'Xem feedback' : submission?.status === 'submitted' ? 'Xem bài nộp' : 'Nộp bài'}
                   <Send size={16} />
                 </button>
               </div>
@@ -1218,10 +1307,11 @@ function ChallengeHubPage({ currentMajor, activeTrack, setActiveTrack, visibleCh
   );
 }
 
-function JoinChallengePage({ challenge, currentMajor, joined, submission, joinChallenge, go }) {
+function JoinChallengePage({ challenge, currentMajor, joined, submission, joinChallenge, isPremium, go }) {
   const isSubmitted = submission?.status === 'submitted';
   const isReviewed = submission?.status === 'reviewed';
   const isRejected = submission?.status === 'rejected';
+  const locked = isPremiumChallenge(challenge) && !isPremium;
   return (
     <section className="content-page two-column">
       <div className="mission-panel">
@@ -1262,8 +1352,9 @@ function JoinChallengePage({ challenge, currentMajor, joined, submission, joinCh
         {isSubmitted && <div className="status-banner"><Check size={17} /> Đã nộp lúc {submission.updatedAt}. Có thể xem góp ý mentor.</div>}
         {isRejected && <div className="status-banner warning"><X size={17} /> Mentor yêu cầu bổ sung. Hãy mở form nộp bài để cập nhật phiên bản mới.</div>}
         {isReviewed && <div className="status-banner"><BadgeCheck size={17} /> Bài đã được review. Có thể mở góp ý để cập nhật portfolio.</div>}
-        <button className="primary-action" onClick={() => { joinChallenge(challenge.id); go(isReviewed ? 'feedback' : 'submit'); }}>
-          {isReviewed ? 'Xem bài và feedback' : isRejected ? 'Nộp lại bài' : isSubmitted ? 'Xem bài đã nộp' : joined ? 'Tiếp tục nộp bài' : 'Tham gia và mở form nộp'}
+        {locked && <div className="status-banner premium-banner"><Crown size={17} /> Gói Free chỉ xem thử thách nâng cao. Nâng cấp để tham gia, nộp bài và nhận mentor feedback.</div>}
+        <button className="primary-action" onClick={() => { if (locked) { go('premium'); return; } joinChallenge(challenge.id); go(isReviewed ? 'feedback' : 'submit'); }}>
+          {locked ? 'Nâng cấp Premium' : isReviewed ? 'Xem bài và feedback' : isRejected ? 'Nộp lại bài' : isSubmitted ? 'Xem bài đã nộp' : joined ? 'Tiếp tục nộp bài' : 'Tham gia và mở form nộp'}
           <Send size={17} />
         </button>
       </aside>
@@ -1271,12 +1362,13 @@ function JoinChallengePage({ challenge, currentMajor, joined, submission, joinCh
   );
 }
 
-function SubmitProjectPage({ challenge, currentMajor, joined, submission, joinChallenge, saveDraft, submitChallenge, submissionRulesData, go }) {
+function SubmitProjectPage({ challenge, currentMajor, joined, submission, joinChallenge, saveDraft, submitChallenge, submissionRulesData, isPremium, go }) {
   const rules = submissionRulesData[currentMajor.key] ?? submissionRules[currentMajor.key];
   const isSubmitted = submission?.status === 'submitted';
   const isReviewed = submission?.status === 'reviewed';
   const isDraft = submission?.status === 'draft';
   const isRejected = submission?.status === 'rejected';
+  const locked = isPremiumChallenge(challenge) && !isPremium;
   const [form, setForm] = useState({
     primaryLink: submission?.primaryLink ?? '',
     secondaryLink: submission?.secondaryLink ?? '',
@@ -1319,12 +1411,17 @@ function SubmitProjectPage({ challenge, currentMajor, joined, submission, joinCh
         {isSubmitted && <div className="status-banner"><Check size={17} /> Đã nộp sản phẩm lúc {submission.updatedAt}. Góp ý từ người hướng dẫn đã sẵn sàng để demo.</div>}
         {isRejected && <div className="status-banner warning"><X size={17} /> Mentor yêu cầu bổ sung minh chứng. Cập nhật link hoặc ghi chú rồi nộp lại.</div>}
         {isReviewed && <div className="status-banner"><Check size={17} /> Mentor đã nhận xét bài này. Mở trang góp ý để cập nhật portfolio.</div>}
+        {locked && <div className="status-banner premium-banner"><Crown size={17} /> Đây là challenge nâng cao. Free có thể xem yêu cầu, Premium mới được nộp bài và nhận review.</div>}
         <div className="submit-actions">
-          <button className="ghost-action" onClick={() => { joinChallenge(challenge.id); saveDraft(challenge.id, form); }}>
+          <button className="ghost-action" disabled={locked} onClick={() => { joinChallenge(challenge.id); saveDraft(challenge.id, form); }}>
             <Save size={17} />
             Lưu bản nháp
           </button>
           <button className="primary-action" onClick={() => {
+            if (locked) {
+              go('premium');
+              return;
+            }
             if (isReviewed) {
               go('feedback');
               return;
@@ -1333,7 +1430,7 @@ function SubmitProjectPage({ challenge, currentMajor, joined, submission, joinCh
             submitChallenge(challenge.id, form);
             go('feedback');
           }}>
-            {isReviewed ? 'Xem góp ý mentor' : isRejected ? 'Nộp lại cho mentor' : 'Gửi người hướng dẫn góp ý'}
+            {locked ? 'Nâng cấp để nộp bài' : isReviewed ? 'Xem góp ý mentor' : isRejected ? 'Nộp lại cho mentor' : 'Gửi người hướng dẫn góp ý'}
             <Send size={17} />
           </button>
         </div>
@@ -1391,7 +1488,7 @@ function MentorFeedbackPage({ go, challenge, submission, feedback, createFeedbac
   );
 }
 
-function PortfolioPage({ pathRoles, currentMajor, go, demoUser, apiStatus, submissions, challenges, updatePortfolio }) {
+function PortfolioPage({ pathRoles, currentMajor, go, demoUser, apiStatus, submissions, challenges, updatePortfolio, isPremium }) {
   const mainSpecs = currentMajor.columns.slice(0, 5);
   const stats = demoUser?.stats ?? { completedChallenges: 6, mentorRating: 4.8, portfolioProjects: 4, verifiedSkills: 18 };
   const profileName = demoUser?.name ?? 'Quang Nguyễn';
@@ -1414,7 +1511,17 @@ function PortfolioPage({ pathRoles, currentMajor, go, demoUser, apiStatus, submi
           <Save size={16} />
           Lưu portfolio
         </button>
+        <button className="primary-action compact" onClick={() => go(isPremium ? 'portfolio' : 'premium')}>
+          <Crown size={16} />
+          {isPremium ? 'Public portfolio' : 'Mở khóa public portfolio'}
+        </button>
       </div>
+      {!isPremium && (
+        <div className="status-banner premium-banner">
+          <Crown size={17} />
+          Free lưu hồ sơ nội bộ. Premium mở public portfolio, badge xác thực kỹ năng và template xuất bản chuyên nghiệp.
+        </div>
+      )}
       <div className="profile-summary">
         <article>
           <p className="mono-label">Career goal</p>
@@ -1486,6 +1593,81 @@ function PortfolioPage({ pathRoles, currentMajor, go, demoUser, apiStatus, submi
             </div>
           ))}
         </article>
+      </div>
+    </section>
+  );
+}
+
+function PremiumPage({ plans, activeSubscription, upgradePlan, go }) {
+  const revenue = demoPremiumSubscriptions.reduce((sum, item) => sum + item.revenue, 0);
+  const isActive = (plan) => activeSubscription?.status === 'active' && activeSubscription?.planId === plan.id;
+  return (
+    <section className="content-page premium-page">
+      <div className="section-heading inline">
+        <div>
+          <p className="mono-label">Premium business model</p>
+          <h1>Nâng cấp để có mentor feedback và portfolio xin việc</h1>
+          <p>Free giúp khám phá nghề nghiệp. Premium mở khóa mentor review sâu, challenge nâng cao, nhiều lần nộp lại và public portfolio chuyên nghiệp.</p>
+        </div>
+        <div className="premium-current">
+          <Crown size={20} />
+          <div>
+            <strong>{activeSubscription?.planName ?? 'Free'}</strong>
+            <span>{activeSubscription?.status === 'active' ? `Hết hạn: ${activeSubscription.expiresAt}` : 'Đang dùng bản miễn phí'}</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="pricing-grid">
+        {plans.map((plan) => (
+          <article className={`pricing-card ${plan.badge ? 'featured' : ''}`} key={plan.id}>
+            {plan.badge && <span className="plan-badge">{plan.badge}</span>}
+            <p className="mono-label">{plan.highlight}</p>
+            <h2>{plan.name}</h2>
+            <div className="price-line">
+              <strong>{plan.displayPrice}</strong>
+              <span>{plan.duration}</span>
+            </div>
+            <p>{plan.description}</p>
+            <div className="plan-feature-list">
+              {plan.features.map((item) => (
+                <div className="activity-row" key={item}><BadgeCheck size={16} /><span>{item}</span></div>
+              ))}
+            </div>
+            <button className={isActive(plan) ? 'ghost-action' : 'primary-action'} onClick={() => upgradePlan(plan)}>
+              {isActive(plan) ? 'Đang sử dụng' : 'Nâng cấp gói này'}
+              <CreditCard size={17} />
+            </button>
+          </article>
+        ))}
+      </div>
+
+      <div className="admin-grid compact">
+        <article className="admin-panel">
+          <p className="mono-label">Free</p>
+          <h2>Khám phá trước khi trả phí</h2>
+          {['Xem Career Map cơ bản', 'Chọn 1 ngành chính', 'Làm challenge cơ bản', 'Lưu portfolio nội bộ'].map((item) => (
+            <div className="activity-row" key={item}><Check size={16} /><span>{item}</span></div>
+          ))}
+        </article>
+        <article className="admin-panel">
+          <p className="mono-label">Premium</p>
+          <h2>Lý do người dùng trả tiền</h2>
+          {['Mentor feedback thật', 'Challenge nâng cao', 'Nộp lại nhiều lần', 'Public portfolio chuyên nghiệp', 'Badge xác thực kỹ năng'].map((item) => (
+            <div className="activity-row" key={item}><Crown size={16} /><span>{item}</span></div>
+          ))}
+        </article>
+        <article className="admin-panel">
+          <p className="mono-label">Demo revenue</p>
+          <h2>{formatVnd(revenue)}</h2>
+          <div className="activity-row"><UserRound size={16} /><span>{demoPremiumSubscriptions.filter((item) => item.status === 'active').length} tài khoản Premium mẫu</span></div>
+          <div className="activity-row"><Sparkles size={16} /><span>Gói 3 tháng là lựa chọn khuyến nghị cho chu kỳ làm portfolio</span></div>
+        </article>
+      </div>
+
+      <div className="submit-actions">
+        <button className="ghost-action" onClick={() => go('hub')}><LayoutDashboard size={17} /> Xem thử thách</button>
+        <button className="primary-action" onClick={() => go('portfolio')}><UserRound size={17} /> Quay lại hồ sơ</button>
       </div>
     </section>
   );
@@ -1914,6 +2096,9 @@ function AdminPage({ apiStatus, data, notice, currentUser, refreshData, setAdmin
   const mentors = data?.mentors ?? [];
   const notifications = data?.notifications ?? [];
   const adminProfile = data?.admins?.find((item) => item.id === currentUser?.user?.id) ?? currentUser?.user ?? {};
+  const premiumSubscriptions = data?.premiumSubscriptions?.length ? data.premiumSubscriptions : demoPremiumSubscriptions;
+  const premiumRevenue = premiumSubscriptions.reduce((sum, item) => sum + Number(item.revenue || 0), 0);
+  const activePremiumCount = premiumSubscriptions.filter((item) => item.status === 'active').length;
   const overview = {
     majors: data?.majors?.length ?? 0,
     challenges: challengesData.length,
@@ -2070,6 +2255,7 @@ function AdminPage({ apiStatus, data, notice, currentUser, refreshData, setAdmin
         <StatCard icon={UserRound} title="Người dùng" value={overview.users} />
         <StatCard icon={FileUp} title="Lượt nộp bài" value={overview.submissions} />
         <StatCard icon={GraduationCap} title="Mentor" value={mentors.length} />
+        <StatCard icon={Crown} title="Premium active" value={activePremiumCount} />
       </div>
 
       <div className="admin-grid compact">
@@ -2110,6 +2296,31 @@ function AdminPage({ apiStatus, data, notice, currentUser, refreshData, setAdmin
                   <strong>{value}</strong>
                   <span>{key}</span>
                 </div>
+              </div>
+            ))}
+          </div>
+        </article>
+      </div>
+
+      <div className="admin-grid compact">
+        <article className="admin-panel">
+          <p className="mono-label">Premium & doanh thu</p>
+          <h2>{formatVnd(premiumRevenue)}</h2>
+          <div className="admin-list">
+            <div className="activity-row"><Crown size={16} /><span>{activePremiumCount} người dùng Premium đang hoạt động</span></div>
+            <div className="activity-row"><CreditCard size={16} /><span>{premiumSubscriptions.length} subscription mẫu trong hệ thống</span></div>
+          </div>
+        </article>
+        <article className="admin-panel">
+          <p className="mono-label">Quản lý subscription</p>
+          <div className="admin-list">
+            {premiumSubscriptions.slice(0, 5).map((item) => (
+              <div className="admin-row" key={item.id}>
+                <div>
+                  <strong>{item.userName}</strong>
+                  <span>{item.planName} · {item.status} · {item.expiresAt}</span>
+                </div>
+                <b>{formatVnd(item.revenue)}</b>
               </div>
             ))}
           </div>
