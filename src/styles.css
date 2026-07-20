@@ -98,6 +98,7 @@ button {
 .flow-pill {
   display: inline-flex;
   align-items: center;
+  flex: 0 0 auto;
   gap: 7px;
   min-height: 38px;
   padding: 0 12px;
@@ -3277,17 +3278,21 @@ body:has(.app-shell.page-mentor) {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 16px;
+  align-items: stretch;
 }
 
 .pricing-card {
   position: relative;
   display: grid;
+  grid-template-rows: auto auto auto auto 1fr auto;
   gap: 14px;
   padding: 18px;
   border: 1px solid var(--border-soft);
   border-radius: 10px;
   background: var(--surface);
   box-shadow: var(--shadow);
+  min-width: 0;
+  overflow: hidden;
 }
 
 .pricing-card.featured {
@@ -3309,7 +3314,8 @@ body:has(.app-shell.page-mentor) {
 
 .price-line {
   display: flex;
-  align-items: end;
+  align-items: flex-end;
+  flex-wrap: wrap;
   gap: 10px;
 }
 
@@ -3325,7 +3331,25 @@ body:has(.app-shell.page-mentor) {
 
 .plan-feature-list {
   display: grid;
+  align-content: start;
   gap: 8px;
+}
+
+.pricing-card .primary-action,
+.pricing-card .ghost-action {
+  width: 100%;
+  min-height: 46px;
+}
+
+.pricing-card .activity-row {
+  min-width: 0;
+}
+
+.pricing-card .activity-row span,
+.premium-current span,
+.price-line span {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .premium-current {
@@ -3343,6 +3367,17 @@ body:has(.app-shell.page-mentor) {
 .premium-current div {
   display: grid;
   gap: 2px;
+  min-width: 0;
+}
+
+@media (max-width: 960px) {
+  .pricing-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .premium-current {
+    width: 100%;
+  }
 }
 
 .vertical-roadmap i.disabled {
@@ -3886,6 +3921,8 @@ textarea::placeholder {
   .selected-major-note,
   .login-rule-box,
   .auth-helper,
+  .pricing-card,
+  .premium-current,
   .submit-rule-card,
   .profile-summary article,
   .resource-card,
@@ -3932,6 +3969,8 @@ textarea::placeholder {
   .selected-major-note,
   .login-rule-box,
   .auth-helper,
+  .pricing-card,
+  .premium-current,
   .submit-rule-card,
   .profile-summary article,
   .resource-card,
@@ -3948,7 +3987,7 @@ textarea::placeholder {
   opacity: 1 !important;
 }
 
-.app-shell[data-theme="light"] :is(.primary-action, .primary-action *, .flow-pill.active, .flow-pill.active *, .segmented button.active, .tabs button.active, .major-switcher button.active, .major-switcher button.active *) {
+.app-shell[data-theme="light"] :is(.primary-action, .primary-action *, .plan-badge, .plan-badge *, .flow-pill.active, .flow-pill.active *, .segmented button.active, .tabs button.active, .major-switcher button.active, .major-switcher button.active *) {
   color: #fff !important;
 }
 
@@ -4053,7 +4092,9 @@ html[data-theme="dark"] body {
 .app-shell[data-theme="dark"] .major-card,
 .app-shell[data-theme="dark"] .selected-major-note,
 .app-shell[data-theme="dark"] .login-rule-box,
-.app-shell[data-theme="dark"] .auth-helper {
+.app-shell[data-theme="dark"] .auth-helper,
+.app-shell[data-theme="dark"] .pricing-card,
+.app-shell[data-theme="dark"] .premium-current {
   border-color: rgba(125, 211, 252, 0.2) !important;
   background:
     linear-gradient(180deg, rgba(15, 35, 59, 0.88), rgba(10, 25, 44, 0.82)) !important;
@@ -4126,6 +4167,19 @@ html[data-theme="dark"] body {
   border-color: rgba(245, 158, 11, 0.42);
   background: rgba(245, 158, 11, 0.15);
   color: #fde68a;
+}
+
+.app-shell[data-theme="dark"] .pricing-card.featured {
+  border-color: rgba(45, 212, 191, 0.36) !important;
+  background:
+    linear-gradient(180deg, rgba(14, 116, 144, 0.42), rgba(10, 25, 44, 0.86)) !important;
+}
+
+.app-shell[data-theme="dark"] .premium-banner,
+.app-shell[data-theme="dark"] .premium-current {
+  border-color: rgba(245, 158, 11, 0.42) !important;
+  background: rgba(120, 53, 15, 0.3) !important;
+  color: #fde68a !important;
 }
 
 .app-shell[data-theme="dark"] strong,
