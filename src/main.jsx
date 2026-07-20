@@ -1054,24 +1054,6 @@ function AuthPage({ authMode, setAuthMode, majors, selectedMajorKey, changeMajor
   return (
     <section className="auth-page page-grid">
       <div className="auth-visual">
-        <div className="career-canvas" aria-hidden="true">
-          <div className="canvas-orbit">
-            <span className="orbit-node one">Map</span>
-            <span className="orbit-node two">Build</span>
-            <span className="orbit-node three">Review</span>
-            <span className="orbit-node four">Hire</span>
-          </div>
-          <div className="canvas-profile">
-            <p>Portfolio readiness</p>
-            <strong>{selectedMajor.title}</strong>
-            <div><i style={{ width: '76%' }} /></div>
-          </div>
-          <div className="canvas-stack">
-            {selectedMajor.columns.slice(0, 4).map((column, index) => (
-              <span key={column.key} style={{ '--accent': column.accent, '--i': index }}>{column.title}</span>
-            ))}
-          </div>
-        </div>
         <h1>Biến lộ trình nghề nghiệp thành portfolio có thể chứng minh.</h1>
         <div className="hero-stats">
           <Stat value="3" label="ngành lớn" />
@@ -1082,7 +1064,7 @@ function AuthPage({ authMode, setAuthMode, majors, selectedMajorKey, changeMajor
       <div className="auth-panel">
         <div className="auth-title">
           <p className="mono-label">Bắt đầu hồ sơ nghề nghiệp</p>
-          <h2>Chọn hướng đi</h2>
+          <h2>{authMode === 'login' ? 'Đăng nhập Portfolio' : 'Tạo tài khoản Portfolio'}</h2>
         </div>
         <div className="segmented">
           <button className={authMode === 'login' ? 'active' : ''} onClick={() => setAuthMode('login')}>Đăng nhập</button>

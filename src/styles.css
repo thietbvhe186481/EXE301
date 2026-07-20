@@ -4798,6 +4798,22 @@ html[data-theme="dark"] body {
   }
 }
 
+/* Login left side: keep it intentionally clean. */
+.auth-page .auth-visual {
+  align-content: center !important;
+  gap: 34px !important;
+}
+
+.auth-page .auth-visual h1 {
+  max-width: 780px !important;
+  font-size: clamp(44px, 5.8vw, 76px) !important;
+  line-height: 1.02 !important;
+}
+
+.auth-page .hero-stats {
+  max-width: 760px;
+}
+
 .app-shell[data-theme="dark"] .flow-pill.visited,
 .app-shell[data-theme="dark"] .role-chip span,
 .app-shell[data-theme="dark"] .theme-toggle span {
