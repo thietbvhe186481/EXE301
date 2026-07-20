@@ -90,7 +90,7 @@ const majorCatalog = [
     short: 'Dev',
     title: 'Developer',
     accent: '#8b5cf6',
-    summary: 'Xây dựng sản phẩm số, website, API, mobile app, hệ thống vận hành và ứng dụng AI.',
+    summary: 'Software Engineering portfolio path.',
     salary: '12-120+ triệu VND/tháng',
     growth: 'Nhu cầu rất cao',
     difficulty: 'Thiên về kỹ thuật',
@@ -1059,23 +1059,17 @@ function AuthPage({ authMode, setAuthMode, majors, selectedMajorKey, changeMajor
             <span key={label} style={{ '--i': index }}>{label}</span>
           ))}
         </div>
-        <p className="mono-label">Bản đồ nghề Portfolio</p>
         <h1>Định hình sự nghiệp, xây portfolio chứng minh năng lực.</h1>
-        <p className="lead">Portfolio giúp người học chọn Dev, Tiếp thị hoặc Thiết kế, sau đó mở bản đồ nghề chi tiết để xây lộ trình, làm thử thách và cập nhật hồ sơ cá nhân.</p>
         <div className="hero-stats">
           <Stat value="3" label="ngành lớn" />
           <Stat value="22" label="specializations" />
           <Stat value="14+" label="bài tập mẫu" />
         </div>
-        <div className="login-rule-box">
-          <strong>Business rule</strong>
-          <span>Người dùng phải chọn một ngành lớn trước. Hệ thống sẽ lọc bản đồ nghề, bài tập, phương thức nộp và profile theo ngành đó.</span>
-        </div>
       </div>
       <div className="auth-panel">
         <div className="auth-title">
           <p className="mono-label">Bắt đầu hồ sơ nghề nghiệp</p>
-          <h2>{authMode === 'login' ? 'Chào mừng trở lại' : 'Tạo tài khoản Portfolio'}</h2>
+          <h2>{authMode === 'login' ? 'Đăng nhập Portfolio' : 'Tạo tài khoản Portfolio'}</h2>
         </div>
         <div className="segmented">
           <button className={authMode === 'login' ? 'active' : ''} onClick={() => setAuthMode('login')}>Đăng nhập</button>
@@ -1099,7 +1093,6 @@ function AuthPage({ authMode, setAuthMode, majors, selectedMajorKey, changeMajor
             >
               <span>{major.short}</span>
               <strong>{major.title}</strong>
-              <small>{major.summary}</small>
               <i>{major.salary} - {major.growth}</i>
             </button>
           ))}
@@ -1159,7 +1152,6 @@ function CareerMapPage({ majors, currentMajor, changeMajor, columns, levels, sel
         <div>
           <p className="mono-label">Bản đồ nghề {currentMajor.short}</p>
           <h1>Bản đồ chuyên ngành {currentMajor.title}</h1>
-          <p>{currentMajor.summary} Người dùng chọn chuyên ngành hẹp, xem yêu cầu từng cấp độ, rồi xây lộ trình nghề nghiệp cá nhân.</p>
         </div>
         <div className="major-switcher">
           {majors.map((major) => (
@@ -1186,7 +1178,6 @@ function CareerMapPage({ majors, currentMajor, changeMajor, columns, levels, sel
                   onClick={() => setSelectedRoleId(column.roles[2].id)}
                 >
                   <span>{column.title}</span>
-                  <small>{column.roles[0].title} to {column.roles[4].title}</small>
                   <b>{column.roles.length} levels</b>
                 </button>
               );
@@ -1331,7 +1322,6 @@ function ChallengeHubPage({ currentMajor, activeTrack, setActiveTrack, visibleCh
         <div>
           <p className="mono-label">Trung tâm thử thách {currentMajor.short}</p>
           <h1>Luyện tập bằng nhiệm vụ có thể đưa vào portfolio</h1>
-          <p>Business rule: chỉ hiển thị bài tập thuộc ngành đang chọn, filter theo specialization và mỗi bài có mentor, hạn nộp, XP riêng.</p>
         </div>
         <div className="filter-row">
           <Filter size={17} />
