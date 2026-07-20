@@ -1056,7 +1056,7 @@ function AuthPage({ authMode, setAuthMode, majors, selectedMajorKey, changeMajor
       <div className="auth-visual">
         <div className="auth-story">
           <p className="mono-label auth-kicker">Portfolio studio</p>
-          <h1>{'Ch\u1ecdn \u0111\u00fang h\u01b0\u1edbng. L\u00e0m project x\u1ecbn. B\u1eadt mood s\u1ef1 nghi\u1ec7p.'}</h1>
+          <h1>{'Bi\u1ebfn k\u1ef9 n\u0103ng h\u00f4m nay th\u00e0nh c\u01a1 h\u1ed9i ng\u00e0y mai.'}</h1>
           <div className="auth-signal-strip">
             <span>{'Kh\u00e1m ph\u00e1 path'}</span>
             <span>{'B\u1eaft tay l\u00e0m'}</span>
