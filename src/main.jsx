@@ -997,7 +997,7 @@ function Header({ page, go, currentUser, theme, setTheme, logout }) {
   const roleLabel = currentUser ? `${(currentRole ?? 'student').toUpperCase()} · ${currentUser.user?.name ?? currentUser.user?.email}` : 'Guest';
   return (
     <header className="topbar">
-      <button className="brand" onClick={() => go(homePage)} aria-label="Mở trang chính">
+      <button className="brand" onClick={() => go(homePage)} aria-label="Ch?n chuy?n ng?nh h?p">
         <span className="brand-mark"><ChevronsUp size={20} /></span>
         <span>Portfolio</span>
       </button>
@@ -1167,7 +1167,7 @@ function CareerMapPage({ majors, currentMajor, changeMajor, columns, levels, sel
       <div className="section-heading inline">
         <div>
           <p className="mono-label">Bản đồ nghề {currentMajor.short}</p>
-          <h1>Bản đồ chuyên ngành {currentMajor.title}</h1>
+          <h1>Chọn hướng đi {currentMajor.title}</h1>
         </div>
         <div className="major-switcher">
           {majors.map((major) => (
@@ -1178,28 +1178,25 @@ function CareerMapPage({ majors, currentMajor, changeMajor, columns, levels, sel
         </div>
       </div>
 
-      <div className="career-planner">
-        <aside className="specialization-panel">
-          <p className="mono-label">Specializations</p>
-          <h2>Chọn hướng đi</h2>
-          <div className="specialization-list">
-            {columns.map((column) => {
-              const active = selectedColumn.key === column.key;
-              const hiddenBySearch = filteredRoleIds && !column.roles.some((item) => filteredRoleIds.has(item.id));
-              return (
-                <button
-                  key={column.key}
-                  className={`${active ? 'active' : ''} ${hiddenBySearch ? 'dimmed' : ''}`}
-                  style={{ '--accent': column.accent }}
-                  onClick={() => setSelectedRoleId(column.roles[2].id)}
-                >
-                  <span>{column.title}</span>
-                </button>
-              );
-            })}
-          </div>
-        </aside>
+      <div className="track-rail" aria-label="Chọn chuyên ngành hẹp">
+        {columns.map((column) => {
+          const active = selectedColumn.key === column.key;
+          const hiddenBySearch = filteredRoleIds && !column.roles.some((item) => filteredRoleIds.has(item.id));
+          return (
+            <button
+              key={column.key}
+              className={`${active ? 'active' : ''} ${hiddenBySearch ? 'dimmed' : ''}`}
+              style={{ '--accent': column.accent }}
+              onClick={() => setSelectedRoleId(column.roles[2].id)}
+            >
+              <span>{column.title}</span>
+              <small>{column.roles[2].title}</small>
+            </button>
+          );
+        })}
+      </div>
 
+      <div className="career-planner">
         <section className="timeline-panel" style={{ '--accent': selectedColumn.accent }}>
           <div className="timeline-head">
             <div>
@@ -1517,16 +1514,6 @@ function SubmitProjectPage({ challenge, currentMajor, joined, submission, joinCh
           <span>{isReviewed ? `Đã được góp ý ${submission.updatedAt}` : isSubmitted ? `Đã nộp ${submission.updatedAt}` : isRejected ? `Cần nộp lại ${submission.updatedAt}` : isDraft ? `Bản nháp ${submission.updatedAt}` : 'Chưa có bản nháp'}</span>
           <span>{challenge.track}</span>
         </div>
-      </div>
-      <div className="submission-form">
-        <div className="submit-rule-card">
-          <strong>Yêu cầu nộp cho {currentMajor.title}</strong>
-          <span>{rules.accepted}</span>
-        </div>
-        <label>{rules.primaryLabel}<input value={form.primaryLink} onChange={(event) => updateForm('primaryLink', event.target.value)} placeholder="Dán link chính của sản phẩm" /></label>
-        <label>{rules.secondaryLabel}<input value={form.secondaryLink} onChange={(event) => updateForm('secondaryLink', event.target.value)} placeholder="Dán link minh chứng hoặc demo" /></label>
-        <label>Kỹ năng sử dụng<input value={form.skills} onChange={(event) => updateForm('skills', event.target.value)} placeholder={rules.skillPlaceholder} /></label>
-        <label>Ghi chú sản phẩm<textarea value={form.notes} onChange={(event) => updateForm('notes', event.target.value)} placeholder={rules.notePlaceholder} /></label>
         <div className="submission-guide-grid">
           <GuideAccordion eyebrow="Submission standard" title="Hồ sơ nộp bài cần có" count={submitGuide.submissionPackage.length} tone="wide">
             <div className="deliverable-grid">
@@ -1554,6 +1541,16 @@ function SubmitProjectPage({ challenge, currentMajor, joined, submission, joinCh
             ))}
           </GuideAccordion>
         </div>
+      </div>
+      <div className="submission-form">
+        <div className="submit-rule-card">
+          <strong>Yêu cầu nộp cho {currentMajor.title}</strong>
+          <span>{rules.accepted}</span>
+        </div>
+        <label>{rules.primaryLabel}<input value={form.primaryLink} onChange={(event) => updateForm('primaryLink', event.target.value)} placeholder="Dán link chính của sản phẩm" /></label>
+        <label>{rules.secondaryLabel}<input value={form.secondaryLink} onChange={(event) => updateForm('secondaryLink', event.target.value)} placeholder="Dán link minh chứng hoặc demo" /></label>
+        <label>Kỹ năng sử dụng<input value={form.skills} onChange={(event) => updateForm('skills', event.target.value)} placeholder={rules.skillPlaceholder} /></label>
+        <label>Ghi chú sản phẩm<textarea value={form.notes} onChange={(event) => updateForm('notes', event.target.value)} placeholder={rules.notePlaceholder} /></label>
         <div className="upload-zone">
           <FileUp size={30} />
           <strong>Thả ảnh minh chứng tại đây</strong>

@@ -2832,6 +2832,109 @@ body:has(.submission-form) .upload-zone {
   min-height: 92px;
 }
 
+/* Career map and submission layout refinements */
+.track-rail {
+  display: flex;
+  gap: 10px;
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid var(--border-soft);
+  border-radius: 12px;
+  background: var(--surface);
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.track-rail button {
+  position: relative;
+  flex: 0 0 auto;
+  display: grid;
+  gap: 3px;
+  min-width: 150px;
+  min-height: 58px;
+  padding: 10px 14px 10px 16px;
+  border: 1px solid var(--border-soft);
+  border-radius: 10px;
+  background: var(--surface-soft);
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+}
+
+.track-rail button::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 4px;
+  border-radius: 10px 0 0 10px;
+  background: var(--accent);
+}
+
+.track-rail button.active {
+  border-color: color-mix(in srgb, var(--accent), #ffffff 20%);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--accent), transparent 82%), var(--surface-soft));
+}
+
+.track-rail button.dimmed {
+  opacity: 0.4;
+}
+
+.track-rail span {
+  font: 900 15px Outfit, sans-serif;
+}
+
+.track-rail small {
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.career-page .career-planner {
+  grid-template-columns: minmax(560px, 1fr) minmax(340px, 380px) !important;
+}
+
+body:has(.submission-form) .form-layout {
+  grid-template-columns: minmax(360px, 0.78fr) minmax(560px, 1fr) !important;
+  gap: 20px;
+}
+
+body:has(.submission-form) .form-layout .section-heading {
+  display: grid;
+  align-content: start;
+  gap: 12px;
+  max-height: calc(100vh - 104px);
+  padding-right: 4px;
+  overflow: auto !important;
+}
+
+body:has(.submission-form) .form-layout .section-heading .submission-guide-grid {
+  grid-template-columns: 1fr;
+  gap: 9px;
+  margin-top: 2px;
+}
+
+body:has(.submission-form) .form-layout .section-heading .guide-accordion.wide {
+  grid-column: auto;
+}
+
+@media (max-width: 960px) {
+  .career-page .career-planner {
+    grid-template-columns: minmax(390px, 1fr) minmax(320px, 360px) !important;
+    overflow-x: auto;
+  }
+
+  body:has(.submission-form) .form-layout {
+    grid-template-columns: 1fr !important;
+  }
+
+  body:has(.submission-form) .form-layout .section-heading {
+    position: static;
+    max-height: none;
+    overflow: visible !important;
+  }
+}
+
 @media (max-width: 960px) {
   body:has(.submission-form) .form-layout {
     grid-template-columns: 1fr;
