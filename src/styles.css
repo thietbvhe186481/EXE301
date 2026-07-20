@@ -2585,7 +2585,8 @@ body:has(.mission-panel) .side-card {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: clamp(15px, 1.45vw, 19px);
+  font-size: clamp(13px, 1.15vw, 16px);
+  line-height: 1.2;
 }
 
 .guide-accordion-head b {
