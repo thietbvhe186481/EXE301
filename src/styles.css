@@ -2611,6 +2611,84 @@ body:has(.mission-panel) .side-card {
   padding-left: 2px;
 }
 
+body:has(.submission-form) {
+  overflow-y: auto !important;
+}
+
+body:has(.submission-form) .app-shell,
+body:has(.submission-form) main {
+  height: auto !important;
+  min-height: 100vh !important;
+  overflow: visible !important;
+}
+
+body:has(.submission-form) .form-layout {
+  height: auto !important;
+  min-height: calc(100vh - 64px);
+  overflow: visible !important;
+  padding-bottom: 44px;
+}
+
+body:has(.submission-form) .form-layout .section-heading,
+body:has(.submission-form) .submission-form {
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+body:has(.submission-form) .form-layout .section-heading {
+  position: sticky;
+  top: 92px;
+}
+
+.submission-guide-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.submission-guide-card {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid var(--border-soft);
+  border-radius: 10px;
+  background: var(--surface-soft);
+}
+
+.submission-guide-card.wide {
+  grid-column: 1 / -1;
+}
+
+.submission-guide-card.danger {
+  border-color: rgba(239, 68, 68, 0.24);
+  background: rgba(254, 226, 226, 0.64);
+}
+
+.submission-guide-card h3 {
+  margin: 0;
+  font-size: clamp(18px, 1.9vw, 24px);
+}
+
+.submission-guide-card.danger .requirement-item svg {
+  color: #ef4444;
+}
+
+@media (max-width: 960px) {
+  body:has(.submission-form) .form-layout {
+    grid-template-columns: 1fr;
+  }
+
+  body:has(.submission-form) .form-layout .section-heading {
+    position: static;
+  }
+
+  .submission-guide-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 960px) {
   body:has(.mission-panel) .content-page.two-column {
     grid-template-columns: 1fr;
@@ -4060,6 +4138,7 @@ textarea::placeholder {
   .pricing-card,
   .premium-current,
   .challenge-detail-card,
+  .submission-guide-card,
   .business-rule-item,
   .submit-rule-card,
   .profile-summary article,
@@ -4110,6 +4189,7 @@ textarea::placeholder {
   .pricing-card,
   .premium-current,
   .challenge-detail-card,
+  .submission-guide-card,
   .business-rule-item,
   .submit-rule-card,
   .profile-summary article,
@@ -4235,7 +4315,8 @@ html[data-theme="dark"] body {
 .app-shell[data-theme="dark"] .auth-helper,
 .app-shell[data-theme="dark"] .pricing-card,
 .app-shell[data-theme="dark"] .premium-current,
-.app-shell[data-theme="dark"] .challenge-detail-card {
+.app-shell[data-theme="dark"] .challenge-detail-card,
+.app-shell[data-theme="dark"] .submission-guide-card {
   border-color: rgba(125, 211, 252, 0.2) !important;
   background:
     linear-gradient(180deg, rgba(15, 35, 59, 0.88), rgba(10, 25, 44, 0.82)) !important;
@@ -4256,6 +4337,11 @@ html[data-theme="dark"] body {
   border-color: rgba(125, 211, 252, 0.18) !important;
   background: rgba(17, 42, 70, 0.7) !important;
   color: var(--text) !important;
+}
+
+.app-shell[data-theme="dark"] .submission-guide-card.danger {
+  border-color: rgba(248, 113, 113, 0.32) !important;
+  background: rgba(127, 29, 29, 0.28) !important;
 }
 
 .app-shell[data-theme="dark"] h1,

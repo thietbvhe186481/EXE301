@@ -452,6 +452,36 @@ function getChallengeGuide(challenge, currentMajor) {
   return { ...selected, deliverables: baseDeliverables[currentMajor?.key] ?? baseDeliverables.dev };
 }
 
+function getSubmissionGuide(challenge, currentMajor) {
+  const base = getChallengeGuide(challenge, currentMajor);
+  const guideByMajor = {
+    dev: {
+      requiredSections: ['Problem statement va user flow', 'Tech stack va cach chay project', 'Database/API design', 'Test cases va edge cases', 'Demo link hoac video'],
+      evidenceRules: ['README phai co lenh install, seed, run', 'Link demo/API docs phai truy cap duoc', 'Khong de lo secret, token, file .env', 'Mo ta it nhat 3 business rule da xu ly'],
+      rejectionReasons: ['Repo khong chay duoc', 'Thieu huong dan test', 'Khong co validation/edge case', 'Link demo loi hoac khong cong khai'],
+      reviewFlow: ['Student luu ban nhap', 'Student gui mentor', 'Mentor accept bai review', 'Mentor xem link + minh chung', 'Mentor cham diem va tra feedback']
+    },
+    mkt: {
+      requiredSections: ['Business objective', 'Persona va insight', 'Channel plan va content calendar', 'KPI/ngan sach', 'Bao cao do luong va de xuat toi uu'],
+      evidenceRules: ['KPI phai co cong thuc do', 'Persona phai co pain point ro', 'Ngan sach phai chia theo kenh', 'Slide/case study co ket luan hanh dong'],
+      rejectionReasons: ['Chi co y tuong, khong co KPI', 'Thieu persona/insight', 'Khong co timeline trien khai', 'So lieu khong co nguon hoac khong giai thich'],
+      reviewFlow: ['Student nop deck/sheet', 'Mentor kiem tra logic funnel', 'Mentor review KPI va ngan sach', 'Mentor yeu cau bo sung neu thieu so lieu', 'Student cap nhat case study portfolio']
+    },
+    design: {
+      requiredSections: ['Problem statement', 'User flow/wireframe', 'UI screens va component states', 'Prototype link', 'Design rationale va usability notes'],
+      evidenceRules: ['Figma link phai cho phep view', 'Prototype bam duoc luong chinh', 'Co empty/error/success state', 'Case study giai thich ly do thiet ke'],
+      rejectionReasons: ['File Figma khong mo duoc', 'Chi co UI khong co process', 'Thieu state quan trong', 'Khong co prototype hoac minh chung test'],
+      reviewFlow: ['Student nop Figma/case study', 'Mentor xem flow va problem fit', 'Mentor check UI system va state', 'Mentor gop y usability', 'Student sua va publish portfolio']
+    }
+  };
+  const selected = guideByMajor[currentMajor?.key] ?? guideByMajor.dev;
+  return {
+    ...selected,
+    submissionPackage: base.deliverables,
+    acceptance: base.acceptance
+  };
+}
+
 function formatVnd(value) {
   return `${Number(value || 0).toLocaleString('vi-VN')}đ`;
 }
@@ -1458,6 +1488,7 @@ function SubmitProjectPage({ challenge, currentMajor, joined, submission, joinCh
   const isDraft = submission?.status === 'draft';
   const isRejected = submission?.status === 'rejected';
   const locked = isPremiumChallenge(challenge) && !isPremium;
+  const submitGuide = getSubmissionGuide(challenge, currentMajor);
   const [form, setForm] = useState({
     primaryLink: submission?.primaryLink ?? '',
     secondaryLink: submission?.secondaryLink ?? '',
@@ -1486,6 +1517,43 @@ function SubmitProjectPage({ challenge, currentMajor, joined, submission, joinCh
         <label>{rules.secondaryLabel}<input value={form.secondaryLink} onChange={(event) => updateForm('secondaryLink', event.target.value)} placeholder="Dán link minh chứng hoặc demo" /></label>
         <label>Kỹ năng sử dụng<input value={form.skills} onChange={(event) => updateForm('skills', event.target.value)} placeholder={rules.skillPlaceholder} /></label>
         <label>Ghi chú sản phẩm<textarea value={form.notes} onChange={(event) => updateForm('notes', event.target.value)} placeholder={rules.notePlaceholder} /></label>
+        <div className="submission-guide-grid">
+          <article className="submission-guide-card wide">
+            <p className="mono-label">Submission standard</p>
+            <h3>Hồ sơ nộp bài cần có</h3>
+            <div className="deliverable-grid">
+              {submitGuide.submissionPackage.map((item) => <span key={item}><FileUp size={15} />{item}</span>)}
+            </div>
+          </article>
+          <article className="submission-guide-card">
+            <p className="mono-label">Required content</p>
+            <h3>Nội dung bắt buộc</h3>
+            {submitGuide.requiredSections.map((item) => (
+              <div className="requirement-item compact" key={item}><BadgeCheck size={16} /><span>{item}</span></div>
+            ))}
+          </article>
+          <article className="submission-guide-card">
+            <p className="mono-label">Evidence rules</p>
+            <h3>Quy định minh chứng</h3>
+            {submitGuide.evidenceRules.map((item) => (
+              <div className="requirement-item compact" key={item}><ShieldCheck size={16} /><span>{item}</span></div>
+            ))}
+          </article>
+          <article className="submission-guide-card">
+            <p className="mono-label">Review workflow</p>
+            <h3>Luồng xử lý sau khi nộp</h3>
+            <ol className="process-list">
+              {submitGuide.reviewFlow.map((item) => <li key={item}>{item}</li>)}
+            </ol>
+          </article>
+          <article className="submission-guide-card danger">
+            <p className="mono-label">Common rejection</p>
+            <h3>Lỗi dễ bị mentor trả bài</h3>
+            {submitGuide.rejectionReasons.map((item) => (
+              <div className="requirement-item compact" key={item}><X size={16} /><span>{item}</span></div>
+            ))}
+          </article>
+        </div>
         <div className="upload-zone">
           <FileUp size={30} />
           <strong>Thả ảnh minh chứng tại đây</strong>
