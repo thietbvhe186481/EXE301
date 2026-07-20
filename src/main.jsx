@@ -1059,7 +1059,23 @@ function AuthPage({ authMode, setAuthMode, majors, selectedMajorKey, changeMajor
             <span key={label} style={{ '--i': index }}>{label}</span>
           ))}
         </div>
-        <h1>Định hình sự nghiệp, xây portfolio chứng minh năng lực.</h1>
+        <div className="career-preview" aria-hidden="true">
+          <div className="preview-card main">
+            <span>Career target</span>
+            <strong>{selectedMajor.title}</strong>
+            <i>{selectedMajor.columns[0].title}{' -> '}{selectedMajor.columns[2].title}</i>
+          </div>
+          <div className="preview-lane">
+            <div><b>01</b><span>Roadmap</span></div>
+            <div><b>02</b><span>Challenge</span></div>
+            <div><b>03</b><span>Portfolio</span></div>
+          </div>
+          <div className="preview-card accent">
+            <span>Mentor score</span>
+            <strong>92/100</strong>
+          </div>
+        </div>
+        <h1>Biến lộ trình nghề nghiệp thành portfolio có thể chứng minh.</h1>
         <div className="hero-stats">
           <Stat value="3" label="ngành lớn" />
           <Stat value="22" label="specializations" />

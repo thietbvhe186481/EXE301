@@ -203,6 +203,79 @@ main {
   transform: translateY(calc(var(--i) * 14px));
 }
 
+.career-preview {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(150px, 0.65fr);
+  gap: 12px;
+  width: min(620px, 84%);
+}
+
+.preview-card,
+.preview-lane {
+  border: 1px solid rgba(14, 116, 144, 0.18);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.72);
+  box-shadow: 0 20px 60px rgba(14, 116, 144, 0.12);
+  backdrop-filter: blur(16px);
+}
+
+.preview-card {
+  display: grid;
+  gap: 6px;
+  padding: 16px;
+}
+
+.preview-card span,
+.preview-card i,
+.preview-lane span {
+  color: #456176;
+  font-weight: 800;
+}
+
+.preview-card span {
+  font: 800 11px "DM Mono", monospace;
+  text-transform: uppercase;
+}
+
+.preview-card strong {
+  color: #071d2f;
+  font: 900 28px Outfit, sans-serif;
+}
+
+.preview-card i {
+  font-style: normal;
+}
+
+.preview-card.accent {
+  align-content: center;
+  border-color: rgba(16, 185, 129, 0.24);
+  background: linear-gradient(135deg, rgba(204, 251, 241, 0.88), rgba(219, 234, 254, 0.82));
+}
+
+.preview-lane {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  padding: 10px;
+}
+
+.preview-lane div {
+  display: grid;
+  gap: 4px;
+  min-height: 58px;
+  padding: 10px;
+  border-radius: 9px;
+  background: rgba(224, 242, 254, 0.72);
+}
+
+.preview-lane b {
+  color: #06b6d4;
+  font: 900 18px "DM Mono", monospace;
+}
+
 .mono-label {
   margin: 0 0 10px;
   color: #84f5ca;
@@ -4361,6 +4434,32 @@ html[data-theme="dark"] body {
   background: rgba(15, 35, 59, 0.72) !important;
   color: #d9f2ff !important;
   box-shadow: 0 10px 26px rgba(2, 8, 23, 0.28);
+}
+
+.app-shell[data-theme="dark"] .preview-card,
+.app-shell[data-theme="dark"] .preview-lane {
+  border-color: rgba(125, 211, 252, 0.22) !important;
+  background: rgba(15, 35, 59, 0.72) !important;
+  box-shadow: 0 20px 60px rgba(2, 8, 23, 0.32);
+}
+
+.app-shell[data-theme="dark"] .preview-card.accent {
+  background: linear-gradient(135deg, rgba(8, 145, 178, 0.34), rgba(79, 70, 229, 0.24)) !important;
+}
+
+.app-shell[data-theme="dark"] .preview-card strong,
+.app-shell[data-theme="dark"] .preview-lane b {
+  color: #e0f2fe !important;
+}
+
+.app-shell[data-theme="dark"] .preview-card span,
+.app-shell[data-theme="dark"] .preview-card i,
+.app-shell[data-theme="dark"] .preview-lane span {
+  color: #b8d7ea !important;
+}
+
+.app-shell[data-theme="dark"] .preview-lane div {
+  background: rgba(17, 42, 70, 0.72) !important;
 }
 
 .app-shell[data-theme="dark"] .flow-pill.visited,
