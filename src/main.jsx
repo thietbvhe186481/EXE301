@@ -1059,20 +1059,22 @@ function AuthPage({ authMode, setAuthMode, majors, selectedMajorKey, changeMajor
             <span key={label} style={{ '--i': index }}>{label}</span>
           ))}
         </div>
-        <div className="career-preview" aria-hidden="true">
-          <div className="preview-card main">
-            <span>Career target</span>
+        <div className="career-canvas" aria-hidden="true">
+          <div className="canvas-orbit">
+            <span className="orbit-node one">Map</span>
+            <span className="orbit-node two">Build</span>
+            <span className="orbit-node three">Review</span>
+            <span className="orbit-node four">Hire</span>
+          </div>
+          <div className="canvas-profile">
+            <p>Portfolio readiness</p>
             <strong>{selectedMajor.title}</strong>
-            <i>{selectedMajor.columns[0].title}{' -> '}{selectedMajor.columns[2].title}</i>
+            <div><i style={{ width: '76%' }} /></div>
           </div>
-          <div className="preview-lane">
-            <div><b>01</b><span>Roadmap</span></div>
-            <div><b>02</b><span>Challenge</span></div>
-            <div><b>03</b><span>Portfolio</span></div>
-          </div>
-          <div className="preview-card accent">
-            <span>Mentor score</span>
-            <strong>92/100</strong>
+          <div className="canvas-stack">
+            {selectedMajor.columns.slice(0, 4).map((column, index) => (
+              <span key={column.key} style={{ '--accent': column.accent, '--i': index }}>{column.title}</span>
+            ))}
           </div>
         </div>
         <h1>Biến lộ trình nghề nghiệp thành portfolio có thể chứng minh.</h1>
@@ -1413,15 +1415,6 @@ function JoinChallengePage({ challenge, currentMajor, joined, submission, joinCh
           <Stat value={challenge.xp} label="điểm XP" />
           <Stat value={submission?.status ? statusLabels[submission.status] ?? submission.status : joined ? 'Đã tham gia' : 'Chưa tham gia'} label="trạng thái" />
         </div>
-        <h3>Điều kiện trước khi tham gia</h3>
-        {[
-          `Ngành hiện tại phải là ${currentMajor.title}`,
-          `Bài tập thuộc specialization ${challenge.track}`,
-          'Người học cần có ít nhất 1 vị trí trong lộ trình cá nhân',
-          'Sau khi tham gia, bài tập sẽ mở form nộp theo đúng ngành'
-        ].map((item) => (
-          <div className="requirement-item" key={item}><ShieldCheck size={18} /><span>{item}</span></div>
-        ))}
         <h3>Rubric chấm điểm</h3>
         <div className="challenge-deep-grid">
           <GuideAccordion eyebrow="Technology requirements" title={guide.techTitle} count={guide.technologies.length}>
