@@ -4798,20 +4798,124 @@ html[data-theme="dark"] body {
   }
 }
 
-/* Login left side: keep it intentionally clean. */
+/* Login left side: modern career launch graphic. */
 .auth-page .auth-visual {
+  position: relative;
+  isolation: isolate;
   align-content: center !important;
-  gap: 34px !important;
+  overflow: hidden;
+  gap: 0 !important;
+  background:
+    linear-gradient(135deg, rgba(236, 254, 255, 0.9), rgba(255, 255, 255, 0.96) 44%, rgba(219, 234, 254, 0.8)),
+    var(--surface) !important;
+}
+
+.auth-page .auth-visual::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  background-image:
+    linear-gradient(rgba(14, 165, 233, 0.12) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(14, 165, 233, 0.12) 1px, transparent 1px);
+  background-size: 58px 58px;
+  mask-image: linear-gradient(120deg, rgba(0, 0, 0, 0.75), transparent 68%);
+}
+
+.auth-page .auth-visual::after {
+  content: "";
+  position: absolute;
+  inset: 42px 34px auto auto;
+  z-index: -1;
+  width: min(48%, 420px);
+  height: 300px;
+  border: 1px solid rgba(14, 116, 144, 0.16);
+  border-radius: 30px;
+  background:
+    linear-gradient(135deg, rgba(14, 165, 233, 0.14), transparent 42%),
+    repeating-linear-gradient(135deg, transparent 0 22px, rgba(16, 185, 129, 0.12) 22px 24px);
+  box-shadow: 0 34px 90px rgba(14, 116, 144, 0.16);
+  transform: rotate(-4deg);
+}
+
+.auth-story {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 22px;
+  max-width: 860px;
 }
 
 .auth-page .auth-visual h1 {
-  max-width: 780px !important;
-  font-size: clamp(44px, 5.8vw, 76px) !important;
+  max-width: 850px !important;
+  font-size: clamp(48px, 6.2vw, 84px) !important;
   line-height: 1.02 !important;
+  text-wrap: balance;
 }
 
 .auth-page .hero-stats {
   max-width: 760px;
+  gap: 18px;
+}
+
+.auth-kicker {
+  width: fit-content;
+  padding: 8px 11px;
+  border: 1px solid rgba(14, 116, 144, 0.18);
+  border-radius: 999px;
+  background: rgba(224, 242, 254, 0.72);
+  color: #075985 !important;
+}
+
+.auth-signal-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  max-width: 760px;
+}
+
+.auth-signal-strip span {
+  padding: 10px 13px;
+  border: 1px solid rgba(14, 116, 144, 0.18);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.72);
+  color: #0b2a42;
+  font-weight: 900;
+  box-shadow: 0 14px 34px rgba(14, 116, 144, 0.08);
+}
+
+.auth-page .hero-stats .stat {
+  padding: 16px 18px;
+  border: 1px solid rgba(14, 116, 144, 0.14);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.56);
+  backdrop-filter: blur(16px);
+}
+
+.app-shell[data-theme="dark"] .auth-page .auth-visual {
+  background:
+    linear-gradient(135deg, rgba(6, 16, 28, 0.96), rgba(8, 23, 39, 0.94) 52%, rgba(5, 44, 49, 0.88)),
+    var(--surface) !important;
+}
+
+.app-shell[data-theme="dark"] .auth-page .auth-visual::before {
+  background-image:
+    linear-gradient(rgba(125, 211, 252, 0.11) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(125, 211, 252, 0.11) 1px, transparent 1px);
+}
+
+.app-shell[data-theme="dark"] .auth-page .auth-visual::after {
+  border-color: rgba(125, 211, 252, 0.18);
+  background:
+    linear-gradient(135deg, rgba(14, 165, 233, 0.2), transparent 42%),
+    repeating-linear-gradient(135deg, transparent 0 22px, rgba(45, 212, 191, 0.14) 22px 24px);
+}
+
+.app-shell[data-theme="dark"] .auth-kicker,
+.app-shell[data-theme="dark"] .auth-signal-strip span {
+  border-color: rgba(125, 211, 252, 0.22) !important;
+  background: rgba(15, 35, 59, 0.72) !important;
+  color: #dff6ff !important;
 }
 
 .app-shell[data-theme="dark"] .flow-pill.visited,

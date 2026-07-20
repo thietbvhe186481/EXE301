@@ -1054,11 +1054,20 @@ function AuthPage({ authMode, setAuthMode, majors, selectedMajorKey, changeMajor
   return (
     <section className="auth-page page-grid">
       <div className="auth-visual">
-        <h1>Biến lộ trình nghề nghiệp thành portfolio có thể chứng minh.</h1>
-        <div className="hero-stats">
-          <Stat value="3" label="ngành lớn" />
-          <Stat value="22" label="specializations" />
-          <Stat value="14+" label="bài tập mẫu" />
+        <div className="auth-story">
+          <p className="mono-label auth-kicker">Career glow-up</p>
+          <h1>{'H\u1ecdc th\u1eadt. L\u00e0m th\u1eadt. Flex portfolio th\u1eadt.'}</h1>
+          <div className="auth-signal-strip">
+            <span>{'Ch\u1ecdn path'}</span>
+            <span>{'L\u00e0m challenge'}</span>
+            <span>Mentor review</span>
+            <span>{'Showcase n\u0103ng l\u1ef1c'}</span>
+          </div>
+          <div className="hero-stats">
+            <Stat value="3" label={'ng\u00e0nh l\u1edbn'} />
+            <Stat value="22" label="specializations" />
+            <Stat value="14+" label={'b\u00e0i t\u1eadp m\u1eabu'} />
+          </div>
         </div>
       </div>
       <div className="auth-panel">
