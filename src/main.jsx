@@ -1055,13 +1055,13 @@ function AuthPage({ authMode, setAuthMode, majors, selectedMajorKey, changeMajor
     <section className="auth-page page-grid">
       <div className="auth-visual">
         <div className="auth-story">
-          <p className="mono-label auth-kicker">Career glow-up</p>
-          <h1>{'H\u1ecdc th\u1eadt. L\u00e0m th\u1eadt. Flex portfolio th\u1eadt.'}</h1>
+          <p className="mono-label auth-kicker">Portfolio studio</p>
+          <h1>{'Ch\u1ecdn \u0111\u00fang h\u01b0\u1edbng. L\u00e0m project x\u1ecbn. B\u1eadt mood s\u1ef1 nghi\u1ec7p.'}</h1>
           <div className="auth-signal-strip">
-            <span>{'Ch\u1ecdn path'}</span>
-            <span>{'L\u00e0m challenge'}</span>
-            <span>Mentor review</span>
-            <span>{'Showcase n\u0103ng l\u1ef1c'}</span>
+            <span>{'Kh\u00e1m ph\u00e1 path'}</span>
+            <span>{'B\u1eaft tay l\u00e0m'}</span>
+            <span>{'Mentor g\u00f3p \u00fd'}</span>
+            <span>{'N\u00e2ng c\u1ea5p h\u1ed3 s\u01a1'}</span>
           </div>
           <div className="hero-stats">
             <Stat value="3" label={'ng\u00e0nh l\u1edbn'} />
