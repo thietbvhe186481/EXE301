@@ -1376,6 +1376,23 @@ function ChallengeHubPage({ currentMajor, activeTrack, setActiveTrack, visibleCh
   );
 }
 
+function GuideAccordion({ eyebrow, title, count, tone = '', children }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <article className={`guide-accordion ${tone}`}>
+      <button className="guide-accordion-head" onClick={() => setOpen((current) => !current)} aria-expanded={open}>
+        <span>
+          <i className="mono-label">{eyebrow}</i>
+          <strong>{title}</strong>
+        </span>
+        <b>{count} mục</b>
+        <Plus size={18} />
+      </button>
+      {open && <div className="guide-accordion-body">{children}</div>}
+    </article>
+  );
+}
+
 function JoinChallengePage({ challenge, currentMajor, joined, submission, joinChallenge, isPremium, go }) {
   const isSubmitted = submission?.status === 'submitted';
   const isReviewed = submission?.status === 'reviewed';
@@ -1405,23 +1422,17 @@ function JoinChallengePage({ challenge, currentMajor, joined, submission, joinCh
         ))}
         <h3>Rubric chấm điểm</h3>
         <div className="challenge-deep-grid">
-          <article className="challenge-detail-card">
-            <p className="mono-label">Technology requirements</p>
-            <h3>{guide.techTitle}</h3>
+          <GuideAccordion eyebrow="Technology requirements" title={guide.techTitle} count={guide.technologies.length}>
             <div className="tech-stack-list">
               {guide.technologies.map((item) => <span key={item}>{item}</span>)}
             </div>
-          </article>
-          <article className="challenge-detail-card">
-            <p className="mono-label">Skills evidence</p>
-            <h3>Kỹ năng cần chứng minh</h3>
+          </GuideAccordion>
+          <GuideAccordion eyebrow="Skills evidence" title="Kỹ năng cần chứng minh" count={guide.skills.length}>
             {guide.skills.map((item) => (
               <div className="requirement-item compact" key={item}><BadgeCheck size={16} /><span>{item}</span></div>
             ))}
-          </article>
-          <article className="challenge-detail-card wide">
-            <p className="mono-label">Business logic</p>
-            <h3>Nghiệp vụ thực tế phải xử lý</h3>
+          </GuideAccordion>
+          <GuideAccordion eyebrow="Business logic" title="Nghiệp vụ thực tế phải xử lý" count={guide.businessRules.length} tone="wide">
             <div className="business-rule-list">
               {guide.businessRules.map((item, index) => (
                 <div className="business-rule-item" key={item}>
@@ -1430,28 +1441,22 @@ function JoinChallengePage({ challenge, currentMajor, joined, submission, joinCh
                 </div>
               ))}
             </div>
-          </article>
-          <article className="challenge-detail-card">
-            <p className="mono-label">How to solve</p>
-            <h3>Quy trình làm bài gợi ý</h3>
+          </GuideAccordion>
+          <GuideAccordion eyebrow="How to solve" title="Quy trình làm bài gợi ý" count={guide.steps.length}>
             <ol className="process-list">
               {guide.steps.map((item) => <li key={item}>{item}</li>)}
             </ol>
-          </article>
-          <article className="challenge-detail-card">
-            <p className="mono-label">Acceptance</p>
-            <h3>Tiêu chí nghiệm thu</h3>
+          </GuideAccordion>
+          <GuideAccordion eyebrow="Acceptance" title="Tiêu chí nghiệm thu" count={guide.acceptance.length}>
             {guide.acceptance.map((item) => (
               <div className="requirement-item compact" key={item}><Check size={16} /><span>{item}</span></div>
             ))}
-          </article>
-          <article className="challenge-detail-card wide">
-            <p className="mono-label">Submission package</p>
-            <h3>Minh chứng cần chuẩn bị khi nộp</h3>
+          </GuideAccordion>
+          <GuideAccordion eyebrow="Submission package" title="Minh chứng cần chuẩn bị khi nộp" count={guide.deliverables.length} tone="wide">
             <div className="deliverable-grid">
               {guide.deliverables.map((item) => <span key={item}><FileUp size={15} />{item}</span>)}
             </div>
-          </article>
+          </GuideAccordion>
         </div>
         <div className="rubric-grid">
           {['Đúng yêu cầu', 'Chất lượng trình bày', 'Minh chứng rõ ràng', 'Khả năng đưa vào portfolio'].map((item, index) => (
@@ -1518,41 +1523,31 @@ function SubmitProjectPage({ challenge, currentMajor, joined, submission, joinCh
         <label>Kỹ năng sử dụng<input value={form.skills} onChange={(event) => updateForm('skills', event.target.value)} placeholder={rules.skillPlaceholder} /></label>
         <label>Ghi chú sản phẩm<textarea value={form.notes} onChange={(event) => updateForm('notes', event.target.value)} placeholder={rules.notePlaceholder} /></label>
         <div className="submission-guide-grid">
-          <article className="submission-guide-card wide">
-            <p className="mono-label">Submission standard</p>
-            <h3>Hồ sơ nộp bài cần có</h3>
+          <GuideAccordion eyebrow="Submission standard" title="Hồ sơ nộp bài cần có" count={submitGuide.submissionPackage.length} tone="wide">
             <div className="deliverable-grid">
               {submitGuide.submissionPackage.map((item) => <span key={item}><FileUp size={15} />{item}</span>)}
             </div>
-          </article>
-          <article className="submission-guide-card">
-            <p className="mono-label">Required content</p>
-            <h3>Nội dung bắt buộc</h3>
+          </GuideAccordion>
+          <GuideAccordion eyebrow="Required content" title="Nội dung bắt buộc" count={submitGuide.requiredSections.length}>
             {submitGuide.requiredSections.map((item) => (
               <div className="requirement-item compact" key={item}><BadgeCheck size={16} /><span>{item}</span></div>
             ))}
-          </article>
-          <article className="submission-guide-card">
-            <p className="mono-label">Evidence rules</p>
-            <h3>Quy định minh chứng</h3>
+          </GuideAccordion>
+          <GuideAccordion eyebrow="Evidence rules" title="Quy định minh chứng" count={submitGuide.evidenceRules.length}>
             {submitGuide.evidenceRules.map((item) => (
               <div className="requirement-item compact" key={item}><ShieldCheck size={16} /><span>{item}</span></div>
             ))}
-          </article>
-          <article className="submission-guide-card">
-            <p className="mono-label">Review workflow</p>
-            <h3>Luồng xử lý sau khi nộp</h3>
+          </GuideAccordion>
+          <GuideAccordion eyebrow="Review workflow" title="Luồng xử lý sau khi nộp" count={submitGuide.reviewFlow.length}>
             <ol className="process-list">
               {submitGuide.reviewFlow.map((item) => <li key={item}>{item}</li>)}
             </ol>
-          </article>
-          <article className="submission-guide-card danger">
-            <p className="mono-label">Common rejection</p>
-            <h3>Lỗi dễ bị mentor trả bài</h3>
+          </GuideAccordion>
+          <GuideAccordion eyebrow="Common rejection" title="Lỗi dễ bị mentor trả bài" count={submitGuide.rejectionReasons.length} tone="danger">
             {submitGuide.rejectionReasons.map((item) => (
               <div className="requirement-item compact" key={item}><X size={16} /><span>{item}</span></div>
             ))}
-          </article>
+          </GuideAccordion>
         </div>
         <div className="upload-zone">
           <FileUp size={30} />

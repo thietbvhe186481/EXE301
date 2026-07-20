@@ -2501,7 +2501,7 @@ body:has(.mission-panel) main {
 }
 
 body:has(.mission-panel) .content-page.two-column {
-  align-items: start;
+  align-items: start !important;
   height: auto !important;
   min-height: calc(100vh - 64px);
   overflow: visible !important;
@@ -2511,6 +2511,9 @@ body:has(.mission-panel) .content-page.two-column {
 body:has(.mission-panel) .side-card {
   position: sticky;
   top: 92px;
+  align-self: start !important;
+  height: auto !important;
+  max-height: calc(100vh - 112px) !important;
 }
 
 .challenge-deep-grid {
@@ -2538,6 +2541,79 @@ body:has(.mission-panel) .side-card {
 .challenge-detail-card h3 {
   margin: 0;
   font-size: clamp(20px, 2vw, 26px);
+}
+
+.guide-accordion {
+  min-width: 0;
+  border: 1px solid var(--border-soft);
+  border-radius: 10px;
+  background: var(--surface-soft);
+  overflow: hidden;
+}
+
+.guide-accordion.wide {
+  grid-column: 1 / -1;
+}
+
+.guide-accordion.danger {
+  border-color: rgba(239, 68, 68, 0.24);
+  background: rgba(254, 226, 226, 0.64);
+}
+
+.guide-accordion-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 76px;
+  padding: 14px 16px;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+}
+
+.guide-accordion-head span {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+
+.guide-accordion-head strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: clamp(18px, 1.8vw, 23px);
+}
+
+.guide-accordion-head b {
+  padding: 7px 10px;
+  border-radius: 999px;
+  background: rgba(14, 116, 144, 0.12);
+  color: #075985;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.guide-accordion-head svg {
+  padding: 5px;
+  border-radius: 8px;
+  background: rgba(37, 99, 235, 0.1);
+  color: #2563eb;
+  box-sizing: content-box;
+  transition: transform 0.18s ease;
+}
+
+.guide-accordion-head[aria-expanded="true"] svg {
+  transform: rotate(45deg);
+}
+
+.guide-accordion-body {
+  display: grid;
+  gap: 9px;
+  padding: 0 16px 16px;
 }
 
 .tech-stack-list,
@@ -2673,6 +2749,14 @@ body:has(.submission-form) .form-layout .section-heading {
 
 .submission-guide-card.danger .requirement-item svg {
   color: #ef4444;
+}
+
+body:has(.submission-form) .submission-form {
+  border-radius: 14px;
+}
+
+body:has(.submission-form) .upload-zone {
+  min-height: 92px;
 }
 
 @media (max-width: 960px) {
@@ -4139,6 +4223,7 @@ textarea::placeholder {
   .premium-current,
   .challenge-detail-card,
   .submission-guide-card,
+  .guide-accordion,
   .business-rule-item,
   .submit-rule-card,
   .profile-summary article,
@@ -4190,6 +4275,7 @@ textarea::placeholder {
   .premium-current,
   .challenge-detail-card,
   .submission-guide-card,
+  .guide-accordion,
   .business-rule-item,
   .submit-rule-card,
   .profile-summary article,
@@ -4316,7 +4402,8 @@ html[data-theme="dark"] body {
 .app-shell[data-theme="dark"] .pricing-card,
 .app-shell[data-theme="dark"] .premium-current,
 .app-shell[data-theme="dark"] .challenge-detail-card,
-.app-shell[data-theme="dark"] .submission-guide-card {
+.app-shell[data-theme="dark"] .submission-guide-card,
+.app-shell[data-theme="dark"] .guide-accordion {
   border-color: rgba(125, 211, 252, 0.2) !important;
   background:
     linear-gradient(180deg, rgba(15, 35, 59, 0.88), rgba(10, 25, 44, 0.82)) !important;
@@ -4342,6 +4429,16 @@ html[data-theme="dark"] body {
 .app-shell[data-theme="dark"] .submission-guide-card.danger {
   border-color: rgba(248, 113, 113, 0.32) !important;
   background: rgba(127, 29, 29, 0.28) !important;
+}
+
+.app-shell[data-theme="dark"] .guide-accordion.danger {
+  border-color: rgba(248, 113, 113, 0.32) !important;
+  background: rgba(127, 29, 29, 0.28) !important;
+}
+
+.app-shell[data-theme="dark"] .guide-accordion-head b {
+  background: rgba(34, 211, 238, 0.14) !important;
+  color: #a5f3fc !important;
 }
 
 .app-shell[data-theme="dark"] h1,
