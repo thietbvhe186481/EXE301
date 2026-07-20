@@ -1178,7 +1178,6 @@ function CareerMapPage({ majors, currentMajor, changeMajor, columns, levels, sel
                   onClick={() => setSelectedRoleId(column.roles[2].id)}
                 >
                   <span>{column.title}</span>
-                  <b>{column.roles.length} levels</b>
                 </button>
               );
             })}

@@ -542,9 +542,9 @@ textarea {
 .specialization-list button {
   position: relative;
   display: grid;
-  gap: 7px;
-  min-height: 76px;
-  padding: 10px 10px 10px 14px;
+  align-items: center;
+  min-height: 52px;
+  padding: 9px 10px 9px 14px;
   border: 1px solid var(--line);
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.05);
@@ -573,21 +573,12 @@ textarea {
 }
 
 .specialization-list span {
-  font: 900 16px Outfit, sans-serif;
+  font: 900 15px Outfit, sans-serif;
 }
 
 .specialization-list small {
   color: var(--muted);
   line-height: 1.45;
-}
-
-.specialization-list b {
-  width: fit-content;
-  padding: 5px 8px;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.08);
-  color: #dbeafe;
-  font-size: 12px;
 }
 
 .timeline-panel {
@@ -1906,13 +1897,15 @@ main {
 
 .auth-visual {
   display: grid;
-  align-content: end;
+  align-content: center;
+  gap: 22px;
   padding: 32px;
 }
 
 .auth-visual h1 {
-  max-width: 720px;
-  font-size: clamp(42px, 6vw, 72px);
+  max-width: 760px;
+  font-size: clamp(38px, 5.1vw, 62px);
+  line-height: 1.03;
 }
 
 .auth-visual .lead {
