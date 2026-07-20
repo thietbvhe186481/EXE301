@@ -4727,6 +4727,77 @@ html[data-theme="dark"] body {
   background: rgba(125, 211, 252, 0.16) !important;
 }
 
+/* Final map/login cleanup */
+.career-page .career-planner {
+  grid-template-columns: minmax(300px, 340px) minmax(520px, 1fr) minmax(340px, 380px) !important;
+}
+
+.career-page .specialization-list button {
+  min-height: 62px;
+  padding: 12px 14px 12px 18px;
+}
+
+.career-page .specialization-list span {
+  font-size: 17px;
+}
+
+.auth-visual {
+  align-content: center;
+}
+
+.career-canvas {
+  width: min(560px, 86%);
+  min-height: 300px;
+  align-content: center;
+}
+
+.canvas-orbit {
+  left: 20px;
+  top: 10px;
+  width: 220px;
+  height: 220px;
+}
+
+.orbit-node.two {
+  right: -22px;
+}
+
+.orbit-node.four {
+  left: -24px;
+}
+
+.canvas-profile {
+  width: min(330px, 78%);
+  padding: 20px;
+}
+
+.canvas-profile strong {
+  font-size: 30px;
+}
+
+.canvas-stack {
+  position: relative;
+  right: auto;
+  bottom: auto;
+  z-index: 3;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  width: min(430px, 90%);
+  margin-top: -4px;
+}
+
+.canvas-stack span {
+  transform: none;
+  padding: 9px 10px;
+}
+
+@media (max-width: 960px) {
+  .career-page .career-planner {
+    grid-template-columns: minmax(280px, 320px) minmax(390px, 1fr) minmax(320px, 360px) !important;
+  }
+}
+
 .app-shell[data-theme="dark"] .flow-pill.visited,
 .app-shell[data-theme="dark"] .role-chip span,
 .app-shell[data-theme="dark"] .theme-toggle span {

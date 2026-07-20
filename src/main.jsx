@@ -1054,11 +1054,6 @@ function AuthPage({ authMode, setAuthMode, majors, selectedMajorKey, changeMajor
   return (
     <section className="auth-page page-grid">
       <div className="auth-visual">
-        <div className="hero-map-art" aria-hidden="true">
-          {selectedMajor.labels.concat(selectedMajor.short).slice(0, 6).map((label, index) => (
-            <span key={label} style={{ '--i': index }}>{label}</span>
-          ))}
-        </div>
         <div className="career-canvas" aria-hidden="true">
           <div className="canvas-orbit">
             <span className="orbit-node one">Map</span>
@@ -1087,7 +1082,7 @@ function AuthPage({ authMode, setAuthMode, majors, selectedMajorKey, changeMajor
       <div className="auth-panel">
         <div className="auth-title">
           <p className="mono-label">Bắt đầu hồ sơ nghề nghiệp</p>
-          <h2>{authMode === 'login' ? 'Đăng nhập Portfolio' : 'Tạo tài khoản Portfolio'}</h2>
+          <h2>Chọn hướng đi</h2>
         </div>
         <div className="segmented">
           <button className={authMode === 'login' ? 'active' : ''} onClick={() => setAuthMode('login')}>Đăng nhập</button>
@@ -1169,7 +1164,7 @@ function CareerMapPage({ majors, currentMajor, changeMajor, columns, levels, sel
       <div className="section-heading inline">
         <div>
           <p className="mono-label">Bản đồ nghề {currentMajor.short}</p>
-          <h1>Chọn hướng đi {currentMajor.title}</h1>
+          <h1>Bản đồ chuyên ngành {currentMajor.title}</h1>
         </div>
         <div className="major-switcher">
           {majors.map((major) => (
@@ -1180,25 +1175,28 @@ function CareerMapPage({ majors, currentMajor, changeMajor, columns, levels, sel
         </div>
       </div>
 
-      <div className="track-rail" aria-label="Chọn chuyên ngành hẹp">
-        {columns.map((column) => {
-          const active = selectedColumn.key === column.key;
-          const hiddenBySearch = filteredRoleIds && !column.roles.some((item) => filteredRoleIds.has(item.id));
-          return (
-            <button
-              key={column.key}
-              className={`${active ? 'active' : ''} ${hiddenBySearch ? 'dimmed' : ''}`}
-              style={{ '--accent': column.accent }}
-              onClick={() => setSelectedRoleId(column.roles[2].id)}
-            >
-              <span>{column.title}</span>
-              <small>{column.roles[2].title}</small>
-            </button>
-          );
-        })}
-      </div>
-
       <div className="career-planner">
+        <aside className="specialization-panel">
+          <p className="mono-label">Specializations</p>
+          <h2>Chọn hướng đi</h2>
+          <div className="specialization-list">
+            {columns.map((column) => {
+              const active = selectedColumn.key === column.key;
+              const hiddenBySearch = filteredRoleIds && !column.roles.some((item) => filteredRoleIds.has(item.id));
+              return (
+                <button
+                  key={column.key}
+                  className={`${active ? 'active' : ''} ${hiddenBySearch ? 'dimmed' : ''}`}
+                  style={{ '--accent': column.accent }}
+                  onClick={() => setSelectedRoleId(column.roles[2].id)}
+                >
+                  <span>{column.title}</span>
+                </button>
+              );
+            })}
+          </div>
+        </aside>
+
         <section className="timeline-panel" style={{ '--accent': selectedColumn.accent }}>
           <div className="timeline-head">
             <div>
