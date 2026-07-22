@@ -1365,7 +1365,8 @@ function Header({ page, go, currentUser, theme, setTheme, logout }) {
   const byId = (id) => navItems.find((item) => item.id === id);
   const navGroups = currentRole === 'student'
     ? [
-        { id: 'career', label: 'Định hướng', icon: Compass, items: ['roadmap', 'trends'].map(byId).filter(Boolean) },
+        { id: 'roadmap', label: 'Bản đồ nghề', icon: Compass, target: 'roadmap' },
+        { id: 'trends', label: 'Xu hướng', icon: Sparkles, target: 'trends' },
         { id: 'practice', label: 'Luyện tập', icon: LayoutDashboard, items: ['hub', 'join', 'submit', 'feedback'].map(byId).filter(Boolean) },
         { id: 'premium-direct', label: 'Premium', icon: Crown, target: 'premium' }
       ]
