@@ -412,6 +412,8 @@ const demoPremiumSubscriptions = [
 ];
 
 const trustedMarketSources = [
+  { name: 'ITviec Salary Report 2025-2026', type: 'Lương IT Việt Nam', url: 'https://itviec.com/report/vietnam-it-salary-and-recruitment-market' },
+  { name: 'Adecco Vietnam Salary Guide 2026', type: 'Khung lương đa ngành', url: 'https://adecco.com.vn/en/knowledge-center/detail/adecco-vietnam-salary-guide-2026' },
   { name: 'ITviec Salary Report', type: 'Lương IT Việt Nam', url: 'https://itviec.com/it-salary-report' },
   { name: 'TopDev Vietnam IT Market', type: 'Nhu cầu tuyển dụng IT', url: 'https://topdev.vn/page/bao-cao-thi-truong-it-viet-nam' },
   { name: 'Adecco Vietnam Salary Guide', type: 'Khung lương đa ngành', url: 'https://www.adecco.com.vn/en/knowledge-center/salary-guide/' },
@@ -458,6 +460,36 @@ const marketSignalsByMajor = {
 function getMarketUpdatedLabel() {
   return new Date().toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
 }
+
+const marketEvidenceByMajor = {
+  dev: {
+    metrics: [
+      { value: '1.839', label: 'IT professionals', source: 'ITviec Salary Report 2025-2026', note: 'Báo cáo khảo sát 1.839 chuyên gia IT tại Việt Nam.' },
+      { value: '37,8 triệu', label: 'Back-end median/month', source: 'ITviec Salary Report 2025-2026', note: 'Median total salary Back-end Developer; dải theo kinh nghiệm từ khoảng 12,4 tới 54,9 triệu VND/tháng.' },
+      { value: '50,1 triệu', label: 'Product Owner/Manager median', source: 'ITviec Salary Report 2025-2026', note: 'Product Owner/Manager có median total salary khoảng 50,1 triệu VND/tháng; nhóm >8 năm khoảng 75 triệu.' },
+      { value: '40,65 triệu', label: 'Data Analyst/Scientist median', source: 'ITviec Salary Report 2025-2026', note: 'Data Analyst/Scientist median khoảng 40,65 triệu VND/tháng; Data Engineer 3-4 năm khoảng 56,9 triệu.' }
+    ],
+    reasoning: ['Ưu tiên Backend/Full Stack vì số liệu lương có band rõ và dễ chứng minh bằng sản phẩm chạy được.', 'AI/Data nên đi kèm case có dữ liệu, pipeline hoặc workflow cụ thể thay vì chỉ ghi tên công cụ.', 'Portfolio Dev cần README, demo, test case và giải thích trade-off để mentor/nhà tuyển dụng kiểm tra nhanh.']
+  },
+  mkt: {
+    metrics: [
+      { value: '10.000+', label: 'salary data points', source: 'Adecco Vietnam Salary Guide 2026', note: 'Adecco công bố bộ dữ liệu hơn 10.000 điểm tham chiếu lương.' },
+      { value: '1.000+', label: 'job titles tracked', source: 'Adecco Vietnam Salary Guide 2026', note: 'Theo dõi hơn 1.000 chức danh, hữu ích khi so Marketing với sales, product và operations.' },
+      { value: '11+', label: 'industry categories', source: 'Adecco Vietnam Salary Guide 2026', note: 'Salary guide phân loại hơn 11 nhóm ngành để đối chiếu bối cảnh tuyển dụng đa ngành.' },
+      { value: 'KPI-first', label: 'portfolio logic', source: 'Portfolio business rule', note: 'Marketing portfolio nên chứng minh CAC, CTR, CVR, retention hoặc revenue proxy, không chỉ trình bày ý tưởng.' }
+    ],
+    reasoning: ['Marketing không nên chỉ làm bài “ý tưởng chiến dịch”; phải có mục tiêu, giả định, ngân sách và KPI.', 'Performance/CRM/SEO dễ demo năng lực vì có bảng số liệu, dashboard hoặc audit trước-sau.', 'Case study tốt cần nói được insight nào dẫn đến thông điệp, kênh nào được ưu tiên và nếu KPI thấp thì tối ưu gì.']
+  },
+  design: {
+    metrics: [
+      { value: '10.000+', label: 'salary data points', source: 'Adecco Vietnam Salary Guide 2026', note: 'Nguồn lương đa ngành giúp đặt Design trong bối cảnh product, tech và marketing.' },
+      { value: '1.000+', label: 'job titles tracked', source: 'Adecco Vietnam Salary Guide 2026', note: 'Dữ liệu nhiều chức danh giúp so sánh UI/UX/Product Design với các vị trí liên quan.' },
+      { value: '2 case', label: 'portfolio depth', source: 'Portfolio business rule', note: 'Một case UX flow và một case UI system thường thuyết phục hơn nhiều màn hình rời không có lý do thiết kế.' },
+      { value: '4 state', label: 'minimum UI proof', source: 'Design review rubric', note: 'Component quan trọng nên có default, hover/focus, loading/disabled và error/success state.' }
+    ],
+    reasoning: ['Design được đánh giá bằng lý do ra quyết định, không chỉ bằng ảnh đẹp.', 'Product/UI Design nên chứng minh problem framing, flow, prototype, component state và accessibility.', 'UX Research cần có câu hỏi nghiên cứu, cách lấy mẫu, insight và đề xuất hành động sau research.']
+  }
+};
 
 function isPremiumChallenge(challenge) {
   return ['Senior', 'Lead', 'Cao cấp'].includes(challenge?.difficulty) || Number(challenge?.xp ?? 0) >= 700;
@@ -895,7 +927,7 @@ function App() {
       mentor: ['mentor'],
       admin: ['admin']
     };
-    const publicPages = ['auth', 'roadmap', 'trends', 'hub', 'premium'];
+    const publicPages = ['auth', 'roadmap', 'trends', 'hub', 'premium', 'about'];
     if (!currentUser && !publicPages.includes(page)) {
       setPage('auth');
       return;
@@ -1166,6 +1198,7 @@ function App() {
         {page === 'feedback' && <MentorFeedbackPage go={go} challenge={selectedChallenge} submission={submissionList.find((item) => item.userId === userId && item.challengeId === selectedChallenge.id)} feedback={feedbackList.find((item) => item.userId === userId && item.challengeId === selectedChallenge.id)} mentors={appData.mentors ?? []} createFeedback={() => createFeedback(selectedChallenge.id, userId)} />}
         {page === 'portfolio' && <PortfolioPage pathRoles={pathRoles} currentMajor={currentMajor} go={go} demoUser={demoUser} apiStatus={apiStatus} submissions={submissionList} challenges={challengeList} updatePortfolio={updatePortfolio} isPremium={isPremium} />}
         {page === 'premium' && <PremiumPage plans={premiumPlans} activeSubscription={activeSubscription} upgradePlan={upgradePlan} go={go} />}
+        {page === 'about' && <AboutPage go={go} />}
         {page === 'mentor' && <MentorPage apiStatus={apiStatus} data={appData} currentUser={currentUser} refreshData={refreshData} createFeedback={createFeedback} setNotice={setAdminNotice} notice={adminNotice} />}
         {page === 'admin' && <AdminPage apiStatus={apiStatus} data={appData} notice={adminNotice} currentUser={currentUser} refreshData={refreshData} setAdminNotice={setAdminNotice} createFeedback={createFeedback} />}
       </main>
@@ -1190,7 +1223,7 @@ function Header({ page, go, currentUser, theme, setTheme, logout }) {
     { id: 'trends-preview', label: 'Xu h\u01b0\u1edbng', icon: Sparkles, target: 'trends' },
     { id: 'challenge-preview', label: 'Th\u1eed th\u00e1ch', icon: LayoutDashboard, target: 'hub' },
     { id: 'premium-preview', label: 'Premium', icon: Crown, target: 'premium' },
-    { id: 'about', label: 'About us', icon: BookOpen, target: 'auth' }
+    { id: 'about', label: 'About us', icon: BookOpen, target: 'about' }
   ];
   const navItems = currentUser ? roleFlow : publicFlow;
   const byId = (id) => navItems.find((item) => item.id === id);
@@ -1207,7 +1240,7 @@ function Header({ page, go, currentUser, theme, setTheme, logout }) {
         : [
             { id: 'intro', label: 'Giới thiệu', icon: Sparkles, target: 'auth', matches: ['auth'] },
             { id: 'discover', label: 'Khám phá', icon: Compass, items: publicFlow.filter((item) => ['roadmap-preview', 'trends-preview', 'challenge-preview', 'premium-preview'].includes(item.id)) },
-            { id: 'about', label: 'About us', icon: BookOpen, target: 'auth' }
+            { id: 'about', label: 'About us', icon: BookOpen, target: 'about' }
           ];
   const isNavItemActive = (item) => page === item.id || item.target === page || item.matches?.includes(page);
   const isGroupActive = (group) => group.items?.some(isNavItemActive) || isNavItemActive(group);
@@ -1606,6 +1639,7 @@ function CareerMapPage({ majors, currentMajor, changeMajor, columns, levels, sel
 
 function MarketTrendsPage({ currentMajor, go }) {
   const signal = marketSignalsByMajor[currentMajor.key] ?? marketSignalsByMajor.dev;
+  const evidence = marketEvidenceByMajor[currentMajor.key] ?? marketEvidenceByMajor.dev;
   const updatedLabel = getMarketUpdatedLabel();
   const sourcePreview = trustedMarketSources;
   return (
@@ -1653,6 +1687,24 @@ function MarketTrendsPage({ currentMajor, go }) {
         ))}
       </div>
 
+      <div className="evidence-grid">
+        {evidence.metrics.map((item) => (
+          <article className="evidence-card" key={`${item.label}-${item.value}`}>
+            <span>{item.source}</span>
+            <h2>{item.value}</h2>
+            <strong>{item.label}</strong>
+            <p>{item.note}</p>
+          </article>
+        ))}
+      </div>
+
+      <article className="trend-reasoning-card">
+        <p className="mono-label">Lý luận đề xuất lộ trình</p>
+        {evidence.reasoning.map((item) => (
+          <div className="activity-row" key={item}><ShieldCheck size={15} /><span>{item}</span></div>
+        ))}
+      </article>
+
       <div className="source-grid">
         {sourcePreview.map((source) => (
           <a className="source-card" href={source.url} target="_blank" rel="noreferrer" key={source.name}>
@@ -1672,6 +1724,67 @@ function MarketTrendsPage({ currentMajor, go }) {
         <button className="ghost-action" onClick={() => go('roadmap')}><Compass size={17} /> Quay lại bản đồ nghề</button>
         <button className="primary-action" onClick={() => go('hub')}><LayoutDashboard size={17} /> Chọn thử thách theo xu hướng</button>
       </div>
+    </section>
+  );
+}
+
+function AboutPage({ go }) {
+  const companyStats = [
+    { value: '3', label: 'career domains', note: 'Developer, Marketing, Designer' },
+    { value: '22+', label: 'specializations', note: 'lộ trình hẹp theo từng ngành' },
+    { value: '14+', label: 'portfolio challenges', note: 'bài tập mô phỏng nghiệp vụ thật' },
+    { value: '1:1', label: 'mentor workflow', note: 'match mentor theo chuyên ngành' }
+  ];
+  const operatingPrinciples = ['Không chỉ chọn nghề, phải chứng minh được năng lực bằng sản phẩm.', 'Dữ liệu thị trường cần có nguồn, ngày cập nhật và mức độ tin cậy.', 'Mỗi challenge phải dẫn tới một artifact có thể đưa vào portfolio.', 'Mentor feedback phải cụ thể: điểm mạnh, điểm yếu, hành động cần sửa.'];
+  return (
+    <section className="content-page about-page">
+      <div className="about-hero">
+        <p className="mono-label">About Portfolio</p>
+        <h1>Chúng tôi giúp người trẻ biến định hướng nghề nghiệp thành bằng chứng năng lực.</h1>
+        <p>Portfolio là nền tảng career-tech dành cho sinh viên và người mới đi làm. Sản phẩm kết hợp bản đồ nghề, dữ liệu thị trường, thử thách thực tế, mentor feedback và hồ sơ portfolio để người học không bị mắc kẹt ở câu hỏi “mình nên học gì tiếp theo?”.</p>
+        <div className="submit-actions">
+          <button className="primary-action" onClick={() => go('roadmap')}><Compass size={17} /> Khám phá bản đồ nghề</button>
+          <button className="ghost-action" onClick={() => go('hub')}><LayoutDashboard size={17} /> Xem thử thách</button>
+        </div>
+      </div>
+
+      <div className="about-stat-grid">
+        {companyStats.map((item) => (
+          <article className="evidence-card" key={item.label}>
+            <h2>{item.value}</h2>
+            <strong>{item.label}</strong>
+            <p>{item.note}</p>
+          </article>
+        ))}
+      </div>
+
+      <div className="about-grid">
+        <article className="about-card">
+          <p className="mono-label">Our mission</p>
+          <h2>Career guidance phải thực tế, đo được và có thể demo.</h2>
+          <p>Thay vì đưa lời khuyên chung chung, Portfolio biến mỗi ngành thành lộ trình có level, skill, knowledge, ability, công cụ, challenge và tiêu chuẩn nộp bài. Người dùng nhìn thấy họ đang thiếu gì, cần làm gì và sản phẩm nào chứng minh được năng lực đó.</p>
+        </article>
+        <article className="about-card">
+          <p className="mono-label">Product model</p>
+          <h2>Từ chọn ngành đến portfolio có mentor review.</h2>
+          <div className="activity-row"><Check size={15} /><span>Chọn ngành lớn: Dev, Marketing hoặc Design.</span></div>
+          <div className="activity-row"><Check size={15} /><span>Xem chuyên ngành hẹp và xây lộ trình cá nhân.</span></div>
+          <div className="activity-row"><Check size={15} /><span>Tham gia challenge, nộp sản phẩm, match mentor phù hợp.</span></div>
+          <div className="activity-row"><Check size={15} /><span>Nhận feedback và cập nhật thành case study portfolio.</span></div>
+        </article>
+        <article className="about-card">
+          <p className="mono-label">Data trust</p>
+          <h2>Thông tin nghề nghiệp phải có nguồn.</h2>
+          <p>Trang Xu hướng sử dụng nguồn tham khảo như ITviec Salary Report, Adecco Salary Guide, VietnamWorks và các job board công khai. Trong bản demo, hệ thống hiển thị snapshot dữ liệu; khi triển khai thật, admin sẽ kiểm duyệt nguồn trước khi publish cho student.</p>
+        </article>
+      </div>
+
+      <article className="trend-reasoning-card">
+        <p className="mono-label">Nguyên tắc vận hành</p>
+        {operatingPrinciples.map((item) => (
+          <div className="activity-row" key={item}><ShieldCheck size={15} /><span>{item}</span></div>
+        ))}
+      </article>
     </section>
   );
 }

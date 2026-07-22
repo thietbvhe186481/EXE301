@@ -4317,6 +4317,7 @@ body:has(.trend-page) main {
 }
 
 .trend-signal-grid,
+.evidence-grid,
 .source-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -4327,6 +4328,118 @@ body:has(.trend-page) main {
 .trend-signal-card {
   display: grid;
   gap: 8px;
+}
+
+.evidence-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.evidence-card,
+.trend-reasoning-card,
+.about-card,
+.about-hero {
+  border: 1px solid var(--border-soft);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.68);
+  box-shadow: var(--shadow);
+}
+
+.evidence-card {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  padding: 16px;
+  min-width: 0;
+}
+
+.evidence-card span {
+  color: var(--label-green);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.evidence-card h2 {
+  margin: 0;
+  font-size: clamp(28px, 4vw, 40px);
+}
+
+.evidence-card p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.trend-reasoning-card {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+  padding: 16px;
+}
+
+.about-page {
+  height: auto !important;
+  min-height: calc(100vh - 72px);
+  overflow: visible !important;
+  padding-bottom: 36px;
+}
+
+body:has(.about-page),
+body:has(.about-page) .app-shell,
+body:has(.about-page) main {
+  height: auto !important;
+  min-height: 100vh !important;
+  overflow: visible !important;
+}
+
+.about-hero {
+  display: grid;
+  gap: 14px;
+  padding: clamp(22px, 4vw, 42px);
+  background:
+    linear-gradient(135deg, rgba(224, 242, 254, 0.85), rgba(255, 255, 255, 0.9)),
+    var(--surface);
+}
+
+.about-hero h1 {
+  max-width: 980px;
+  margin: 0;
+  font-size: clamp(38px, 6vw, 72px);
+}
+
+.about-hero p {
+  max-width: 860px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.about-stat-grid,
+.about-grid {
+  display: grid;
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.about-stat-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.about-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.about-card {
+  display: grid;
+  align-content: start;
+  gap: 12px;
+  padding: 18px;
+}
+
+.about-card p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.55;
 }
 
 .trend-signal-card span,
@@ -4377,8 +4490,14 @@ body:has(.trend-page) main {
 
   .trend-hero-grid,
   .trend-signal-grid,
+  .evidence-grid,
   .source-grid,
   .source-mini-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .about-stat-grid,
+  .about-grid {
     grid-template-columns: 1fr;
   }
 
@@ -6286,4 +6405,41 @@ body:has(.challenge-hub-page) main {
     left: 22px;
     transform: rotate(45deg);
   }
+}
+
+/* Navbar contrast polish */
+.app-shell[data-theme="light"] .flow-pill,
+.app-shell[data-theme="light"] .nav-group-trigger,
+.app-shell[data-theme="light"] .role-chip,
+.app-shell[data-theme="light"] .theme-toggle {
+  color: #0f3f56 !important;
+  opacity: 1 !important;
+}
+
+.app-shell[data-theme="light"] .flow-pill.active,
+.app-shell[data-theme="light"] .nav-group-trigger.active {
+  background: #0f7fb3 !important;
+  color: #ffffff !important;
+  box-shadow: 0 10px 22px rgba(14, 116, 144, 0.22) !important;
+}
+
+.app-shell[data-theme="light"] .flow-pill.active *,
+.app-shell[data-theme="light"] .nav-group-trigger.active * {
+  color: #ffffff !important;
+  opacity: 1 !important;
+}
+
+.app-shell[data-theme="light"] .flow-pill.active::after {
+  background: #0f7fb3;
+  opacity: 1;
+}
+
+.app-shell[data-theme="light"] .nav-dropdown-item {
+  color: #123a52 !important;
+}
+
+.app-shell[data-theme="light"] .nav-dropdown-item.active,
+.app-shell[data-theme="light"] .nav-dropdown-item:hover {
+  background: #dff6ff !important;
+  color: #075985 !important;
 }
