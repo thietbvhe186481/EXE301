@@ -1188,7 +1188,8 @@ function App() {
     }
   };
   const loginAs = (type, customPayload = null) => {
-    const buildStudentForSelectedMajor = (baseUser = appData?.demoUser ?? demoUsers[0]) => {
+    const selectedDemoUser = demoUsers.find((user) => user.selectedMajorKey === selectedMajorKey) ?? appData?.demoUser ?? demoUsers[0];
+    const buildStudentForSelectedMajor = (baseUser = selectedDemoUser) => {
       const loginMajor = catalog.find((item) => item.key === selectedMajorKey) ?? catalog[0];
       const loginPath = baseUser.selectedMajorKey === selectedMajorKey && baseUser.path?.length
         ? baseUser.path
@@ -1202,7 +1203,7 @@ function App() {
       ? { email: 'admin@portfolio.vn', password: 'admin123' }
       : type === 'mentor'
         ? { email: 'mentor@portfolio.vn', password: 'mentor123' }
-        : { email: 'student@portfolio.vn', password: '123456' });
+        : { email: selectedDemoUser.email, password: '123456' });
 
     fetch(`${API_BASE_URL}/api/auth/login`, {
       method: 'POST',
@@ -1791,9 +1792,15 @@ function Header({ page, go, currentUser, theme, setTheme, logout }) {
 
 function AuthPage({ authMode, setAuthMode, majors, selectedMajorKey, changeMajor, submissionRulesData, loginAs, go }) {
   const selectedMajor = majors.find((item) => item.key === selectedMajorKey) ?? majors[0];
-  const [credentials, setCredentials] = useState({
-    email: 'student@portfolio.vn',
+  const isSignup = authMode === 'signup';
+  const selectedDemoStudent = demoUsers.find((user) => user.selectedMajorKey === selectedMajorKey) ?? demoUsers[0];
+  const selectedDemoCredentials = {
+    email: selectedDemoStudent.email,
     password: '123456'
+  };
+  const [credentials, setCredentials] = useState({
+    email: selectedDemoCredentials.email,
+    password: selectedDemoCredentials.password
   });
   const [signupType, setSignupType] = useState('student');
   const [signupForm, setSignupForm] = useState({
@@ -1811,6 +1818,9 @@ function AuthPage({ authMode, setAuthMode, majors, selectedMajorKey, changeMajor
   });
   const updateCredentials = (key, value) => setCredentials((current) => ({ ...current, [key]: value }));
   const updateSignupForm = (key, value) => setSignupForm((current) => ({ ...current, [key]: value }));
+  useEffect(() => {
+    if (!isSignup) setCredentials(selectedDemoCredentials);
+  }, [selectedMajorKey, authMode]);
   const submitLogin = () => {
     if (!credentials.email || !credentials.password) return;
     loginAs('student', credentials);
@@ -1818,7 +1828,6 @@ function AuthPage({ authMode, setAuthMode, majors, selectedMajorKey, changeMajor
   const submitSignup = () => {
     loginAs(signupType === 'mentor' ? 'mentor' : 'student');
   };
-  const isSignup = authMode === 'signup';
   return (
     <section className="auth-page page-grid">
       <div className="auth-visual">
@@ -1865,6 +1874,14 @@ function AuthPage({ authMode, setAuthMode, majors, selectedMajorKey, changeMajor
         </div>
         {!isSignup && <div className="auth-helper forgot-password-row">
           <button type="button" className="forgot-password-link">Quên mật khẩu?</button>
+          <button
+            type="button"
+            className="demo-account-chip"
+            onClick={() => setCredentials(selectedDemoCredentials)}
+            title={`Dùng tài khoản học sinh mẫu ngành ${selectedMajor.title}`}
+          >
+            Demo {selectedMajor.short}: {selectedDemoCredentials.email} / {selectedDemoCredentials.password}
+          </button>
         </div>}
         {(!isSignup || signupType === 'student' || signupType === 'mentor') && <div className="major-picker">
           {majors.map((major) => (
@@ -1889,9 +1906,9 @@ function AuthPage({ authMode, setAuthMode, majors, selectedMajorKey, changeMajor
             {`Tạo tài khoản ${signupType === 'mentor' ? 'Mentor' : 'Student'} demo`}
           </button>
         )}
-        {!isSignup && <button className="ghost-action" onClick={() => loginAs('student')}>
+        {!isSignup && <button className="ghost-action" onClick={() => loginAs('student', selectedDemoCredentials)}>
           <Rocket size={18} />
-          Student demo vào bản đồ {selectedMajor.short}
+          Student demo {selectedMajor.short}: {selectedDemoStudent.name}
         </button>}
         {!isSignup && <button className="ghost-action" onClick={() => loginAs('admin')}>
           <ShieldCheck size={18} />
