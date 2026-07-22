@@ -638,6 +638,22 @@ p {
   box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent), transparent 40%);
 }
 
+.major-card.active::after {
+  content: '✓';
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: grid;
+  width: 26px;
+  height: 26px;
+  place-items: center;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--cyan), var(--blue));
+  color: white;
+  font-weight: 950;
+  box-shadow: 0 10px 22px rgba(14, 165, 233, 0.24);
+}
+
 .major-card span {
   width: fit-content;
   padding: 3px 7px;
@@ -5519,6 +5535,16 @@ b,
   background: rgba(255, 255, 255, 0.9) !important;
 }
 
+.app-shell[data-theme="light"] .major-card.active {
+  border-color: var(--accent) !important;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--accent), transparent 80%), rgba(255, 255, 255, 0.96)) !important;
+  box-shadow:
+    0 0 0 2px color-mix(in srgb, var(--accent), transparent 36%),
+    0 18px 36px color-mix(in srgb, var(--accent), transparent 82%) !important;
+  transform: translateY(-2px);
+}
+
 .score-ring,
 .feedback-score span {
   color: #063b2f !important;
@@ -6206,6 +6232,16 @@ html[data-theme="dark"] body {
   border-color: rgba(125, 211, 252, 0.22) !important;
   background: rgba(14, 116, 144, 0.25) !important;
   color: #e0f2fe !important;
+}
+
+.app-shell[data-theme="dark"] .major-card.active {
+  border-color: var(--accent) !important;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--accent), transparent 70%), rgba(15, 35, 59, 0.9)) !important;
+  box-shadow:
+    0 0 0 2px color-mix(in srgb, var(--accent), transparent 34%),
+    0 18px 36px color-mix(in srgb, var(--accent), transparent 82%) !important;
+  transform: translateY(-2px);
 }
 
 .app-shell[data-theme="dark"] .status-banner {
