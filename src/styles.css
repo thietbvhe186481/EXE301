@@ -536,6 +536,28 @@ p {
   color: white;
 }
 
+.forgot-password-link {
+  justify-self: end;
+  border: 0;
+  background: transparent;
+  color: var(--blue);
+  padding: 0;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.forgot-password-link:hover {
+  text-decoration: underline;
+}
+
+.forgot-password-row {
+  display: flex !important;
+  justify-content: flex-end;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+}
+
 .selected-major-note {
   border-color: color-mix(in srgb, var(--accent), white 18%);
   background: linear-gradient(135deg, color-mix(in srgb, var(--accent), transparent 82%), rgba(255, 255, 255, 0.06));

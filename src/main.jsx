@@ -1562,9 +1562,8 @@ function AuthPage({ authMode, setAuthMode, majors, selectedMajorKey, changeMajor
           {isSignup && signupType === 'student' && <label>Năm học<input value={signupForm.academicYear} onChange={(event) => updateSignupForm('academicYear', event.target.value)} placeholder="VD: Năm 3" /></label>}
           {isSignup && signupType === 'student' && <label>Kỹ năng hiện có<input value={signupForm.studentSkills} onChange={(event) => updateSignupForm('studentSkills', event.target.value)} placeholder="VD: React, Figma, SEO..." /></label>}
         </div>
-        {!isSignup && <div className="auth-helper">
-          <span>Quên mật khẩu?</span>
-          <b>Nhận link đặt lại mật khẩu qua email</b>
+        {!isSignup && <div className="auth-helper forgot-password-row">
+          <button type="button" className="forgot-password-link">Quên mật khẩu?</button>
         </div>}
         {(!isSignup || signupType === 'student') && <div className="major-picker">
           {majors.map((major) => (
