@@ -1644,8 +1644,7 @@ function Header({ page, go, currentUser, theme, setTheme, logout }) {
     ? [
         { id: 'roadmap', label: 'Bản đồ nghề', icon: Compass, target: 'roadmap' },
         { id: 'trends', label: 'Xu hướng', icon: Sparkles, target: 'trends' },
-        { id: 'hub-direct', label: 'Thử thách', icon: LayoutDashboard, target: 'hub', matches: ['hub'] },
-        { id: 'practice', label: 'Luyện tập', icon: Rocket, items: ['join', 'submit', 'feedback'].map(byId).filter(Boolean) },
+        { id: 'practice', label: 'Luyện tập', icon: LayoutDashboard, items: ['hub', 'join', 'submit', 'feedback'].map(byId).filter(Boolean) },
         { id: 'premium-direct', label: 'Premium', icon: Crown, target: 'premium' }
       ]
     : currentRole === 'mentor'
@@ -2453,7 +2452,7 @@ function ChallengeHubPage({ currentMajor, activeTrack, setActiveTrack, visibleCh
               </div>
               <div className="market-chip">
                 <Sparkles size={15} />
-                <span>{marketSignal.metrics[0]?.label ?? 'Tín hiệu thị trường'}: {marketSignal.metrics[0]?.value ?? 'Cao'}</span>
+                <span>{marketSignal.signals?.[0]?.label ?? 'Tín hiệu thị trường'}: {marketSignal.signals?.[0]?.value ?? 'Cao'}</span>
               </div>
               {locked && <div className="status-banner premium-banner"><Crown size={16} /> Cần Premium để nộp bài và nhận mentor review sâu.</div>}
               <div className="tag-row">{challenge.tags.slice(0, 4).map((tag) => <span key={tag}>{tag}</span>)}</div>
