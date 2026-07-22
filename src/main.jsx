@@ -202,6 +202,68 @@ const challenges = [
   { id: 'design-research', majorKey: 'design', track: 'UX Research', title: 'Báo cáo nghiên cứu người dùng', difficulty: 'Cao cấp', xp: 740, due: '14 ngày', mentor: 'Hà My', tags: ['Interview', 'Insight', 'Journey'], summary: 'Thực hiện phỏng vấn, tổng hợp insight và đề xuất cải tiến trải nghiệm.' }
 ];
 
+const supplementalChallengeCatalog = {
+  dev: [
+    ['dev-frontend-ui-states', 'Frontend', 'Bộ UI state cho sản phẩm SaaS', 'Sơ cấp', 380, '7 ngày', 'Mina Lê', ['React', 'State', 'UI'], 'Xây các state loading, empty, error, success cho dashboard sản phẩm.'],
+    ['dev-frontend-accessibility-audit', 'Frontend', 'Audit accessibility landing page', 'Trung cấp', 520, '9 ngày', 'Mina Lê', ['A11y', 'WCAG', 'Report'], 'Kiểm tra contrast, keyboard flow, aria label và đề xuất backlog sửa lỗi.'],
+    ['dev-backend-auth-rbac', 'Backend', 'API phân quyền RBAC', 'Trung cấp', 610, '12 ngày', 'Anh Trần', ['Node', 'JWT', 'RBAC'], 'Thiết kế đăng nhập, refresh token, role permission và middleware kiểm tra quyền.'],
+    ['dev-backend-payment-webhook', 'Backend', 'Webhook thanh toán an toàn', 'Cao cấp', 760, '14 ngày', 'Anh Trần', ['Webhook', 'Security', 'MongoDB'], 'Xử lý webhook idempotent, xác thực chữ ký, retry và log giao dịch.'],
+    ['dev-fullstack-booking-crud', 'Full Stack', 'Web đặt lịch dịch vụ', 'Trung cấp', 640, '13 ngày', 'Linh Đào', ['React', 'API', 'Booking'], 'Làm CRUD lịch hẹn, kiểm tra slot trống, trạng thái booking và trang quản trị.'],
+    ['dev-fullstack-saas-billing', 'Full Stack', 'Mini SaaS subscription', 'Cao cấp', 820, '18 ngày', 'Khoa Vũ', ['Billing', 'Plan', 'Dashboard'], 'Mô phỏng gói free/premium, usage limit, invoice và dashboard người dùng.'],
+    ['dev-mobile-offline-notes', 'Mobile', 'Ứng dụng ghi chú offline-first', 'Trung cấp', 620, '12 ngày', 'Linh Đào', ['Flutter', 'Offline', 'Sync'], 'Lưu local, đồng bộ khi có mạng, xử lý conflict và trạng thái pending.'],
+    ['dev-mobile-push-notification', 'Mobile', 'Push notification lịch học', 'Cao cấp', 720, '15 ngày', 'Linh Đào', ['FCM', 'Mobile', 'Scheduler'], 'Thiết kế lịch nhắc học, segment người dùng và theo dõi trạng thái gửi.'],
+    ['dev-devops-monitoring-dashboard', 'DevOps', 'Dashboard giám sát uptime', 'Trung cấp', 650, '10 ngày', 'Nora Vũ', ['Monitoring', 'Docker', 'Alert'], 'Dựng health check, log, alert rule và dashboard trạng thái service.'],
+    ['dev-devops-k8s-rollout', 'DevOps', 'Kế hoạch rollout Kubernetes', 'Cao cấp', 860, '18 ngày', 'Nora Vũ', ['K8s', 'Rollback', 'SLO'], 'Viết manifest, chiến lược rolling update, rollback và tiêu chí SLO.'],
+    ['dev-ai-rag-faq', 'AI / Data', 'FAQ bot có nguồn trích dẫn', 'Cao cấp', 840, '16 ngày', 'Nam Hồ', ['RAG', 'Vector DB', 'Citations'], 'Xây workflow ingest tài liệu, truy vấn, trả lời có nguồn và kiểm tra hallucination.'],
+    ['dev-ai-data-pipeline', 'AI / Data', 'Pipeline dữ liệu tuyển dụng', 'Cao cấp', 790, '14 ngày', 'Nam Hồ', ['Python', 'ETL', 'Dashboard'], 'Thu thập, làm sạch, phân loại job post và trực quan hóa kỹ năng nổi bật.'],
+    ['dev-architecture-migration-plan', 'Software Architecture', 'Kế hoạch tách microservice', 'Lead', 920, '20 ngày', 'Khoa Vũ', ['C4', 'ADR', 'Migration'], 'Phân tích monolith, chọn boundary, vẽ C4 và viết ADR cho migration.'],
+    ['dev-security-api-hardening', 'Backend', 'Hardening API production', 'Cao cấp', 780, '13 ngày', 'Anh Trần', ['Security', 'Rate limit', 'Audit'], 'Bổ sung validation, rate limit, audit log, kiểm tra secret và checklist deploy.'],
+    ['dev-test-automation-suite', 'Frontend', 'Bộ test tự động cho web app', 'Trung cấp', 660, '11 ngày', 'Mina Lê', ['Vitest', 'Playwright', 'CI'], 'Viết unit, integration, e2e smoke test và chạy trong CI.']
+  ],
+  mkt: [
+    ['mkt-content-editorial-calendar', 'Content', 'Editorial calendar 30 ngày', 'Sơ cấp', 360, '7 ngày', 'Mai Nguyễn', ['Content', 'Calendar', 'Persona'], 'Lên lịch nội dung đa kênh theo funnel, persona và mục tiêu tuần.'],
+    ['mkt-content-short-video-series', 'Content', 'Series video ngắn ra mắt sản phẩm', 'Trung cấp', 540, '9 ngày', 'Mai Nguyễn', ['Short Video', 'Hook', 'Script'], 'Viết concept, hook, kịch bản 10 video và cách đo retention.'],
+    ['mkt-seo-topic-cluster', 'SEO', 'Topic cluster cho blog ngành', 'Trung cấp', 590, '12 ngày', 'Minh Phan', ['SEO', 'Cluster', 'Keyword'], 'Xây pillar page, cluster keyword, internal link và kế hoạch publish.'],
+    ['mkt-seo-technical-fix-plan', 'SEO', 'Technical SEO backlog', 'Cao cấp', 720, '14 ngày', 'Minh Phan', ['Core Web Vitals', 'Indexing', 'Audit'], 'Audit index, schema, tốc độ, duplicate content và ưu tiên backlog sửa lỗi.'],
+    ['mkt-performance-meta-funnel', 'Performance Marketing', 'Funnel Meta Ads tuyển lead', 'Trung cấp', 630, '10 ngày', 'Trang Bùi', ['Meta Ads', 'Funnel', 'Creative'], 'Chia campaign theo awareness, consideration, conversion và creative testing.'],
+    ['mkt-performance-google-search', 'Performance Marketing', 'Google Search campaign 20 triệu', 'Cao cấp', 760, '13 ngày', 'Trang Bùi', ['Google Ads', 'Budget', 'ROAS'], 'Xây cấu trúc campaign, keyword match type, landing page và đo hiệu quả.'],
+    ['mkt-social-community-playbook', 'Social Media', 'Playbook cộng đồng 4 tuần', 'Sơ cấp', 390, '8 ngày', 'Mai Nguyễn', ['Community', 'Social', 'Engagement'], 'Thiết kế nhịp đăng bài, format tương tác và rule quản trị cộng đồng.'],
+    ['mkt-social-influencer-brief', 'Social Media', 'Influencer brief cho chiến dịch', 'Trung cấp', 560, '9 ngày', 'Trang Bùi', ['KOL', 'Brief', 'Tracking'], 'Chọn tiêu chí KOL, brief nội dung, mã tracking và KPI đánh giá.'],
+    ['mkt-brand-positioning-map', 'Thương hiệu', 'Bản đồ định vị thương hiệu', 'Trung cấp', 610, '11 ngày', 'Khoa Phạm', ['Brand', 'Positioning', 'Competitor'], 'So sánh đối thủ, xác định điểm khác biệt và tuyên bố định vị.'],
+    ['mkt-brand-launch-deck', 'Thương hiệu', 'Deck ra mắt thương hiệu', 'Cao cấp', 790, '15 ngày', 'Khoa Phạm', ['Brand', 'Deck', 'Campaign'], 'Tạo big idea, key message, visual direction và kế hoạch launch đa kênh.'],
+    ['mkt-growth-referral-loop', 'Growth', 'Referral loop cho app học tập', 'Cao cấp', 820, '16 ngày', 'Khoa Phạm', ['Referral', 'Experiment', 'Activation'], 'Thiết kế cơ chế giới thiệu, reward, tracking và thí nghiệm A/B.'],
+    ['mkt-growth-retention-experiment', 'Growth', 'Thí nghiệm giữ chân người dùng', 'Cao cấp', 780, '14 ngày', 'Khoa Phạm', ['Retention', 'Cohort', 'Experiment'], 'Tìm điểm rơi churn, đặt giả thuyết, thiết kế cohort và đo tác động.'],
+    ['mkt-crm-onboarding-journey', 'CRM / Lifecycle', 'Journey onboarding 7 ngày', 'Trung cấp', 600, '10 ngày', 'Vy Hoàng', ['CRM', 'Lifecycle', 'Email'], 'Thiết kế email, push, segmentation và trigger giúp người dùng kích hoạt.'],
+    ['mkt-crm-winback-segment', 'CRM / Lifecycle', 'Chiến dịch win-back khách hàng', 'Cao cấp', 740, '13 ngày', 'Vy Hoàng', ['CRM', 'Segment', 'Offer'], 'Phân nhóm churn risk, xây ưu đãi, automation flow và chỉ số thành công.'],
+    ['mkt-research-competitor-map', 'Research', 'Market competitor map', 'Trung cấp', 620, '12 ngày', 'Duy Lâm', ['Research', 'Benchmark', 'Insight'], 'Phân tích đối thủ, bảng tính năng, giá và cơ hội định vị sản phẩm.']
+  ],
+  design: [
+    ['design-ui-component-states', 'UI Design', 'Component states cho design system', 'Sơ cấp', 410, '8 ngày', 'Vy Hoàng', ['Figma', 'Component', 'State'], 'Thiết kế state default, hover, focus, disabled, error cho form và card.'],
+    ['design-ui-responsive-dashboard', 'UI Design', 'Dashboard responsive đa breakpoint', 'Trung cấp', 620, '11 ngày', 'Vy Hoàng', ['Dashboard', 'Responsive', 'UI'], 'Thiết kế desktop, tablet, mobile với grid, density và ưu tiên thông tin.'],
+    ['design-ux-checkout-test', 'UX Design', 'Usability test luồng checkout', 'Trung cấp', 640, '12 ngày', 'Phúc Lê', ['UX Test', 'Checkout', 'Insight'], 'Lập kịch bản test, ghi nhận friction và đề xuất cải thiện có ưu tiên.'],
+    ['design-ux-information-architecture', 'UX Design', 'Information architecture cho app học', 'Cao cấp', 730, '14 ngày', 'Phúc Lê', ['IA', 'Card Sort', 'Flow'], 'Tổ chức menu, luồng tìm bài học, taxonomy và sơ đồ điều hướng.'],
+    ['design-product-feature-prd', 'Product Design', 'PRD cho tính năng portfolio public', 'Trung cấp', 660, '12 ngày', 'An Phạm', ['PRD', 'Prototype', 'Metric'], 'Viết mục tiêu, user story, luồng chính, edge case và metric thành công.'],
+    ['design-product-metric-prototype', 'Product Design', 'Prototype gắn metric sản phẩm', 'Cao cấp', 820, '16 ngày', 'An Phạm', ['Prototype', 'Metric', 'Experiment'], 'Thiết kế prototype kèm giả thuyết, event tracking và plan kiểm chứng.'],
+    ['design-graphic-social-kit', 'Graphic Design', 'Social kit cho chiến dịch tuyển sinh', 'Sơ cấp', 390, '7 ngày', 'An Chi', ['Social', 'Template', 'Brand'], 'Tạo bộ template post, story, banner với guideline sử dụng rõ ràng.'],
+    ['design-graphic-event-poster', 'Graphic Design', 'Poster sự kiện cộng đồng', 'Trung cấp', 560, '9 ngày', 'An Chi', ['Poster', 'Layout', 'Print'], 'Thiết kế poster online/offline với hierarchy, CTA và file xuất bản chuẩn.'],
+    ['design-motion-onboarding-lottie', 'Motion Design', 'Onboarding motion bằng Lottie', 'Trung cấp', 650, '12 ngày', 'Huy Võ', ['Lottie', 'Storyboard', 'Motion'], 'Tạo storyboard, motion timing và file animation cho onboarding app.'],
+    ['design-motion-product-reveal', 'Motion Design', 'Video product reveal 15 giây', 'Cao cấp', 760, '14 ngày', 'Huy Võ', ['Motion', 'Video', 'Brand'], 'Thiết kế rhythm, transition, CTA và guideline export cho social.'],
+    ['design-brand-logo-system', 'Brand Design', 'Logo system cho startup', 'Trung cấp', 630, '11 ngày', 'An Chi', ['Logo', 'System', 'Brand'], 'Tạo logo chính, biến thể, vùng an toàn, màu và rule sử dụng.'],
+    ['design-brand-guideline-book', 'Brand Design', 'Brand guideline mini book', 'Cao cấp', 800, '15 ngày', 'An Chi', ['Guideline', 'Brand', 'Template'], 'Biên soạn guideline gồm tone, visual language, layout và ứng dụng mẫu.'],
+    ['design-research-interview-plan', 'UX Research', 'Kế hoạch phỏng vấn người dùng', 'Sơ cấp', 420, '8 ngày', 'Hà My', ['Interview', 'Research', 'Script'], 'Xác định mục tiêu nghiên cứu, chọn mẫu, viết câu hỏi và consent form.'],
+    ['design-research-insight-report', 'UX Research', 'Insight report từ phỏng vấn', 'Cao cấp', 780, '14 ngày', 'Hà My', ['Insight', 'Synthesis', 'Journey'], 'Tổng hợp pattern, quote, opportunity và khuyến nghị sản phẩm.'],
+    ['design-accessibility-redesign', 'UX Design', 'Redesign màn hình theo accessibility', 'Cao cấp', 740, '13 ngày', 'Phúc Lê', ['A11y', 'UI', 'WCAG'], 'Sửa contrast, focus state, copy lỗi và trải nghiệm keyboard cho form.']
+  ]
+};
+
+Object.entries(supplementalChallengeCatalog).forEach(([majorKey, items]) => {
+  const currentCount = challenges.filter((item) => item.majorKey === majorKey).length;
+  const existingIds = new Set(challenges.map((item) => item.id));
+  items.slice(0, Math.max(0, 20 - currentCount)).forEach(([id, track, title, difficulty, xp, due, mentor, tags, summary]) => {
+    if (!existingIds.has(id)) challenges.push({ id, majorKey, track, title, difficulty, xp, due, mentor, tags, summary });
+  });
+});
+
 const submissionRules = {
   dev: {
     primaryLabel: 'Repository GitHub',
@@ -644,6 +706,7 @@ function App() {
   const [apiStatus, setApiStatus] = useState('local');
   const [currentUser, setCurrentUser] = useState(null);
   const [adminNotice, setAdminNotice] = useState('');
+  const [flowNotice, setFlowNotice] = useState('');
   const [selectedMajorKey, setSelectedMajorKey] = useState('dev');
   const [selectedRoleId, setSelectedRoleId] = useState('dev-fullstack-trung-cap');
   const [path, setPath] = useState(['dev-frontend-so-cap', 'dev-fullstack-trung-cap', 'dev-architecture-cao-cap']);
@@ -710,7 +773,14 @@ function App() {
   }, [theme]);
 
   const catalog = appData?.majors?.length ? appData.majors : majorCatalog;
-  const challengeList = appData?.challenges?.length ? appData.challenges : challenges;
+  const remoteChallenges = appData?.challenges?.length ? appData.challenges : [];
+  const challengeList = remoteChallenges.length
+    ? [
+        ...remoteChallenges,
+        ...challenges.filter((challenge) => !remoteChallenges.some((remoteChallenge) => remoteChallenge.id === challenge.id))
+      ]
+    : challenges;
+  const managementData = { ...appData, challenges: challengeList };
   const rulesByMajor = appData?.submissionRules && Object.keys(appData.submissionRules).length ? appData.submissionRules : submissionRules;
   const demoUser = currentRole === 'student' ? currentUser.user : appData?.demoUser;
   const userId = demoUser?.id ?? 'demo-student';
@@ -781,10 +851,12 @@ function App() {
   const go = (id) => {
     if (id === 'submit' && currentRole === 'student') {
       if (!selectedChallenge?.id) {
+        setFlowNotice('Bạn nên chọn một thử thách trước khi nộp bài.');
         setPage('hub');
         return;
       }
       if (!joinedChallengeIds.includes(selectedChallenge.id)) {
+        setFlowNotice('Bạn cần tham gia thử thách trước, sau đó hệ thống mới mở form nộp bài.');
         setPage('join');
         return;
       }
@@ -793,10 +865,12 @@ function App() {
       const hasSubmission = Boolean(submissionStatus[selectedChallenge.id])
         || submissionList.some((item) => item.userId === userId && item.challengeId === selectedChallenge.id);
       if (!hasSubmission) {
+        setFlowNotice('Bạn chưa nộp bài nên chưa có feedback. Hãy nộp sản phẩm trước để mentor review.');
         setPage(joinedChallengeIds.includes(selectedChallenge.id) ? 'submit' : 'join');
         return;
       }
     }
+    setFlowNotice('');
     setPage(id);
   };
   const changeMajor = (majorKey) => {
@@ -1141,6 +1215,7 @@ function App() {
     <div className={`app-shell page-${page}`} data-theme={theme}>
       <Header page={page} go={go} currentUser={currentUser} theme={theme} setTheme={setTheme} logout={logout} />
       <main>
+        {flowNotice && <div className="flow-notice status-banner warning"><ShieldCheck size={17} /> {flowNotice}</div>}
         {page === 'auth' && (
           <AuthPage
             authMode={authMode}
@@ -1199,8 +1274,8 @@ function App() {
         {page === 'portfolio' && <PortfolioPage pathRoles={pathRoles} currentMajor={currentMajor} go={go} demoUser={demoUser} apiStatus={apiStatus} submissions={submissionList} challenges={challengeList} updatePortfolio={updatePortfolio} isPremium={isPremium} />}
         {page === 'premium' && <PremiumPage plans={premiumPlans} activeSubscription={activeSubscription} upgradePlan={upgradePlan} go={go} />}
         {page === 'about' && <AboutPage go={go} />}
-        {page === 'mentor' && <MentorPage apiStatus={apiStatus} data={appData} currentUser={currentUser} refreshData={refreshData} createFeedback={createFeedback} setNotice={setAdminNotice} notice={adminNotice} />}
-        {page === 'admin' && <AdminPage apiStatus={apiStatus} data={appData} notice={adminNotice} currentUser={currentUser} refreshData={refreshData} setAdminNotice={setAdminNotice} createFeedback={createFeedback} />}
+        {page === 'mentor' && <MentorPage apiStatus={apiStatus} data={managementData} currentUser={currentUser} refreshData={refreshData} createFeedback={createFeedback} setNotice={setAdminNotice} notice={adminNotice} />}
+        {page === 'admin' && <AdminPage apiStatus={apiStatus} data={managementData} notice={adminNotice} currentUser={currentUser} refreshData={refreshData} setAdminNotice={setAdminNotice} createFeedback={createFeedback} />}
       </main>
     </div>
   );
@@ -2517,6 +2592,24 @@ function MentorPage({ apiStatus, data, currentUser, refreshData, createFeedback,
 
       {notice && <div className="status-banner"><Check size={17} /> {notice}</div>}
 
+      <div className="dashboard-guide">
+        <article className="guide-step-card active">
+          <span>01</span>
+          <strong>Chọn bài cần review</strong>
+          <p>Lọc theo trạng thái, ngành, chuyên ngành hoặc tên sinh viên để lấy đúng bài được giao.</p>
+        </article>
+        <article className="guide-step-card">
+          <span>02</span>
+          <strong>Mở bài nộp</strong>
+          <p>Xem link chính, minh chứng, ghi chú nghiệp vụ và mức độ khớp với rubric.</p>
+        </article>
+        <article className="guide-step-card">
+          <span>03</span>
+          <strong>Chấm điểm</strong>
+          <p>Nhập điểm, điểm mạnh, điểm cần cải thiện rồi accept hoặc yêu cầu nộp lại.</p>
+        </article>
+      </div>
+
       <div className="mentor-profile-grid">
         <article className="mentor-hero-card">
           <p className="mono-label">Mentor profile</p>
@@ -2971,6 +3064,29 @@ function AdminPage({ apiStatus, data, notice, currentUser, refreshData, setAdmin
       </div>
 
       {notice && <div className="status-banner"><Check size={17} /> {notice}</div>}
+
+      <div className="dashboard-guide">
+        <article className="guide-step-card active">
+          <span>01</span>
+          <strong>Tổng quan vận hành</strong>
+          <p>Theo dõi số ngành, thử thách, người dùng, submission, mentor và premium active.</p>
+        </article>
+        <article className="guide-step-card">
+          <span>02</span>
+          <strong>Quản lý thử thách</strong>
+          <p>Thêm, sửa, xóa bài tập; dùng filter để kiểm tra đúng ngành, mentor và cấp độ.</p>
+        </article>
+        <article className="guide-step-card">
+          <span>03</span>
+          <strong>Điều phối review</strong>
+          <p>Xem bài đã nộp, trạng thái xử lý, user liên quan và tạo feedback demo khi cần.</p>
+        </article>
+        <article className="guide-step-card">
+          <span>04</span>
+          <strong>Quản lý người dùng</strong>
+          <p>Kiểm tra ngành đang chọn, lộ trình, premium và hồ sơ portfolio của từng tài khoản.</p>
+        </article>
+      </div>
 
       <div className="admin-stats">
         <StatCard icon={Blocks} title="Ngành lớn" value={overview.majors} />
