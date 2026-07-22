@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import {
-  ArrowLeftRight,
   BadgeCheck,
   Blocks,
   BookOpen,
@@ -1726,6 +1725,10 @@ function CareerMapPage({ majors, currentMajor, changeMajor, columns, levels, sel
             <Stat value={selectedRole.salary} label="mức lương tham khảo" />
             <Stat value={selectedRole.experience} label="kinh nghiệm" />
           </div>
+          <div className="salary-basis-note">
+            <BadgeCheck size={15} />
+            <span>Band lương tham khảo theo cấp độ, chuyên ngành và tín hiệu thị trường. Nguồn: ITviec Salary Report, Adecco Salary Guide và job board công khai.</span>
+          </div>
           <div className="tabs">
             {Object.entries(tabItems).map(([key, value]) => (
               <button key={key} className={tab === key ? 'active' : ''} onClick={() => setTab(key)}>{value.label}</button>
@@ -1754,15 +1757,6 @@ function CareerMapPage({ majors, currentMajor, changeMajor, columns, levels, sel
               <Sparkles size={15} />
             </button>
           </article>
-          <div className="next-roles">
-            <p className="mono-label">Gợi ý bước tiếp theo</p>
-            {allRoles.filter((item) => item.track === selectedRole.track || item.level === 'Senior').slice(0, 3).map((item) => (
-              <button key={item.id} onClick={() => setSelectedRoleId(item.id)}>
-                <ArrowLeftRight size={15} />
-                {item.title}
-              </button>
-            ))}
-          </div>
           <button className="primary-action" disabled={!canBuildPath} onClick={() => addToPath(selectedRole.id)}>
             <Plus size={18} />
             {canBuildPath ? 'Thêm vào lộ trình' : 'Chỉ xem tham khảo'}
