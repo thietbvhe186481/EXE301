@@ -56,6 +56,8 @@ const flow = [
   { id: 'admin', label: 'Admin', icon: ShieldCheck }
 ];
 
+flow.splice(2, 0, { id: 'trends', label: 'Xu hướng', icon: Sparkles });
+
 const levels = [
   { key: 'nen-tang', label: 'Foundation', short: '01' },
   { key: 'so-cap', label: 'Junior', short: '02' },
@@ -408,6 +410,54 @@ const demoPremiumSubscriptions = [
   { id: 'sub-premium-3', userId: 'student-design-ui', userName: 'Oanh Do', planId: 'premium-year', planName: 'Premium Năm', status: 'active', startedAt: '15/06/2026', expiresAt: '15/06/2027', revenue: 499000 },
   { id: 'sub-premium-4', userId: 'student-mkt-seo', userName: 'Khanh Tran', planId: 'free', planName: 'Free', status: 'free', startedAt: '-', expiresAt: '-', revenue: 0 }
 ];
+
+const trustedMarketSources = [
+  { name: 'ITviec Salary Report', type: 'Lương IT Việt Nam', url: 'https://itviec.com/it-salary-report' },
+  { name: 'TopDev Vietnam IT Market', type: 'Nhu cầu tuyển dụng IT', url: 'https://topdev.vn/page/bao-cao-thi-truong-it-viet-nam' },
+  { name: 'Adecco Vietnam Salary Guide', type: 'Khung lương đa ngành', url: 'https://www.adecco.com.vn/en/knowledge-center/salary-guide/' },
+  { name: 'VietnamWorks Career Report', type: 'Tuyển dụng & hành vi ứng viên', url: 'https://www.vietnamworks.com/hrinsider/' },
+  { name: 'LinkedIn Jobs on the Rise', type: 'Vai trò tăng trưởng toàn cầu', url: 'https://www.linkedin.com/pulse/topics/jobs-c1/job-search-c27/jobs-on-the-rise-t6975/' }
+];
+
+const marketSignalsByMajor = {
+  dev: {
+    headline: 'AI-assisted engineering, backend API và full stack vẫn là nhóm kỹ năng dễ chuyển thành portfolio nhất.',
+    confidence: 'Cao',
+    updatedPolicy: 'Tổng hợp hằng ngày từ báo cáo lương, job board và nguồn tuyển dụng công khai.',
+    signals: [
+      { label: 'Nhu cầu tuyển dụng', value: 'Cao', note: 'Backend, Full Stack, DevOps và AI/Data thường xuất hiện trong JD sản phẩm số.' },
+      { label: 'Kỹ năng nổi bật', value: 'API + Cloud + AI', note: 'Nhà tuyển dụng ưu tiên ứng viên có demo chạy được, README rõ và hiểu trade-off.' },
+      { label: 'Portfolio nên có', value: '2-3 case study', note: 'Một API/backend, một dashboard/full stack và một bài có AI hoặc automation.' }
+    ],
+    hotSkills: ['REST API', 'System Design', 'Cloud Deploy', 'Testing', 'AI workflow', 'Observability']
+  },
+  mkt: {
+    headline: 'Marketing đang dịch chuyển sang dữ liệu, automation và đo lường hiệu quả từng kênh.',
+    confidence: 'Trung bình cao',
+    updatedPolicy: 'Theo dõi báo cáo tuyển dụng, xu hướng nền tảng quảng cáo và benchmark campaign.',
+    signals: [
+      { label: 'Nhu cầu tuyển dụng', value: 'Ổn định', note: 'Performance, CRM, SEO và Growth có lợi thế khi chứng minh được số liệu.' },
+      { label: 'Kỹ năng nổi bật', value: 'Analytics + Content', note: 'Ứng viên cần đọc dữ liệu, viết insight và biến thành kế hoạch hành động.' },
+      { label: 'Portfolio nên có', value: 'Case campaign', note: 'Gồm mục tiêu, persona, ngân sách, kênh, KPI và bài học sau chiến dịch.' }
+    ],
+    hotSkills: ['GA4', 'SEO Audit', 'Paid Ads', 'CRM Flow', 'Content Strategy', 'Market Research']
+  },
+  design: {
+    headline: 'Design cần chứng minh tư duy sản phẩm, hệ thống UI và khả năng giải thích quyết định thiết kế.',
+    confidence: 'Trung bình cao',
+    updatedPolicy: 'Tổng hợp từ salary guide, design job board và xu hướng product/design system.',
+    signals: [
+      { label: 'Nhu cầu tuyển dụng', value: 'Chọn lọc', note: 'Product Design, UX Research và UI system có lợi thế hơn portfolio chỉ đẹp hình ảnh.' },
+      { label: 'Kỹ năng nổi bật', value: 'UX + System', note: 'Nhà tuyển dụng muốn thấy problem framing, flow, prototype và component states.' },
+      { label: 'Portfolio nên có', value: '2 case study sâu', note: 'Một case product flow, một case visual/system có rationale rõ ràng.' }
+    ],
+    hotSkills: ['Figma', 'UX Research', 'Design System', 'Prototype', 'Accessibility', 'Storytelling']
+  }
+};
+
+function getMarketUpdatedLabel() {
+  return new Date().toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+}
 
 function isPremiumChallenge(challenge) {
   return ['Senior', 'Lead', 'Cao cấp'].includes(challenge?.difficulty) || Number(challenge?.xp ?? 0) >= 700;
@@ -1075,6 +1125,7 @@ function App() {
             go={go}
           />
         )}
+        {page === 'trends' && <MarketTrendsPage currentMajor={currentMajor} go={go} />}
         {page === 'hub' && (
           <ChallengeHubPage
             currentMajor={currentMajor}
@@ -1104,7 +1155,7 @@ function App() {
 function Header({ page, go, currentUser, theme, setTheme, logout }) {
   const currentRole = currentUser?.type ?? currentUser?.user?.role;
   const roleFlow = currentRole === 'student'
-    ? flow.filter((item) => ['roadmap', 'hub', 'join', 'submit', 'feedback', 'portfolio', 'premium'].includes(item.id))
+    ? flow.filter((item) => ['roadmap', 'trends', 'hub', 'join', 'submit', 'feedback', 'portfolio', 'premium'].includes(item.id))
     : currentRole === 'mentor'
       ? flow.filter((item) => item.id === 'mentor')
       : currentRole === 'admin'
@@ -1264,6 +1315,9 @@ function CareerMapPage({ majors, currentMajor, changeMajor, columns, levels, sel
     tools: { label: 'Công cụ', items: selectedRole.tools }
   };
 
+  const marketSignal = marketSignalsByMajor[currentMajor.key] ?? marketSignalsByMajor.dev;
+  const updatedLabel = getMarketUpdatedLabel();
+
   useEffect(() => {
     document.querySelector('.career-planner')?.scrollTo({ left: 0, top: 0 });
   }, [currentMajor.key]);
@@ -1369,6 +1423,21 @@ function CareerMapPage({ majors, currentMajor, changeMajor, columns, levels, sel
               </div>
             ))}
           </div>
+          <article className="source-credibility-card">
+            <div>
+              <p className="mono-label">Nguồn & độ tin cậy</p>
+              <strong>Cập nhật {updatedLabel}</strong>
+            </div>
+            <p>{marketSignal.headline}</p>
+            <div className="source-mini-grid">
+              <span><BadgeCheck size={14} /> {marketSignal.confidence}</span>
+              <span><BookOpen size={14} /> {trustedMarketSources.length} nguồn</span>
+            </div>
+            <button className="ghost-action compact" onClick={() => go('trends')}>
+              Xem xu hướng thị trường
+              <Sparkles size={15} />
+            </button>
+          </article>
           <div className="next-roles">
             <p className="mono-label">Gợi ý bước tiếp theo</p>
             {allRoles.filter((item) => item.track === selectedRole.track || item.level === 'Senior').slice(0, 3).map((item) => (
@@ -1431,6 +1500,78 @@ function CareerMapPage({ majors, currentMajor, changeMajor, columns, levels, sel
           </button>
         </div>
       )}
+    </section>
+  );
+}
+
+function MarketTrendsPage({ currentMajor, go }) {
+  const signal = marketSignalsByMajor[currentMajor.key] ?? marketSignalsByMajor.dev;
+  const updatedLabel = getMarketUpdatedLabel();
+  const sourcePreview = trustedMarketSources;
+  return (
+    <section className="content-page trend-page">
+      <div className="section-heading inline">
+        <div>
+          <p className="mono-label">Market intelligence · {currentMajor.short}</p>
+          <h1>Xu hướng thị trường {currentMajor.title}</h1>
+          <p>Dữ liệu dùng để tham khảo khi chọn chuyên ngành, ưu tiên kỹ năng và chọn bài tập portfolio. Các chỉ báo được tổng hợp từ báo cáo lương, job board và nguồn tuyển dụng công khai.</p>
+        </div>
+        <div className="market-freshness-card">
+          <Sparkles size={20} />
+          <div>
+            <strong>Cập nhật {updatedLabel}</strong>
+            <span>Trạng thái nguồn: đang theo dõi</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="trend-hero-grid">
+        <article className="trend-summary-card">
+          <p className="mono-label">Tín hiệu chính</p>
+          <h2>{signal.headline}</h2>
+          <p>{signal.updatedPolicy}</p>
+          <div className="source-mini-grid">
+            <span><BadgeCheck size={15} /> Độ tin cậy: {signal.confidence}</span>
+            <span><BookOpen size={15} /> {trustedMarketSources.length} nguồn tham khảo</span>
+          </div>
+        </article>
+        <article className="trend-skill-cloud">
+          <p className="mono-label">Kỹ năng nên ưu tiên</p>
+          <div className="tag-row">
+            {signal.hotSkills.map((skill) => <span key={skill}>{skill}</span>)}
+          </div>
+        </article>
+      </div>
+
+      <div className="trend-signal-grid">
+        {signal.signals.map((item) => (
+          <article className="trend-signal-card" key={item.label}>
+            <span>{item.label}</span>
+            <h2>{item.value}</h2>
+            <p>{item.note}</p>
+          </article>
+        ))}
+      </div>
+
+      <div className="source-grid">
+        {sourcePreview.map((source) => (
+          <a className="source-card" href={source.url} target="_blank" rel="noreferrer" key={source.name}>
+            <span>{source.type}</span>
+            <strong>{source.name}</strong>
+            <i>{source.url.replace(/^https?:\/\//, '')}</i>
+          </a>
+        ))}
+      </div>
+
+      <div className="trend-note">
+        <ShieldCheck size={18} />
+        <span>Business rule demo: salary trong bản đồ nghề là mức tham khảo theo band, không phải cam kết. Khi nối API thật, hệ thống sẽ lưu snapshot nguồn theo ngày để admin kiểm duyệt trước khi hiển thị cho student.</span>
+      </div>
+
+      <div className="submit-actions">
+        <button className="ghost-action" onClick={() => go('roadmap')}><Compass size={17} /> Quay lại bản đồ nghề</button>
+        <button className="primary-action" onClick={() => go('hub')}><LayoutDashboard size={17} /> Chọn thử thách theo xu hướng</button>
+      </div>
     </section>
   );
 }
