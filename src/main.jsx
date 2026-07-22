@@ -2464,6 +2464,7 @@ function MentorFeedbackPage({ go, challenge, submission, feedback, mentors, crea
   );
 }
 function PortfolioPage({ pathRoles, currentMajor, go, demoUser, apiStatus, submissions, challenges, updatePortfolio, isPremium }) {
+  const [showPublicPreview, setShowPublicPreview] = useState(false);
   const mainSpecs = currentMajor.columns.slice(0, 5);
   const stats = demoUser?.stats ?? { completedChallenges: 6, mentorRating: 4.8, portfolioProjects: 4, verifiedSkills: 18 };
   const profileName = demoUser?.name ?? 'Quang Nguyễn';
@@ -2500,7 +2501,7 @@ function PortfolioPage({ pathRoles, currentMajor, go, demoUser, apiStatus, submi
           <Save size={16} />
           Lưu portfolio
         </button>
-        <button className="primary-action compact" onClick={() => go(isPremium ? 'portfolio' : 'premium')}>
+        <button className="primary-action compact" onClick={() => isPremium ? setShowPublicPreview(true) : go('premium')}>
           <Crown size={16} />
           {isPremium ? 'Public portfolio' : 'Mở khóa public portfolio'}
         </button>
@@ -2543,6 +2544,44 @@ function PortfolioPage({ pathRoles, currentMajor, go, demoUser, apiStatus, submi
             <span>Cấp khi hoàn thành đủ lộ trình, challenge bắt buộc và mentor feedback đạt chuẩn.</span>
           </article>
         </div>
+      )}
+      {showPublicPreview && (
+        <section className="public-portfolio-preview">
+          <div className="public-preview-hero">
+            <div>
+              <p className="mono-label">Public portfolio preview</p>
+              <h2>{profileName}</h2>
+              <span>{careerGoal} · {currentMajor.title}</span>
+            </div>
+            <button className="ghost-action compact" onClick={() => setShowPublicPreview(false)}>
+              <X size={16} />
+              Đóng preview
+            </button>
+          </div>
+          <div className="public-url-row">
+            <LinkIcon size={17} />
+            <strong>{publicPortfolioUrl}</strong>
+            <span>Đang public trong bản demo</span>
+          </div>
+          <div className="public-preview-grid">
+            <article>
+              <p className="mono-label">Case study nổi bật</p>
+              <h3>Case study {currentMajor.title}</h3>
+              <span>Gồm lộ trình, challenge đã nộp, minh chứng sản phẩm và mentor feedback.</span>
+            </article>
+            <article>
+              <p className="mono-label">Kỹ năng xác thực</p>
+              <div className="tag-row">
+                {premiumBadges.slice(0, 3).map((item) => <span key={item}>{item}</span>)}
+              </div>
+            </article>
+            <article>
+              <p className="mono-label">Chứng nhận</p>
+              <h3>{certificateCode}</h3>
+              <span>Chứng nhận hoàn thành lộ trình Premium.</span>
+            </article>
+          </div>
+        </section>
       )}
       <div className="profile-summary">
         <article>
