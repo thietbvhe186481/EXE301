@@ -1545,12 +1545,6 @@ function AuthPage({ authMode, setAuthMode, majors, selectedMajorKey, changeMajor
           <strong>{selectedMajor.title}</strong>
           <span>{selectedMajor.columns.length} specializations · {submissionRulesData[selectedMajor.key].accepted}</span>
         </div>}
-        {isSignup && signupType === 'student' && (
-          <div className="login-rule-box">
-            <strong>Quy trình student</strong>
-            <span>Chọn ngành lớn, xây lộ trình cá nhân, tham gia challenge đúng chuyên ngành rồi nộp sản phẩm để mentor góp ý.</span>
-          </div>
-        )}
         {isSignup && signupType === 'mentor' && (
           <div className="mentor-signup-box">
             <label>Chức danh<input value={signupForm.mentorTitle} onChange={(event) => updateSignupForm('mentorTitle', event.target.value)} /></label>
@@ -1558,10 +1552,6 @@ function AuthPage({ authMode, setAuthMode, majors, selectedMajorKey, changeMajor
             <label>Kinh nghiệm<input type="number" min="1" value={signupForm.mentorExperience} onChange={(event) => updateSignupForm('mentorExperience', event.target.value)} /></label>
             <label className="wide">Chuyên môn mạnh<input value={signupForm.mentorExpertise} onChange={(event) => updateSignupForm('mentorExpertise', event.target.value)} /></label>
             <label className="wide">Minh chứng mentor<textarea value={signupForm.mentorProof} onChange={(event) => updateSignupForm('mentorProof', event.target.value)} /></label>
-            <div className="login-rule-box wide">
-              <strong>Quy trình mentor</strong>
-              <span>Hồ sơ mentor cần được admin duyệt, kiểm tra chuyên môn, công ty từng làm và chứng chỉ trước khi được nhận bài review.</span>
-            </div>
           </div>
         )}
         <button className="primary-action" onClick={isSignup ? submitSignup : submitLogin}>
