@@ -7826,13 +7826,13 @@ body:has(.auth-page) main {
   padding: 24px;
   border-radius: 18px;
   background:
-    linear-gradient(180deg, rgba(2, 8, 23, 0.1), rgba(2, 8, 23, 0.72)),
+    linear-gradient(180deg, rgba(2, 8, 23, 0.04), rgba(2, 8, 23, 0.5)),
     linear-gradient(135deg, rgba(6, 182, 212, 0.24), rgba(37, 99, 235, 0.2)),
     var(--role-photo),
     #e0f2fe;
   background-size: cover;
   background-position: center;
-  box-shadow: inset 0 -140px 120px rgba(2, 8, 23, 0.45);
+  box-shadow: inset 0 -120px 110px rgba(2, 8, 23, 0.34);
 }
 
 .role-visual-scene::before,
@@ -7845,15 +7845,15 @@ body:has(.auth-page) main {
 .role-visual-scene::before {
   inset: 0;
   background:
-    radial-gradient(circle at 18% 18%, rgba(14, 165, 233, 0.42), transparent 24%),
-    linear-gradient(135deg, rgba(14, 165, 233, 0.04), rgba(16, 185, 129, 0.2));
+    radial-gradient(circle at 18% 18%, rgba(14, 165, 233, 0.24), transparent 24%),
+    linear-gradient(135deg, rgba(14, 165, 233, 0.02), rgba(16, 185, 129, 0.1));
 }
 
 .role-visual-scene::after {
   inset: auto 18px 18px 18px;
-  height: 44%;
+  height: 38%;
   border-radius: 18px;
-  background: linear-gradient(180deg, transparent, rgba(2, 8, 23, 0.56));
+  background: linear-gradient(180deg, transparent, rgba(2, 8, 23, 0.36));
 }
 
 .role-visual-scene span,
@@ -7865,22 +7865,23 @@ body:has(.auth-page) main {
 
 .role-visual-scene span {
   color: #fff;
-  font-size: clamp(34px, 6vw, 64px);
+  font-size: clamp(28px, 4.2vw, 46px);
   font-weight: 950;
   line-height: 0.95;
-  text-shadow: 0 16px 34px rgba(2, 8, 23, 0.42);
+  text-shadow: 0 12px 26px rgba(2, 8, 23, 0.38);
 }
 
 .role-visual-scene strong,
 .role-visual-scene i {
   width: fit-content;
-  margin-top: 8px;
-  padding: 7px 10px;
+  margin-top: 7px;
+  padding: 6px 9px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.82);
   color: #083344;
   font-style: normal;
   font-weight: 900;
+  font-size: 14px;
 }
 
 .role-detail-summary {
@@ -8578,12 +8579,12 @@ body {
   bottom: 10px;
   left: 10px;
   display: grid;
-  gap: 3px;
-  padding: 10px 11px;
-  border: 1px solid rgba(255, 255, 255, 0.34);
+  gap: 2px;
+  padding: 8px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.24);
   border-radius: 12px;
-  background: rgba(8, 19, 34, 0.68);
-  backdrop-filter: blur(10px);
+  background: rgba(8, 19, 34, 0.48);
+  backdrop-filter: blur(8px);
 }
 
 .work-gallery-card figcaption strong,
@@ -8596,13 +8597,13 @@ body {
 
 .work-gallery-card figcaption strong {
   color: #fff;
-  font-size: 15px;
+  font-size: 13px;
 }
 
 .work-gallery-card figcaption span {
   color: #dbeafe;
   font-weight: 750;
-  font-size: 13px;
+  font-size: 11px;
 }
 
 .career-page .step-card-grid button {
