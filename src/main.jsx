@@ -1860,6 +1860,48 @@ function AboutPage({ go }) {
           <div className="activity-row" key={item}><ShieldCheck size={15} /><span>{item}</span></div>
         ))}
       </article>
+
+      <footer className="company-footer">
+        <div className="footer-brand">
+          <span className="brand-mark"><ChevronsUp size={20} /></span>
+          <div>
+            <h2>Portfolio Career Tech</h2>
+            <p>Biến kỹ năng hôm nay thành cơ hội ngày mai.</p>
+          </div>
+        </div>
+
+        <div className="footer-grid">
+          <div>
+            <p className="mono-label">Công ty</p>
+            <strong>Công ty TNHH Portfolio Career Tech</strong>
+            <span>MST: 0318 2026 301</span>
+            <span>Trụ sở: Khu công nghệ phần mềm, TP. Hồ Chí Minh</span>
+          </div>
+          <div>
+            <p className="mono-label">Liên hệ</p>
+            <a href="mailto:hello@portfolio.vn">hello@portfolio.vn</a>
+            <a href="tel:+842812345678">(+84) 28 1234 5678</a>
+            <span>Thứ 2 - Thứ 6, 09:00 - 18:00</span>
+          </div>
+          <div>
+            <p className="mono-label">Sản phẩm</p>
+            <button type="button" onClick={() => go('roadmap')}>Bản đồ nghề</button>
+            <button type="button" onClick={() => go('hub')}>Thử thách portfolio</button>
+            <button type="button" onClick={() => go('premium')}>Gói Premium</button>
+          </div>
+          <div>
+            <p className="mono-label">Pháp lý</p>
+            <span>Điều khoản sử dụng</span>
+            <span>Chính sách bảo mật</span>
+            <span>Quy chuẩn mentor review</span>
+          </div>
+        </div>
+
+        <div className="footer-bottom">
+          <span>© 2026 Portfolio Career Tech. All rights reserved.</span>
+          <span>Career map, challenge practice and mentor feedback platform.</span>
+        </div>
+      </footer>
     </section>
   );
 }

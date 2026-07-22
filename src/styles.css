@@ -4673,6 +4673,105 @@ body:has(.about-page) main {
   line-height: 1.55;
 }
 
+.company-footer {
+  display: grid;
+  gap: 18px;
+  margin-top: 18px;
+  padding: 22px;
+  border: 1px solid var(--border-soft);
+  border-radius: 10px;
+  background:
+    linear-gradient(135deg, rgba(14, 165, 233, 0.12), rgba(16, 185, 129, 0.08)),
+    var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.footer-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.footer-brand h2 {
+  margin: 0;
+  font-size: 28px;
+}
+
+.footer-brand p {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-weight: 800;
+}
+
+.footer-grid {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr 1fr 1fr;
+  gap: 14px;
+}
+
+.footer-grid > div {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  padding: 14px;
+  border: 1px solid var(--border-soft);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.52);
+}
+
+.app-shell[data-theme="dark"] .footer-grid > div {
+  background: rgba(15, 23, 42, 0.72);
+}
+
+.footer-grid strong,
+.footer-grid a,
+.footer-grid button {
+  color: var(--text);
+  font-weight: 900;
+}
+
+.footer-grid span,
+.footer-grid a {
+  text-decoration: none;
+  color: var(--muted);
+}
+
+.footer-grid button {
+  justify-self: start;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  font: inherit;
+}
+
+.footer-grid button:hover,
+.footer-grid a:hover {
+  color: var(--blue);
+}
+
+.footer-bottom {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 10px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-soft);
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+@media (max-width: 760px) {
+  .footer-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .footer-brand {
+    align-items: flex-start;
+  }
+}
+
 .trend-signal-card span,
 .source-card span {
   color: var(--label-green);
@@ -4730,6 +4829,10 @@ body:has(.about-page) main {
   .about-stat-grid,
   .about-grid {
     grid-template-columns: 1fr;
+  }
+
+  .footer-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .premium-current {
@@ -6633,6 +6736,12 @@ body:has(.challenge-hub-page) main {
 .app-shell[data-theme="dark"] .nav-dropdown-item.active {
   background: rgba(14, 116, 144, 0.3);
   color: #e0f2fe !important;
+}
+
+@media (max-width: 760px) {
+  .footer-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 980px) {
