@@ -2977,6 +2977,16 @@ function PortfolioPage({ pathRoles, currentMajor, go, demoUser, apiStatus, submi
             <p className="mono-label">Student profile</p>
             <h2>{profileName}</h2>
             <span>{careerGoal}</span>
+            <div className="cv-plan-actions">
+              <span className={`cv-plan-badge ${isPremium ? 'premium' : 'free'}`}>
+                {isPremium ? <Crown size={14} /> : <ShieldCheck size={14} />}
+                {isPremium ? 'Premium' : 'Free'}
+              </span>
+              <button type="button" className="ghost-action tiny print-cv-button" onClick={() => window.print()}>
+                <FileUp size={14} />
+                Xuất CV PDF
+              </button>
+            </div>
           </div>
           <div className="cv-info-list editable-profile-info">
             <div className="editable-info-head">

@@ -7791,6 +7791,43 @@ body:has(.auth-page) main {
   font-weight: 750;
 }
 
+.cv-plan-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  width: 100%;
+  margin-top: 4px;
+}
+
+.cv-plan-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 32px;
+  padding: 7px 10px;
+  border: 1px solid rgba(14, 116, 144, 0.16);
+  border-radius: 999px;
+  font-weight: 950;
+  font-size: 13px;
+}
+
+.cv-plan-badge.free {
+  color: #075985;
+  background: rgba(224, 242, 254, 0.88);
+}
+
+.cv-plan-badge.premium {
+  color: #92400e;
+  background: rgba(254, 243, 199, 0.92);
+  border-color: rgba(245, 158, 11, 0.28);
+}
+
+.print-cv-button {
+  flex: 1 1 132px;
+  justify-content: center;
+}
+
 .cv-info-list,
 .cv-stat-list,
 .cv-main {
@@ -8966,6 +9003,76 @@ body {
 .portfolio-page .cv-stat-list .stat-card {
   min-height: 88px;
   padding: 12px;
+}
+
+.app-shell[data-theme="dark"] .cv-plan-badge.free {
+  color: #bae6fd;
+  background: rgba(14, 165, 233, 0.16);
+}
+
+.app-shell[data-theme="dark"] .cv-plan-badge.premium {
+  color: #fde68a;
+  background: rgba(120, 53, 15, 0.34);
+}
+
+@media print {
+  body,
+  html,
+  #root {
+    background: #fff !important;
+  }
+
+  .topbar,
+  .flow-notice,
+  .print-cv-button,
+  .portfolio-page > .section-heading,
+  .portfolio-page .premium-feature-banner,
+  .portfolio-page .premium-portfolio-grid,
+  .portfolio-page .public-portfolio-preview {
+    display: none !important;
+  }
+
+  .app-shell,
+  .app-shell main,
+  .portfolio-page {
+    min-height: auto !important;
+    height: auto !important;
+    overflow: visible !important;
+    background: #fff !important;
+  }
+
+  .portfolio-page {
+    padding: 0 !important;
+  }
+
+  .portfolio-page .cv-layout {
+    grid-template-columns: 32% 68% !important;
+    gap: 10px !important;
+    margin: 0 !important;
+  }
+
+  .cv-sidebar {
+    position: static !important;
+  }
+
+  .cv-avatar-card,
+  .cv-side-section,
+  .cv-section,
+  .cv-info-list,
+  .featured-project-card,
+  .stat-card {
+    box-shadow: none !important;
+    break-inside: avoid;
+    background: #fff !important;
+    border-color: #cbd5e1 !important;
+  }
+
+  .cv-avatar-card:hover,
+  .cv-side-section:hover,
+  .cv-section:hover,
+  .cv-info-list:hover {
+    transform: none !important;
+  }
 }
 
 .portfolio-page .cv-main,
