@@ -2575,6 +2575,33 @@ function PortfolioPage({ pathRoles, currentMajor, go, demoUser, apiStatus, submi
     'Career Path Certified'
   ];
   const certificateCode = `PF-${currentMajor.short.toUpperCase()}-${String(demoUser?.id ?? 'demo').slice(-4).toUpperCase()}-2026`;
+  const portfolioProjectDetails = (userSubmissions.length ? userSubmissions : [
+    { challengeId: 'dev-dashboard', status: 'reviewed', updatedAt: '15:10' },
+    { challengeId: 'dev-api', status: 'submitted', updatedAt: '09:30' },
+    { challengeId: 'dev-mobile', status: 'reviewed', updatedAt: '17:10' }
+  ]).slice(0, 4).map((submission, index) => {
+    const challenge = challenges.find((item) => item.id === submission.challengeId)
+      ?? challenges.find((item) => item.majorKey === currentMajor.key)
+      ?? { title: challengeName(submission.challengeId), track: currentMajor.columns[0]?.title ?? currentMajor.title, summary: 'Bài tập portfolio theo ngành đã chọn.', tags: currentMajor.columns.slice(0, 3).map((item) => item.title), xp: 420 };
+    const score = [92, 88, 86, 84][index] ?? 82;
+    return {
+      id: `${submission.challengeId}-${index}`,
+      title: challenge.title,
+      track: challenge.track,
+      status: statusLabels[submission.status] ?? submission.status,
+      score,
+      summary: challenge.summary,
+      tags: challenge.tags ?? [],
+      outcome: [
+        `Hoàn thiện ${challenge.track} artifact có thể đưa vào CV/portfolio.`,
+        `Có minh chứng link, ghi chú nghiệp vụ và checklist nộp bài.`,
+        `Tích lũy ${challenge.xp ?? 420} XP cho hồ sơ ${currentMajor.title}.`
+      ],
+      mentorHighlight: score >= 88
+        ? 'Mentor đánh giá cao vì bài có cấu trúc rõ, minh chứng dễ kiểm tra và có khả năng trình bày thành case study.'
+        : 'Bài có nền tảng tốt, cần bổ sung thêm bằng chứng kết quả và giải thích quyết định triển khai.'
+    };
+  });
   useEffect(() => {
     if (autoOpenPublicPortfolio && isPremium) {
       setShowPublicPreview(true);
@@ -2583,25 +2610,6 @@ function PortfolioPage({ pathRoles, currentMajor, go, demoUser, apiStatus, submi
   }, [autoOpenPublicPortfolio, isPremium, onPublicPortfolioOpened]);
   return (
     <section className="content-page portfolio-page">
-      <div className="portfolio-header">
-        <div>
-          <p className="mono-label">Portfolio cá nhân</p>
-          <h1>{profileName}</h1>
-          <p>Định hướng {currentMajor.title}: {pathRoles.map((item) => item.title).join(' -> ')}</p>
-        </div>
-        <button className="primary-action compact" onClick={() => go('roadmap')}>
-          Sửa lộ trình
-          <Compass size={16} />
-        </button>
-        <button className="ghost-action compact" onClick={updatePortfolio}>
-          <Save size={16} />
-          Lưu portfolio
-        </button>
-        <button className="primary-action compact" onClick={() => isPremium ? setShowPublicPreview(true) : go('premium')}>
-          <Crown size={16} />
-          {isPremium ? 'Public portfolio' : 'Mở khóa public portfolio'}
-        </button>
-      </div>
       {!isPremium && (
         <div className="status-banner premium-banner">
           <Crown size={17} />
@@ -2712,18 +2720,6 @@ function PortfolioPage({ pathRoles, currentMajor, go, demoUser, apiStatus, submi
         </aside>
 
         <section className="cv-main">
-          <article className="cv-section cv-summary-card">
-            <div>
-              <p className="mono-label">Professional summary</p>
-              <h2>Portfolio theo hướng {currentMajor.title}</h2>
-              <p>Hồ sơ tập trung chứng minh năng lực bằng kỹ năng đã xác thực, bài tập có mentor review, project có link minh chứng và lộ trình nghề nghiệp rõ ràng.</p>
-            </div>
-            <button className="ghost-action compact" onClick={updatePortfolio}>
-              <Save size={16} />
-              Lưu hồ sơ
-            </button>
-          </article>
-
           <div className="cv-two-col">
             <article className="cv-section">
               <h2>Kỹ năng & mức độ sẵn sàng</h2>
@@ -2759,14 +2755,37 @@ function PortfolioPage({ pathRoles, currentMajor, go, demoUser, apiStatus, submi
             <button className="ghost-action compact"><LinkIcon size={16} /> Xem case study</button>
           </article>
 
-          <div className="cv-two-col">
-            <article className="cv-section">
+          <div className="cv-two-col portfolio-work-grid">
+            <article className="cv-section cv-project-section">
               <h2>Dự án / bài tập portfolio</h2>
-              {(demoUser?.portfolio?.publishedProjects ?? ['Case study chính', 'Bài tập mentor review', 'Mini project tự luyện']).map((item, index) => (
-                <div className="project-row" key={item}>
-                  <span>{item}</span>
-                  <strong>{['Đã xuất bản', 'Đang review', 'Đang làm'][index]}</strong>
-                </div>
+              {portfolioProjectDetails.map((project) => (
+                <article className="portfolio-project-card" key={project.id}>
+                  <div className="card-topline">
+                    <span>{project.track}</span>
+                    <strong>{project.score}/100</strong>
+                  </div>
+                  <h3>{project.title}</h3>
+                  <p>{project.summary}</p>
+                  <div className="project-outcome-list">
+                    {project.outcome.map((item) => (
+                      <div className="requirement-item compact" key={item}>
+                        <Check size={15} />
+                        <span>{item}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mentor-highlight">
+                    <Star size={16} />
+                    <span>{project.mentorHighlight}</span>
+                  </div>
+                  <div className="tag-row">
+                    {project.tags.slice(0, 4).map((tag) => <span key={tag}>{tag}</span>)}
+                  </div>
+                  <div className="project-card-footer">
+                    <span>{project.status}</span>
+                    <button className="ghost-action compact"><LinkIcon size={15} /> Xem minh chứng</button>
+                  </div>
+                </article>
               ))}
             </article>
 
