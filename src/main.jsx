@@ -304,6 +304,10 @@ const demoUsers = [
     email: 'student@portfolio.vn',
     role: 'student',
     selectedMajorKey: 'dev',
+    school: 'FPT University',
+    academicMajor: 'Software Engineering',
+    academicYear: 'Năm 3',
+    currentSkills: ['React', 'Node.js', 'MongoDB', 'UI Responsive'],
     careerGoal: 'Senior Architect',
     path: ['dev-frontend-so-cap', 'dev-fullstack-trung-cap', 'dev-architecture-cao-cap'],
     joinedChallengeIds: ['dev-api', 'dev-dashboard', 'dev-devops'],
@@ -323,6 +327,10 @@ const demoUsers = [
     email: 'bao.backend@portfolio.vn',
     role: 'student',
     selectedMajorKey: 'dev',
+    school: 'University of Information Technology',
+    academicMajor: 'Information Systems',
+    academicYear: 'Năm 4',
+    currentSkills: ['Node.js', 'Express', 'SQL', 'Docker'],
     careerGoal: 'Lead Backend',
     path: ['dev-backend-so-cap', 'dev-devops-trung-cap', 'dev-architecture-cao-cap'],
     joinedChallengeIds: ['dev-api', 'dev-devops'],
@@ -334,6 +342,10 @@ const demoUsers = [
     email: 'oanh.ui@portfolio.vn',
     role: 'student',
     selectedMajorKey: 'design',
+    school: 'RMIT Vietnam',
+    academicMajor: 'Digital Design',
+    academicYear: 'Năm 2',
+    currentSkills: ['Figma', 'Wireframe', 'Prototype', 'User Research'],
     careerGoal: 'Senior Product Designer',
     path: ['design-ui-so-cap', 'design-product-trung-cap', 'design-brand-cao-cap'],
     joinedChallengeIds: ['design-ui', 'design-product'],
@@ -345,6 +357,10 @@ const demoUsers = [
     email: 'khanh.seo@portfolio.vn',
     role: 'student',
     selectedMajorKey: 'mkt',
+    school: 'UEH',
+    academicMajor: 'Digital Marketing',
+    academicYear: 'Năm 3',
+    currentSkills: ['SEO', 'Content', 'Google Analytics', 'Campaign Planning'],
     careerGoal: 'Growth Lead',
     path: ['mkt-seo-so-cap', 'mkt-content-trung-cap', 'mkt-growth-cao-cap'],
     joinedChallengeIds: ['mkt-seo', 'mkt-ads'],
@@ -1438,6 +1454,10 @@ function AuthPage({ authMode, setAuthMode, majors, selectedMajorKey, changeMajor
   const [signupForm, setSignupForm] = useState({
     name: 'Người dùng mới',
     goal: 'Xây portfolio xin thực tập',
+    school: 'FPT University',
+    academicMajor: 'Software Engineering',
+    academicYear: 'Năm 3',
+    studentSkills: 'HTML, CSS, JavaScript, React',
     mentorTitle: 'Senior Mentor',
     mentorCompany: 'Tech Company',
     mentorExpertise: 'Backend, Full Stack, Career Review',
@@ -1499,6 +1519,10 @@ function AuthPage({ authMode, setAuthMode, majors, selectedMajorKey, changeMajor
           <label>Mật khẩu<input type="password" value={credentials.password} onChange={(event) => updateCredentials('password', event.target.value)} placeholder="Nhập mật khẩu" /></label>
           {isSignup && <label>Họ tên<input value={signupForm.name} onChange={(event) => updateSignupForm('name', event.target.value)} placeholder="Tên hiển thị" /></label>}
           {isSignup && signupType === 'student' && <label>Mục tiêu<input value={signupForm.goal} onChange={(event) => updateSignupForm('goal', event.target.value)} placeholder="VD: Frontend Intern trong 3 tháng" /></label>}
+          {isSignup && signupType === 'student' && <label>Trường đang học<input value={signupForm.school} onChange={(event) => updateSignupForm('school', event.target.value)} placeholder="VD: FPT University" /></label>}
+          {isSignup && signupType === 'student' && <label>Chuyên ngành đang học<input value={signupForm.academicMajor} onChange={(event) => updateSignupForm('academicMajor', event.target.value)} placeholder="VD: Software Engineering" /></label>}
+          {isSignup && signupType === 'student' && <label>Năm học<input value={signupForm.academicYear} onChange={(event) => updateSignupForm('academicYear', event.target.value)} placeholder="VD: Năm 3" /></label>}
+          {isSignup && signupType === 'student' && <label>Kỹ năng hiện có<input value={signupForm.studentSkills} onChange={(event) => updateSignupForm('studentSkills', event.target.value)} placeholder="VD: React, Figma, SEO..." /></label>}
         </div>
         {!isSignup && <div className="auth-helper">
           <span>Demo account</span>
@@ -2409,6 +2433,11 @@ function PortfolioPage({ pathRoles, currentMajor, go, demoUser, apiStatus, submi
       )}
       <div className="profile-summary">
         <article>
+          <p className="mono-label">Thông tin học tập</p>
+          <h2>{demoUser?.school ?? 'Chưa cập nhật trường học'}</h2>
+          <span>{demoUser?.academicMajor ?? 'Chưa cập nhật chuyên ngành'} · {demoUser?.academicYear ?? 'Chưa cập nhật năm học'}</span>
+        </article>
+        <article>
           <p className="mono-label">Career goal</p>
           <h2>{careerGoal}</h2>
           <span>Ưu tiên hiện tại: hoàn thành 2 thử thách, nhận góp ý mentor và xuất bản 1 case study.</span>
@@ -2468,6 +2497,14 @@ function PortfolioPage({ pathRoles, currentMajor, go, demoUser, apiStatus, submi
               <strong>{['Đã xuất bản', 'Đang review', 'Đang làm'][index]}</strong>
             </div>
           ))}
+        </article>
+        <article className="profile-panel">
+          <h2>Kỹ năng hiện có</h2>
+          <div className="tag-row">
+            {(demoUser?.currentSkills ?? currentMajor.columns.slice(0, 4).map((item) => item.title)).map((item) => (
+              <span key={item}>{item}</span>
+            ))}
+          </div>
         </article>
         <article className="profile-panel">
           <h2>Lịch sử nộp bài</h2>
@@ -3573,6 +3610,7 @@ function AdminPage({ apiStatus, data, notice, currentUser, refreshData, setAdmin
               <div>
                 <strong>{user.name}</strong>
                 <span>{user.email} · ngành {user.selectedMajorKey} · {user.status ?? 'active'} · {user.path?.length ?? 0} vị trí</span>
+                <small>{user.school ?? 'Chưa cập nhật trường'} · {user.academicMajor ?? 'Chưa cập nhật chuyên ngành'} · {user.academicYear ?? 'Chưa cập nhật năm học'}</small>
                 <small>Admin chỉ khóa/mở tài khoản; ngành học là lựa chọn ban đầu của sinh viên.</small>
               </div>
               <button onClick={() => updateUser(user.id, { status: user.status === 'locked' ? 'active' : 'locked' })}>

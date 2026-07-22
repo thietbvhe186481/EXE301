@@ -507,6 +507,10 @@ p {
   gap: 10px;
 }
 
+.auth-fields label {
+  min-width: 0;
+}
+
 .auth-helper,
 .selected-major-note,
 .login-rule-box,
