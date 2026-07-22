@@ -3683,6 +3683,10 @@ body:has(.app-shell.page-mentor) {
   display: grid !important;
 }
 
+.mentor-review-tab.active {
+  gap: 16px;
+}
+
 .workspace-sidebar button {
   display: flex;
   align-items: center;

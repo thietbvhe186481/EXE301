@@ -2622,8 +2622,7 @@ function MentorPage({ apiStatus, data, currentUser, refreshData, createFeedback,
         <p className="mono-label">Mentor menu</p>
         <button className={mentorSection === 'overview' ? 'active' : ''} onClick={() => setMentorSection('overview')}><LayoutDashboard size={16} /> Tổng quan</button>
         <button className={mentorSection === 'profile' ? 'active' : ''} onClick={() => setMentorSection('profile')}><UserRound size={16} /> Hồ sơ mentor</button>
-        <button className={mentorSection === 'filter' ? 'active' : ''} onClick={() => setMentorSection('filter')}><Filter size={16} /> Bộ lọc bài</button>
-        <button className={mentorSection === 'review' ? 'active' : ''} onClick={() => setMentorSection('review')}><FileUp size={16} /> Review bài nộp</button>
+        <button className={mentorSection === 'review' ? 'active' : ''} onClick={() => setMentorSection('review')}><FileUp size={16} /> Bộ lọc & review</button>
         <button className={mentorSection === 'feedback' ? 'active' : ''} onClick={() => setMentorSection('feedback')}><MessageSquareText size={16} /> Feedback</button>
       </aside>
 
@@ -2707,7 +2706,8 @@ function MentorPage({ apiStatus, data, currentUser, refreshData, createFeedback,
         </article>
       </div>
 
-      <section className={`management-filters workspace-section ${mentorSection === 'filter' ? 'active' : ''}`} id="mentor-filter">
+      <div className={`workspace-section mentor-review-tab ${mentorSection === 'review' ? 'active' : ''}`} id="mentor-review">
+      <section className="management-filters mentor-review-filter" id="mentor-filter">
         <div>
           <p className="mono-label">Bộ lọc mentor</p>
           <strong>{filteredPending.length} bài chờ · {filteredReviewed.length} bài đã review</strong>
@@ -2753,7 +2753,6 @@ function MentorPage({ apiStatus, data, currentUser, refreshData, createFeedback,
         </button>
       </section>
 
-      <div className={`workspace-section ${mentorSection === 'review' ? 'active' : ''}`} id="mentor-review">
         {activeSubmission && (
         <section className="mentor-review-workspace">
           <div className="review-main-panel">
