@@ -1070,7 +1070,7 @@ function App() {
           />
         )}
         {page === 'join' && <JoinChallengePage challenge={selectedChallenge} currentMajor={currentMajor} joined={joinedChallengeIds.includes(selectedChallenge.id)} submission={submissionStatus[selectedChallenge.id]} joinChallenge={joinChallenge} isPremium={isPremium} go={go} />}
-        {page === 'submit' && <SubmitProjectPage challenge={selectedChallenge} currentMajor={currentMajor} joined={joinedChallengeIds.includes(selectedChallenge.id)} submission={submissionStatus[selectedChallenge.id]} joinChallenge={joinChallenge} saveDraft={saveDraft} submitChallenge={submitChallenge} submissionRulesData={rulesByMajor} isPremium={isPremium} go={go} />}
+        {page === 'submit' && <SubmitProjectPage challenge={selectedChallenge} currentMajor={currentMajor} joined={joinedChallengeIds.includes(selectedChallenge.id)} submission={submissionStatus[selectedChallenge.id]} mentors={appData.mentors ?? []} joinChallenge={joinChallenge} saveDraft={saveDraft} submitChallenge={submitChallenge} submissionRulesData={rulesByMajor} isPremium={isPremium} go={go} />}
         {page === 'feedback' && <MentorFeedbackPage go={go} challenge={selectedChallenge} submission={submissionList.find((item) => item.userId === userId && item.challengeId === selectedChallenge.id)} feedback={feedbackList.find((item) => item.userId === userId && item.challengeId === selectedChallenge.id)} createFeedback={() => createFeedback(selectedChallenge.id, userId)} />}
         {page === 'portfolio' && <PortfolioPage pathRoles={pathRoles} currentMajor={currentMajor} go={go} demoUser={demoUser} apiStatus={apiStatus} submissions={submissionList} challenges={challengeList} updatePortfolio={updatePortfolio} isPremium={isPremium} />}
         {page === 'premium' && <PremiumPage plans={premiumPlans} activeSubscription={activeSubscription} upgradePlan={upgradePlan} go={go} />}
@@ -1568,7 +1568,7 @@ function JoinChallengePage({ challenge, currentMajor, joined, submission, joinCh
   );
 }
 
-function SubmitProjectPage({ challenge, currentMajor, joined, submission, joinChallenge, saveDraft, submitChallenge, submissionRulesData, isPremium, go }) {
+function SubmitProjectPage({ challenge, currentMajor, joined, submission, mentors, joinChallenge, saveDraft, submitChallenge, submissionRulesData, isPremium, go }) {
   const rules = submissionRulesData[currentMajor.key] ?? submissionRules[currentMajor.key];
   const isSubmitted = submission?.status === 'submitted';
   const isReviewed = submission?.status === 'reviewed';
@@ -1587,7 +1587,14 @@ function SubmitProjectPage({ challenge, currentMajor, joined, submission, joinCh
     errors: [],
     score: submission?.validationScore ?? 0
   }));
-  const assignedMentor = submission?.mentor || matchMentorForChallenge(challenge).name;
+  const [submitAttempted, setSubmitAttempted] = useState(Boolean(submission?.status && submission.status !== 'draft'));
+  const [showMentorProfile, setShowMentorProfile] = useState(false);
+  const matchedMentor = mentors.find((item) => item.id === submission?.mentorId)
+    ?? mentors.find((item) => item.name === submission?.mentor)
+    ?? matchMentorForChallenge(challenge, mentors);
+  const assignedMentor = matchedMentor?.name || submission?.mentor || challenge.mentor;
+  const showSubmitResult = submitAttempted && validation.checks.length > 0;
+  const showMatchedMentor = showSubmitResult && validation.errors.length === 0;
   const updateForm = (key, value) => setForm((current) => ({ ...current, [key]: value }));
   return (
     <section className="content-page form-layout">
@@ -1599,7 +1606,7 @@ function SubmitProjectPage({ challenge, currentMajor, joined, submission, joinCh
           <span>{joined ? 'Đã tham gia' : 'Chưa tham gia'}</span>
           <span>{isReviewed ? `Đã được góp ý ${submission.updatedAt}` : isSubmitted ? `Đã nộp ${submission.updatedAt}` : isRejected ? `Cần nộp lại ${submission.updatedAt}` : isDraft ? `Bản nháp ${submission.updatedAt}` : 'Chưa có bản nháp'}</span>
           <span>{challenge.track}</span>
-          <span>Mentor: {assignedMentor}</span>
+          {showMatchedMentor && <span>Mentor: {assignedMentor}</span>}
         </div>
         <div className="submission-guide-grid">
           <GuideAccordion eyebrow="Submission standard" title="Hồ sơ nộp bài cần có" count={submitGuide.submissionPackage.length} tone="wide">
@@ -1628,6 +1635,47 @@ function SubmitProjectPage({ challenge, currentMajor, joined, submission, joinCh
             ))}
           </GuideAccordion>
         </div>
+        {showSubmitResult && (
+          <div className="submit-result-stack">
+            <div className="validation-panel">
+              <div>
+                <p className="mono-label">Kiểm tra bài nộp</p>
+                <strong>{validation.score}/100 điểm hợp lệ</strong>
+              </div>
+              {validation.checks.map((item) => (
+                <div className={`validation-row ${item.ok ? 'ok' : 'warn'}`} key={item.key}>
+                  {item.ok ? <Check size={16} /> : <X size={16} />}
+                  <span><b>{item.label}</b>{item.detail}</span>
+                </div>
+              ))}
+            </div>
+            {showMatchedMentor && (
+              <article className="matched-mentor-card">
+                <button onClick={() => setShowMentorProfile((current) => !current)}>
+                  <span>
+                    <i className="mono-label">Mentor được match</i>
+                    <strong>{assignedMentor}</strong>
+                  </span>
+                  <GraduationCap size={18} />
+                </button>
+                {showMentorProfile && (
+                  <div className="matched-mentor-detail">
+                    <p>{matchedMentor.reviewStyle ?? 'Mentor sẽ xem link nộp, kiểm tra minh chứng, chấm điểm và gợi ý cách đưa bài vào portfolio.'}</p>
+                    <div className="tag-row">
+                      {(matchedMentor.expertise ?? [challenge.track]).map((item) => <span key={item}>{item}</span>)}
+                    </div>
+                    <div className="mentor-facts">
+                      <span><b>{matchedMentor.level ?? 'Senior Mentor'}</b> trình độ</span>
+                      <span><b>{matchedMentor.currentCompany ?? 'Portfolio Mentor Network'}</b> công ty</span>
+                      <span><b>{matchedMentor.yearsOfExperience ?? 5}+ năm</b> kinh nghiệm</span>
+                      <span><b>{matchedMentor.strongestField ?? challenge.track}</b> thế mạnh</span>
+                    </div>
+                  </div>
+                )}
+              </article>
+            )}
+          </div>
+        )}
       </div>
       <div className="submission-form">
         <div className="submit-rule-card">
@@ -1638,21 +1686,6 @@ function SubmitProjectPage({ challenge, currentMajor, joined, submission, joinCh
         <label>{rules.secondaryLabel}<input value={form.secondaryLink} onChange={(event) => updateForm('secondaryLink', event.target.value)} placeholder="Dán link minh chứng hoặc demo" /></label>
         <label>Kỹ năng sử dụng<input value={form.skills} onChange={(event) => updateForm('skills', event.target.value)} placeholder={rules.skillPlaceholder} /></label>
         <label>Ghi chú sản phẩm<textarea value={form.notes} onChange={(event) => updateForm('notes', event.target.value)} placeholder={rules.notePlaceholder} /></label>
-        <div className="validation-panel">
-          <div>
-            <p className="mono-label">Kiểm tra trước khi gửi</p>
-            <strong>{validation.checks.length ? `${validation.score}/100 điểm hợp lệ` : 'Chưa kiểm tra'}</strong>
-          </div>
-          {(validation.checks.length ? validation.checks : [
-            { key: 'primaryLink', label: 'Link chính hợp lệ', ok: false, detail: 'Hệ thống sẽ kiểm tra khi bạn lưu hoặc gửi.' },
-            { key: 'mentorMatch', label: 'Tự match mentor phù hợp', ok: true, detail: `Dự kiến match với ${assignedMentor}.` }
-          ]).map((item) => (
-            <div className={`validation-row ${item.ok ? 'ok' : 'warn'}`} key={item.key}>
-              {item.ok ? <Check size={16} /> : <X size={16} />}
-              <span><b>{item.label}</b>{item.detail}</span>
-            </div>
-          ))}
-        </div>
         <div className="upload-zone">
           <FileUp size={30} />
           <strong>Thả ảnh minh chứng tại đây</strong>
@@ -1689,8 +1722,9 @@ function SubmitProjectPage({ challenge, currentMajor, joined, submission, joinCh
             joinChallenge(challenge.id);
             const result = submitChallenge(challenge.id, form);
             setValidation(result.validation);
+            setSubmitAttempted(true);
+            setShowMentorProfile(result.ok);
             if (!result.ok) return;
-            go('feedback');
           }}>
             {locked ? 'Nâng cấp để nộp bài' : isReviewed ? 'Xem góp ý mentor' : isRejected ? 'Nộp lại cho mentor' : 'Gửi người hướng dẫn góp ý'}
             <Send size={17} />
