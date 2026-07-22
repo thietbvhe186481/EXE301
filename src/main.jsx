@@ -1371,9 +1371,17 @@ function Header({ page, go, currentUser, theme, setTheme, logout }) {
         { id: 'premium-direct', label: 'Premium', icon: Crown, target: 'premium' }
       ]
     : currentRole === 'mentor'
-      ? [{ id: 'mentor-work', label: 'Mentor workspace', icon: GraduationCap, items: roleFlow }]
+      ? [
+          { id: 'mentor-workspace', label: 'Mentor Workspace', icon: GraduationCap, target: 'mentor', matches: ['mentor'] },
+          { id: 'trends-workspace', label: 'Xu hướng thị trường', icon: Sparkles, target: 'trends', matches: ['trends'] },
+          { id: 'roadmap-workspace', label: 'Bản đồ nghề nghiệp', icon: Compass, target: 'roadmap', matches: ['roadmap'] }
+        ]
       : currentRole === 'admin'
-        ? [{ id: 'admin-work', label: 'Admin console', icon: ShieldCheck, items: roleFlow }]
+        ? [
+            { id: 'admin-workspace', label: 'Admin Workspace', icon: ShieldCheck, target: 'admin', matches: ['admin'] },
+            { id: 'trends-workspace', label: 'Xu hướng thị trường', icon: Sparkles, target: 'trends', matches: ['trends'] },
+            { id: 'roadmap-workspace', label: 'Bản đồ nghề nghiệp', icon: Compass, target: 'roadmap', matches: ['roadmap'] }
+          ]
         : [
             { id: 'intro', label: 'Giới thiệu', icon: Sparkles, target: 'auth', matches: ['auth'] },
             { id: 'roadmap-preview', label: 'Bản đồ nghề', icon: Compass, target: 'roadmap' },
