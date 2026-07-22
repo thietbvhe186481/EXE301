@@ -671,6 +671,82 @@ function makeWorkIllustrationSrc(_, index) {
   return `${baseUrl}?auto=format&fit=crop&w=900&q=82&sat=-4&sig=${index + 41}`;
 }
 
+function buildRoleReality({ currentMajor, selectedRole }) {
+  const track = selectedRole.track;
+  const title = selectedRole.title;
+  const level = selectedRole.level;
+  const coreSkill = selectedRole.skills?.[0] ?? `năng lực ${track}`;
+  const coreKnowledge = selectedRole.knowledge?.[0] ?? `bối cảnh ${track}`;
+  const coreTool = selectedRole.tools?.[0] ?? 'công cụ chuyên môn';
+
+  const contextByMajor = {
+    dev: {
+      day: [
+        `Bắt đầu ngày bằng cách đọc ticket, kiểm tra pull request và xác định phần ${track} nào đang ảnh hưởng tới người dùng.`,
+        `Làm việc với designer/product để hiểu nghiệp vụ trước khi viết code, tránh xây tính năng đúng kỹ thuật nhưng sai nhu cầu.`,
+        `Cuối ngày cập nhật tiến độ, ghi lại quyết định kỹ thuật và chuẩn bị minh chứng demo cho team review.`
+      ],
+      responsibility: [
+        `Chịu trách nhiệm biến yêu cầu sản phẩm thành tính năng ${track} chạy được, có kiểm thử và có thể bảo trì.`,
+        `Giải thích trade-off về hiệu năng, bảo mật, dữ liệu hoặc trải nghiệm khi team phải chọn hướng triển khai.`,
+        `Đảm bảo sản phẩm có link demo, tài liệu chạy và bằng chứng rõ ràng để đưa vào portfolio.`
+      ],
+      situations: [
+        `Khi bug xuất hiện sát deadline, bạn phải đọc log, khoanh vùng nguyên nhân và chọn cách sửa ít rủi ro nhất.`,
+        `Khi yêu cầu thay đổi, bạn cần tách phần bắt buộc và phần có thể làm sau để không phá vỡ flow chính.`,
+        `Khi mentor hoặc lead review code, bạn phải bảo vệ được quyết định kỹ thuật bằng lý do và dữ liệu.`
+      ]
+    },
+    mkt: {
+      day: [
+        `Bắt đầu ngày bằng cách xem số liệu kênh, kiểm tra nội dung/campaign đang chạy và phát hiện điểm tụt hiệu quả.`,
+        `Làm việc với designer, sales hoặc product để biến insight khách hàng thành thông điệp dễ đo lường.`,
+        `Cuối ngày cập nhật KPI, ghi lại giả thuyết thử nghiệm và chuẩn bị báo cáo ngắn cho stakeholder.`
+      ],
+      responsibility: [
+        `Chịu trách nhiệm tạo đầu ra ${track} có mục tiêu rõ, nhóm khách hàng cụ thể và chỉ số đánh giá được.`,
+        `Biết giải thích vì sao chọn kênh, thông điệp, ngân sách hoặc nội dung đó thay vì chỉ làm theo cảm tính.`,
+        `Biến kết quả campaign thành case study có insight, số liệu và bài học có thể đưa vào portfolio.`
+      ],
+      situations: [
+        `Khi campaign không đạt KPI, bạn phải tìm nguyên nhân từ audience, creative, offer hoặc tracking.`,
+        `Khi ngân sách hạn chế, bạn cần ưu tiên thử nghiệm nhỏ nhưng đủ dữ liệu để ra quyết định.`,
+        `Khi dữ liệu mâu thuẫn với cảm nhận cá nhân, bạn phải dùng số liệu để điều chỉnh kế hoạch.`
+      ]
+    },
+    design: {
+      day: [
+        `Bắt đầu ngày bằng cách xem lại user flow, feedback người dùng và điểm nghẽn trong trải nghiệm ${track}.`,
+        `Làm việc với product/dev để biến vấn đề thành wireframe, prototype hoặc component có thể kiểm chứng.`,
+        `Cuối ngày chuẩn bị rationale: vì sao chọn layout, hierarchy, interaction và cách đo thiết kế có hiệu quả.`
+      ],
+      responsibility: [
+        `Chịu trách nhiệm tạo giải pháp ${track} vừa đẹp, vừa dễ dùng, vừa có logic sản phẩm rõ ràng.`,
+        `Giải thích được quyết định thiết kế bằng insight, usability, accessibility và constraint kỹ thuật.`,
+        `Biến màn hình/prototype thành case study có problem, process, result và learning.`
+      ],
+      situations: [
+        `Khi stakeholder muốn thay đổi theo cảm tính, bạn cần đưa bằng chứng người dùng hoặc nguyên tắc thiết kế để thuyết phục.`,
+        `Khi dev báo khó triển khai, bạn phải tìm phương án giữ trải nghiệm nhưng giảm độ phức tạp kỹ thuật.`,
+        `Khi feedback trái chiều, bạn cần phân loại vấn đề thật thay vì sửa giao diện theo từng ý kiến rời rạc.`
+      ]
+    }
+  };
+
+  const context = contextByMajor[currentMajor.key] ?? contextByMajor.dev;
+  return {
+    day: context.day,
+    responsibility: context.responsibility,
+    situations: context.situations,
+    proof: [
+      `${level}: cần chứng minh ${coreSkill} qua sản phẩm thật, không chỉ ghi trong CV.`,
+      `Hiểu ${coreKnowledge} đủ để giải thích quyết định khi mentor hoặc nhà tuyển dụng hỏi sâu.`,
+      `Sử dụng ${coreTool} trong workflow và trình bày được kết quả trước/sau khi xử lý.`,
+      `${title} nên có ít nhất một project thể hiện rõ bài toán, cách làm, minh chứng và kết quả.`
+    ]
+  };
+}
+
 function getMarketUpdatedLabel() {
   return new Date().toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
 }
@@ -1842,20 +1918,11 @@ function CareerMapPage({ majors, currentMajor, changeMajor, columns, levels, sel
   const suggestedChallenges = (challenges ?? [])
     .filter((challenge) => challenge.majorKey === currentMajor.key && challenge.track === selectedRole.track)
     .slice(0, 3);
-  const dailyWork = [
-    ...(selectedRole.abilities ?? []).slice(0, 2).map((item) => `Thực hiện: ${item}`),
-    ...(selectedRole.tools ?? []).slice(0, 2).map((item) => `Sử dụng ${item} trong workflow hằng ngày`),
-    `Phối hợp với team để hoàn thiện đầu ra của ${selectedRole.track}`
-  ].slice(0, 5);
-  const roleResponsibilities = [
-    ...(selectedRole.knowledge ?? []).slice(0, 3),
-    ...(selectedRole.skills ?? []).slice(0, 2)
-  ];
-  const roleRequirements = [
-    `${selectedRole.experience} kinh nghiệm hoặc năng lực tương đương`,
-    `Hiểu bối cảnh ${currentMajor.title} và chuyên ngành ${selectedRole.track}`,
-    ...(selectedRole.skills ?? []).slice(0, 3)
-  ];
+  const roleReality = buildRoleReality({ currentMajor, selectedRole });
+  const dailyWork = roleReality.day;
+  const roleResponsibilities = roleReality.responsibility;
+  const roleSituations = roleReality.situations;
+  const roleProof = roleReality.proof;
   const workIllustrations = (workGalleryBase[currentMajor.key] ?? workGalleryBase.dev).map(([title, subtitle, accent], index) => ({
     title,
     subtitle,
@@ -2030,31 +2097,33 @@ function CareerMapPage({ majors, currentMajor, changeMajor, columns, levels, sel
             </div>
           </section>
           <div className="role-detail-grid">
-            <article>
-              <h3>Làm việc hằng ngày</h3>
-              {dailyWork.map((item) => <div className="requirement-item compact" key={item}><Check size={16} /><span>{item}</span></div>)}
+            <article className="role-reality-card">
+              <p className="mono-label">Trong một ngày làm việc</p>
+              <h3>Một ngày của {selectedRole.title}</h3>
+              {dailyWork.map((item) => <div className="requirement-item compact narrative" key={item}><Check size={16} /><span>{item}</span></div>)}
             </article>
-            <article>
-              <h3>Công việc chính</h3>
-              {roleResponsibilities.map((item) => <div className="requirement-item compact" key={item}><BadgeCheck size={16} /><span>{item}</span></div>)}
+            <article className="role-reality-card">
+              <p className="mono-label">Trách nhiệm nghề nghiệp</p>
+              <h3>Bạn chịu trách nhiệm gì?</h3>
+              {roleResponsibilities.map((item) => <div className="requirement-item compact narrative" key={item}><BadgeCheck size={16} /><span>{item}</span></div>)}
             </article>
-            <article>
-              <h3>Yêu cầu cần có</h3>
-              {roleRequirements.map((item) => <div className="requirement-item compact" key={item}><ShieldCheck size={16} /><span>{item}</span></div>)}
+            <article className="role-reality-card">
+              <p className="mono-label">Áp lực thực tế</p>
+              <h3>Tình huống thường gặp</h3>
+              {roleSituations.map((item) => <div className="requirement-item compact narrative" key={item}><ShieldCheck size={16} /><span>{item}</span></div>)}
             </article>
-            <article>
-              <h3>Kỹ năng / kiến thức / công cụ</h3>
-              <div className="tabs">
+            <article className="role-reality-card">
+              <p className="mono-label">Portfolio proof</p>
+              <h3>Năng lực cần chứng minh</h3>
+              {roleProof.map((item) => (
+                <div className="requirement-item compact narrative" key={item}>
+                  <BadgeCheck size={16} />
+                  <span>{item}</span>
+                </div>
+              ))}
+              <div className="tabs compact-tabs">
                 {Object.entries(tabItems).map(([key, value]) => (
                   <button key={key} className={tab === key ? 'active' : ''} onClick={() => setTab(key)}>{value.label}</button>
-                ))}
-              </div>
-              <div className="requirement-list compact-list">
-                {tabItems[tab].items.map((item) => (
-                  <div className="requirement-item compact" key={item}>
-                    <BadgeCheck size={16} />
-                    <span>{item}</span>
-                  </div>
                 ))}
               </div>
             </article>
