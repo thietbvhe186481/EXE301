@@ -651,33 +651,24 @@ function getSpecializationDescription(majorKey, column) {
     ?? `Tập trung xây năng lực thực hành trong ${column.title}, từ kỹ năng nền tảng đến sản phẩm có thể đưa vào portfolio.`;
 }
 
-function makeWorkIllustrationSrc({ title, subtitle, accent, roleTitle, majorShort }, index) {
-  const safeTitle = String(title).replace(/[<&>]/g, '');
-  const safeSubtitle = String(subtitle).replace(/[<&>]/g, '');
-  const safeRole = String(roleTitle).replace(/[<&>]/g, '');
-  const svg = `
-    <svg xmlns="http://www.w3.org/2000/svg" width="520" height="340" viewBox="0 0 520 340">
-      <defs>
-        <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
-          <stop offset="0" stop-color="${accent}" stop-opacity="0.92"/>
-          <stop offset="1" stop-color="#e0f2fe" stop-opacity="0.96"/>
-        </linearGradient>
-        <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
-          <feDropShadow dx="0" dy="18" stdDeviation="18" flood-color="#0f172a" flood-opacity="0.18"/>
-        </filter>
-      </defs>
-      <rect width="520" height="340" rx="34" fill="url(#bg)"/>
-      <circle cx="${420 - index * 7}" cy="${78 + index * 5}" r="72" fill="#fff" opacity="0.28"/>
-      <rect x="38" y="44" width="180" height="32" rx="16" fill="#fff" opacity="0.48"/>
-      <rect x="${255 + (index % 3) * 12}" y="70" width="160" height="112" rx="22" fill="#fff" opacity="0.58" filter="url(#shadow)" transform="rotate(${index % 2 ? 7 : -6} 335 126)"/>
-      <rect x="42" y="210" width="436" height="76" rx="20" fill="#fff" opacity="0.38"/>
-      <path d="M78 132h126m-126 28h210m-210 28h156" stroke="#fff" stroke-width="14" stroke-linecap="round" opacity="0.68"/>
-      <text x="42" y="112" fill="#083344" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="900">${majorShort}</text>
-      <text x="42" y="256" fill="#0f172a" font-family="Inter, Arial, sans-serif" font-size="38" font-weight="950">${safeTitle}</text>
-      <text x="42" y="294" fill="#334155" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="800">${safeSubtitle}</text>
-      <text x="286" y="152" fill="#0f172a" font-family="Inter, Arial, sans-serif" font-size="20" font-weight="900">${safeRole}</text>
-    </svg>`;
-  return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+const workPhotoUrls = [
+  'https://images.unsplash.com/photo-1522202176988-66273c2fd55f',
+  'https://images.unsplash.com/photo-1519389950473-47ba0277781c',
+  'https://images.unsplash.com/photo-1552664730-d307ca884978',
+  'https://images.unsplash.com/photo-1556761175-b413da4baf72',
+  'https://images.unsplash.com/photo-1497366811353-6870744d04b2',
+  'https://images.unsplash.com/photo-1542744173-8e7e53415bb0',
+  'https://images.unsplash.com/photo-1551836022-d5d88e9218df',
+  'https://images.unsplash.com/photo-1559136555-9303baea8ebd',
+  'https://images.unsplash.com/photo-1573164713714-d95e436ab8d6',
+  'https://images.unsplash.com/photo-1531482615713-2afd69097998',
+  'https://images.unsplash.com/photo-1516321318423-f06f85e504b3',
+  'https://images.unsplash.com/photo-1504384308090-c894fdcc538d'
+];
+
+function makeWorkIllustrationSrc(_, index) {
+  const baseUrl = workPhotoUrls[index % workPhotoUrls.length];
+  return `${baseUrl}?auto=format&fit=crop&w=900&q=82&sat=-4&sig=${index + 41}`;
 }
 
 function getMarketUpdatedLabel() {
@@ -1991,7 +1982,7 @@ function CareerMapPage({ majors, currentMajor, changeMajor, columns, levels, sel
             </div>
           </div>
           <div className="role-detail-hero">
-            <div className="role-visual-scene">
+            <div className="role-visual-scene" style={{ '--role-photo': `url("${workIllustrations[0]?.src}")` }}>
               <span>{selectedRole.track}</span>
               <strong>{selectedRole.level}</strong>
               <i>{currentMajor.short}</i>
