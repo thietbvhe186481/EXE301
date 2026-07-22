@@ -3441,7 +3441,7 @@ function MentorPage({ apiStatus, data, currentUser, refreshData, createFeedback,
   };
 
   return (
-    <section className="content-page admin-page">
+    <section className="content-page admin-page mentor-page">
       <div className="section-heading inline">
         <div>
           <p className="mono-label">Mentor dashboard</p>
@@ -3455,6 +3455,7 @@ function MentorPage({ apiStatus, data, currentUser, refreshData, createFeedback,
 
       {notice && <div className="status-banner"><Check size={17} /> {notice}</div>}
 
+      <div className="workspace-body mentor-workspace-body">
       <aside className="workspace-sidebar">
         <p className="mono-label">Mentor menu</p>
         <button className={mentorSection === 'overview' ? 'active' : ''} onClick={() => setMentorSection('overview')}><LayoutDashboard size={16} /> Tổng quan</button>
@@ -3831,6 +3832,7 @@ function MentorPage({ apiStatus, data, currentUser, refreshData, createFeedback,
             <div className="empty-state">Chọn một feedback để xem chi tiết.</div>
           )}
         </article>
+      </div>
       </div>
     </section>
   );

@@ -3786,6 +3786,20 @@ body:has(.app-shell.page-mentor) {
   grid-column: 1 / -1;
 }
 
+.workspace-body {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 246px minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+  min-width: 0;
+}
+
+.mentor-workspace-body {
+  min-height: calc(100vh - 190px);
+  contain: layout;
+}
+
 .workspace-sidebar {
   position: sticky;
   top: 86px;
@@ -3804,6 +3818,15 @@ body:has(.app-shell.page-mentor) {
 
 .workspace-sidebar ~ * {
   grid-column: 2;
+}
+
+.workspace-body > .workspace-sidebar {
+  grid-column: 1;
+}
+
+.workspace-body > .workspace-section {
+  grid-column: 2;
+  min-width: 0;
 }
 
 .workspace-section {
@@ -4475,8 +4498,15 @@ body:has(.app-shell.page-mentor) {
     grid-template-columns: 1fr;
   }
 
+  .workspace-body {
+    grid-template-columns: 1fr;
+    min-height: 0;
+  }
+
   .workspace-sidebar,
-  .workspace-sidebar ~ * {
+  .workspace-sidebar ~ *,
+  .workspace-body > .workspace-sidebar,
+  .workspace-body > .workspace-section {
     grid-column: 1;
   }
 
