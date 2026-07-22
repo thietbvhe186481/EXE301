@@ -1021,8 +1021,8 @@ function App() {
     const activeRole = currentUser?.type ?? currentUser?.user?.role;
     const rolePages = {
       student: ['roadmap', 'trends', 'hub', 'join', 'submit', 'feedback', 'portfolio', 'premium'],
-      mentor: ['mentor'],
-      admin: ['admin']
+      mentor: ['mentor', 'roadmap', 'trends'],
+      admin: ['admin', 'roadmap', 'trends']
     };
     const publicPages = ['auth', 'roadmap', 'trends', 'hub', 'premium', 'about'];
     if (!currentUser && !publicPages.includes(page)) {
