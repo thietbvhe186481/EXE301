@@ -2603,90 +2603,108 @@ function PortfolioPage({ pathRoles, currentMajor, go, demoUser, apiStatus, submi
           </article>
         </div>
       )}
-      <div className="profile-summary">
-        <article>
-          <p className="mono-label">Thông tin học tập</p>
-          <h2>{demoUser?.school ?? 'Chưa cập nhật trường học'}</h2>
-          <span>{demoUser?.academicMajor ?? 'Chưa cập nhật chuyên ngành'} · {demoUser?.academicYear ?? 'Chưa cập nhật năm học'}</span>
-        </article>
-        <article>
-          <p className="mono-label">Career goal</p>
-          <h2>{careerGoal}</h2>
-          <span>Ưu tiên hiện tại: hoàn thành 2 thử thách, nhận góp ý mentor và xuất bản 1 case study.</span>
-        </article>
-        <article>
-          <p className="mono-label">Business rule</p>
-          <h2>Profile theo ngành</h2>
-          <span>Kỹ năng, bài tập, phương thức nộp và case study thay đổi theo ngành {currentMajor.title}. Nguồn dữ liệu: {apiStatus === 'mongo' ? 'MongoDB' : 'Local fallback'}.</span>
-        </article>
-      </div>
-      <div className="portfolio-grid">
-        <StatCard icon={Trophy} title="Thử thách hoàn thành" value={stats.completedChallenges} />
-        <StatCard icon={Star} title="Điểm hướng dẫn" value={stats.mentorRating} />
-        <StatCard icon={BriefcaseBusiness} title="Dự án portfolio" value={stats.portfolioProjects} />
-        <StatCard icon={BookOpen} title="Kỹ năng xác thực" value={stats.verifiedSkills} />
-      </div>
-      <div className="portfolio-body">
-        <article className="project-card">
-          <div className="card-topline"><span>Nổi bật</span><strong>88/100</strong></div>
-          <h2>Case study {currentMajor.title}</h2>
-          <p>Minh chứng được tạo từ ngành đã chọn, lộ trình chuyên ngành, thử thách đã nộp và góp ý từ người hướng dẫn.</p>
-          <div className="tag-row">{currentMajor.columns.slice(0, 3).map((item) => <span key={item.key}>{item.title}</span>)}</div>
-          <button className="ghost-action compact"><LinkIcon size={16} /> Xem case study</button>
-        </article>
-        <article className="skill-card">
-          <h2>Tiến độ chuyên ngành</h2>
-          {mainSpecs.map((item, index) => (
-            <div className="progress-line" key={item.key}>
-              <span>{item.title}</span>
-              <b><i style={{ width: `${88 - index * 10}%` }} /></b>
-            </div>
-          ))}
-        </article>
-        <article className="skill-card">
-          <h2>Huy hiệu</h2>
-          <div className="badge-grid">
-            {['Xây lộ trình', 'Sẵn sàng thử thách', 'Đã được góp ý', 'Có minh chứng portfolio'].map((item) => <span key={item}><Blocks size={16} />{item}</span>)}
+      <div className="cv-layout">
+        <aside className="cv-sidebar">
+          <div className="cv-avatar-card">
+            <div className="cv-avatar">{profileName.split(' ').map((item) => item[0]).slice(0, 2).join('')}</div>
+            <p className="mono-label">Student profile</p>
+            <h2>{profileName}</h2>
+            <span>{careerGoal}</span>
           </div>
-        </article>
-      </div>
-      <div className="profile-deep-grid">
-        <article className="profile-panel">
-          <h2>Lộ trình đang theo</h2>
-          {pathRoles.map((item, index) => (
-            <div className="profile-timeline-item" key={item.id}>
-              <b>{index + 1}</b>
-              <span>{item.title}</span>
-              <small>{item.track} · {item.level} · {item.salary}</small>
-            </div>
-          ))}
-        </article>
-        <article className="profile-panel">
-          <h2>Dự án mẫu</h2>
-          {(demoUser?.portfolio?.publishedProjects ?? ['Case study chính', 'Bài tập mentor review', 'Mini project tự luyện']).map((item, index) => (
-            <div className="project-row" key={item}>
-              <span>{item}</span>
-              <strong>{['Đã xuất bản', 'Đang review', 'Đang làm'][index]}</strong>
-            </div>
-          ))}
-        </article>
-        <article className="profile-panel">
-          <h2>Kỹ năng hiện có</h2>
-          <div className="tag-row">
-            {(demoUser?.currentSkills ?? currentMajor.columns.slice(0, 4).map((item) => item.title)).map((item) => (
-              <span key={item}>{item}</span>
+          <div className="cv-info-list">
+            <div><BookOpen size={16} /><span>{demoUser?.school ?? 'Chưa cập nhật trường học'}</span></div>
+            <div><BriefcaseBusiness size={16} /><span>{demoUser?.academicMajor ?? currentMajor.title}</span></div>
+            <div><Trophy size={16} /><span>{demoUser?.academicYear ?? 'Năm học chưa cập nhật'}</span></div>
+            <div><LinkIcon size={16} /><span>{demoUser?.portfolio?.links?.[0] ?? publicPortfolioUrl}</span></div>
+          </div>
+          <div className="cv-stat-list">
+            <StatCard icon={Trophy} title="Thử thách" value={stats.completedChallenges} />
+            <StatCard icon={Star} title="Mentor score" value={stats.mentorRating} />
+            <StatCard icon={BriefcaseBusiness} title="Projects" value={stats.portfolioProjects} />
+            <StatCard icon={BookOpen} title="Verified skills" value={stats.verifiedSkills} />
+          </div>
+          <article className="cv-side-section">
+            <h3>Career path</h3>
+            {pathRoles.map((item, index) => (
+              <div className="profile-timeline-item" key={item.id}>
+                <b>{index + 1}</b>
+                <span>{item.title}</span>
+                <small>{item.track} · {item.level}</small>
+              </div>
             ))}
-          </div>
-        </article>
-        <article className="profile-panel">
-          <h2>Lịch sử nộp bài</h2>
-          {(userSubmissions.length ? userSubmissions : [{ challengeId: 'demo', status: 'draft', updatedAt: 'Chưa có' }]).map((item) => (
-            <div className="activity-row" key={`${item.challengeId}-${item.updatedAt}`}>
-              <Check size={15} />
-              <span>{challengeName(item.challengeId)} - {item.status} - {item.updatedAt}</span>
+          </article>
+        </aside>
+
+        <section className="cv-main">
+          <article className="cv-section cv-summary-card">
+            <div>
+              <p className="mono-label">Professional summary</p>
+              <h2>Portfolio theo hướng {currentMajor.title}</h2>
+              <p>Hồ sơ tập trung chứng minh năng lực bằng kỹ năng đã xác thực, bài tập có mentor review, project có link minh chứng và lộ trình nghề nghiệp rõ ràng.</p>
             </div>
-          ))}
-        </article>
+            <button className="ghost-action compact" onClick={updatePortfolio}>
+              <Save size={16} />
+              Lưu hồ sơ
+            </button>
+          </article>
+
+          <div className="cv-two-col">
+            <article className="cv-section">
+              <h2>Kỹ năng & mức độ sẵn sàng</h2>
+              {mainSpecs.map((item, index) => (
+                <div className="progress-line" key={item.key}>
+                  <span>{item.title}</span>
+                  <b><i style={{ width: `${88 - index * 10}%` }} /></b>
+                </div>
+              ))}
+              <div className="tag-row cv-skill-tags">
+                {(demoUser?.currentSkills ?? currentMajor.columns.slice(0, 5).map((item) => item.title)).map((item) => (
+                  <span key={item}>{item}</span>
+                ))}
+              </div>
+            </article>
+
+            <article className="cv-section">
+              <h2>Badge & chứng nhận</h2>
+              <div className="badge-grid">
+                {['Xây lộ trình', 'Sẵn sàng thử thách', 'Đã được góp ý', 'Có minh chứng portfolio', ...(isPremium ? premiumBadges.slice(0, 2) : [])].map((item) => (
+                  <span key={item}><Blocks size={16} />{item}</span>
+                ))}
+              </div>
+              {isPremium && <div className="certificate-chip"><Crown size={16} /> {certificateCode}</div>}
+            </article>
+          </div>
+
+          <article className="cv-section">
+            <div className="card-topline"><span>Project nổi bật</span><strong>88/100</strong></div>
+            <h2>Case study {currentMajor.title}</h2>
+            <p>Minh chứng được tạo từ ngành đã chọn, lộ trình chuyên ngành, thử thách đã nộp và góp ý từ người hướng dẫn.</p>
+            <div className="tag-row">{currentMajor.columns.slice(0, 3).map((item) => <span key={item.key}>{item.title}</span>)}</div>
+            <button className="ghost-action compact"><LinkIcon size={16} /> Xem case study</button>
+          </article>
+
+          <div className="cv-two-col">
+            <article className="cv-section">
+              <h2>Dự án / bài tập portfolio</h2>
+              {(demoUser?.portfolio?.publishedProjects ?? ['Case study chính', 'Bài tập mentor review', 'Mini project tự luyện']).map((item, index) => (
+                <div className="project-row" key={item}>
+                  <span>{item}</span>
+                  <strong>{['Đã xuất bản', 'Đang review', 'Đang làm'][index]}</strong>
+                </div>
+              ))}
+            </article>
+
+            <article className="cv-section">
+              <h2>Lịch sử nộp bài</h2>
+              {(userSubmissions.length ? userSubmissions : [{ challengeId: 'demo', status: 'draft', updatedAt: 'Chưa có' }]).map((item) => (
+                <div className="activity-row" key={`${item.challengeId}-${item.updatedAt}`}>
+                  <Check size={15} />
+                  <span>{challengeName(item.challengeId)} - {item.status} - {item.updatedAt}</span>
+                </div>
+              ))}
+            </article>
+          </div>
+        </section>
       </div>
     </section>
   );

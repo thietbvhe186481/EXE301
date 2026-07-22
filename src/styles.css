@@ -7515,3 +7515,168 @@ body:has(.auth-page) main {
     grid-column: 1 / -1;
   }
 }
+
+/* CV-style student portfolio */
+.cv-layout {
+  display: grid;
+  grid-template-columns: minmax(280px, 0.36fr) minmax(0, 0.64fr);
+  gap: 18px;
+  align-items: start;
+  margin-top: 16px;
+}
+
+.cv-sidebar,
+.cv-main {
+  min-width: 0;
+}
+
+.cv-sidebar {
+  position: sticky;
+  top: 96px;
+  display: grid;
+  gap: 14px;
+}
+
+.cv-avatar-card,
+.cv-side-section,
+.cv-section {
+  min-width: 0;
+  padding: 18px;
+  border: 1px solid var(--border-soft);
+  border-radius: 14px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.cv-avatar-card {
+  display: grid;
+  justify-items: start;
+  gap: 9px;
+  background:
+    linear-gradient(135deg, rgba(14, 165, 233, 0.14), rgba(16, 185, 129, 0.12)),
+    var(--surface);
+}
+
+.cv-avatar {
+  display: grid;
+  place-items: center;
+  width: 112px;
+  height: 112px;
+  border-radius: 28px;
+  background: linear-gradient(135deg, #06b6d4, #2563eb);
+  color: #fff;
+  font: 950 34px Outfit, sans-serif;
+  box-shadow: 0 22px 48px rgba(37, 99, 235, 0.24);
+}
+
+.cv-avatar-card h2,
+.cv-section h2,
+.cv-side-section h3 {
+  margin: 0;
+}
+
+.cv-avatar-card span,
+.cv-info-list span,
+.cv-section p {
+  color: var(--muted);
+  font-weight: 750;
+}
+
+.cv-info-list,
+.cv-stat-list,
+.cv-main {
+  display: grid;
+  gap: 12px;
+}
+
+.cv-info-list {
+  padding: 14px;
+  border: 1px solid var(--border-soft);
+  border-radius: 14px;
+  background: var(--surface);
+}
+
+.cv-info-list div {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr);
+  gap: 9px;
+  align-items: start;
+}
+
+.cv-info-list span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.cv-stat-list {
+  grid-template-columns: 1fr 1fr;
+}
+
+.cv-stat-list .stat-card {
+  min-height: 112px;
+  padding: 14px;
+}
+
+.cv-summary-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: start;
+}
+
+.cv-two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.cv-skill-tags {
+  margin-top: 14px;
+}
+
+.certificate-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+  margin-top: 12px;
+  padding: 9px 12px;
+  border-radius: 999px;
+  background: rgba(245, 158, 11, 0.14);
+  color: #92400e;
+  font-weight: 900;
+}
+
+.cv-section,
+.cv-side-section,
+.cv-avatar-card,
+.cv-info-list {
+  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+}
+
+.cv-section:hover,
+.cv-side-section:hover,
+.cv-avatar-card:hover,
+.cv-info-list:hover {
+  transform: translateY(-2px);
+  border-color: rgba(14, 165, 233, 0.38);
+  box-shadow: 0 22px 60px rgba(14, 165, 233, 0.14);
+}
+
+@media (max-width: 1100px) {
+  .cv-layout,
+  .cv-two-col,
+  .cv-summary-card {
+    grid-template-columns: 1fr;
+  }
+
+  .cv-sidebar {
+    position: static;
+  }
+}
+
+@media (max-width: 640px) {
+  .cv-stat-list {
+    grid-template-columns: 1fr;
+  }
+}
