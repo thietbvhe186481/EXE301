@@ -2482,8 +2482,7 @@ function PremiumPage({ plans, activeSubscription, upgradePlan, go }) {
       <div className="section-heading inline">
         <div>
           <p className="mono-label">Premium business model</p>
-          <h1>Nâng cấp để có mentor feedback và portfolio xin việc</h1>
-          <p>Free giúp khám phá nghề nghiệp. Premium mở khóa mentor review sâu, challenge nâng cao, nhiều lần nộp lại và public portfolio chuyên nghiệp.</p>
+          <h1>Nâng cấp Premium để được mentor góp ý và hoàn thiện portfolio xin việc.</h1>
         </div>
         <div className="premium-current">
           <Crown size={20} />
