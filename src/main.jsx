@@ -3149,8 +3149,7 @@ function AdminPage({ apiStatus, data, notice, currentUser, refreshData, setAdmin
         <button className={adminSection === 'overview' ? 'active' : ''} onClick={() => setAdminSection('overview')}><LayoutDashboard size={16} /> Tổng quan</button>
         <button className={adminSection === 'profile' ? 'active' : ''} onClick={() => setAdminSection('profile')}><ShieldCheck size={16} /> Vận hành</button>
         <button className={adminSection === 'commerce' ? 'active' : ''} onClick={() => setAdminSection('commerce')}><Crown size={16} /> Premium</button>
-        <button className={adminSection === 'filter' ? 'active' : ''} onClick={() => setAdminSection('filter')}><Filter size={16} /> Bộ lọc</button>
-        <button className={adminSection === 'challenges' ? 'active' : ''} onClick={() => setAdminSection('challenges')}><Blocks size={16} /> Challenge</button>
+        <button className={adminSection === 'challenges' ? 'active' : ''} onClick={() => setAdminSection('challenges')}><Blocks size={16} /> Bộ lọc & challenge</button>
         <button className={adminSection === 'users' ? 'active' : ''} onClick={() => setAdminSection('users')}><UserRound size={16} /> User & bài nộp</button>
         <button className={adminSection === 'system' ? 'active' : ''} onClick={() => setAdminSection('system')}><Save size={16} /> Hệ thống</button>
       </aside>
@@ -3233,7 +3232,8 @@ function AdminPage({ apiStatus, data, notice, currentUser, refreshData, setAdmin
         </article>
       </div>
 
-      <section className={`management-filters admin-management-filters workspace-section ${adminSection === 'filter' ? 'active' : ''}`} id="admin-filter">
+      <div className={`workspace-section admin-challenge-tab ${adminSection === 'challenges' ? 'active' : ''}`} id="admin-challenges">
+      <section className="management-filters admin-management-filters" id="admin-filter">
         <div>
           <p className="mono-label">Bộ lọc admin</p>
           <strong>{filteredChallenges.length} challenges · {filteredUsers.length} users · {filteredSubmissions.length} submissions</strong>
@@ -3308,7 +3308,7 @@ function AdminPage({ apiStatus, data, notice, currentUser, refreshData, setAdmin
         </button>
       </section>
 
-      <div className={`admin-grid workspace-section ${adminSection === 'challenges' ? 'active' : ''}`} id="admin-challenges">
+      <div className="admin-grid">
         <article className="admin-panel">
           <h2>{editingId ? 'Sửa challenge' : 'Thêm challenge'}</h2>
           <div className="admin-form">
@@ -3352,6 +3352,7 @@ function AdminPage({ apiStatus, data, notice, currentUser, refreshData, setAdmin
           </div>
           <ListPager page={challengePage} onPrev={() => changeAdminListPage('challenges', -1)} onNext={() => changeAdminListPage('challenges', 1)} />
         </article>
+      </div>
       </div>
 
       <div className={`admin-grid compact workspace-section ${adminSection === 'users' ? 'active' : ''}`} id="admin-users">

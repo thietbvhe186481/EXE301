@@ -3687,6 +3687,10 @@ body:has(.app-shell.page-mentor) {
   gap: 16px;
 }
 
+.admin-challenge-tab.active {
+  gap: 16px;
+}
+
 .workspace-sidebar button {
   display: flex;
   align-items: center;
