@@ -1161,7 +1161,15 @@ function Header({ page, go, currentUser, theme, setTheme, logout }) {
       : currentRole === 'admin'
         ? flow.filter((item) => item.id === 'admin')
         : flow.filter((item) => item.id === 'auth');
-  const activeIndex = roleFlow.findIndex((item) => item.id === page);
+  const publicFlow = [
+    { id: 'intro', label: 'Gi\u1edbi thi\u1ec7u', icon: Sparkles, target: 'auth', matches: ['auth'] },
+    { id: 'roadmap-preview', label: 'B\u1ea3n \u0111\u1ed3 ngh\u1ec1', icon: Compass, target: currentUser ? 'roadmap' : 'auth' },
+    { id: 'challenge-preview', label: 'Th\u1eed th\u00e1ch', icon: LayoutDashboard, target: currentUser ? 'hub' : 'auth' },
+    { id: 'premium-preview', label: 'Premium', icon: Crown, target: currentUser ? 'premium' : 'auth' },
+    { id: 'about', label: 'About us', icon: BookOpen, target: 'auth' }
+  ];
+  const navItems = currentUser ? roleFlow : publicFlow;
+  const activeIndex = navItems.findIndex((item) => item.id === page || item.target === page || item.matches?.includes(page));
   const homePage = currentRole === 'student' ? 'roadmap' : currentRole ?? 'auth';
   const roleLabel = currentUser ? `${(currentRole ?? 'student').toUpperCase()} · ${currentUser.user?.name ?? currentUser.user?.email}` : 'Guest';
   return (
@@ -1171,13 +1179,13 @@ function Header({ page, go, currentUser, theme, setTheme, logout }) {
         <span>Portfolio</span>
       </button>
       <nav className="flow-nav role-nav" aria-label="Điều hướng theo vai trò">
-        {roleFlow.map((item, index) => {
+        {navItems.map((item, index) => {
           const Icon = item.icon;
           return (
             <button
               key={item.id}
-              className={`flow-pill ${page === item.id ? 'active' : ''} ${index <= activeIndex ? 'visited' : ''}`}
-              onClick={() => go(item.id)}
+              className={`flow-pill ${page === item.id || item.target === page || item.matches?.includes(page) ? 'active' : ''} ${index <= activeIndex ? 'visited' : ''}`}
+              onClick={() => go(item.target ?? item.id)}
               title={item.label}
             >
               <Icon size={15} />
@@ -1187,7 +1195,7 @@ function Header({ page, go, currentUser, theme, setTheme, logout }) {
         })}
       </nav>
       <div className="topbar-actions">
-      <div className="role-chip">
+      <div className={`role-chip ${!currentUser ? 'guest-hidden' : ''}`}>
         <UserRound size={15} />
         <span>{roleLabel}</span>
       </div>
@@ -1195,6 +1203,12 @@ function Header({ page, go, currentUser, theme, setTheme, logout }) {
         <button className="logout-chip" type="button" onClick={logout} title="Đăng xuất để test tài khoản khác">
           <LogOut size={15} />
           <span>Đăng xuất</span>
+        </button>
+      )}
+      {!currentUser && (
+        <button className="login-chip" type="button" onClick={() => go('auth')}>
+          <LockKeyhole size={15} />
+          <span>Đăng nhập</span>
         </button>
       )}
       <button
@@ -1581,7 +1595,7 @@ function MarketTrendsPage({ currentMajor, go }) {
 function ChallengeHubPage({ currentMajor, activeTrack, setActiveTrack, visibleChallenges, setSelectedChallengeId, joinedChallengeIds, submissionStatus, joinChallenge, isPremium, go }) {
   const tracks = ['Tất cả', ...currentMajor.columns.map((item) => item.title)];
   return (
-    <section className="content-page">
+    <section className="content-page challenge-hub-page">
       <div className="section-heading inline">
         <div>
           <p className="mono-label">Trung tâm thử thách {currentMajor.short}</p>
@@ -2132,7 +2146,7 @@ function PremiumPage({ plans, activeSubscription, upgradePlan, go }) {
         ))}
       </div>
 
-      <div className="admin-grid compact">
+      <div className="admin-grid compact premium-admin-only">
         <article className="admin-panel">
           <p className="mono-label">Free</p>
           <h2>Khám phá trước khi trả phí</h2>

@@ -6002,3 +6002,135 @@ body:has(.feedback-page-layout) main {
     padding: 0 !important;
   }
 }
+
+/* Website-style public navigation */
+.topbar,
+.topbar:has(.theme-toggle),
+.topbar:has(.logout-chip) {
+  display: grid !important;
+  grid-template-columns: auto minmax(0, 1fr) auto !important;
+  grid-template-areas: "brand nav actions" !important;
+  height: 72px !important;
+  min-height: 72px !important;
+  gap: 18px !important;
+  padding: 0 24px !important;
+}
+
+.flow-nav {
+  grid-area: nav !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  padding: 0 !important;
+  overflow-x: auto;
+}
+
+.flow-pill {
+  min-height: 40px !important;
+  padding: 0 14px !important;
+  border-radius: 999px !important;
+}
+
+.flow-pill.active::after {
+  left: 18px;
+  right: 18px;
+  bottom: -11px;
+}
+
+.topbar-actions {
+  grid-area: actions !important;
+}
+
+.login-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 38px;
+  padding: 9px 14px;
+  border: 1px solid rgba(14, 116, 144, 0.18);
+  border-radius: 999px;
+  background: linear-gradient(135deg, #06b6d4, #2563eb);
+  color: #fff !important;
+  font-weight: 900;
+  box-shadow: 0 12px 24px rgba(37, 99, 235, 0.18);
+}
+
+.guest-hidden {
+  display: none !important;
+}
+
+.premium-admin-only {
+  display: none !important;
+}
+
+body:has(.challenge-hub-page) {
+  overflow-y: auto !important;
+}
+
+body:has(.challenge-hub-page) .app-shell,
+body:has(.challenge-hub-page) main {
+  height: auto !important;
+  min-height: 100vh !important;
+  overflow: visible !important;
+}
+
+.challenge-hub-page {
+  height: auto !important;
+  min-height: calc(100vh - 72px);
+  overflow: visible !important;
+  padding-bottom: 36px;
+}
+
+.challenge-hub-page .challenge-grid {
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+.app-shell main {
+  height: calc(100vh - 72px) !important;
+}
+
+body:has(.premium-page) main,
+body:has(.trend-page) main,
+body:has(.feedback-page-layout) main,
+body:has(.challenge-hub-page) main {
+  height: auto !important;
+}
+
+@media (max-width: 980px) {
+  .topbar,
+  .topbar:has(.theme-toggle),
+  .topbar:has(.logout-chip) {
+    height: 78px !important;
+    min-height: 78px !important;
+    gap: 10px !important;
+    padding: 0 14px !important;
+  }
+
+  .flow-nav {
+    justify-content: flex-start !important;
+  }
+
+  .app-shell main {
+    height: calc(100vh - 78px) !important;
+  }
+}
+
+@media (max-width: 720px) {
+  .topbar,
+  .topbar:has(.theme-toggle),
+  .topbar:has(.logout-chip) {
+    grid-template-columns: auto minmax(0, 1fr) auto !important;
+    grid-template-areas: "brand nav actions" !important;
+  }
+
+  .login-chip span {
+    display: none;
+  }
+
+  .login-chip {
+    width: 38px;
+    min-width: 38px;
+    padding: 0;
+  }
+}
