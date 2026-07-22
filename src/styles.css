@@ -7301,3 +7301,217 @@ body:has(.auth-page) main {
 .auth-panel {
   overflow: visible !important;
 }
+
+/* Step-based career map and livelier cards */
+.career-step-layout {
+  display: grid;
+  grid-template-columns: minmax(240px, 0.82fr) minmax(390px, 1.35fr) minmax(320px, 0.95fr);
+  gap: 14px;
+  align-items: start;
+}
+
+.career-step-card,
+.recommended-challenge-panel {
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid var(--border-soft);
+  border-radius: 12px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+}
+
+.career-step-card:hover,
+.recommended-challenge-card:hover,
+.challenge-card:hover,
+.major-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(14, 165, 233, 0.42);
+  box-shadow: 0 22px 60px rgba(14, 165, 233, 0.16);
+}
+
+.step-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.step-heading.compact {
+  margin-bottom: 0;
+}
+
+.step-heading > b {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #06b6d4, #2563eb);
+  color: #fff;
+  font: 900 16px 'DM Mono', monospace;
+  box-shadow: 0 12px 28px rgba(37, 99, 235, 0.22);
+}
+
+.step-heading h2 {
+  margin: 0;
+}
+
+.step-list {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+  max-height: none;
+  overflow: visible;
+}
+
+.step-list button {
+  min-height: 76px;
+}
+
+.step-list small {
+  display: block;
+  margin-top: 7px;
+  color: var(--muted);
+  font-weight: 750;
+  line-height: 1.35;
+}
+
+.recommended-challenge-panel {
+  margin-top: 14px;
+}
+
+.recommended-challenge-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.recommended-challenge-card {
+  display: grid;
+  grid-template-columns: 86px minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid var(--border-soft);
+  border-radius: 12px;
+  background: rgba(14, 165, 233, 0.06);
+  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+}
+
+.recommended-challenge-card strong,
+.recommended-challenge-card span {
+  display: block;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.challenge-illustration {
+  position: relative;
+  display: grid;
+  align-content: end;
+  min-height: 124px;
+  margin-bottom: 14px;
+  padding: 14px;
+  overflow: hidden;
+  border-radius: 12px;
+  background:
+    radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.72), transparent 18%),
+    linear-gradient(135deg, rgba(6, 182, 212, 0.22), rgba(37, 99, 235, 0.2)),
+    #e0f2fe;
+}
+
+.challenge-illustration::before,
+.challenge-illustration::after {
+  content: '';
+  position: absolute;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.54);
+}
+
+.challenge-illustration::before {
+  width: 92px;
+  height: 92px;
+  right: 18px;
+  top: 18px;
+}
+
+.challenge-illustration::after {
+  width: 160px;
+  height: 28px;
+  left: 18px;
+  top: 28px;
+  transform: rotate(-8deg);
+}
+
+.challenge-illustration span,
+.challenge-illustration b {
+  position: relative;
+  z-index: 1;
+  color: #083344;
+}
+
+.challenge-illustration span {
+  font-weight: 950;
+  font-size: 22px;
+}
+
+.challenge-illustration b {
+  justify-self: start;
+  margin-top: 6px;
+  padding: 5px 9px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.72);
+  font-family: 'DM Mono', monospace;
+}
+
+.challenge-illustration.mini {
+  min-height: 70px;
+  margin: 0;
+  padding: 10px;
+}
+
+.challenge-illustration.mini span {
+  font-size: 13px;
+}
+
+.market-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  width: fit-content;
+  margin: 4px 0 10px;
+  padding: 7px 10px;
+  border-radius: 999px;
+  background: rgba(16, 185, 129, 0.12);
+  color: #047857;
+  font-weight: 850;
+}
+
+.app-shell[data-theme="dark"] .challenge-illustration {
+  background:
+    radial-gradient(circle at 80% 20%, rgba(125, 211, 252, 0.42), transparent 18%),
+    linear-gradient(135deg, rgba(6, 182, 212, 0.26), rgba(37, 99, 235, 0.25)),
+    #0f2740;
+}
+
+.app-shell[data-theme="dark"] .challenge-illustration span,
+.app-shell[data-theme="dark"] .challenge-illustration b {
+  color: #e0f2fe;
+}
+
+@media (max-width: 1180px) {
+  .career-step-layout,
+  .recommended-challenge-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .recommended-challenge-card {
+    grid-template-columns: 78px minmax(0, 1fr);
+  }
+
+  .recommended-challenge-card .ghost-action {
+    grid-column: 1 / -1;
+  }
+}

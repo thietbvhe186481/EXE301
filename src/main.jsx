@@ -1075,7 +1075,7 @@ function App() {
       mentor: ['mentor', 'roadmap', 'trends'],
       admin: ['admin', 'roadmap', 'trends']
     };
-    const publicPages = ['auth', 'roadmap', 'trends', 'hub', 'premium', 'about'];
+    const publicPages = ['auth', 'roadmap', 'trends', 'about'];
     if (!currentUser && !publicPages.includes(page)) {
       setPage('auth');
       return;
@@ -1362,6 +1362,8 @@ function App() {
             savedPathName={savedPathName}
             canBuildPath={canBuildPath}
             userMajorKey={userMajorKey}
+            challenges={challengeList}
+            setSelectedChallengeId={setSelectedChallengeId}
             go={go}
           />
         )}
@@ -1408,8 +1410,6 @@ function Header({ page, go, currentUser, theme, setTheme, logout }) {
     { id: 'intro', label: 'Gi\u1edbi thi\u1ec7u', icon: Sparkles, target: 'auth', matches: ['auth'] },
     { id: 'roadmap-preview', label: 'B\u1ea3n \u0111\u1ed3 ngh\u1ec1', icon: Compass, target: 'roadmap' },
     { id: 'trends-preview', label: 'Xu h\u01b0\u1edbng', icon: Sparkles, target: 'trends' },
-    { id: 'challenge-preview', label: 'Th\u1eed th\u00e1ch', icon: LayoutDashboard, target: 'hub' },
-    { id: 'premium-preview', label: 'Premium', icon: Crown, target: 'premium' },
     { id: 'about', label: 'About us', icon: BookOpen, target: 'about' }
   ];
   const navItems = currentUser ? roleFlow : publicFlow;
@@ -1437,8 +1437,6 @@ function Header({ page, go, currentUser, theme, setTheme, logout }) {
             { id: 'intro', label: 'Giới thiệu', icon: Sparkles, target: 'auth', matches: ['auth'] },
             { id: 'roadmap-preview', label: 'Bản đồ nghề', icon: Compass, target: 'roadmap' },
             { id: 'trends-preview', label: 'Xu hướng thị trường', icon: Sparkles, target: 'trends' },
-            { id: 'challenge-preview', label: 'Thử thách', icon: LayoutDashboard, target: 'hub' },
-            { id: 'premium-preview', label: 'Premium', icon: Crown, target: 'premium' },
             { id: 'about', label: 'About us', icon: BookOpen, target: 'about' }
           ];
   const isNavItemActive = (item) => page === item.id || item.target === page || item.matches?.includes(page);
@@ -1623,7 +1621,7 @@ function AuthPage({ authMode, setAuthMode, majors, selectedMajorKey, changeMajor
         {!isSignup && <div className="auth-helper forgot-password-row">
           <button type="button" className="forgot-password-link">Quên mật khẩu?</button>
         </div>}
-        {(!isSignup || signupType === 'student') && <div className="major-picker">
+        {(!isSignup || signupType === 'student' || signupType === 'mentor') && <div className="major-picker">
           {majors.map((major) => (
             <button
               key={major.key}
@@ -1636,19 +1634,10 @@ function AuthPage({ authMode, setAuthMode, majors, selectedMajorKey, changeMajor
               </button>
             ))}
         </div>}
-        {(!isSignup || signupType === 'student') && <div className="selected-major-note" style={{ '--accent': selectedMajor.accent }}>
+        {(!isSignup || signupType === 'student' || signupType === 'mentor') && <div className="selected-major-note" style={{ '--accent': selectedMajor.accent }}>
           <strong>{selectedMajor.title}</strong>
-          <span>{selectedMajor.columns.length} specializations · {submissionRulesData[selectedMajor.key].accepted}</span>
+          <span>{signupType === 'mentor' && isSignup ? 'Mentor sẽ bổ sung hồ sơ chuyên môn sau khi được duyệt.' : `${selectedMajor.columns.length} specializations · ${submissionRulesData[selectedMajor.key].accepted}`}</span>
         </div>}
-        {isSignup && signupType === 'mentor' && (
-          <div className="mentor-signup-box">
-            <label>Chức danh<input value={signupForm.mentorTitle} onChange={(event) => updateSignupForm('mentorTitle', event.target.value)} /></label>
-            <label>Công ty hiện tại<input value={signupForm.mentorCompany} onChange={(event) => updateSignupForm('mentorCompany', event.target.value)} /></label>
-            <label>Kinh nghiệm<input type="number" min="1" value={signupForm.mentorExperience} onChange={(event) => updateSignupForm('mentorExperience', event.target.value)} /></label>
-            <label className="wide">Chuyên môn mạnh<input value={signupForm.mentorExpertise} onChange={(event) => updateSignupForm('mentorExpertise', event.target.value)} /></label>
-            <label className="wide">Minh chứng mentor<textarea value={signupForm.mentorProof} onChange={(event) => updateSignupForm('mentorProof', event.target.value)} /></label>
-          </div>
-        )}
         {isSignup && (
           <button className="primary-action" onClick={submitSignup}>
             <LockKeyhole size={18} />
@@ -1672,7 +1661,7 @@ function AuthPage({ authMode, setAuthMode, majors, selectedMajorKey, changeMajor
   );
 }
 
-function CareerMapPage({ majors, currentMajor, changeMajor, columns, levels, selectedColumn, selectedRole, selectedRoleId, setSelectedRoleId, path, pathRoles, allRoles, addToPath, removeFromPath, movePath, clearPath, savePath, savedPathName, canBuildPath, userMajorKey, go }) {
+function CareerMapPage({ majors, currentMajor, changeMajor, columns, levels, selectedColumn, selectedRole, selectedRoleId, setSelectedRoleId, path, pathRoles, allRoles, addToPath, removeFromPath, movePath, clearPath, savePath, savedPathName, canBuildPath, userMajorKey, challenges, setSelectedChallengeId, go }) {
   const [tab, setTab] = useState('skills');
   const [query, setQuery] = useState('');
   const filteredRoleIds = useMemo(() => {
@@ -1694,6 +1683,9 @@ function CareerMapPage({ majors, currentMajor, changeMajor, columns, levels, sel
 
   const marketSignal = marketSignalsByMajor[currentMajor.key] ?? marketSignalsByMajor.dev;
   const updatedLabel = getMarketUpdatedLabel();
+  const suggestedChallenges = (challenges ?? [])
+    .filter((challenge) => challenge.majorKey === currentMajor.key && challenge.track === selectedRole.track)
+    .slice(0, 3);
 
   useEffect(() => {
     document.querySelector('.career-planner')?.scrollTo({ left: 0, top: 0 });
@@ -1715,11 +1707,16 @@ function CareerMapPage({ majors, currentMajor, changeMajor, columns, levels, sel
         </div>
       </div>
 
-      <div className="career-planner">
-        <aside className="specialization-panel">
-          <p className="mono-label">Specializations</p>
-          <h2>Chọn hướng đi</h2>
-          <div className="specialization-list">
+      <div className="career-step-layout">
+        <section className="career-step-card">
+          <div className="step-heading">
+            <b>01</b>
+            <div>
+              <p className="mono-label">Chọn hướng đi</p>
+              <h2>Specialization</h2>
+            </div>
+          </div>
+          <div className="specialization-list step-list">
             {columns.map((column) => {
               const active = selectedColumn.key === column.key;
               const hiddenBySearch = filteredRoleIds && !column.roles.some((item) => filteredRoleIds.has(item.id));
@@ -1731,20 +1728,25 @@ function CareerMapPage({ majors, currentMajor, changeMajor, columns, levels, sel
                   onClick={() => setSelectedRoleId(column.roles[2].id)}
                 >
                   <span>{column.title}</span>
+                  <small>{column.roles[0].title} → {column.roles[column.roles.length - 1].title}</small>
                 </button>
               );
             })}
           </div>
-        </aside>
+        </section>
 
-        <section className="timeline-panel" style={{ '--accent': selectedColumn.accent }}>
+        <section className="career-step-card timeline-panel" style={{ '--accent': selectedColumn.accent }}>
           <div className="timeline-head">
             <div>
-              <p className="mono-label">Roadmap</p>
-              <h2>{selectedColumn.title}</h2>
+              <div className="step-heading compact">
+                <b>02</b>
+                <div>
+                  <p className="mono-label">Chọn level</p>
+                  <h2>{selectedColumn.title}</h2>
+                </div>
+              </div>
             </div>
             <div className="focus-meta">
-              <span>{selectedRole.salary}</span>
               <span>{selectedRole.experience}</span>
             </div>
           </div>
@@ -1774,9 +1776,14 @@ function CareerMapPage({ majors, currentMajor, changeMajor, columns, levels, sel
           </div>
         </section>
 
-        <aside className="detail-panel">
-          <p className="mono-label">{currentMajor.short} / {selectedRole.track} / {selectedRole.level}</p>
-          <h2>{selectedRole.title}</h2>
+        <aside className="career-step-card detail-panel">
+          <div className="step-heading">
+            <b>03</b>
+            <div>
+              <p className="mono-label">{currentMajor.short} / {selectedRole.track} / {selectedRole.level}</p>
+              <h2>{selectedRole.title}</h2>
+            </div>
+          </div>
           {!canBuildPath && (
             <div className="status-banner muted">
               <ShieldCheck size={17} />
@@ -1813,57 +1820,37 @@ function CareerMapPage({ majors, currentMajor, changeMajor, columns, levels, sel
           </article>
           <button className="primary-action" disabled={!canBuildPath} onClick={() => addToPath(selectedRole.id)}>
             <Plus size={18} />
-            {canBuildPath ? 'Thêm vào lộ trình' : 'Chỉ xem tham khảo'}
+            {canBuildPath ? 'Lưu vị trí quan tâm' : 'Chỉ xem tham khảo'}
           </button>
         </aside>
       </div>
 
-      {canBuildPath ? <div className="path-builder">
-        <div>
-          <p className="mono-label">Lộ trình của tôi</p>
-          <h3>{pathRoles.length} vị trí đã chọn</h3>
-          {savedPathName && <small className="save-note"><Save size={14} /> {savedPathName}</small>}
+      <section className="recommended-challenge-panel">
+        <div className="step-heading">
+          <b>04</b>
+          <div>
+            <p className="mono-label">Bài tập đề xuất</p>
+            <h2>Theo vị trí {selectedRole.level}</h2>
+          </div>
         </div>
-        <div className="path-strip">
-          {pathRoles.map((item, index) => (
-            <article className="path-card" key={item.id}>
-              <b>{index + 1}</b>
-              <span>{item.title}</span>
-              <div className="path-actions">
-                <button onClick={() => movePath(index, -1)} title="Đưa lên"><MoveUp size={14} /></button>
-                <button onClick={() => movePath(index, 1)} title="Đưa xuống"><MoveDown size={14} /></button>
-                <button onClick={() => removeFromPath(item.id)} title="Xóa"><X size={14} /></button>
+        <div className="recommended-challenge-grid">
+          {(suggestedChallenges.length ? suggestedChallenges : (challenges ?? []).filter((challenge) => challenge.majorKey === currentMajor.key).slice(0, 3)).map((challenge) => (
+            <article className="recommended-challenge-card" key={challenge.id}>
+              <div className="challenge-illustration mini" data-track={challenge.track}>
+                <span>{challenge.track}</span>
               </div>
+              <div>
+                <strong>{challenge.title}</strong>
+                <span>{challenge.difficulty} · {challenge.xp} XP · {challenge.due}</span>
+              </div>
+              <button className="ghost-action compact" onClick={() => { setSelectedChallengeId(challenge.id); go('join'); }}>
+                Xem bài
+                <Rocket size={15} />
+              </button>
             </article>
           ))}
         </div>
-        <div className="path-cta">
-          <button className="ghost-action compact" onClick={savePath}>
-            <Save size={16} />
-            Lưu
-          </button>
-          <button className="ghost-action compact" onClick={clearPath}>
-            <Trash2 size={16} />
-            Xóa hết
-          </button>
-          <button className="primary-action compact" onClick={() => go('hub')}>
-            Xem thử thách
-            <Rocket size={16} />
-          </button>
-        </div>
-      </div> : (
-        <div className="path-builder locked-path">
-          <div>
-            <p className="mono-label">Chế độ xem tham khảo</p>
-            <h3>Ngành đã chọn: {userMajorKey?.toUpperCase()}</h3>
-          </div>
-          <span>Chuyển về ngành của bạn để thêm vị trí, sắp xếp và lưu lộ trình.</span>
-          <button className="primary-action compact" disabled={!userMajorKey} onClick={() => userMajorKey && changeMajor(userMajorKey)}>
-            Về ngành của tôi
-            <Compass size={16} />
-          </button>
-        </div>
-      )}
+      </section>
     </section>
   );
 }
@@ -2074,6 +2061,7 @@ function AboutPage({ go }) {
 function ChallengeHubPage({ currentMajor, activeTrack, setActiveTrack, visibleChallenges, setSelectedChallengeId, joinedChallengeIds, submissionStatus, joinChallenge, isPremium, go }) {
   const tracks = ['Tất cả', ...currentMajor.columns.map((item) => item.title)];
   const premiumChallengeCount = visibleChallenges.filter(isPremiumChallenge).length;
+  const marketSignal = marketSignalsByMajor[currentMajor.key] ?? marketSignalsByMajor.dev;
   return (
     <section className="content-page challenge-hub-page">
       <div className="section-heading inline">
@@ -2099,12 +2087,20 @@ function ChallengeHubPage({ currentMajor, activeTrack, setActiveTrack, visibleCh
           const locked = isPremiumChallenge(challenge) && !isPremium;
           return (
             <article className={`challenge-card ${locked ? 'premium-locked-card' : ''}`} key={challenge.id}>
+              <div className="challenge-illustration" data-track={challenge.track}>
+                <span>{challenge.track}</span>
+                <b>{currentMajor.short}</b>
+              </div>
               <div className="card-topline">
                 <span>{challenge.track}</span>
                 <strong>{locked ? 'Premium' : submission?.status ? statusLabels[submission.status] ?? submission.status : joined ? 'Đã tham gia' : `${challenge.xp} XP`}</strong>
               </div>
               <h2>{challenge.title}</h2>
               <p>{challenge.summary}</p>
+              <div className="market-chip">
+                <Sparkles size={15} />
+                <span>{marketSignal.metrics[0]?.value ?? 'Cao'} · {marketSignal.metrics[0]?.label ?? 'nhu cầu thị trường'}</span>
+              </div>
               {locked && <div className="status-banner premium-banner"><Crown size={16} /> Challenge nâng cao cần Premium để nộp bài và nhận mentor review.</div>}
               <div className="tag-row">{challenge.tags.map((tag) => <span key={tag}>{tag}</span>)}</div>
               <div className="challenge-meta">
