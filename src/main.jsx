@@ -977,7 +977,17 @@ function App() {
         challengeId,
         score: 88,
         reviewer: challenge?.mentor ?? 'Mentor Demo',
-        title: `Feedback cho ${challenge?.title ?? challengeId}`
+        title: `Feedback cho ${challenge?.title ?? challengeId}`,
+        strengths: [
+          'B\u00e0i l\u00e0m b\u00e1m \u0111\u00fang m\u1ee5c ti\u00eau challenge v\u00e0 c\u00f3 link \u0111\u1ec3 mentor ki\u1ec3m tra.',
+          'C\u00e1ch tr\u00ecnh b\u00e0y s\u1ea3n ph\u1ea9m \u0111\u00e3 \u0111\u1ee7 r\u00f5 \u0111\u1ec3 chuy\u1ec3n th\u00e0nh case study portfolio.',
+          'Minh ch\u1ee9ng n\u1ed9p b\u00e0i ph\u00f9 h\u1ee3p v\u1edbi chuy\u00ean ng\u00e0nh ' + (challenge?.track ?? 'hi\u1ec7n t\u1ea1i') + '.'
+        ],
+        improvements: [
+          'B\u1ed5 sung README ng\u1eafn: c\u00e1ch ch\u1ea1y, t\u00e0i kho\u1ea3n demo, c\u00e1c m\u00e0n h\u00ecnh ho\u1eb7c endpoint quan tr\u1ecdng.',
+          'Vi\u1ebft r\u00f5 trade-off: v\u00ec sao ch\u1ecdn c\u00f4ng ngh\u1ec7 n\u00e0y, ph\u1ea7n n\u00e0o c\u00f3 th\u1ec3 m\u1edf r\u1ed9ng khi l\u00e0m th\u1eadt.',
+          'Th\u00eam \u1ea3nh/video walkthrough \u0111\u1ec3 nh\u00e0 tuy\u1ec3n d\u1ee5ng ho\u1eb7c gi\u1ea3ng vi\u00ean xem nhanh trong 1 ph\u00fat.'
+        ]
       })
     })
       .then((response) => response.ok ? response.json() : null)
@@ -1752,11 +1762,16 @@ function MentorFeedbackPage({ go, challenge, submission, feedback, mentors, crea
     ?? mentors.find((item) => item.name === feedback?.reviewer)
     ?? matchMentorForChallenge(challenge, mentors);
   const reviewerName = feedback?.reviewer ?? submission?.mentor ?? matchedMentor?.name ?? challenge.mentor;
-  const strengths = feedback?.strengths ?? ['S\u1ea3n ph\u1ea9m \u0111\u00e3 \u0111\u01b0\u1ee3c n\u1ed9p th\u00e0nh c\u00f4ng', 'C\u00f3 \u0111\u1ee7 link minh ch\u1ee9ng \u0111\u1ec3 mentor xem x\u00e9t', '\u0110\u00fang lu\u1ed3ng nghi\u1ec7p v\u1ee5 c\u1ee7a challenge'];
-  const improvements = feedback?.improvements ?? ['\u0110ang ch\u1edd mentor duy\u1ec7t b\u00e0i', 'Sau khi mentor review, \u0111i\u1ec3m v\u00e0 nh\u1eadn x\u00e9t s\u1ebd xu\u1ea5t hi\u1ec7n t\u1ea1i \u0111\u00e2y', 'C\u00f3 th\u1ec3 quay l\u1ea1i c\u1eadp nh\u1eadt b\u1ea3n n\u1ed9p n\u1ebfu c\u1ea7n'];
-  const nextSteps = hasFeedback
-    ? ['\u0110\u1ecdc k\u1ef9 g\u00f3p \u00fd c\u1ee7a mentor', 'C\u1eadp nh\u1eadt README/case study theo nh\u1eadn x\u00e9t', '\u0110\u01b0a phi\u00ean b\u1ea3n t\u1ed1t nh\u1ea5t v\u00e0o portfolio']
-    : ['Mentor ki\u1ec3m tra link v\u00e0 minh ch\u1ee9ng', 'Mentor ch\u1ea5m \u0111i\u1ec3m theo rubric', 'Student nh\u1eadn feedback r\u1ed3i c\u1eadp nh\u1eadt portfolio'];
+  const strengths = feedback?.strengths ?? [
+    'Link ch\u00ednh \u0111\u00e3 \u0111\u01b0\u1ee3c ghi nh\u1eadn, mentor c\u00f3 th\u1ec3 m\u1edf v\u00e0 ki\u1ec3m tra s\u1ea3n ph\u1ea9m.',
+    'B\u00e0i n\u1ed9p \u0111\u00e3 g\u1eafn \u0111\u00fang challenge "' + challenge.title + '" n\u00ean kh\u00f4ng b\u1ecb l\u1ea1c ng\u00e0nh.',
+    submission?.secondaryLink ? 'C\u00f3 link minh ch\u1ee9ng ph\u1ee5 gi\u00fap mentor \u0111\u1ed1i chi\u1ebfu demo, API docs ho\u1eb7c t\u00e0i li\u1ec7u thi\u1ebft k\u1ebf.' : 'B\u00e0i \u0111\u00e3 c\u00f3 b\u1ea3n n\u1ed9p ban \u0111\u1ea7u \u0111\u1ec3 mentor review.'
+  ];
+  const improvements = feedback?.improvements ?? [
+    'C\u1ea7n mentor x\u00e1c nh\u1eadn link c\u00f3 ch\u1ea1y \u0111\u01b0\u1ee3c, c\u00f3 README h\u01b0\u1edbng d\u1eabn v\u00e0 kh\u00f4ng thi\u1ebfu file quan tr\u1ecdng.',
+    'N\u00ean b\u1ed5 sung m\u00f4 t\u1ea3 ng\u1eafn v\u1ec1 lu\u1ed3ng nghi\u1ec7p v\u1ee5 ch\u00ednh, vai tr\u00f2 ng\u01b0\u1eddi d\u00f9ng v\u00e0 c\u00e1ch x\u1eed l\u00fd case l\u1ed7i.',
+    'Th\u00eam \u1ea3nh ho\u1eb7c video walkthrough 1-2 ph\u00fat \u0111\u1ec3 b\u00e0i d\u1ec5 \u0111\u01b0a v\u00e0o portfolio khi \u0111\u01b0\u1ee3c duy\u1ec7t.'
+  ];
   return (
     <section className="content-page two-column feedback-page-layout">
       <div>
@@ -1798,13 +1813,6 @@ function MentorFeedbackPage({ go, challenge, submission, feedback, mentors, crea
           <article><h3>{'\u0110i\u1ec3m m\u1ea1nh'}</h3>{strengths.map((item) => <p key={item}>{item}</p>)}</article>
           <article><h3>{'C\u1ea7n c\u1ea3i thi\u1ec7n'}</h3>{improvements.map((item) => <p key={item}>{item}</p>)}</article>
         </div>
-
-        <article className="feedback-next-steps">
-          <p className="mono-label">{'B\u01b0\u1edbc ti\u1ebfp theo'}</p>
-          {nextSteps.map((item, index) => (
-            <div className="activity-row" key={item}><span>{String(index + 1).padStart(2, '0')}</span><strong>{item}</strong></div>
-          ))}
-        </article>
       </div>
       <aside className="side-card">
         <p className="mono-label">{hasFeedback ? 'Ghi ch\u00fa ng\u01b0\u1eddi h\u01b0\u1edbng d\u1eabn' : 'Th\u00f4ng tin b\u00e0i n\u1ed9p'}</p>

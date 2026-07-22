@@ -575,8 +575,16 @@ app.post('/api/feedback', async (req, res, next) => {
       challengeId: req.body.challengeId,
       score: Number(req.body.score || 88),
       title: req.body.title || 'Đủ tốt để đưa vào portfolio',
-      strengths: Array.isArray(req.body.strengths) ? req.body.strengths : ['Sản phẩm bám đúng yêu cầu', 'Có minh chứng rõ ràng', 'Có thể đưa vào portfolio'],
-      improvements: Array.isArray(req.body.improvements) ? req.body.improvements : ['Bổ sung số liệu đo lường', 'Viết case study ngắn gọn hơn', 'Thêm ảnh/video minh chứng'],
+      strengths: Array.isArray(req.body.strengths) ? req.body.strengths : [
+        'Bài làm bám đúng mục tiêu challenge và có link để mentor kiểm tra.',
+        'Cấu trúc sản phẩm đủ rõ để chuyển thành case study trong portfolio.',
+        'Minh chứng nộp bài phù hợp với chuyên ngành đang theo học.'
+      ],
+      improvements: Array.isArray(req.body.improvements) ? req.body.improvements : [
+        'Bổ sung README ngắn: cách chạy, tài khoản demo và luồng chính cần xem.',
+        'Nêu rõ trade-off công nghệ và phần có thể mở rộng nếu triển khai thực tế.',
+        'Thêm ảnh hoặc video walkthrough để người xem nắm bài trong 1 phút.'
+      ],
       reviewer: req.body.reviewer || 'Mentor Demo',
       createdAt: new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
     };
