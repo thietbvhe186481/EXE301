@@ -1862,11 +1862,6 @@ function AuthPage({ authMode, setAuthMode, majors, selectedMajorKey, changeMajor
           <label>Email<input type="email" value={credentials.email} onChange={(event) => updateCredentials('email', event.target.value)} placeholder="ban@example.com" /></label>
           <label>Mật khẩu<input type="password" value={credentials.password} onChange={(event) => updateCredentials('password', event.target.value)} placeholder="Nhập mật khẩu" /></label>
           {isSignup && <label>Họ tên<input value={signupForm.name} onChange={(event) => updateSignupForm('name', event.target.value)} placeholder="Tên hiển thị" /></label>}
-          {isSignup && signupType === 'student' && <label>Mục tiêu<input value={signupForm.goal} onChange={(event) => updateSignupForm('goal', event.target.value)} placeholder="VD: Frontend Intern trong 3 tháng" /></label>}
-          {isSignup && signupType === 'student' && <label>Trường đang học<input value={signupForm.school} onChange={(event) => updateSignupForm('school', event.target.value)} placeholder="VD: FPT University" /></label>}
-          {isSignup && signupType === 'student' && <label>Chuyên ngành đang học<input value={signupForm.academicMajor} onChange={(event) => updateSignupForm('academicMajor', event.target.value)} placeholder="VD: Software Engineering" /></label>}
-          {isSignup && signupType === 'student' && <label>Năm học<input value={signupForm.academicYear} onChange={(event) => updateSignupForm('academicYear', event.target.value)} placeholder="VD: Năm 3" /></label>}
-          {isSignup && signupType === 'student' && <label>Kỹ năng hiện có<input value={signupForm.studentSkills} onChange={(event) => updateSignupForm('studentSkills', event.target.value)} placeholder="VD: React, Figma, SEO..." /></label>}
         </div>
         {!isSignup && <div className="auth-helper forgot-password-row">
           <button type="button" className="forgot-password-link">Quên mật khẩu?</button>
@@ -2720,7 +2715,10 @@ function SubmitProjectPage({ challenge, currentMajor, joined, submission, mentor
         </div>
         <div className="checklist">
           {rules.checklist.map((item) => (
-            <label key={item}><input type="checkbox" defaultChecked /> {item}</label>
+            <label className="submit-check-item" key={item}>
+              <input type="checkbox" defaultChecked />
+              <span>{item}</span>
+            </label>
           ))}
         </div>
         {isDraft && <div className="status-banner"><Save size={17} /> Đã lưu bản nháp lúc {submission.updatedAt}. Bạn có thể nộp khi đã đủ checklist.</div>}
