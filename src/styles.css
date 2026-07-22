@@ -3746,6 +3746,30 @@ body:has(.app-shell.page-mentor) {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 12px;
+  align-items: stretch;
+  align-content: start;
+}
+
+.admin-stats.workspace-section.active {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  align-items: stretch;
+  align-content: start;
+}
+
+.admin-stats .stat-card {
+  min-height: 128px;
+  max-height: 150px;
+  align-content: space-between;
+  padding: 16px;
+}
+
+.admin-stats .stat-card strong {
+  font-size: 28px;
+}
+
+.admin-stats .stat-card span {
+  font-size: 14px;
 }
 
 .flow-notice {
