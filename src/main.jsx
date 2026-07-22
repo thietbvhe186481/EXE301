@@ -489,6 +489,39 @@ const premiumPlans = [
   }
 ];
 
+const premiumCapabilities = [
+  {
+    title: 'Không giới hạn toàn bộ',
+    detail: 'Mở khóa toàn bộ challenge free/premium, không giới hạn số lần tham gia và nộp lại trong thời hạn gói.',
+    icon: Trophy
+  },
+  {
+    title: 'Public portfolio chuyên nghiệp',
+    detail: 'Tạo trang portfolio công khai có headline, case study, link dự án, kỹ năng xác thực và lịch sử mentor review.',
+    icon: LinkIcon
+  },
+  {
+    title: 'Báo cáo tiến độ theo tháng',
+    detail: 'Theo dõi challenge hoàn thành, submission, feedback, kỹ năng mới và mục tiêu tháng tiếp theo.',
+    icon: LayoutDashboard
+  },
+  {
+    title: 'Badge xác thực kỹ năng',
+    detail: 'Tự động tạo badge khi bài được mentor chấm đạt, giúp hồ sơ có minh chứng rõ ràng hơn.',
+    icon: BadgeCheck
+  },
+  {
+    title: 'Ưu tiên mentor theo chuyên ngành',
+    detail: 'Khi nộp bài, hệ thống match mentor có expertise gần nhất với ngành, chuyên ngành và bộ kỹ năng của challenge.',
+    icon: GraduationCap
+  },
+  {
+    title: 'Chứng nhận hoàn thành lộ trình',
+    detail: 'Khi hoàn thành đủ vị trí, challenge và feedback, người học nhận chứng nhận demo để đưa vào portfolio.',
+    icon: Crown
+  }
+];
+
 const demoPremiumSubscriptions = [
   { id: 'sub-premium-1', userId: 'demo-student', userName: 'Quang Nguyễn', planId: 'premium-quarter', planName: 'Premium 3 Tháng', status: 'active', startedAt: '01/07/2026', expiresAt: '01/10/2026', revenue: 199000 },
   { id: 'sub-premium-2', userId: 'student-dev-backend', userName: 'Bao Le', planId: 'premium-month', planName: 'Premium Tháng', status: 'active', startedAt: '10/07/2026', expiresAt: '10/08/2026', revenue: 79000 },
@@ -2022,6 +2055,7 @@ function AboutPage({ go }) {
 
 function ChallengeHubPage({ currentMajor, activeTrack, setActiveTrack, visibleChallenges, setSelectedChallengeId, joinedChallengeIds, submissionStatus, joinChallenge, isPremium, go }) {
   const tracks = ['Tất cả', ...currentMajor.columns.map((item) => item.title)];
+  const premiumChallengeCount = visibleChallenges.filter(isPremiumChallenge).length;
   return (
     <section className="content-page challenge-hub-page">
       <div className="section-heading inline">
@@ -2033,6 +2067,12 @@ function ChallengeHubPage({ currentMajor, activeTrack, setActiveTrack, visibleCh
           <Filter size={17} />
           {tracks.map((track) => <button key={track} className={activeTrack === track ? 'active' : ''} onClick={() => setActiveTrack(track)}>{track}</button>)}
         </div>
+      </div>
+      <div className={`status-banner ${isPremium ? 'premium-unlocked-banner' : 'premium-banner'}`}>
+        <Crown size={17} />
+        {isPremium
+          ? `Premium đang mở khóa toàn bộ ${visibleChallenges.length} thử thách trong ngành ${currentMajor.title}, gồm ${premiumChallengeCount} challenge nâng cao và quyền nộp lại nhiều lần.`
+          : `Free có thể làm challenge cơ bản. ${premiumChallengeCount} challenge nâng cao cần Premium để nộp bài, nộp lại và nhận mentor review sâu.`}
       </div>
       <div className="challenge-grid">
         {visibleChallenges.map((challenge) => {
@@ -2306,6 +2346,14 @@ function SubmitProjectPage({ challenge, currentMajor, joined, submission, mentor
         {isRejected && <div className="status-banner warning"><X size={17} /> Mentor yêu cầu bổ sung minh chứng. Cập nhật link hoặc ghi chú rồi nộp lại.</div>}
         {isReviewed && <div className="status-banner"><Check size={17} /> Mentor đã nhận xét bài này. Mở trang góp ý để cập nhật portfolio.</div>}
         {locked && <div className="status-banner premium-banner"><Crown size={17} /> Đây là challenge nâng cao. Free có thể xem yêu cầu, Premium mới được nộp bài và nhận review.</div>}
+        {!locked && (
+          <div className={`status-banner ${isPremium ? 'premium-unlocked-banner' : ''}`}>
+            <Crown size={17} />
+            {isPremium
+              ? 'Premium: được nộp lại nhiều lần, ưu tiên mentor theo chuyên ngành và lưu lịch sử phiên bản cho portfolio.'
+              : 'Free: được nộp bài cơ bản. Nâng cấp Premium để nộp lại nhiều lần và nhận review sâu hơn.'}
+          </div>
+        )}
         <div className="submit-actions">
           <button className="ghost-action" disabled={locked} onClick={() => {
             joinChallenge(challenge.id);
@@ -2427,6 +2475,20 @@ function PortfolioPage({ pathRoles, currentMajor, go, demoUser, apiStatus, submi
   const careerGoal = demoUser?.careerGoal ?? pathRoles[pathRoles.length - 1]?.title ?? `Lead ${currentMajor.short}`;
   const userSubmissions = submissions.filter((item) => item.userId === (demoUser?.id ?? 'demo-student'));
   const challengeName = (challengeId) => challenges.find((item) => item.id === challengeId)?.title ?? challengeId;
+  const reviewedSubmissions = userSubmissions.filter((item) => ['reviewed', 'accepted'].includes(item.status)).length;
+  const publicPortfolioUrl = `https://portfolio.vn/u/${String(profileName).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'student'}`;
+  const monthlyReport = [
+    { label: 'Challenge đã tham gia', value: Math.max(userSubmissions.length, 3) },
+    { label: 'Feedback mentor', value: Math.max(reviewedSubmissions, 2) },
+    { label: 'Kỹ năng mới', value: Math.max(Math.round((stats.verifiedSkills ?? 0) / 3), 6) }
+  ];
+  const premiumBadges = [
+    `${currentMajor.short} Skill Verified`,
+    'Mentor Reviewed',
+    'Portfolio Ready',
+    'Career Path Certified'
+  ];
+  const certificateCode = `PF-${currentMajor.short.toUpperCase()}-${String(demoUser?.id ?? 'demo').slice(-4).toUpperCase()}-2026`;
   return (
     <section className="content-page portfolio-page">
       <div className="portfolio-header">
@@ -2452,6 +2514,39 @@ function PortfolioPage({ pathRoles, currentMajor, go, demoUser, apiStatus, submi
         <div className="status-banner premium-banner">
           <Crown size={17} />
           Free lưu hồ sơ nội bộ. Premium mở public portfolio, badge xác thực kỹ năng và template xuất bản chuyên nghiệp.
+        </div>
+      )}
+      {isPremium && (
+        <div className="premium-portfolio-grid">
+          <article>
+            <p className="mono-label">Public portfolio</p>
+            <h2>{publicPortfolioUrl}</h2>
+            <span>Trang công khai có case study, kỹ năng xác thực và lịch sử mentor feedback.</span>
+          </article>
+          <article>
+            <p className="mono-label">Báo cáo tháng này</p>
+            <div className="mini-metric-row">
+              {monthlyReport.map((item) => (
+                <span key={item.label}><strong>{item.value}</strong>{item.label}</span>
+              ))}
+            </div>
+          </article>
+          <article>
+            <p className="mono-label">Badge xác thực</p>
+            <div className="tag-row">
+              {premiumBadges.map((item) => <span key={item}>{item}</span>)}
+            </div>
+          </article>
+          <article>
+            <p className="mono-label">Mentor ưu tiên</p>
+            <h2>{currentMajor.title} specialist</h2>
+            <span>Ưu tiên match mentor theo chuyên ngành, challenge và kỹ năng đang cần review.</span>
+          </article>
+          <article>
+            <p className="mono-label">Chứng nhận lộ trình</p>
+            <h2>{certificateCode}</h2>
+            <span>Cấp khi hoàn thành đủ lộ trình, challenge bắt buộc và mentor feedback đạt chuẩn.</span>
+          </article>
         </div>
       )}
       <div className="profile-summary">
@@ -2584,6 +2679,19 @@ function PremiumPage({ plans, activeSubscription, upgradePlan, go }) {
             </button>
           </article>
         ))}
+      </div>
+
+      <div className="premium-capability-grid">
+        {premiumCapabilities.map((item) => {
+          const Icon = item.icon;
+          return (
+            <article className="premium-capability-card" key={item.title}>
+              <Icon size={22} />
+              <h2>{item.title}</h2>
+              <p>{item.detail}</p>
+            </article>
+          );
+        })}
       </div>
 
       <div className="admin-grid compact premium-admin-only">
