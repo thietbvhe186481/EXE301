@@ -11,6 +11,7 @@ import {
   Compass,
   CreditCard,
   Crown,
+  Edit3,
   FileUp,
   Filter,
   Github,
@@ -1186,6 +1187,58 @@ function App() {
       .catch(() => undefined);
   };
 
+  const updateStudentProfile = (profilePatch) => {
+    const nextPortfolioLinks = [profilePatch.portfolioLink].filter(Boolean);
+
+    const mergeUser = (user) => ({
+      ...user,
+      school: profilePatch.school,
+      academicMajor: profilePatch.academicMajor,
+      academicYear: profilePatch.academicYear,
+      portfolio: {
+        ...(user?.portfolio ?? {}),
+        links: nextPortfolioLinks.length ? nextPortfolioLinks : (user?.portfolio?.links ?? [])
+      }
+    });
+
+    setCurrentUser((current) => {
+      if (!current?.user) return current;
+      return {
+        ...current,
+        user: mergeUser(current.user)
+      };
+    });
+
+    setRemoteData((current) => {
+      const source = current ?? appData;
+      const activeId = demoUser?.id ?? userId;
+      return {
+        ...source,
+        demoUser: source?.demoUser?.id === activeId ? mergeUser(source.demoUser) : source?.demoUser,
+        users: (source?.users ?? []).map((user) => user.id === activeId ? mergeUser(user) : user)
+      };
+    });
+
+    if (apiStatus !== 'mongo') return Promise.resolve();
+
+    const activeId = demoUser?.id ?? userId;
+    return fetch(`${API_BASE_URL}/api/users/${activeId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(mergeUser(demoUser ?? {}))
+    })
+      .then((response) => response.ok ? response.json() : Promise.reject(new Error('profile update failed')))
+      .then((user) => {
+        setCurrentUser((current) => ({ ...(current ?? { type: 'student' }), type: 'student', user }));
+        setRemoteData((current) => ({
+          ...current,
+          demoUser: current?.demoUser?.id === user.id ? user : current?.demoUser,
+          users: (current?.users ?? []).map((item) => item.id === user.id ? user : item)
+        }));
+      })
+      .catch(() => undefined);
+  };
+
   const refreshData = () => loadBootstrap();
   const saveDraft = (challengeId, payload = {}) => {
     const challenge = challengeList.find((item) => item.id === challengeId);
@@ -1385,7 +1438,7 @@ function App() {
         {page === 'join' && <JoinChallengePage challenge={selectedChallenge} currentMajor={currentMajor} joined={joinedChallengeIds.includes(selectedChallenge.id)} submission={submissionStatus[selectedChallenge.id]} joinChallenge={joinChallenge} isPremium={isPremium} go={go} />}
         {page === 'submit' && <SubmitProjectPage challenge={selectedChallenge} currentMajor={currentMajor} joined={joinedChallengeIds.includes(selectedChallenge.id)} submission={submissionStatus[selectedChallenge.id]} mentors={appData.mentors ?? []} joinChallenge={joinChallenge} saveDraft={saveDraft} submitChallenge={submitChallenge} submissionRulesData={rulesByMajor} isPremium={isPremium} go={go} />}
         {page === 'feedback' && <MentorFeedbackPage go={go} challenge={selectedChallenge} submission={submissionList.find((item) => item.userId === userId && item.challengeId === selectedChallenge.id)} feedback={feedbackList.find((item) => item.userId === userId && item.challengeId === selectedChallenge.id)} mentors={appData.mentors ?? []} createFeedback={() => createFeedback(selectedChallenge.id, userId)} />}
-        {page === 'portfolio' && <PortfolioPage pathRoles={pathRoles} currentMajor={currentMajor} go={go} demoUser={demoUser} apiStatus={apiStatus} submissions={submissionList} challenges={challengeList} updatePortfolio={updatePortfolio} isPremium={isPremium} autoOpenPublicPortfolio={autoOpenPublicPortfolio} onPublicPortfolioOpened={() => setAutoOpenPublicPortfolio(false)} />}
+        {page === 'portfolio' && <PortfolioPage pathRoles={pathRoles} currentMajor={currentMajor} go={go} demoUser={demoUser} apiStatus={apiStatus} submissions={submissionList} challenges={challengeList} updatePortfolio={updatePortfolio} updateStudentProfile={updateStudentProfile} isPremium={isPremium} autoOpenPublicPortfolio={autoOpenPublicPortfolio} onPublicPortfolioOpened={() => setAutoOpenPublicPortfolio(false)} />}
         {page === 'premium' && <PremiumPage plans={premiumPlans} activeSubscription={activeSubscription} upgradePlan={upgradePlan} go={go} />}
         {page === 'about' && <AboutPage go={go} />}
         {page === 'mentor' && <MentorPage apiStatus={apiStatus} data={managementData} currentUser={currentUser} refreshData={refreshData} createFeedback={createFeedback} updateSubmissionFromMentor={updateSubmissionFromMentor} setNotice={setAdminNotice} notice={adminNotice} />}
@@ -2552,8 +2605,9 @@ function MentorFeedbackPage({ go, challenge, submission, feedback, mentors, crea
     </section>
   );
 }
-function PortfolioPage({ pathRoles, currentMajor, go, demoUser, apiStatus, submissions, challenges, updatePortfolio, isPremium, autoOpenPublicPortfolio, onPublicPortfolioOpened }) {
+function PortfolioPage({ pathRoles, currentMajor, go, demoUser, apiStatus, submissions, challenges, updatePortfolio, updateStudentProfile, isPremium, autoOpenPublicPortfolio, onPublicPortfolioOpened }) {
   const [showPublicPreview, setShowPublicPreview] = useState(false);
+  const [isEditingProfileInfo, setIsEditingProfileInfo] = useState(false);
   const mainSpecs = currentMajor.columns.slice(0, 5);
   const stats = demoUser?.stats ?? { completedChallenges: 6, mentorRating: 4.8, portfolioProjects: 4, verifiedSkills: 18 };
   const profileName = demoUser?.name ?? 'Quang Nguyễn';
@@ -2562,6 +2616,19 @@ function PortfolioPage({ pathRoles, currentMajor, go, demoUser, apiStatus, submi
   const challengeName = (challengeId) => challenges.find((item) => item.id === challengeId)?.title ?? challengeId;
   const reviewedSubmissions = userSubmissions.filter((item) => ['reviewed', 'accepted'].includes(item.status)).length;
   const publicPortfolioUrl = `https://portfolio.vn/u/${String(profileName).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'student'}`;
+  const initialProfileForm = () => ({
+    school: demoUser?.school ?? '',
+    academicMajor: demoUser?.academicMajor ?? currentMajor.title,
+    academicYear: demoUser?.academicYear ?? '',
+    portfolioLink: demoUser?.portfolio?.links?.[0] ?? publicPortfolioUrl
+  });
+  const [profileForm, setProfileForm] = useState(initialProfileForm);
+  const updateProfileField = (field, value) => setProfileForm((current) => ({ ...current, [field]: value }));
+  const resetProfileForm = () => setProfileForm(initialProfileForm());
+  const saveProfileInfo = () => {
+    updateStudentProfile?.(profileForm);
+    setIsEditingProfileInfo(false);
+  };
   const monthlyReport = [
     { label: 'Challenge đã tham gia', value: Math.max(userSubmissions.length, 3) },
     { label: 'Feedback mentor', value: Math.max(reviewedSubmissions, 2) },
@@ -2607,6 +2674,9 @@ function PortfolioPage({ pathRoles, currentMajor, go, demoUser, apiStatus, submi
       onPublicPortfolioOpened?.();
     }
   }, [autoOpenPublicPortfolio, isPremium, onPublicPortfolioOpened]);
+  useEffect(() => {
+    if (!isEditingProfileInfo) resetProfileForm();
+  }, [demoUser?.school, demoUser?.academicMajor, demoUser?.academicYear, demoUser?.portfolio?.links?.[0], currentMajor.title]);
   return (
     <section className="content-page portfolio-page">
       {!isPremium && (
@@ -2694,11 +2764,52 @@ function PortfolioPage({ pathRoles, currentMajor, go, demoUser, apiStatus, submi
             <h2>{profileName}</h2>
             <span>{careerGoal}</span>
           </div>
-          <div className="cv-info-list">
-            <div><BookOpen size={16} /><span>{demoUser?.school ?? 'Chưa cập nhật trường học'}</span></div>
-            <div><BriefcaseBusiness size={16} /><span>{demoUser?.academicMajor ?? currentMajor.title}</span></div>
-            <div><Trophy size={16} /><span>{demoUser?.academicYear ?? 'Năm học chưa cập nhật'}</span></div>
-            <div><LinkIcon size={16} /><span>{demoUser?.portfolio?.links?.[0] ?? publicPortfolioUrl}</span></div>
+          <div className="cv-info-list editable-profile-info">
+            <div className="editable-info-head">
+              <span>Thông tin học tập</span>
+              <button
+                type="button"
+                className="ghost-action tiny"
+                onClick={() => {
+                  if (isEditingProfileInfo) resetProfileForm();
+                  setIsEditingProfileInfo((current) => !current);
+                }}
+              >
+                {isEditingProfileInfo ? <X size={14} /> : <Edit3 size={14} />}
+                {isEditingProfileInfo ? 'Hủy' : 'Sửa'}
+              </button>
+            </div>
+            {isEditingProfileInfo ? (
+              <div className="editable-info-form">
+                <label>
+                  <BookOpen size={15} />
+                  <input value={profileForm.school} onChange={(event) => updateProfileField('school', event.target.value)} placeholder="Trường đang học" />
+                </label>
+                <label>
+                  <BriefcaseBusiness size={15} />
+                  <input value={profileForm.academicMajor} onChange={(event) => updateProfileField('academicMajor', event.target.value)} placeholder="Chuyên ngành đang học" />
+                </label>
+                <label>
+                  <Trophy size={15} />
+                  <input value={profileForm.academicYear} onChange={(event) => updateProfileField('academicYear', event.target.value)} placeholder="Năm học" />
+                </label>
+                <label>
+                  <LinkIcon size={15} />
+                  <input value={profileForm.portfolioLink} onChange={(event) => updateProfileField('portfolioLink', event.target.value)} placeholder="Link portfolio / GitHub" />
+                </label>
+                <button type="button" className="primary-action compact" onClick={saveProfileInfo}>
+                  <Save size={15} />
+                  Lưu thông tin
+                </button>
+              </div>
+            ) : (
+              <>
+                <div><BookOpen size={16} /><span>{demoUser?.school ?? 'Chưa cập nhật trường học'}</span></div>
+                <div><BriefcaseBusiness size={16} /><span>{demoUser?.academicMajor ?? currentMajor.title}</span></div>
+                <div><Trophy size={16} /><span>{demoUser?.academicYear ?? 'Năm học chưa cập nhật'}</span></div>
+                <div><LinkIcon size={16} /><span>{demoUser?.portfolio?.links?.[0] ?? publicPortfolioUrl}</span></div>
+              </>
+            )}
           </div>
           <div className="cv-stat-list">
             <StatCard icon={Trophy} title="Thử thách" value={stats.completedChallenges} />

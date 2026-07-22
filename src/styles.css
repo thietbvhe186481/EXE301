@@ -8345,3 +8345,52 @@ body {
     grid-template-columns: 1fr;
   }
 }
+
+.editable-profile-info {
+  gap: 10px;
+}
+
+.editable-info-head {
+  display: flex !important;
+  grid-template-columns: none !important;
+  align-items: center !important;
+  justify-content: space-between;
+  gap: 10px !important;
+}
+
+.editable-info-head > span {
+  color: var(--text);
+  font: 950 13px 'DM Mono', monospace;
+  text-transform: uppercase;
+}
+
+.ghost-action.tiny {
+  min-height: 30px;
+  padding: 6px 10px;
+  border-radius: 10px;
+  font-size: 13px;
+}
+
+.editable-info-form {
+  display: grid;
+  gap: 10px;
+}
+
+.editable-info-form label {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr);
+  gap: 8px;
+  align-items: center;
+}
+
+.editable-info-form input {
+  min-height: 40px;
+  padding: 9px 11px;
+  border-radius: 10px;
+  font-size: 15px;
+}
+
+.editable-info-form .primary-action {
+  width: 100%;
+  margin-top: 2px;
+}
