@@ -1664,6 +1664,7 @@ function AuthPage({ authMode, setAuthMode, majors, selectedMajorKey, changeMajor
 function CareerMapPage({ majors, currentMajor, changeMajor, columns, levels, selectedColumn, selectedRole, selectedRoleId, setSelectedRoleId, path, pathRoles, allRoles, addToPath, removeFromPath, movePath, clearPath, savePath, savedPathName, canBuildPath, userMajorKey, challenges, setSelectedChallengeId, go }) {
   const [tab, setTab] = useState('skills');
   const [query, setQuery] = useState('');
+  const [careerStep, setCareerStep] = useState('specialization');
   const filteredRoleIds = useMemo(() => {
     const normalized = query.trim().toLowerCase();
     if (!normalized) return null;
@@ -1686,9 +1687,24 @@ function CareerMapPage({ majors, currentMajor, changeMajor, columns, levels, sel
   const suggestedChallenges = (challenges ?? [])
     .filter((challenge) => challenge.majorKey === currentMajor.key && challenge.track === selectedRole.track)
     .slice(0, 3);
+  const dailyWork = [
+    ...(selectedRole.abilities ?? []).slice(0, 2).map((item) => `Thực hiện: ${item}`),
+    ...(selectedRole.tools ?? []).slice(0, 2).map((item) => `Sử dụng ${item} trong workflow hằng ngày`),
+    `Phối hợp với team để hoàn thiện đầu ra của ${selectedRole.track}`
+  ].slice(0, 5);
+  const roleResponsibilities = [
+    ...(selectedRole.knowledge ?? []).slice(0, 3),
+    ...(selectedRole.skills ?? []).slice(0, 2)
+  ];
+  const roleRequirements = [
+    `${selectedRole.experience} kinh nghiệm hoặc năng lực tương đương`,
+    `Hiểu bối cảnh ${currentMajor.title} và chuyên ngành ${selectedRole.track}`,
+    ...(selectedRole.skills ?? []).slice(0, 3)
+  ];
 
   useEffect(() => {
     document.querySelector('.career-planner')?.scrollTo({ left: 0, top: 0 });
+    setCareerStep('specialization');
   }, [currentMajor.key]);
 
   return (
@@ -1707,16 +1723,30 @@ function CareerMapPage({ majors, currentMajor, changeMajor, columns, levels, sel
         </div>
       </div>
 
-      <div className="career-step-layout">
-        <section className="career-step-card">
+      <div className="career-step-progress">
+        {[
+          ['specialization', '01', 'Chuyên ngành', selectedColumn.title],
+          ['role', '02', 'Chức vụ', selectedRole.title],
+          ['detail', '03', 'Chi tiết', selectedRole.level]
+        ].map(([key, index, label, value]) => (
+          <button key={key} className={`${careerStep === key ? 'active' : ''} ${key === 'role' || key === 'detail' ? 'enabled' : ''}`} onClick={() => setCareerStep(key)}>
+            <b>{index}</b>
+            <span>{label}</span>
+            <small>{value}</small>
+          </button>
+        ))}
+      </div>
+
+      {careerStep === 'specialization' && (
+        <section className="career-step-card career-focus-panel">
           <div className="step-heading">
             <b>01</b>
             <div>
               <p className="mono-label">Chọn hướng đi</p>
-              <h2>Specialization</h2>
+              <h2>Chọn chuyên ngành hẹp muốn khám phá</h2>
             </div>
           </div>
-          <div className="specialization-list step-list">
+          <div className="specialization-list step-list step-card-grid">
             {columns.map((column) => {
               const active = selectedColumn.key === column.key;
               const hiddenBySearch = filteredRoleIds && !column.roles.some((item) => filteredRoleIds.has(item.id));
@@ -1725,32 +1755,38 @@ function CareerMapPage({ majors, currentMajor, changeMajor, columns, levels, sel
                   key={column.key}
                   className={`${active ? 'active' : ''} ${hiddenBySearch ? 'dimmed' : ''}`}
                   style={{ '--accent': column.accent }}
-                  onClick={() => setSelectedRoleId(column.roles[2].id)}
+                  onClick={() => { setSelectedRoleId(column.roles[2].id); setCareerStep('role'); }}
                 >
                   <span>{column.title}</span>
                   <small>{column.roles[0].title} → {column.roles[column.roles.length - 1].title}</small>
+                  <i>{column.roles.length} level · {currentMajor.short}</i>
                 </button>
               );
             })}
           </div>
         </section>
+      )}
 
-        <section className="career-step-card timeline-panel" style={{ '--accent': selectedColumn.accent }}>
+      {careerStep === 'role' && (
+        <section className="career-step-card timeline-panel career-focus-panel" style={{ '--accent': selectedColumn.accent }}>
           <div className="timeline-head">
             <div>
               <div className="step-heading compact">
                 <b>02</b>
                 <div>
                   <p className="mono-label">Chọn level</p>
-                  <h2>{selectedColumn.title}</h2>
+                  <h2>Chọn chức vụ trong {selectedColumn.title}</h2>
                 </div>
               </div>
             </div>
-            <div className="focus-meta">
-              <span>{selectedRole.experience}</span>
+            <div className="step-actions">
+              <button className="ghost-action compact" onClick={() => setCareerStep('specialization')}>
+                <Compass size={15} />
+                Đổi chuyên ngành
+              </button>
             </div>
           </div>
-          <div className="vertical-roadmap">
+          <div className="vertical-roadmap role-step-list">
             {levels.map((level, index) => {
               const roleItem = selectedColumn.roles[index];
               const picked = path.includes(roleItem.id);
@@ -1759,7 +1795,7 @@ function CareerMapPage({ majors, currentMajor, changeMajor, columns, levels, sel
                 <button
                   key={level.key}
                   className={`${selectedRoleId === roleItem.id ? 'active' : ''} ${picked ? 'picked' : ''} ${hiddenBySearch ? 'dimmed' : ''}`}
-                  onClick={() => setSelectedRoleId(roleItem.id)}
+                  onClick={() => { setSelectedRoleId(roleItem.id); setCareerStep('detail'); }}
                 >
                   <b>{level.short}</b>
                   <div>
@@ -1775,13 +1811,40 @@ function CareerMapPage({ majors, currentMajor, changeMajor, columns, levels, sel
             })}
           </div>
         </section>
+      )}
 
-        <aside className="career-step-card detail-panel">
+      {careerStep === 'detail' && (
+        <section className="career-step-card detail-panel role-detail-page">
           <div className="step-heading">
             <b>03</b>
             <div>
               <p className="mono-label">{currentMajor.short} / {selectedRole.track} / {selectedRole.level}</p>
               <h2>{selectedRole.title}</h2>
+            </div>
+          </div>
+          <div className="role-detail-hero">
+            <div className="role-visual-scene">
+              <span>{selectedRole.track}</span>
+              <strong>{selectedRole.level}</strong>
+              <i>{currentMajor.short}</i>
+            </div>
+            <div className="role-detail-summary">
+              <p>{selectedRole.title} là vị trí tập trung vào {selectedRole.track}, yêu cầu kết hợp kỹ năng thực hành, tư duy sản phẩm và khả năng tạo đầu ra có thể chứng minh trong portfolio.</p>
+              <div className="focus-meta">
+                <span>{selectedRole.experience}</span>
+                <span>{selectedRole.salary}</span>
+                <span>{suggestedChallenges.length || 3} bài tập phù hợp</span>
+              </div>
+              <div className="step-actions">
+                <button className="ghost-action compact" onClick={() => setCareerStep('role')}>
+                  <MoveUp size={15} />
+                  Chọn chức vụ khác
+                </button>
+                <button className="primary-action compact" disabled={!canBuildPath} onClick={() => addToPath(selectedRole.id)}>
+                  <Plus size={15} />
+                  {canBuildPath ? 'Lưu vị trí quan tâm' : 'Chỉ xem tham khảo'}
+                </button>
+              </div>
             </div>
           </div>
           {!canBuildPath && (
@@ -1790,18 +1853,35 @@ function CareerMapPage({ majors, currentMajor, changeMajor, columns, levels, sel
               Chỉ xem tham khảo. Bạn chỉ có thể lập lộ trình cho ngành đã chọn khi đăng nhập.
             </div>
           )}
-          <div className="tabs">
-            {Object.entries(tabItems).map(([key, value]) => (
-              <button key={key} className={tab === key ? 'active' : ''} onClick={() => setTab(key)}>{value.label}</button>
-            ))}
-          </div>
-          <div className="requirement-list">
-            {tabItems[tab].items.map((item) => (
-              <div className="requirement-item" key={item}>
-                <BadgeCheck size={17} />
-                <span>{item}</span>
+          <div className="role-detail-grid">
+            <article>
+              <h3>Làm việc hằng ngày</h3>
+              {dailyWork.map((item) => <div className="requirement-item compact" key={item}><Check size={16} /><span>{item}</span></div>)}
+            </article>
+            <article>
+              <h3>Công việc chính</h3>
+              {roleResponsibilities.map((item) => <div className="requirement-item compact" key={item}><BadgeCheck size={16} /><span>{item}</span></div>)}
+            </article>
+            <article>
+              <h3>Yêu cầu cần có</h3>
+              {roleRequirements.map((item) => <div className="requirement-item compact" key={item}><ShieldCheck size={16} /><span>{item}</span></div>)}
+            </article>
+            <article>
+              <h3>Kỹ năng / kiến thức / công cụ</h3>
+              <div className="tabs">
+                {Object.entries(tabItems).map(([key, value]) => (
+                  <button key={key} className={tab === key ? 'active' : ''} onClick={() => setTab(key)}>{value.label}</button>
+                ))}
               </div>
-            ))}
+              <div className="requirement-list compact-list">
+                {tabItems[tab].items.map((item) => (
+                  <div className="requirement-item compact" key={item}>
+                    <BadgeCheck size={16} />
+                    <span>{item}</span>
+                  </div>
+                ))}
+              </div>
+            </article>
           </div>
           <article className="source-credibility-card">
             <div>
@@ -1818,39 +1898,35 @@ function CareerMapPage({ majors, currentMajor, changeMajor, columns, levels, sel
               <Sparkles size={15} />
             </button>
           </article>
-          <button className="primary-action" disabled={!canBuildPath} onClick={() => addToPath(selectedRole.id)}>
-            <Plus size={18} />
-            {canBuildPath ? 'Lưu vị trí quan tâm' : 'Chỉ xem tham khảo'}
-          </button>
-        </aside>
-      </div>
 
-      <section className="recommended-challenge-panel">
-        <div className="step-heading">
-          <b>04</b>
-          <div>
-            <p className="mono-label">Bài tập đề xuất</p>
-            <h2>Theo vị trí {selectedRole.level}</h2>
-          </div>
-        </div>
-        <div className="recommended-challenge-grid">
-          {(suggestedChallenges.length ? suggestedChallenges : (challenges ?? []).filter((challenge) => challenge.majorKey === currentMajor.key).slice(0, 3)).map((challenge) => (
-            <article className="recommended-challenge-card" key={challenge.id}>
-              <div className="challenge-illustration mini" data-track={challenge.track}>
-                <span>{challenge.track}</span>
-              </div>
+          <div className="recommended-challenge-panel embedded">
+            <div className="step-heading">
+              <b>04</b>
               <div>
-                <strong>{challenge.title}</strong>
-                <span>{challenge.difficulty} · {challenge.xp} XP · {challenge.due}</span>
+                <p className="mono-label">Bài tập đề xuất</p>
+                <h2>Để đạt vị trí {selectedRole.title}</h2>
               </div>
-              <button className="ghost-action compact" onClick={() => { setSelectedChallengeId(challenge.id); go('join'); }}>
-                Xem bài
-                <Rocket size={15} />
-              </button>
-            </article>
-          ))}
-        </div>
-      </section>
+            </div>
+            <div className="recommended-challenge-grid">
+              {(suggestedChallenges.length ? suggestedChallenges : (challenges ?? []).filter((challenge) => challenge.majorKey === currentMajor.key).slice(0, 3)).map((challenge) => (
+                <article className="recommended-challenge-card" key={challenge.id}>
+                  <div className="challenge-illustration mini" data-track={challenge.track}>
+                    <span>{challenge.track}</span>
+                  </div>
+                  <div>
+                    <strong>{challenge.title}</strong>
+                    <span>{challenge.difficulty} · {challenge.xp} XP · {challenge.due}</span>
+                  </div>
+                  <button className="ghost-action compact" onClick={() => { setSelectedChallengeId(challenge.id); go('join'); }}>
+                    Xem bài
+                    <Rocket size={15} />
+                  </button>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
     </section>
   );
 }
