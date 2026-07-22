@@ -1176,7 +1176,7 @@ function App() {
   useEffect(() => {
     const activeRole = currentUser?.type ?? currentUser?.user?.role;
     const rolePages = {
-      student: ['roadmap', 'trends', 'hub', 'join', 'submit', 'feedback', 'portfolio', 'premium'],
+      student: ['roadmap', 'trends', 'hub', 'join', 'submit', 'feedback', 'portfolio', 'submissionHistory', 'premium'],
       mentor: ['mentor', 'roadmap', 'trends'],
       admin: ['admin', 'roadmap', 'trends']
     };
@@ -1543,6 +1543,7 @@ function App() {
         {page === 'submit' && <SubmitProjectPage challenge={selectedChallenge} currentMajor={currentMajor} joined={joinedChallengeIds.includes(selectedChallenge.id)} submission={submissionStatus[selectedChallenge.id]} mentors={appData.mentors ?? []} joinChallenge={joinChallenge} saveDraft={saveDraft} submitChallenge={submitChallenge} submissionRulesData={rulesByMajor} isPremium={isPremium} go={go} />}
         {page === 'feedback' && <MentorFeedbackPage go={go} challenge={selectedChallenge} submission={submissionList.find((item) => item.userId === userId && item.challengeId === selectedChallenge.id)} feedback={feedbackList.find((item) => item.userId === userId && item.challengeId === selectedChallenge.id)} mentors={appData.mentors ?? []} createFeedback={() => createFeedback(selectedChallenge.id, userId)} />}
         {page === 'portfolio' && <PortfolioPage pathRoles={pathRoles} currentMajor={currentMajor} go={go} demoUser={demoUser} apiStatus={apiStatus} submissions={submissionList} challenges={challengeList} updatePortfolio={updatePortfolio} updateStudentProfile={updateStudentProfile} isPremium={isPremium} autoOpenPublicPortfolio={autoOpenPublicPortfolio} onPublicPortfolioOpened={() => setAutoOpenPublicPortfolio(false)} />}
+        {page === 'submissionHistory' && <SubmissionHistoryPage demoUser={demoUser} submissions={submissionList} challenges={challengeList} feedbackList={feedbackList} setSelectedChallengeId={setSelectedChallengeId} go={go} />}
         {page === 'premium' && <PremiumPage plans={premiumPlans} activeSubscription={activeSubscription} upgradePlan={upgradePlan} go={go} />}
         {page === 'about' && <AboutPage go={go} />}
         {page === 'mentor' && <MentorPage apiStatus={apiStatus} data={managementData} currentUser={currentUser} refreshData={refreshData} createFeedback={createFeedback} updateSubmissionFromMentor={updateSubmissionFromMentor} setNotice={setAdminNotice} notice={adminNotice} />}
@@ -1659,10 +1660,16 @@ function Header({ page, go, currentUser, theme, setTheme, logout }) {
       {currentUser && accountOpen && (
         <div className="nav-dropdown account-dropdown">
           {currentRole === 'student' && (
-            <button type="button" className={`nav-dropdown-item ${page === 'portfolio' ? 'active' : ''}`} onClick={() => navigateNavItem({ id: 'portfolio' })}>
-              <UserRound size={15} />
-              <span>Hồ sơ</span>
-            </button>
+            <>
+              <button type="button" className={`nav-dropdown-item ${page === 'portfolio' ? 'active' : ''}`} onClick={() => navigateNavItem({ id: 'portfolio' })}>
+                <UserRound size={15} />
+                <span>Hồ sơ</span>
+              </button>
+              <button type="button" className={`nav-dropdown-item ${page === 'submissionHistory' ? 'active' : ''}`} onClick={() => navigateNavItem({ id: 'submissionHistory' })}>
+                <FileUp size={15} />
+                <span>Lịch sử nộp bài</span>
+              </button>
+            </>
           )}
           <button type="button" className="nav-dropdown-item danger" onClick={() => { setAccountOpen(false); logout(); }}>
             <LogOut size={15} />
@@ -3012,73 +3019,82 @@ function PortfolioPage({ pathRoles, currentMajor, go, demoUser, apiStatus, submi
               <span>Project nổi bật</span>
               <strong>{portfolioProjectDetails.length} project</strong>
             </div>
-            <div className="featured-project-grid">
+            <div className="featured-project-list">
               {portfolioProjectDetails.slice(0, 3).map((project) => (
                 <article className="featured-project-card" key={project.id}>
-                  <div className="card-topline">
-                    <span>{project.track}</span>
-                    <strong>{project.score}/100</strong>
+                  <div className="project-score-pill">
+                    <strong>{project.score}</strong>
+                    <span>/100</span>
                   </div>
-                  <h3>{project.title}</h3>
-                  <p>{project.summary}</p>
-                  <div className="project-achievement">
-                    <BadgeCheck size={16} />
-                    <span>{project.outcome[0]}</span>
+                  <div className="featured-project-body">
+                    <span className="mono-label">{project.track} · {project.status}</span>
+                    <h3>{project.title}</h3>
+                    <p>{project.summary} {project.outcome[0]}</p>
+                    <div className="tag-row">
+                      {project.tags.slice(0, 3).map((tag) => <span key={tag}>{tag}</span>)}
+                    </div>
                   </div>
-                  <div className="project-card-footer">
-                    <span>{project.status}</span>
-                    <button className="ghost-action compact"><LinkIcon size={15} /> Xem case study</button>
-                  </div>
+                  <button className="ghost-action compact"><LinkIcon size={15} /> Xem project</button>
                 </article>
               ))}
             </div>
           </article>
-
-          <div className="cv-two-col portfolio-work-grid">
-            <article className="cv-section cv-project-section">
-              <h2>Dự án / bài tập portfolio</h2>
-              {portfolioProjectDetails.map((project) => (
-                <article className="portfolio-project-card" key={project.id}>
-                  <div className="card-topline">
-                    <span>{project.track}</span>
-                    <strong>{project.score}/100</strong>
-                  </div>
-                  <h3>{project.title}</h3>
-                  <p>{project.summary}</p>
-                  <div className="project-outcome-list">
-                    {project.outcome.map((item) => (
-                      <div className="requirement-item compact" key={item}>
-                        <Check size={15} />
-                        <span>{item}</span>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="mentor-highlight">
-                    <Star size={16} />
-                    <span>{project.mentorHighlight}</span>
-                  </div>
-                  <div className="tag-row">
-                    {project.tags.slice(0, 4).map((tag) => <span key={tag}>{tag}</span>)}
-                  </div>
-                  <div className="project-card-footer">
-                    <span>{project.status}</span>
-                    <button className="ghost-action compact"><LinkIcon size={15} /> Xem minh chứng</button>
-                  </div>
-                </article>
-              ))}
-            </article>
-
-            <article className="cv-section">
-              <h2>Lịch sử nộp bài</h2>
-              {(userSubmissions.length ? userSubmissions : [{ challengeId: 'demo', status: 'draft', updatedAt: 'Chưa có' }]).map((item) => (
-                <div className="activity-row" key={`${item.challengeId}-${item.updatedAt}`}>
-                  <Check size={15} />
-                  <span>{challengeName(item.challengeId)} - {item.status} - {item.updatedAt}</span>
-                </div>
-              ))}
-            </article>
-          </div>
         </section>
+      </div>
+    </section>
+  );
+}
+
+function SubmissionHistoryPage({ demoUser, submissions, challenges, feedbackList, setSelectedChallengeId, go }) {
+  const userSubmissions = submissions.filter((item) => item.userId === (demoUser?.id ?? 'demo-student'));
+  const historyItems = userSubmissions.length ? userSubmissions : [
+    { id: 'empty-history', challengeId: 'demo', status: 'draft', updatedAt: 'Chưa có', primaryLink: 'Chưa có link nộp' }
+  ];
+  const challengeName = (challengeId) => challenges.find((item) => item.id === challengeId)?.title ?? challengeId;
+  const challengeTrack = (challengeId) => challenges.find((item) => item.id === challengeId)?.track ?? 'Portfolio';
+  const feedbackFor = (challengeId) => feedbackList.find((item) => item.userId === (demoUser?.id ?? 'demo-student') && item.challengeId === challengeId);
+
+  return (
+    <section className="content-page submission-history-page">
+      <div className="section-heading inline">
+        <div>
+          <p className="mono-label">Account history</p>
+          <h1>Lịch sử nộp bài</h1>
+          <p>Xem lại các bài đã nộp, trạng thái review, link minh chứng và feedback liên quan.</p>
+        </div>
+        <button className="primary-action compact" onClick={() => go('hub')}>
+          <LayoutDashboard size={16} />
+          Xem thử thách
+        </button>
+      </div>
+      <div className="submission-history-list">
+        {historyItems.map((item) => {
+          const feedback = feedbackFor(item.challengeId);
+          return (
+            <article className="submission-history-card" key={`${item.challengeId}-${item.updatedAt}`}>
+              <div className="history-status-pill">
+                <FileUp size={17} />
+                <span>{item.status}</span>
+              </div>
+              <div className="history-main">
+                <span className="mono-label">{challengeTrack(item.challengeId)} · {item.updatedAt}</span>
+                <h2>{challengeName(item.challengeId)}</h2>
+                <p>{item.notes ?? 'Bài nộp đã được ghi nhận trong hệ thống Portfolio. Người dùng có thể mở lại link minh chứng hoặc xem feedback khi mentor đã review.'}</p>
+                <div className="history-links">
+                  <span>{item.primaryLink ?? 'Chưa có link chính'}</span>
+                  {item.secondaryLink && <span>{item.secondaryLink}</span>}
+                </div>
+              </div>
+              <div className="history-actions">
+                {feedback && <strong>{feedback.score}/100</strong>}
+                <button className="ghost-action compact" onClick={() => { setSelectedChallengeId(item.challengeId); go(feedback ? 'feedback' : 'submit'); }}>
+                  <LinkIcon size={15} />
+                  {feedback ? 'Xem feedback' : 'Mở bài nộp'}
+                </button>
+              </div>
+            </article>
+          );
+        })}
       </div>
     </section>
   );
