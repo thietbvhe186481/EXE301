@@ -430,6 +430,10 @@ const demoAdmins = [
 const demoSubmissions = [
   { id: 'sub-demo-dev-api', userId: 'demo-student', challengeId: 'dev-api', status: 'submitted', primaryLink: 'https://github.com/demo/portfolio-api', secondaryLink: 'https://portfolio-api.demo/swagger', notes: 'API có auth, product/order modules, seed data và Swagger docs.', updatedAt: '09:30' },
   { id: 'sub-demo-dashboard', userId: 'demo-student', challengeId: 'dev-dashboard', status: 'reviewed', primaryLink: 'https://github.com/demo/career-dashboard', secondaryLink: 'https://career-dashboard.demo', notes: 'Dashboard có filter, trạng thái trống và responsive.', updatedAt: '15:10' },
+  { id: 'sub-demo-mobile', userId: 'demo-student', challengeId: 'dev-mobile', status: 'reviewed', primaryLink: 'https://github.com/demo/mobile-booking-app', secondaryLink: 'https://mobile-booking.demo/walkthrough', notes: 'Mobile booking có auth, đặt lịch, lịch sử và video walkthrough.', updatedAt: '17:10' },
+  { id: 'sub-demo-ai', userId: 'demo-student', challengeId: 'dev-ai', status: 'reviewed', primaryLink: 'https://github.com/demo/ai-knowledge-search', secondaryLink: 'https://ai-search.demo/report', notes: 'AI search có ingest pipeline, citation và trang đánh giá chất lượng câu trả lời.', updatedAt: '09:15' },
+  { id: 'sub-demo-devops', userId: 'demo-student', challengeId: 'dev-devops', status: 'submitted', primaryLink: 'https://github.com/demo/deploy-pipeline', secondaryLink: 'https://deploy-pipeline.demo/status', notes: 'Pipeline đã nộp, đang chờ mentor kiểm tra rollback và monitoring.', updatedAt: '14:05' },
+  { id: 'sub-demo-ui-states', userId: 'demo-student', challengeId: 'dev-frontend-ui-states', status: 'reviewed', primaryLink: 'https://github.com/demo/saas-ui-states', secondaryLink: 'https://saas-ui-states.demo', notes: 'Bộ UI states còn thiếu error copy và accessibility contrast.', updatedAt: '12:25' },
   { id: 'sub-bao-backend', userId: 'student-dev-backend', challengeId: 'dev-api', status: 'submitted', primaryLink: 'https://github.com/demo/student-dev-backend-api-review', secondaryLink: 'https://student-dev-backend-api-review.demo', notes: 'Cần review database design, validation flow và storytelling.', updatedAt: '10:45' },
   { id: 'sub-oanh-ui', userId: 'student-design-ui', challengeId: 'design-ui', status: 'submitted', primaryLink: 'https://figma.com/demo/onboarding-ui', secondaryLink: 'https://behance.net/demo/onboarding-case', notes: 'Prototype onboarding 4 bước với component states.', updatedAt: '11:20' },
   { id: 'sub-khanh-seo', userId: 'student-mkt-seo', challengeId: 'mkt-seo', status: 'rejected', primaryLink: 'https://docs.google.com/demo/seo-audit', secondaryLink: 'https://lookerstudio.google.com/demo/seo', notes: 'Cần bổ sung benchmark đối thủ và timeline 30 ngày.', updatedAt: '13:50' }
@@ -445,7 +449,8 @@ const demoMentorFeedback = [
   { id: 'fb-khanh-seo', userId: 'student-mkt-seo', challengeId: 'mkt-seo', score: 72, title: 'Cần bổ sung dữ liệu cạnh tranh', strengths: ['Keyword map rõ', 'Có cấu trúc audit'], improvements: ['Thêm benchmark đối thủ', 'Bổ sung timeline 30 ngày'], reviewer: 'Duy Lam', createdAt: '13:50', reviewedAt: '17/07/2026' },
   { id: 'fb-khanh-campaign', userId: 'student-mkt-seo', challengeId: 'mkt-campaign', score: 80, title: 'Campaign plan đã có funnel nhưng thiếu KPI phụ', strengths: ['Persona mô tả đúng pain point', 'Thông điệp nhất quán theo kênh', 'Timeline triển khai hợp lý'], improvements: ['Thêm KPI theo từng giai đoạn funnel', 'Nêu giả định ngân sách rõ hơn', 'Bổ sung rủi ro và phương án xử lý'], reviewer: 'Mai Nguyễn', createdAt: '08:35', reviewedAt: '20/07/2026' },
   { id: 'fb-demo-mobile', userId: 'demo-student', challengeId: 'dev-mobile', score: 87, title: 'Mobile booking đủ điều kiện đưa vào portfolio', strengths: ['Luồng đặt lịch liền mạch', 'Có trạng thái trống lịch sử', 'Firebase auth tích hợp ổn'], improvements: ['Bổ sung rule bảo mật Firestore', 'Thêm loading skeleton khi tải lịch', 'Quay video walkthrough 60 giây'], reviewer: 'Linh Đào', createdAt: '17:10', reviewedAt: '21/07/2026' },
-  { id: 'fb-demo-ai', userId: 'demo-student', challengeId: 'dev-ai', score: 90, title: 'AI search có bằng chứng kỹ thuật tốt', strengths: ['Có trích dẫn nguồn theo từng câu trả lời', 'Pipeline ingest tài liệu rõ', 'UI thể hiện confidence score'], improvements: ['Thêm đánh giá hallucination case', 'Bổ sung fallback khi vector search rỗng', 'Ghi rõ chi phí chạy demo'], reviewer: 'Nam Hồ', createdAt: '09:15', reviewedAt: '22/07/2026' }
+  { id: 'fb-demo-ai', userId: 'demo-student', challengeId: 'dev-ai', score: 90, title: 'AI search có bằng chứng kỹ thuật tốt', strengths: ['Có trích dẫn nguồn theo từng câu trả lời', 'Pipeline ingest tài liệu rõ', 'UI thể hiện confidence score'], improvements: ['Thêm đánh giá hallucination case', 'Bổ sung fallback khi vector search rỗng', 'Ghi rõ chi phí chạy demo'], reviewer: 'Nam Hồ', createdAt: '09:15', reviewedAt: '22/07/2026' },
+  { id: 'fb-demo-ui-states', userId: 'demo-student', challengeId: 'dev-frontend-ui-states', score: 64, title: 'UI states cần cải thiện trước khi đưa vào CV', strengths: ['Đã có loading và empty state cơ bản', 'Component tách thành file riêng'], improvements: ['Bổ sung error/success state có nội dung rõ', 'Kiểm tra contrast ở light mode', 'Thêm case responsive mobile và mô tả quyết định thiết kế'], reviewer: 'Mina Lê', createdAt: '12:25', reviewedAt: '22/07/2026' }
 ];
 
 const demoCategories = [
@@ -1628,7 +1633,7 @@ function App() {
         )}
         {page === 'join' && <JoinChallengePage challenge={selectedChallenge} currentMajor={currentMajor} joined={joinedChallengeIds.includes(selectedChallenge.id)} submission={submissionStatus[selectedChallenge.id]} joinChallenge={joinChallenge} isPremium={isPremium} go={go} />}
         {page === 'submit' && <SubmitProjectPage challenge={selectedChallenge} currentMajor={currentMajor} joined={joinedChallengeIds.includes(selectedChallenge.id)} submission={submissionStatus[selectedChallenge.id]} mentors={appData.mentors ?? []} joinChallenge={joinChallenge} saveDraft={saveDraft} submitChallenge={submitChallenge} submissionRulesData={rulesByMajor} isPremium={isPremium} go={go} />}
-        {page === 'feedback' && <MentorFeedbackPage go={go} challenge={selectedChallenge} submission={submissionList.find((item) => item.userId === userId && item.challengeId === selectedChallenge.id)} feedback={feedbackList.find((item) => item.userId === userId && item.challengeId === selectedChallenge.id)} mentors={appData.mentors ?? []} createFeedback={() => createFeedback(selectedChallenge.id, userId)} />}
+        {page === 'feedback' && <MentorFeedbackPage go={go} challenge={selectedChallenge} submissions={submissionList} feedbackList={feedbackList} challenges={challengeList} userId={userId} mentors={appData.mentors ?? []} setSelectedChallengeId={setSelectedChallengeId} createFeedback={() => createFeedback(selectedChallenge.id, userId)} />}
         {page === 'portfolio' && <PortfolioPage pathRoles={pathRoles} currentMajor={currentMajor} go={go} demoUser={demoUser} apiStatus={apiStatus} submissions={submissionList} challenges={challengeList} updatePortfolio={updatePortfolio} updateStudentProfile={updateStudentProfile} isPremium={isPremium} autoOpenPublicPortfolio={autoOpenPublicPortfolio} onPublicPortfolioOpened={() => setAutoOpenPublicPortfolio(false)} />}
         {page === 'submissionHistory' && <SubmissionHistoryPage demoUser={demoUser} submissions={submissionList} challenges={challengeList} feedbackList={feedbackList} setSelectedChallengeId={setSelectedChallengeId} go={go} />}
         {page === 'premium' && <PremiumPage plans={premiumPlans} activeSubscription={activeSubscription} upgradePlan={upgradePlan} go={go} />}
@@ -2785,83 +2790,198 @@ function SubmitProjectPage({ challenge, currentMajor, joined, submission, mentor
   );
 }
 
-function MentorFeedbackPage({ go, challenge, submission, feedback, mentors, createFeedback }) {
-  const hasFeedback = Boolean(feedback);
-  const matchedMentor = mentors.find((item) => item.id === submission?.mentorId)
-    ?? mentors.find((item) => item.name === submission?.mentor)
-    ?? mentors.find((item) => item.name === feedback?.reviewer)
-    ?? matchMentorForChallenge(challenge, mentors);
-  const reviewerName = feedback?.reviewer ?? submission?.mentor ?? matchedMentor?.name ?? challenge.mentor;
-  const strengths = feedback?.strengths ?? [
-    'Link ch\u00ednh \u0111\u00e3 \u0111\u01b0\u1ee3c ghi nh\u1eadn, mentor c\u00f3 th\u1ec3 m\u1edf v\u00e0 ki\u1ec3m tra s\u1ea3n ph\u1ea9m.',
-    'B\u00e0i n\u1ed9p \u0111\u00e3 g\u1eafn \u0111\u00fang challenge "' + challenge.title + '" n\u00ean kh\u00f4ng b\u1ecb l\u1ea1c ng\u00e0nh.',
-    submission?.secondaryLink ? 'C\u00f3 link minh ch\u1ee9ng ph\u1ee5 gi\u00fap mentor \u0111\u1ed1i chi\u1ebfu demo, API docs ho\u1eb7c t\u00e0i li\u1ec7u thi\u1ebft k\u1ebf.' : 'B\u00e0i \u0111\u00e3 c\u00f3 b\u1ea3n n\u1ed9p ban \u0111\u1ea7u \u0111\u1ec3 mentor review.'
-  ];
-  const improvements = feedback?.improvements ?? [
-    'C\u1ea7n mentor x\u00e1c nh\u1eadn link c\u00f3 ch\u1ea1y \u0111\u01b0\u1ee3c, c\u00f3 README h\u01b0\u1edbng d\u1eabn v\u00e0 kh\u00f4ng thi\u1ebfu file quan tr\u1ecdng.',
-    'N\u00ean b\u1ed5 sung m\u00f4 t\u1ea3 ng\u1eafn v\u1ec1 lu\u1ed3ng nghi\u1ec7p v\u1ee5 ch\u00ednh, vai tr\u00f2 ng\u01b0\u1eddi d\u00f9ng v\u00e0 c\u00e1ch x\u1eed l\u00fd case l\u1ed7i.',
-    'Th\u00eam \u1ea3nh ho\u1eb7c video walkthrough 1-2 ph\u00fat \u0111\u1ec3 b\u00e0i d\u1ec5 \u0111\u01b0a v\u00e0o portfolio khi \u0111\u01b0\u1ee3c duy\u1ec7t.'
-  ];
-  return (
-    <section className="content-page two-column feedback-page-layout">
-      <div>
-        <p className="mono-label">{'Nh\u1eadn g\u00f3p \u00fd t\u1eeb ng\u01b0\u1eddi h\u01b0\u1edbng d\u1eabn'}</p>
-        <h1>{challenge.title}</h1>
-        <div className="feedback-score">
-          <span>{feedback?.score ?? '...'}</span>
-          <div>
-            <h2>{feedback?.title ?? '\u0110ang ch\u1edd mentor feedback'}</h2>
-            <p>{hasFeedback
-              ? 'Reviewer: ' + reviewerName + '. B\u00e0i \u0111\u00e3 \u0111\u01b0\u1ee3c nh\u1eadn x\u00e9t v\u00e0 c\u00f3 th\u1ec3 c\u1eadp nh\u1eadt v\u00e0o portfolio.'
-              : 'B\u00e0i n\u1ed9p tr\u1ea1ng th\u00e1i ' + (submission?.status ?? 'ch\u01b0a n\u1ed9p') + '. Mentor ' + reviewerName + ' s\u1ebd xem b\u00e0i v\u00e0 tr\u1ea3 feedback ch\u00ednh th\u1ee9c.'}</p>
-          </div>
-        </div>
+function MentorFeedbackPage({ go, challenge, submissions, feedbackList, challenges, userId, mentors, setSelectedChallengeId }) {
+  const [feedbackFilter, setFeedbackFilter] = useState('all');
+  const [feedbackKeyword, setFeedbackKeyword] = useState('');
+  const userSubmissions = submissions.filter((item) => item.userId === userId);
+  const userFeedback = feedbackList.filter((item) => item.userId === userId);
+  const recordMap = new Map();
 
-        <article className="matched-mentor-card feedback-mentor-card feedback-mentor-main">
-          <button type="button">
-            <span>
-              <i className="mono-label">{hasFeedback ? 'Mentor \u0111\u00e3 feedback' : 'Mentor \u0111ang review'}</i>
-              <strong>{reviewerName}</strong>
+  userSubmissions.forEach((submission) => {
+    const itemChallenge = challenges.find((item) => item.id === submission.challengeId) ?? challenge;
+    const itemFeedback = userFeedback.find((item) => item.challengeId === submission.challengeId);
+    recordMap.set(submission.challengeId, { challenge: itemChallenge, submission, feedback: itemFeedback });
+  });
+  userFeedback.forEach((feedback) => {
+    if (recordMap.has(feedback.challengeId)) return;
+    const itemChallenge = challenges.find((item) => item.id === feedback.challengeId) ?? challenge;
+    recordMap.set(feedback.challengeId, { challenge: itemChallenge, submission: null, feedback });
+  });
+
+  const records = Array.from(recordMap.values()).sort((a, b) => Number(b.feedback?.score ?? 0) - Number(a.feedback?.score ?? 0));
+  const currentRecord = records.find((item) => item.challenge.id === challenge.id) ?? records[0];
+  const [activeFeedbackChallengeId, setActiveFeedbackChallengeId] = useState(currentRecord?.challenge.id ?? challenge.id);
+  const activeRecord = records.find((item) => item.challenge.id === activeFeedbackChallengeId) ?? currentRecord;
+  const activeChallenge = activeRecord?.challenge ?? challenge;
+  const activeSubmission = activeRecord?.submission;
+  const activeFeedback = activeRecord?.feedback;
+  const hasFeedback = Boolean(activeFeedback);
+  const matchedMentor = mentors.find((item) => item.id === activeSubmission?.mentorId)
+    ?? mentors.find((item) => item.name === activeSubmission?.mentor)
+    ?? mentors.find((item) => item.name === activeFeedback?.reviewer)
+    ?? matchMentorForChallenge(activeChallenge, mentors);
+  const reviewerName = activeFeedback?.reviewer ?? activeSubmission?.mentor ?? matchedMentor?.name ?? activeChallenge.mentor;
+  const feedbackStats = {
+    reviewed: records.filter((item) => item.feedback).length,
+    waiting: records.filter((item) => item.submission && !item.feedback && item.submission.status === 'submitted').length,
+    high: records.filter((item) => Number(item.feedback?.score ?? 0) >= 85).length,
+    low: records.filter((item) => item.submission?.status === 'rejected' || (item.feedback && Number(item.feedback.score) < 80)).length
+  };
+  const filterOptions = [
+    { id: 'all', label: 'Tất cả', count: records.length },
+    { id: 'reviewed', label: 'Đã đánh giá', count: feedbackStats.reviewed },
+    { id: 'waiting', label: 'Chờ đánh giá', count: feedbackStats.waiting },
+    { id: 'high', label: 'Đánh giá cao', count: feedbackStats.high },
+    { id: 'improve', label: 'Cần cải thiện', count: feedbackStats.low }
+  ];
+  const filteredRecords = records.filter((item) => {
+    const keyword = feedbackKeyword.trim().toLowerCase();
+    const score = Number(item.feedback?.score ?? 0);
+    const isWaiting = item.submission && !item.feedback && item.submission.status === 'submitted';
+    const isImprove = item.submission?.status === 'rejected' || (item.feedback && score < 80);
+    if (feedbackFilter === 'reviewed' && !item.feedback) return false;
+    if (feedbackFilter === 'waiting' && !isWaiting) return false;
+    if (feedbackFilter === 'high' && score < 85) return false;
+    if (feedbackFilter === 'improve' && !isImprove) return false;
+    if (!keyword) return true;
+    return [item.challenge.title, item.challenge.track, item.feedback?.title, item.feedback?.reviewer, item.submission?.notes]
+      .filter(Boolean)
+      .some((value) => value.toLowerCase().includes(keyword));
+  });
+  const strengths = activeFeedback?.strengths ?? [
+    'Bài đã được ghi nhận trong hệ thống và đang nằm đúng luồng mentor review.',
+    activeSubmission?.primaryLink ? 'Có link chính để mentor mở sản phẩm, repo hoặc tài liệu bài làm.' : 'Cần bổ sung link chính trước khi mentor đánh giá sâu.',
+    activeSubmission?.secondaryLink ? 'Có minh chứng phụ giúp kiểm tra demo, API docs hoặc tài liệu thiết kế.' : 'Có thể thêm demo URL, Figma, deck hoặc video walkthrough.'
+  ];
+  const improvements = activeFeedback?.improvements ?? [
+    'Chờ mentor kiểm tra link, README, minh chứng và mức độ bám rubric.',
+    'Nên chuẩn bị mô tả ngắn về nghiệp vụ, quyết định triển khai và phần bản thân trực tiếp làm.',
+    'Nếu mentor yêu cầu nộp lại, hãy cập nhật link và ghi rõ thay đổi so với phiên bản trước.'
+  ];
+
+  const openRecord = (record) => {
+    setActiveFeedbackChallengeId(record.challenge.id);
+    setSelectedChallengeId(record.challenge.id);
+  };
+
+  return (
+    <section className="content-page feedback-dashboard-page">
+      <div className="section-heading inline">
+        <div>
+          <p className="mono-label">Mentor feedback center</p>
+          <h1>Góp ý từ mentor</h1>
+          <p>Xem lại bài đã được đánh giá, bài đang chờ mentor và những phần cần cải thiện trước khi đưa vào portfolio.</p>
+        </div>
+        <button className="primary-action compact" onClick={() => go('portfolio')}>
+          <WandSparkles size={16} />
+          Cập nhật portfolio
+        </button>
+      </div>
+
+      <div className="feedback-summary-grid">
+        <StatCard icon={BadgeCheck} title="Đã đánh giá" value={feedbackStats.reviewed} />
+        <StatCard icon={Clock} title="Chờ đánh giá" value={feedbackStats.waiting} />
+        <StatCard icon={Star} title="Điểm cao" value={feedbackStats.high} />
+        <StatCard icon={Sparkles} title="Cần cải thiện" value={feedbackStats.low} />
+      </div>
+
+      <section className="feedback-review-layout">
+        <aside className="feedback-review-list">
+          <div className="feedback-filter-panel">
+            <label>
+              Tìm bài / mentor
+              <input value={feedbackKeyword} onChange={(event) => setFeedbackKeyword(event.target.value)} placeholder="VD: API, Mobile, Anh Trần..." />
+            </label>
+            <div className="feedback-filter-tabs">
+              {filterOptions.map((item) => (
+                <button key={item.id} className={feedbackFilter === item.id ? 'active' : ''} onClick={() => setFeedbackFilter(item.id)}>
+                  {item.label}
+                  <span>{item.count}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="feedback-record-list">
+            {filteredRecords.map((record) => {
+              const score = Number(record.feedback?.score ?? 0);
+              const statusLabel = record.feedback
+                ? score >= 85 ? 'Đánh giá cao' : score < 80 ? 'Cần cải thiện' : 'Đã đánh giá'
+                : record.submission?.status === 'submitted' ? 'Chờ đánh giá' : record.submission?.status === 'rejected' ? 'Cần nộp lại' : 'Bản nháp';
+              return (
+                <button key={record.challenge.id} className={`feedback-record-card ${activeRecord?.challenge.id === record.challenge.id ? 'active' : ''}`} onClick={() => openRecord(record)}>
+                  <span className={`feedback-status-dot ${record.feedback ? score >= 85 ? 'high' : score < 80 ? 'low' : 'reviewed' : 'waiting'}`}>{record.feedback ? `${score}` : '...'}</span>
+                  <div>
+                    <strong>{record.challenge.title}</strong>
+                    <small>{record.challenge.track} · {statusLabel} · {record.feedback?.reviewer ?? record.submission?.mentor ?? record.challenge.mentor}</small>
+                  </div>
+                </button>
+              );
+            })}
+            {!filteredRecords.length && <div className="empty-state">Không có bài phù hợp với bộ lọc hiện tại.</div>}
+          </div>
+        </aside>
+
+        <article className="feedback-detail-card">
+          <div className="feedback-detail-hero">
+            <span className={`feedback-score-badge ${hasFeedback && Number(activeFeedback.score) < 80 ? 'low' : hasFeedback ? 'high' : 'waiting'}`}>
+              {activeFeedback?.score ?? '...'}
             </span>
-            <GraduationCap size={18} />
-          </button>
-          <div className="matched-mentor-detail">
-            <p>{matchedMentor.reviewStyle ?? 'Mentor xem link n\u1ed9p, ki\u1ec3m tra minh ch\u1ee9ng, ch\u1ea5m \u0111i\u1ec3m v\u00e0 g\u1ee3i \u00fd c\u00e1ch \u0111\u01b0a b\u00e0i v\u00e0o portfolio.'}</p>
-            <div className="tag-row">
-              {(matchedMentor.expertise ?? [challenge.track]).map((item) => <span key={item}>{item}</span>)}
+            <div>
+              <p className="mono-label">{hasFeedback ? 'Bài đã được đánh giá' : 'Bài đang chờ đánh giá'}</p>
+              <h2>{activeChallenge.title}</h2>
+              <p>{hasFeedback
+                ? `${activeFeedback.title}. Reviewer: ${reviewerName}.`
+                : `Bài đang ở trạng thái ${activeSubmission?.status ?? 'chưa nộp'}. Mentor ${reviewerName} sẽ kiểm tra và trả feedback.`}</p>
             </div>
-            <div className="mentor-facts">
-              <span><b>{matchedMentor.level ?? 'Senior Mentor'}</b> {'tr\u00ecnh \u0111\u1ed9'}</span>
-              <span><b>{matchedMentor.currentCompany ?? 'Portfolio Mentor Network'}</b> {'c\u00f4ng ty'}</span>
-              <span><b>{matchedMentor.yearsOfExperience ?? 5}+ {'n\u0103m'}</b> {'kinh nghi\u1ec7m'}</span>
-              <span><b>{matchedMentor.strongestField ?? challenge.track}</b> {'th\u1ebf m\u1ea1nh'}</span>
+          </div>
+
+          <article className="matched-mentor-card feedback-mentor-card feedback-mentor-main">
+            <button type="button">
+              <span>
+                <i className="mono-label">{hasFeedback ? 'Mentor đã feedback' : 'Mentor phụ trách'}</i>
+                <strong>{reviewerName}</strong>
+              </span>
+              <GraduationCap size={18} />
+            </button>
+            <div className="matched-mentor-detail">
+              <p>{matchedMentor.reviewStyle ?? 'Mentor xem link nộp, kiểm tra minh chứng, chấm điểm và gợi ý cách đưa bài vào portfolio.'}</p>
+              <div className="tag-row">
+                {(matchedMentor.expertise ?? [activeChallenge.track]).map((item) => <span key={item}>{item}</span>)}
+              </div>
             </div>
+          </article>
+
+          <div className="feedback-grid">
+            <article><h3>Điểm mạnh</h3>{strengths.map((item) => <p key={item}>{item}</p>)}</article>
+            <article><h3>Cần cải thiện</h3>{improvements.map((item) => <p key={item}>{item}</p>)}</article>
+          </div>
+
+          <div className="feedback-evidence-grid">
+            <div className="code-note">
+              <strong>Link chính</strong>
+              <span>{activeSubmission?.primaryLink ?? 'Chưa có link chính'}</span>
+              <p>{activeSubmission?.notes ?? 'Bài chưa có ghi chú nộp kèm.'}</p>
+            </div>
+            <div className="code-note">
+              <strong>Minh chứng phụ</strong>
+              <span>{activeSubmission?.secondaryLink ?? 'Chưa có link phụ'}</span>
+              <p>{activeFeedback?.reviewedAt ? `Đánh giá lúc ${activeFeedback.reviewedAt}` : 'Khi mentor chấm xong, thời gian review sẽ hiện tại đây.'}</p>
+            </div>
+          </div>
+
+          <div className="submit-actions">
+            <button className="ghost-action" onClick={() => go(activeFeedback ? 'portfolio' : 'submit')}>
+              {activeFeedback ? 'Đưa vào portfolio' : 'Mở bài nộp'}
+              <LinkIcon size={16} />
+            </button>
+            <button className="primary-action" onClick={() => go('hub')}>
+              Xem thử thách khác
+              <LayoutDashboard size={16} />
+            </button>
           </div>
         </article>
-
-        <div className="feedback-grid">
-          <article><h3>{'\u0110i\u1ec3m m\u1ea1nh'}</h3>{strengths.map((item) => <p key={item}>{item}</p>)}</article>
-          <article><h3>{'C\u1ea7n c\u1ea3i thi\u1ec7n'}</h3>{improvements.map((item) => <p key={item}>{item}</p>)}</article>
-        </div>
-      </div>
-      <aside className="side-card">
-        <p className="mono-label">{hasFeedback ? 'Ghi ch\u00fa ng\u01b0\u1eddi h\u01b0\u1edbng d\u1eabn' : 'Th\u00f4ng tin b\u00e0i n\u1ed9p'}</p>
-        {(hasFeedback ? feedbackItems : [
-          { file: challenge.id, title: 'Tr\u1ea1ng th\u00e1i submission', detail: submission ? submission.status + ' l\u00fac ' + submission.updatedAt : 'Ch\u01b0a c\u00f3 submission trong h\u1ec7 th\u1ed1ng.' },
-          { file: submission?.primaryLink ?? 'Ch\u01b0a c\u00f3 link ch\u00ednh', title: 'Link ch\u00ednh', detail: submission?.primaryLink || 'Student c\u1ea7n b\u1ed5 sung link ch\u00ednh tr\u01b0\u1edbc khi mentor review.' },
-          { file: submission?.secondaryLink ?? 'Ch\u01b0a c\u00f3 link ph\u1ee5', title: 'Link minh ch\u1ee9ng', detail: submission?.secondaryLink || 'C\u00f3 th\u1ec3 l\u00e0 demo URL, Figma, deck ho\u1eb7c API docs.' }
-        ]).map((item) => (
-          <div className="code-note" key={item.file}>
-            <strong>{item.title}</strong>
-            <span>{item.file}</span>
-            <p>{item.detail}</p>
-          </div>
-        ))}
-        <button className="primary-action" onClick={() => go('portfolio')}>
-          {'C\u1eadp nh\u1eadt portfolio'}
-          <WandSparkles size={17} />
-        </button>
-      </aside>
+      </section>
     </section>
   );
 }

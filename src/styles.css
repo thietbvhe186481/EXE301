@@ -9258,6 +9258,296 @@ body {
   gap: 12px;
 }
 
+/* Student feedback center */
+body:has(.feedback-dashboard-page),
+body:has(.feedback-dashboard-page) .app-shell,
+body:has(.feedback-dashboard-page) main {
+  height: auto !important;
+  min-height: 100vh !important;
+  overflow: visible !important;
+}
+
+.feedback-dashboard-page {
+  display: grid;
+  gap: 16px;
+  height: auto !important;
+  min-height: calc(100vh - 72px);
+  overflow: visible !important;
+  padding-bottom: 44px;
+}
+
+.feedback-dashboard-page .section-heading {
+  align-items: end;
+}
+
+.feedback-dashboard-page .section-heading p:not(.mono-label) {
+  max-width: 760px;
+  margin: 8px 0 0;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.feedback-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.feedback-review-layout {
+  display: grid;
+  grid-template-columns: minmax(310px, 0.72fr) minmax(0, 1.28fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.feedback-review-list,
+.feedback-detail-card,
+.feedback-filter-panel {
+  border: 1px solid var(--border-soft);
+  border-radius: 12px;
+  background:
+    linear-gradient(145deg, rgba(14, 165, 233, 0.08), rgba(16, 185, 129, 0.05)),
+    var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.feedback-review-list {
+  position: sticky;
+  top: 94px;
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+}
+
+.feedback-filter-panel {
+  display: grid;
+  gap: 12px;
+  padding: 12px;
+  background: color-mix(in srgb, var(--cyan), transparent 92%);
+  box-shadow: none;
+}
+
+.feedback-filter-panel label {
+  display: grid;
+  gap: 6px;
+  color: var(--text);
+  font-weight: 900;
+}
+
+.feedback-filter-panel input {
+  width: 100%;
+  min-width: 0;
+  border: 1px solid var(--border-soft);
+  border-radius: 9px;
+  background: var(--surface-strong);
+  color: var(--text);
+  padding: 11px 12px;
+  font: inherit;
+}
+
+.feedback-filter-tabs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.feedback-filter-tabs button,
+.feedback-record-card {
+  border: 1px solid var(--border-soft);
+  border-radius: 10px;
+  background: var(--surface-strong);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.feedback-filter-tabs button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 9px 10px;
+  font-weight: 900;
+}
+
+.feedback-filter-tabs button span {
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--blue), transparent 86%);
+  color: var(--blue);
+  padding: 2px 7px;
+  font-size: 12px;
+}
+
+.feedback-filter-tabs button.active,
+.feedback-record-card.active {
+  border-color: color-mix(in srgb, var(--blue), white 20%);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--cyan), transparent 82%), color-mix(in srgb, var(--blue), transparent 88%));
+  box-shadow: inset 3px 0 0 var(--cyan);
+}
+
+.feedback-record-list {
+  display: grid;
+  gap: 10px;
+}
+
+.feedback-record-card {
+  display: grid;
+  grid-template-columns: 54px minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+  padding: 12px;
+  text-align: left;
+  transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
+}
+
+.feedback-record-card:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--cyan), white 18%);
+}
+
+.feedback-record-card strong,
+.feedback-record-card small {
+  display: block;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.feedback-record-card strong {
+  color: var(--text);
+  font-size: 16px;
+}
+
+.feedback-record-card small {
+  margin-top: 4px;
+  color: var(--muted);
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+.feedback-status-dot,
+.feedback-score-badge {
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  font-weight: 950;
+}
+
+.feedback-status-dot {
+  min-height: 48px;
+  background: rgba(14, 165, 233, 0.16);
+  color: var(--blue);
+}
+
+.feedback-status-dot.high,
+.feedback-score-badge.high {
+  background: rgba(16, 185, 129, 0.16);
+  color: #047857;
+}
+
+.feedback-status-dot.low,
+.feedback-score-badge.low {
+  background: rgba(244, 63, 94, 0.14);
+  color: #be123c;
+}
+
+.feedback-status-dot.waiting,
+.feedback-score-badge.waiting {
+  background: rgba(245, 158, 11, 0.16);
+  color: #92400e;
+}
+
+.feedback-detail-card {
+  display: grid;
+  gap: 14px;
+  padding: 18px;
+}
+
+.feedback-detail-hero {
+  display: grid;
+  grid-template-columns: 86px minmax(0, 1fr);
+  gap: 16px;
+  align-items: center;
+}
+
+.feedback-score-badge {
+  min-height: 86px;
+  font-size: 28px;
+}
+
+.feedback-detail-hero h2 {
+  margin: 4px 0 8px;
+  font-size: clamp(28px, 4vw, 52px);
+}
+
+.feedback-detail-hero p:not(.mono-label) {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.feedback-evidence-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.feedback-evidence-grid .code-note {
+  min-width: 0;
+}
+
+.feedback-evidence-grid .code-note span,
+.feedback-evidence-grid .code-note p {
+  overflow-wrap: anywhere;
+}
+
+.app-shell[data-theme="dark"] .feedback-review-list,
+.app-shell[data-theme="dark"] .feedback-detail-card,
+.app-shell[data-theme="dark"] .feedback-filter-panel,
+.app-shell[data-theme="dark"] .feedback-filter-tabs button,
+.app-shell[data-theme="dark"] .feedback-record-card {
+  border-color: rgba(125, 211, 252, 0.2);
+  background:
+    linear-gradient(145deg, rgba(14, 165, 233, 0.13), rgba(16, 185, 129, 0.07)),
+    rgba(8, 19, 34, 0.82);
+}
+
+.app-shell[data-theme="dark"] .feedback-status-dot.high,
+.app-shell[data-theme="dark"] .feedback-score-badge.high {
+  color: #86efac;
+}
+
+.app-shell[data-theme="dark"] .feedback-status-dot.low,
+.app-shell[data-theme="dark"] .feedback-score-badge.low {
+  color: #fda4af;
+}
+
+.app-shell[data-theme="dark"] .feedback-status-dot.waiting,
+.app-shell[data-theme="dark"] .feedback-score-badge.waiting {
+  color: #fcd34d;
+}
+
+@media (max-width: 1100px) {
+  .feedback-summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .feedback-review-layout,
+  .feedback-evidence-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .feedback-review-list {
+    position: static;
+  }
+}
+
+@media (max-width: 620px) {
+  .feedback-summary-grid,
+  .feedback-filter-tabs,
+  .feedback-detail-hero {
+    grid-template-columns: 1fr;
+  }
+}
+
 .portfolio-page .cv-two-col {
   grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
   gap: 12px;
