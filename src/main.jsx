@@ -2760,7 +2760,6 @@ function MentorPage({ apiStatus, data, currentUser, refreshData, createFeedback,
         <div>
           <p className="mono-label">Mentor dashboard</p>
           <h1>{currentUser?.user?.name ?? 'Mentor'} review project</h1>
-          <p>Nguồn dữ liệu: {apiStatus === 'mongo' ? 'MongoDB' : 'Local fallback'}. Mentor xem bài nộp, chấm điểm, accept/reject và tạo feedback cho student.</p>
         </div>
         <button className="primary-action compact" onClick={refreshData}>
           <Save size={16} />

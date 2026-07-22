@@ -7052,6 +7052,57 @@ body:has(.challenge-hub-page) main {
   color: #075985 !important;
 }
 
+/* Mentor feedback history layout fixes */
+.mentor-feedback-history {
+  min-width: 0;
+}
+
+.mentor-feedback-history.workspace-section.active {
+  grid-template-columns: minmax(300px, 0.82fr) minmax(0, 1.18fr) !important;
+}
+
+.mentor-feedback-history .feedback-history-filter {
+  display: grid !important;
+  grid-template-columns: minmax(180px, 1.2fr) minmax(120px, 0.7fr) minmax(140px, 0.8fr) !important;
+  align-items: end;
+  min-width: 0;
+}
+
+.feedback-history-list,
+.feedback-detail-panel,
+.feedback-detail-head > div,
+.feedback-history-item > div {
+  min-width: 0;
+}
+
+.feedback-detail-head {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.feedback-detail-head h2,
+.feedback-history-item strong {
+  overflow-wrap: anywhere;
+}
+
+.feedback-detail-head span,
+.feedback-history-item small {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.feedback-detail-panel .submission-evidence-grid {
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+}
+
+@media (max-width: 1100px) {
+  .mentor-feedback-history.workspace-section.active,
+  .mentor-feedback-history .feedback-history-filter,
+  .feedback-detail-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
 /* Auth/intro page must remain scrollable when signup or smaller screens add content. */
 body:has(.auth-page) {
   overflow-y: auto !important;
