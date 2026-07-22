@@ -1590,10 +1590,12 @@ function AuthPage({ authMode, setAuthMode, majors, selectedMajorKey, changeMajor
             <label className="wide">Minh chứng mentor<textarea value={signupForm.mentorProof} onChange={(event) => updateSignupForm('mentorProof', event.target.value)} /></label>
           </div>
         )}
-        <button className="primary-action" onClick={isSignup ? submitSignup : submitLogin}>
-          <LockKeyhole size={18} />
-          {isSignup ? `Tạo tài khoản ${signupType === 'mentor' ? 'Mentor' : 'Student'} demo` : 'Đăng nhập bằng tài khoản đã nhập'}
-        </button>
+        {isSignup && (
+          <button className="primary-action" onClick={submitSignup}>
+            <LockKeyhole size={18} />
+            {`Tạo tài khoản ${signupType === 'mentor' ? 'Mentor' : 'Student'} demo`}
+          </button>
+        )}
         {!isSignup && <button className="ghost-action" onClick={() => loginAs('student')}>
           <Rocket size={18} />
           Student demo vào bản đồ {selectedMajor.short}
