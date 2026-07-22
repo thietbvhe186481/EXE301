@@ -8978,6 +8978,14 @@ body {
   gap: 12px;
 }
 
+.portfolio-page .cv-two-col.profile-skill-wide {
+  grid-template-columns: 1fr;
+}
+
+.portfolio-page .profile-skill-wide .cv-section {
+  min-height: 0;
+}
+
 .featured-project-list {
   display: grid;
   gap: 12px;

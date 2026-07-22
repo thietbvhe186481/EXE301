@@ -1644,7 +1644,8 @@ function Header({ page, go, currentUser, theme, setTheme, logout }) {
     ? [
         { id: 'roadmap', label: 'Bản đồ nghề', icon: Compass, target: 'roadmap' },
         { id: 'trends', label: 'Xu hướng', icon: Sparkles, target: 'trends' },
-        { id: 'practice', label: 'Luyện tập', icon: LayoutDashboard, items: ['hub', 'join', 'submit', 'feedback'].map(byId).filter(Boolean) },
+        { id: 'hub-direct', label: 'Thử thách', icon: LayoutDashboard, target: 'hub', matches: ['hub'] },
+        { id: 'practice', label: 'Luyện tập', icon: Rocket, items: ['join', 'submit', 'feedback'].map(byId).filter(Boolean) },
         { id: 'premium-direct', label: 'Premium', icon: Crown, target: 'premium' }
       ]
     : currentRole === 'mentor'
@@ -1698,7 +1699,7 @@ function Header({ page, go, currentUser, theme, setTheme, logout }) {
               {group.items && <MoveDown size={13} />}
             </button>
             {group.items && open && (
-              <div className="nav-dropdown">
+              <div className="nav-dropdown" onClick={(event) => event.stopPropagation()}>
                 {group.items.map((item) => {
                   const ItemIcon = item.icon;
                   return (
@@ -1706,7 +1707,7 @@ function Header({ page, go, currentUser, theme, setTheme, logout }) {
                       type="button"
                       key={item.id}
                       className={`nav-dropdown-item ${isNavItemActive(item) ? 'active' : ''}`}
-                      onClick={() => navigateNavItem(item)}
+                      onClick={(event) => { event.stopPropagation(); navigateNavItem(item); }}
                     >
                       <ItemIcon size={15} />
                       <span>{item.label}</span>
@@ -3044,7 +3045,7 @@ function PortfolioPage({ pathRoles, currentMajor, go, demoUser, apiStatus, submi
         </aside>
 
         <section className="cv-main">
-          <div className="cv-two-col">
+          <div className="cv-two-col profile-skill-wide">
             <article className="cv-section">
               <h2>Kỹ năng & mức độ sẵn sàng</h2>
               {mainSpecs.map((item, index) => (
@@ -3058,17 +3059,6 @@ function PortfolioPage({ pathRoles, currentMajor, go, demoUser, apiStatus, submi
                   <span key={item}>{item}</span>
                 ))}
               </div>
-            </article>
-
-            <article className="cv-section cv-interview-section">
-              <p className="mono-label">Interview ready</p>
-              <h2>Chuẩn bị trao đổi với nhà tuyển dụng</h2>
-              <div className="interview-proof-list">
-                <div><BriefcaseBusiness size={17} /><span>Giải thích được vai trò của mình trong từng project.</span></div>
-                <div><LinkIcon size={17} /><span>Có link sản phẩm/minh chứng để mở xem trực tiếp.</span></div>
-                <div><BadgeCheck size={17} /><span>Nắm rõ quyết định triển khai, trade-off và phần cần cải thiện.</span></div>
-              </div>
-              {isPremium && <div className="certificate-chip"><Crown size={16} /> {certificateCode}</div>}
             </article>
           </div>
 
