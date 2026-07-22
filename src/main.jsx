@@ -525,8 +525,7 @@ function validateSubmissionPayload(payload, challenge, currentMajor) {
     { key: 'primaryLink', label: 'Link ch\u00ednh h\u1ee3p l\u1ec7', ok: primaryOk, detail: primaryOk ? 'URL c\u00f3 th\u1ec3 m\u1edf \u0111\u1ec3 mentor xem b\u00e0i.' : 'D\u00e1n link GitHub, Figma, Google Docs ho\u1eb7c demo b\u1eaft \u0111\u1ea7u b\u1eb1ng http/https.' },
     { key: 'secondaryLink', label: 'Link minh ch\u1ee9ng ph\u00f9 h\u1ee3p', ok: secondaryOk, detail: secondaryOk ? 'Link ph\u1ee5 s\u1eb5n s\u00e0ng ho\u1eb7c c\u00f3 th\u1ec3 b\u1ed5 sung sau.' : 'Link ph\u1ee5 kh\u00f4ng \u0111\u00fang \u0111\u1ecbnh d\u1ea1ng URL.' },
     { key: 'skills', label: 'Khai b\u00e1o k\u1ef9 n\u0103ng', ok: skills.length >= 2, detail: skills.length >= 2 ? String(skills.length) + ' k\u1ef9 n\u0103ng \u0111\u01b0\u1ee3c ghi nh\u1eadn.' : 'Nh\u1eadp \u00edt nh\u1ea5t 2 k\u1ef9 n\u0103ng, v\u00ed d\u1ee5: React, API, UX.' },
-    { key: 'notes', label: 'Ghi ch\u00fa nghi\u1ec7p v\u1ee5', ok: noteLength >= 20, detail: noteLength >= 20 ? 'Ghi ch\u00fa \u0111\u1ee7 \u0111\u1ec3 mentor n\u1eafm b\u1ed1i c\u1ea3nh.' : 'M\u00f4 t\u1ea3 ng\u1eafn lu\u1ed3ng x\u1eed l\u00fd, logic ch\u00ednh v\u00e0 ph\u1ea7n c\u1ea7n mentor xem.' },
-    { key: 'trackMatch', label: 'Kh\u1edbp challenge \u0111ang ch\u1ecdn', ok: Boolean(challenge?.id && currentMajor?.key === challenge.majorKey), detail: 'B\u00e0i n\u1ed9p \u0111\u01b0\u1ee3c g\u1eafn v\u1edbi ' + (challenge?.track ?? 'track') + ' / ' + (currentMajor?.title ?? 'major') + '.' }
+    { key: 'notes', label: 'Ghi ch\u00fa nghi\u1ec7p v\u1ee5', ok: noteLength >= 20, detail: noteLength >= 20 ? 'Ghi ch\u00fa \u0111\u1ee7 \u0111\u1ec3 mentor n\u1eafm b\u1ed1i c\u1ea3nh.' : 'M\u00f4 t\u1ea3 ng\u1eafn lu\u1ed3ng x\u1eed l\u00fd, logic ch\u00ednh v\u00e0 ph\u1ea7n c\u1ea7n mentor xem.' }
   ];
   return {
     checks,
@@ -749,6 +748,16 @@ function App() {
     }
   };
   const loginAs = (type, customPayload = null) => {
+    const buildStudentForSelectedMajor = (baseUser = appData?.demoUser ?? demoUsers[0]) => {
+      const loginMajor = catalog.find((item) => item.key === selectedMajorKey) ?? catalog[0];
+      const loginPath = baseUser.selectedMajorKey === selectedMajorKey && baseUser.path?.length
+        ? baseUser.path
+        : loginMajor.columns.slice(0, 3).map((column, index) => column.roles[Math.min(index + 1, levels.length - 1)].id);
+      return {
+        user: { ...baseUser, role: 'student', selectedMajorKey, path: loginPath },
+        path: loginPath
+      };
+    };
     const payload = customPayload ?? (type === 'admin'
       ? { email: 'admin@portfolio.vn', password: 'admin123' }
       : type === 'mentor'
@@ -779,11 +788,7 @@ function App() {
           setPage('mentor');
           return;
         }
-        const loginMajor = catalog.find((item) => item.key === selectedMajorKey) ?? catalog[0];
-        const loginPath = normalizedData.user.selectedMajorKey === selectedMajorKey && normalizedData.user.path?.length
-          ? normalizedData.user.path
-          : loginMajor.columns.slice(0, 3).map((column, index) => column.roles[Math.min(index + 1, levels.length - 1)].id);
-        const studentUser = { ...normalizedData.user, role: 'student', selectedMajorKey, path: loginPath };
+        const { user: studentUser, path: loginPath } = buildStudentForSelectedMajor(normalizedData.user);
         setCurrentUser({ type: 'student', user: studentUser });
         setSelectedMajorKey(selectedMajorKey);
         setPath(loginPath);
@@ -802,8 +807,13 @@ function App() {
           ? { type: 'admin', user: demoAdmins[0] }
           : type === 'mentor'
             ? { type: 'mentor', user: demoMentors[0] }
-            : { type: 'student', user: appData?.demoUser ?? demoUsers[0] };
+            : { type: 'student', user: buildStudentForSelectedMajor().user };
         setCurrentUser(fallback);
+        if (type === 'student') {
+          const { path: loginPath } = buildStudentForSelectedMajor(fallback.user);
+          setSelectedMajorKey(selectedMajorKey);
+          setPath(loginPath);
+        }
         setPage(type === 'admin' ? 'admin' : type === 'mentor' ? 'mentor' : 'roadmap');
       });
   };

@@ -111,8 +111,7 @@ function buildSubmissionChecks(body, challenge) {
     { key: 'primaryLink', label: 'Link chính hợp lệ', ok: primaryOk, detail: primaryOk ? 'URL có thể mở để mentor xem bài.' : 'Link chính phải bắt đầu bằng http/https.' },
     { key: 'secondaryLink', label: 'Link minh chứng phù hợp', ok: secondaryOk, detail: secondaryOk ? 'Link phụ hợp lệ hoặc có thể bổ sung sau.' : 'Link phụ không đúng định dạng URL.' },
     { key: 'skills', label: 'Khai báo kỹ năng', ok: skills.length >= 2, detail: skills.length >= 2 ? `${skills.length} kỹ năng được ghi nhận.` : 'Cần ít nhất 2 kỹ năng.' },
-    { key: 'notes', label: 'Ghi chú nghiệp vụ', ok: notesOk, detail: notesOk ? 'Ghi chú đủ để mentor nắm bối cảnh.' : 'Cần mô tả logic, nghiệp vụ hoặc phần cần review.' },
-    { key: 'trackMatch', label: 'Khớp challenge', ok: Boolean(challenge?.id), detail: `Bài nộp gắn với ${challenge?.track ?? 'challenge'}.` }
+    { key: 'notes', label: 'Ghi chú nghiệp vụ', ok: notesOk, detail: notesOk ? 'Ghi chú đủ để mentor nắm bối cảnh.' : 'Cần mô tả logic, nghiệp vụ hoặc phần cần review.' }
   ];
   return {
     checks,
