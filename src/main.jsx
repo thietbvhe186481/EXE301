@@ -1563,8 +1563,8 @@ function AuthPage({ authMode, setAuthMode, majors, selectedMajorKey, changeMajor
           {isSignup && signupType === 'student' && <label>Kỹ năng hiện có<input value={signupForm.studentSkills} onChange={(event) => updateSignupForm('studentSkills', event.target.value)} placeholder="VD: React, Figma, SEO..." /></label>}
         </div>
         {!isSignup && <div className="auth-helper">
-          <span>Demo account</span>
-          <b>student@portfolio.vn / 123456</b>
+          <span>Quên mật khẩu?</span>
+          <b>Nhận link đặt lại mật khẩu qua email</b>
         </div>}
         {(!isSignup || signupType === 'student') && <div className="major-picker">
           {majors.map((major) => (
