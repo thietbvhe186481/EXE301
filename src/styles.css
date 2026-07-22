@@ -3641,12 +3641,90 @@ body:has(.app-shell.page-mentor) {
 
 .admin-page {
   display: grid !important;
+  grid-template-columns: 246px minmax(0, 1fr);
   height: auto !important;
   min-height: calc(100vh - 64px) !important;
   max-height: none !important;
   overflow: visible !important;
   gap: 16px !important;
   padding-bottom: 48px !important;
+}
+
+.admin-page > .section-heading,
+.admin-page > .status-banner {
+  grid-column: 1 / -1;
+}
+
+.workspace-sidebar {
+  position: sticky;
+  top: 86px;
+  z-index: 3;
+  display: grid;
+  align-self: start;
+  gap: 8px;
+  padding: 14px;
+  border: 1px solid var(--border-soft);
+  border-radius: 10px;
+  background:
+    linear-gradient(160deg, rgba(14, 165, 233, 0.12), rgba(16, 185, 129, 0.07)),
+    var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.workspace-sidebar ~ * {
+  grid-column: 2;
+}
+
+.workspace-sidebar button {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 42px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text);
+  padding: 0 11px;
+  font-weight: 900;
+  text-align: left;
+}
+
+.workspace-sidebar button:hover {
+  border-color: rgba(14, 165, 233, 0.28);
+  background: rgba(14, 165, 233, 0.1);
+}
+
+.certificate-add-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+}
+
+.certificate-add-row input {
+  width: 100%;
+  min-width: 0;
+  border: 1px solid var(--border-soft);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text);
+  padding: 10px 12px;
+  font: inherit;
+}
+
+.certificate-add-row button {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid rgba(14, 165, 233, 0.35);
+  border-radius: 8px;
+  background: linear-gradient(135deg, var(--cyan), var(--blue));
+  color: white;
+  padding: 0 13px;
+  font-weight: 900;
+}
+
+.mentor-profile-editor {
+  align-content: start;
 }
 
 .admin-stats {
@@ -4068,6 +4146,20 @@ body:has(.app-shell.page-mentor) {
 }
 
 @media (max-width: 960px) {
+  .admin-page {
+    grid-template-columns: 1fr;
+  }
+
+  .workspace-sidebar,
+  .workspace-sidebar ~ * {
+    grid-column: 1;
+  }
+
+  .workspace-sidebar {
+    position: static;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  }
+
   .admin-stats,
   .admin-grid,
   .admin-grid.compact,

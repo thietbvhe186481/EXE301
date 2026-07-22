@@ -2470,6 +2470,18 @@ function MentorPage({ apiStatus, data, currentUser, refreshData, createFeedback,
     decision: 'approved'
   });
   const mentorProfile = data?.mentors?.find((item) => item.id === currentUser?.user?.id) ?? currentUser?.user ?? {};
+  const [mentorProfileDraft, setMentorProfileDraft] = useState({
+    title: mentorProfile.jobTitle ?? mentorProfile.level ?? 'Senior Mentor',
+    company: mentorProfile.currentCompany ?? 'Portfolio Mentor Network',
+    strongestField: mentorProfile.strongestField ?? 'Project Review',
+    bio: mentorProfile.reviewStyle ?? 'Review theo yêu cầu, chất lượng trình bày và khả năng đưa vào portfolio.'
+  });
+  const [mentorCertificates, setMentorCertificates] = useState(mentorProfile.certifications ?? [
+    'Google UX Design Certificate',
+    'AWS Cloud Practitioner',
+    'Portfolio Mentor Certification'
+  ]);
+  const [certificateInput, setCertificateInput] = useState('');
   const pending = submissionsData.filter((item) => item.status === 'submitted');
   const reviewed = submissionsData.filter((item) => item.status === 'reviewed' || feedbackData.some((feedback) => feedback.challengeId === item.challengeId && feedback.userId === item.userId));
   const averageScore = feedbackData.length
@@ -2575,6 +2587,19 @@ function MentorPage({ apiStatus, data, currentUser, refreshData, createFeedback,
       })
       .catch(() => setNotice('Không cập nhật được trạng thái submission'));
   };
+  const updateMentorProfileDraft = (key, value) => {
+    setMentorProfileDraft((current) => ({ ...current, [key]: value }));
+  };
+  const saveMentorProfileDraft = () => {
+    setNotice('Đã cập nhật hồ sơ mentor demo. Thông tin này dùng để match mentor và hiển thị cho student.');
+  };
+  const addMentorCertificate = () => {
+    const value = certificateInput.trim();
+    if (!value) return;
+    setMentorCertificates((current) => [...current, value]);
+    setCertificateInput('');
+    setNotice(`Đã thêm chứng chỉ: ${value}`);
+  };
 
   return (
     <section className="content-page admin-page">
@@ -2592,7 +2617,16 @@ function MentorPage({ apiStatus, data, currentUser, refreshData, createFeedback,
 
       {notice && <div className="status-banner"><Check size={17} /> {notice}</div>}
 
-      <div className="dashboard-guide">
+      <aside className="workspace-sidebar">
+        <p className="mono-label">Mentor menu</p>
+        <button onClick={() => document.querySelector('#mentor-overview')?.scrollIntoView({ behavior: 'smooth' })}><LayoutDashboard size={16} /> Tổng quan</button>
+        <button onClick={() => document.querySelector('#mentor-profile')?.scrollIntoView({ behavior: 'smooth' })}><UserRound size={16} /> Hồ sơ mentor</button>
+        <button onClick={() => document.querySelector('#mentor-filter')?.scrollIntoView({ behavior: 'smooth' })}><Filter size={16} /> Bộ lọc bài</button>
+        <button onClick={() => document.querySelector('#mentor-review')?.scrollIntoView({ behavior: 'smooth' })}><FileUp size={16} /> Review bài nộp</button>
+        <button onClick={() => document.querySelector('#mentor-history')?.scrollIntoView({ behavior: 'smooth' })}><MessageSquareText size={16} /> Feedback</button>
+      </aside>
+
+      <div className="dashboard-guide" id="mentor-overview">
         <article className="guide-step-card active">
           <span>01</span>
           <strong>Chọn bài cần review</strong>
@@ -2610,12 +2644,12 @@ function MentorPage({ apiStatus, data, currentUser, refreshData, createFeedback,
         </article>
       </div>
 
-      <div className="mentor-profile-grid">
+      <div className="mentor-profile-grid" id="mentor-profile">
         <article className="mentor-hero-card">
           <p className="mono-label">Mentor profile</p>
           <h2>{mentorProfile.name ?? 'Mentor'}</h2>
-          <strong>{mentorProfile.level ?? 'Senior Mentor'} · {mentorProfile.strongestField ?? 'Project Review'}</strong>
-          <p>{mentorProfile.reviewStyle ?? 'Review theo yêu cầu, chất lượng trình bày và khả năng đưa vào portfolio.'}</p>
+          <strong>{mentorProfileDraft.title} · {mentorProfileDraft.strongestField}</strong>
+          <p>{mentorProfileDraft.bio}</p>
           <div className="tag-row">
             {(mentorProfile.expertise ?? ['Backend', 'Full Stack']).map((item) => <span key={item}>{item}</span>)}
           </div>
@@ -2631,6 +2665,30 @@ function MentorPage({ apiStatus, data, currentUser, refreshData, createFeedback,
           {(mentorProfile.domains ?? ['Career platform', 'Portfolio review']).map((item) => (
             <div className="activity-row" key={item}><BadgeCheck size={16} /><span>{item}</span></div>
           ))}
+        </article>
+        <article className="admin-panel mentor-profile-editor">
+          <p className="mono-label">Chỉnh sửa hồ sơ</p>
+          <h2>Profile công khai</h2>
+          <div className="admin-form">
+            <label>Chức danh<input value={mentorProfileDraft.title} onChange={(event) => updateMentorProfileDraft('title', event.target.value)} /></label>
+            <label>Công ty hiện tại<input value={mentorProfileDraft.company} onChange={(event) => updateMentorProfileDraft('company', event.target.value)} /></label>
+            <label>Lĩnh vực mạnh<input value={mentorProfileDraft.strongestField} onChange={(event) => updateMentorProfileDraft('strongestField', event.target.value)} /></label>
+            <label className="wide">Mô tả mentor<textarea value={mentorProfileDraft.bio} onChange={(event) => updateMentorProfileDraft('bio', event.target.value)} /></label>
+          </div>
+          <button className="primary-action compact" onClick={saveMentorProfileDraft}><Save size={16} /> Lưu hồ sơ</button>
+        </article>
+        <article className="admin-panel mentor-profile-editor">
+          <p className="mono-label">Certifications</p>
+          <h2>Chứng chỉ mentor</h2>
+          <div className="admin-list">
+            {mentorCertificates.map((item) => (
+              <div className="activity-row" key={item}><BadgeCheck size={16} /><span>{item}</span></div>
+            ))}
+          </div>
+          <div className="certificate-add-row">
+            <input value={certificateInput} onChange={(event) => setCertificateInput(event.target.value)} placeholder="VD: Google Analytics, AWS, UX Research..." />
+            <button onClick={addMentorCertificate}><Plus size={16} /> Thêm</button>
+          </div>
         </article>
       </div>
 
@@ -2666,7 +2724,7 @@ function MentorPage({ apiStatus, data, currentUser, refreshData, createFeedback,
         </article>
       </div>
 
-      <section className="management-filters">
+      <section className="management-filters" id="mentor-filter">
         <div>
           <p className="mono-label">Bộ lọc mentor</p>
           <strong>{filteredPending.length} bài chờ · {filteredReviewed.length} bài đã review</strong>
@@ -2713,7 +2771,7 @@ function MentorPage({ apiStatus, data, currentUser, refreshData, createFeedback,
       </section>
 
       {activeSubmission && (
-        <section className="mentor-review-workspace">
+        <section className="mentor-review-workspace" id="mentor-review">
           <div className="review-main-panel">
             <div className="section-heading inline">
               <div>
@@ -2813,7 +2871,7 @@ function MentorPage({ apiStatus, data, currentUser, refreshData, createFeedback,
         </section>
       )}
 
-      <div className="admin-grid">
+      <div className="admin-grid" id="mentor-history">
         <article className="admin-panel">
           <h2>Bài đang chờ review</h2>
           <div className="admin-list">
@@ -3100,7 +3158,18 @@ function AdminPage({ apiStatus, data, notice, currentUser, refreshData, setAdmin
 
       {notice && <div className="status-banner"><Check size={17} /> {notice}</div>}
 
-      <div className="dashboard-guide">
+      <aside className="workspace-sidebar">
+        <p className="mono-label">Admin menu</p>
+        <button onClick={() => document.querySelector('#admin-overview')?.scrollIntoView({ behavior: 'smooth' })}><LayoutDashboard size={16} /> Tổng quan</button>
+        <button onClick={() => document.querySelector('#admin-profile')?.scrollIntoView({ behavior: 'smooth' })}><ShieldCheck size={16} /> Vận hành</button>
+        <button onClick={() => document.querySelector('#admin-commerce')?.scrollIntoView({ behavior: 'smooth' })}><Crown size={16} /> Premium</button>
+        <button onClick={() => document.querySelector('#admin-filter')?.scrollIntoView({ behavior: 'smooth' })}><Filter size={16} /> Bộ lọc</button>
+        <button onClick={() => document.querySelector('#admin-challenges')?.scrollIntoView({ behavior: 'smooth' })}><Blocks size={16} /> Challenge</button>
+        <button onClick={() => document.querySelector('#admin-users')?.scrollIntoView({ behavior: 'smooth' })}><UserRound size={16} /> User & bài nộp</button>
+        <button onClick={() => document.querySelector('#admin-system')?.scrollIntoView({ behavior: 'smooth' })}><Save size={16} /> Hệ thống</button>
+      </aside>
+
+      <div className="dashboard-guide" id="admin-overview">
         <article className="guide-step-card active">
           <span>01</span>
           <strong>Tổng quan vận hành</strong>
@@ -3132,7 +3201,7 @@ function AdminPage({ apiStatus, data, notice, currentUser, refreshData, setAdmin
         <StatCard icon={Crown} title="Premium active" value={activePremiumCount} />
       </div>
 
-      <div className="admin-grid compact">
+      <div className="admin-grid compact" id="admin-profile">
         <article className="admin-panel">
           <p className="mono-label">Admin profile</p>
           <h2>{adminProfile.name ?? 'Portfolio Admin'}</h2>
@@ -3176,7 +3245,7 @@ function AdminPage({ apiStatus, data, notice, currentUser, refreshData, setAdmin
         </article>
       </div>
 
-      <div className="admin-grid compact">
+      <div className="admin-grid compact" id="admin-commerce">
         <article className="admin-panel">
           <p className="mono-label">Premium & doanh thu</p>
           <h2>{formatVnd(premiumRevenue)}</h2>
@@ -3201,7 +3270,7 @@ function AdminPage({ apiStatus, data, notice, currentUser, refreshData, setAdmin
         </article>
       </div>
 
-      <section className="management-filters admin-management-filters">
+      <section className="management-filters admin-management-filters" id="admin-filter">
         <div>
           <p className="mono-label">Bộ lọc admin</p>
           <strong>{filteredChallenges.length} challenges · {filteredUsers.length} users · {filteredSubmissions.length} submissions</strong>
@@ -3276,7 +3345,7 @@ function AdminPage({ apiStatus, data, notice, currentUser, refreshData, setAdmin
         </button>
       </section>
 
-      <div className="admin-grid">
+      <div className="admin-grid" id="admin-challenges">
         <article className="admin-panel">
           <h2>{editingId ? 'Sửa challenge' : 'Thêm challenge'}</h2>
           <div className="admin-form">
@@ -3322,7 +3391,7 @@ function AdminPage({ apiStatus, data, notice, currentUser, refreshData, setAdmin
         </article>
       </div>
 
-      <div className="admin-grid compact">
+      <div className="admin-grid compact" id="admin-users">
         <article className="admin-panel">
           <h2>Người dùng</h2>
           {userPage.items.map((user) => (
@@ -3364,7 +3433,7 @@ function AdminPage({ apiStatus, data, notice, currentUser, refreshData, setAdmin
         </article>
       </div>
 
-      <div className="admin-grid compact">
+      <div className="admin-grid compact" id="admin-system">
         <article className="admin-panel">
           <h2>Categories & Career Domains</h2>
           {categories.map((category) => (
