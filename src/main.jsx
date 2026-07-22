@@ -1261,7 +1261,7 @@ function App() {
             go={go}
           />
         )}
-        {page === 'trends' && <MarketTrendsPage currentMajor={currentMajor} go={go} />}
+        {page === 'trends' && <MarketTrendsPage majors={catalog} currentMajor={currentMajor} changeMajor={changeMajor} go={go} />}
         {page === 'hub' && (
           <ChallengeHubPage
             currentMajor={currentMajor}
@@ -1770,7 +1770,7 @@ function CareerMapPage({ majors, currentMajor, changeMajor, columns, levels, sel
   );
 }
 
-function MarketTrendsPage({ currentMajor, go }) {
+function MarketTrendsPage({ majors, currentMajor, changeMajor, go }) {
   const signal = marketSignalsByMajor[currentMajor.key] ?? marketSignalsByMajor.dev;
   const evidence = marketEvidenceByMajor[currentMajor.key] ?? marketEvidenceByMajor.dev;
   const updatedLabel = getMarketUpdatedLabel();
@@ -1783,11 +1783,20 @@ function MarketTrendsPage({ currentMajor, go }) {
           <h1>Xu hướng thị trường {currentMajor.title}</h1>
           <p>Dữ liệu dùng để tham khảo khi chọn chuyên ngành, ưu tiên kỹ năng và chọn bài tập portfolio. Các chỉ báo được tổng hợp từ báo cáo lương, job board và nguồn tuyển dụng công khai.</p>
         </div>
-        <div className="market-freshness-card">
-          <Sparkles size={20} />
-          <div>
-            <strong>Cập nhật {updatedLabel}</strong>
-            <span>Trạng thái nguồn: đang theo dõi</span>
+        <div className="trend-heading-actions">
+          <div className="major-switcher trend-major-switcher">
+            {majors.map((major) => (
+              <button key={major.key} className={currentMajor.key === major.key ? 'active' : ''} onClick={() => changeMajor(major.key)}>
+                {major.short}
+              </button>
+            ))}
+          </div>
+          <div className="market-freshness-card">
+            <Sparkles size={20} />
+            <div>
+              <strong>Cập nhật {updatedLabel}</strong>
+              <span>Trạng thái nguồn: đang theo dõi</span>
+            </div>
           </div>
         </div>
       </div>

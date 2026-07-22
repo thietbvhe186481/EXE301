@@ -4687,6 +4687,22 @@ body:has(.trend-page) main {
   font-size: 13px;
 }
 
+.trend-heading-actions {
+  display: grid;
+  gap: 10px;
+  justify-items: end;
+}
+
+.trend-major-switcher {
+  width: 100%;
+  min-width: 260px;
+  justify-content: end;
+}
+
+.trend-major-switcher button {
+  min-width: 74px;
+}
+
 .trend-hero-grid {
   display: grid;
   grid-template-columns: minmax(0, 1.5fr) minmax(260px, 0.8fr);
@@ -5013,6 +5029,15 @@ body:has(.about-page) main {
   .about-stat-grid,
   .about-grid {
     grid-template-columns: 1fr;
+  }
+
+  .trend-heading-actions,
+  .trend-major-switcher,
+  .market-freshness-card {
+    width: 100%;
+    min-width: 0;
+    justify-items: stretch;
+    justify-content: stretch;
   }
 
   .footer-grid {
