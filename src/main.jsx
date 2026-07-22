@@ -1722,14 +1722,6 @@ function CareerMapPage({ majors, currentMajor, changeMajor, columns, levels, sel
               Chỉ xem tham khảo. Bạn chỉ có thể lập lộ trình cho ngành đã chọn khi đăng nhập.
             </div>
           )}
-          <div className="detail-stats">
-            <Stat value={selectedRole.salary} label="mức lương tham khảo" />
-            <Stat value={selectedRole.experience} label="kinh nghiệm" />
-          </div>
-          <div className="salary-basis-note">
-            <BadgeCheck size={15} />
-            <span>Band lương tham khảo theo cấp độ, chuyên ngành và tín hiệu thị trường. Nguồn: ITviec Salary Report, Adecco Salary Guide và job board công khai.</span>
-          </div>
           <div className="tabs">
             {Object.entries(tabItems).map(([key, value]) => (
               <button key={key} className={tab === key ? 'active' : ''} onClick={() => setTab(key)}>{value.label}</button>

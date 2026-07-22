@@ -450,7 +450,6 @@ p {
 }
 
 .hero-stats,
-.detail-stats,
 .portfolio-grid,
 .feedback-grid {
   display: grid;
@@ -1305,32 +1304,6 @@ textarea {
 
 .detail-panel h2 {
   margin-bottom: 10px;
-}
-
-.detail-stats {
-  grid-template-columns: 1fr 1fr;
-  margin-bottom: 10px;
-}
-
-.salary-basis-note {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  margin: -2px 0 10px;
-  padding: 10px;
-  border: 1px solid var(--border-soft);
-  border-radius: 8px;
-  background: rgba(14, 165, 233, 0.08);
-  color: var(--muted);
-  font-size: 13px;
-  font-weight: 750;
-  line-height: 1.45;
-}
-
-.salary-basis-note svg {
-  flex: 0 0 auto;
-  margin-top: 2px;
-  color: var(--emerald);
 }
 
 .tabs {
@@ -2210,7 +2183,6 @@ textarea {
   }
 
   .hero-stats,
-  .detail-stats,
   .feedback-grid,
   .portfolio-grid,
   .profile-summary,
@@ -5573,8 +5545,6 @@ b,
 .app-shell[data-theme="light"] .selected-major-note span,
 .app-shell[data-theme="light"] .submit-status-line span,
 .app-shell[data-theme="light"] .focus-meta span,
-.app-shell[data-theme="light"] .detail-stats .stat strong,
-.app-shell[data-theme="light"] .detail-stats .stat span,
 .app-shell[data-theme="light"] .path-card span,
 .app-shell[data-theme="light"] .path-card .mono-label {
   color: #0f2f45 !important;
@@ -5682,8 +5652,7 @@ textarea::placeholder {
   .activity-row,
   .empty-state,
   .rubric-grid article,
-  .join-status-grid .stat,
-  .detail-stats .stat
+  .join-status-grid .stat
 ) :is(h1, h2, h3, h4, strong, b, label) {
   color: #071d2f !important;
   opacity: 1 !important;
@@ -5734,8 +5703,7 @@ textarea::placeholder {
   .activity-row,
   .empty-state,
   .rubric-grid article,
-  .join-status-grid .stat,
-  .detail-stats .stat
+  .join-status-grid .stat
 ) :is(p, span, small, i, li) {
   color: #334e68 !important;
   opacity: 1 !important;
