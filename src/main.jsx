@@ -652,6 +652,23 @@ function getSpecializationDescription(majorKey, column) {
     ?? `Tập trung xây năng lực thực hành trong ${column.title}, từ kỹ năng nền tảng đến sản phẩm có thể đưa vào portfolio.`;
 }
 
+function normalizeLookupText(value) {
+  return String(value ?? '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/đ/g, 'd')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim();
+}
+
+function findMentorForName(name, mentors = []) {
+  const normalizedName = normalizeLookupText(name);
+  return mentors.find((mentor) => normalizeLookupText(mentor.name) === normalizedName)
+    ?? mentors.find((mentor) => normalizeLookupText(mentor.name).includes(normalizedName) || normalizedName.includes(normalizeLookupText(mentor.name)))
+    ?? { name, level: 'Mentor', strongestField: 'Career review', currentCompany: 'Portfolio Mentor Network', yearsOfExperience: '5+', expertise: [], rating: 4.8, availability: 'Theo lịch review' };
+}
+
 const workPhotoUrls = [
   'https://images.unsplash.com/photo-1522202176988-66273c2fd55f',
   'https://images.unsplash.com/photo-1519389950473-47ba0277781c',
@@ -1604,6 +1621,7 @@ function App() {
             submissionStatus={submissionStatus}
             joinChallenge={joinChallenge}
             isPremium={isPremium}
+            mentors={appData.mentors ?? []}
             go={go}
           />
         )}
@@ -2389,10 +2407,9 @@ function AboutPage({ go }) {
   );
 }
 
-function ChallengeHubPage({ currentMajor, activeTrack, setActiveTrack, visibleChallenges, setSelectedChallengeId, joinedChallengeIds, submissionStatus, joinChallenge, isPremium, go }) {
+function ChallengeHubPage({ currentMajor, activeTrack, setActiveTrack, visibleChallenges, setSelectedChallengeId, joinedChallengeIds, submissionStatus, joinChallenge, isPremium, mentors, go }) {
   const tracks = ['Tất cả', ...currentMajor.columns.map((item) => item.title)];
   const premiumChallengeCount = visibleChallenges.filter(isPremiumChallenge).length;
-  const marketSignal = marketSignalsByMajor[currentMajor.key] ?? marketSignalsByMajor.dev;
   const reviewedCount = visibleChallenges.filter((challenge) => submissionStatus[challenge.id]?.status === 'reviewed').length;
   const joinedCount = visibleChallenges.filter((challenge) => joinedChallengeIds.includes(challenge.id)).length;
   return (
@@ -2433,6 +2450,7 @@ function ChallengeHubPage({ currentMajor, activeTrack, setActiveTrack, visibleCh
           const submission = submissionStatus[challenge.id];
           const locked = isPremiumChallenge(challenge) && !isPremium;
           const photo = makeWorkIllustrationSrc(null, index + (currentMajor.key === 'mkt' ? 4 : currentMajor.key === 'design' ? 8 : 0));
+          const mentor = findMentorForName(challenge.mentor, mentors);
           return (
             <article className={`challenge-card ${locked ? 'premium-locked-card' : ''}`} key={challenge.id}>
               <div className="challenge-photo" style={{ '--challenge-photo': `url("${photo}")` }}>
@@ -2447,12 +2465,19 @@ function ChallengeHubPage({ currentMajor, activeTrack, setActiveTrack, visibleCh
               <p>{challenge.summary}</p>
               <div className="challenge-business-row">
                 <span><Sparkles size={15} /> {challenge.xp} XP</span>
-                <span><GraduationCap size={15} /> {challenge.mentor}</span>
+                <button type="button" className="mentor-peek">
+                  <GraduationCap size={15} />
+                  {challenge.mentor}
+                  <div className="mentor-hover-card">
+                    <strong>{mentor.name}</strong>
+                    <small>{mentor.level ?? 'Mentor'} · {mentor.strongestField ?? challenge.track}</small>
+                    <span>{mentor.currentCompany ?? 'Portfolio Mentor Network'} · {mentor.yearsOfExperience ?? '5+'} năm kinh nghiệm</span>
+                    <span>Chuyên môn: {(mentor.expertise ?? [challenge.track]).slice(0, 3).join(', ') || challenge.track}</span>
+                    <span>Review: {mentor.availability ?? 'Theo lịch mentor'}</span>
+                    <b>{mentor.rating ?? 4.8}/5 mentor score</b>
+                  </div>
+                </button>
                 <span><Clock size={15} /> {challenge.due}</span>
-              </div>
-              <div className="market-chip">
-                <Sparkles size={15} />
-                <span>{marketSignal.signals?.[0]?.label ?? 'Tín hiệu thị trường'}: {marketSignal.signals?.[0]?.value ?? 'Cao'}</span>
               </div>
               {locked && <div className="status-banner premium-banner"><Crown size={16} /> Cần Premium để nộp bài và nhận mentor review sâu.</div>}
               <div className="tag-row">{challenge.tags.slice(0, 4).map((tag) => <span key={tag}>{tag}</span>)}</div>

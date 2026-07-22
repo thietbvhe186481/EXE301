@@ -7624,7 +7624,8 @@ body:has(.auth-page) main {
   gap: 7px;
 }
 
-.challenge-business-row span {
+.challenge-business-row > span,
+.challenge-business-row > .mentor-peek {
   display: inline-flex;
   align-items: center;
   gap: 5px;
@@ -7638,6 +7639,64 @@ body:has(.auth-page) main {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.mentor-peek {
+  position: relative;
+  border: 0;
+  cursor: help;
+}
+
+.mentor-hover-card {
+  position: absolute;
+  left: 0;
+  bottom: calc(100% + 10px);
+  z-index: 15;
+  display: grid;
+  gap: 5px;
+  width: min(280px, 78vw);
+  padding: 13px;
+  border: 1px solid rgba(14, 116, 144, 0.18);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.96);
+  color: #1f3a52;
+  box-shadow: 0 22px 58px rgba(15, 23, 42, 0.18);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(6px) scale(0.98);
+  transition: opacity 160ms ease, transform 160ms ease;
+  white-space: normal;
+  text-align: left;
+}
+
+.mentor-peek:hover .mentor-hover-card,
+.mentor-peek:focus-visible .mentor-hover-card {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.mentor-hover-card strong {
+  color: #071d2f;
+  font-size: 16px;
+}
+
+.mentor-hover-card small,
+.mentor-hover-card span,
+.mentor-hover-card b {
+  display: block;
+  color: #40566f;
+  font-size: 12px;
+  font-weight: 820;
+  line-height: 1.35;
+}
+
+.mentor-hover-card b {
+  width: fit-content;
+  margin-top: 3px;
+  padding: 5px 8px;
+  border-radius: 999px;
+  background: rgba(16, 185, 129, 0.12);
+  color: #047857;
 }
 
 .challenge-empty-state {
@@ -7693,9 +7752,26 @@ body:has(.auth-page) main {
   color: #d9ecff;
 }
 
-.app-shell[data-theme="dark"] .challenge-business-row span {
+.app-shell[data-theme="dark"] .challenge-business-row > span,
+.app-shell[data-theme="dark"] .challenge-business-row > .mentor-peek {
   background: rgba(14, 165, 233, 0.14);
   color: #bae6fd;
+}
+
+.app-shell[data-theme="dark"] .mentor-hover-card {
+  border-color: rgba(125, 211, 252, 0.22);
+  background: rgba(8, 19, 34, 0.98);
+  color: #d9ecff;
+  box-shadow: 0 24px 70px rgba(2, 8, 23, 0.42);
+}
+
+.app-shell[data-theme="dark"] .mentor-hover-card strong {
+  color: #f8fbff;
+}
+
+.app-shell[data-theme="dark"] .mentor-hover-card small,
+.app-shell[data-theme="dark"] .mentor-hover-card span {
+  color: #bdd4e7;
 }
 
 .app-shell[data-theme="dark"] .challenge-illustration {
