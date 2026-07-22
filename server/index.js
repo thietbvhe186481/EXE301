@@ -84,6 +84,57 @@ function dedupeBy(rows, keyFn) {
   return [...map.values()];
 }
 
+function isValidSubmissionUrl(value) {
+  if (!value || typeof value !== 'string') return false;
+  try {
+    const url = new URL(value.trim());
+    return ['http:', 'https:'].includes(url.protocol) && url.hostname.includes('.');
+  } catch {
+    return false;
+  }
+}
+
+function splitSkills(value) {
+  return String(value || '')
+    .split(/[,;\n]/)
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function buildSubmissionChecks(body, challenge) {
+  const primaryOk = isValidSubmissionUrl(body.primaryLink);
+  const secondaryBlank = !body.secondaryLink?.trim();
+  const secondaryOk = secondaryBlank || isValidSubmissionUrl(body.secondaryLink);
+  const skills = splitSkills(body.skills);
+  const notesOk = String(body.notes || '').trim().length >= 20;
+  const checks = [
+    { key: 'primaryLink', label: 'Link chính hợp lệ', ok: primaryOk, detail: primaryOk ? 'URL có thể mở để mentor xem bài.' : 'Link chính phải bắt đầu bằng http/https.' },
+    { key: 'secondaryLink', label: 'Link minh chứng phù hợp', ok: secondaryOk, detail: secondaryOk ? 'Link phụ hợp lệ hoặc có thể bổ sung sau.' : 'Link phụ không đúng định dạng URL.' },
+    { key: 'skills', label: 'Khai báo kỹ năng', ok: skills.length >= 2, detail: skills.length >= 2 ? `${skills.length} kỹ năng được ghi nhận.` : 'Cần ít nhất 2 kỹ năng.' },
+    { key: 'notes', label: 'Ghi chú nghiệp vụ', ok: notesOk, detail: notesOk ? 'Ghi chú đủ để mentor nắm bối cảnh.' : 'Cần mô tả logic, nghiệp vụ hoặc phần cần review.' },
+    { key: 'trackMatch', label: 'Khớp challenge', ok: Boolean(challenge?.id), detail: `Bài nộp gắn với ${challenge?.track ?? 'challenge'}.` }
+  ];
+  return {
+    checks,
+    errors: checks.filter((item) => !item.ok),
+    score: Math.round((checks.filter((item) => item.ok).length / checks.length) * 100)
+  };
+}
+
+async function findMatchedMentor(challenge) {
+  const mentors = await MentorAccount.find({}).lean();
+  const normalizedTrack = String(challenge?.track || '').toLowerCase();
+  const normalizedMentor = String(challenge?.mentor || '').toLowerCase();
+  return mentors.find((mentor) => mentor.id === challenge?.mentorId)
+    ?? mentors.find((mentor) => String(mentor.name || '').toLowerCase() === normalizedMentor)
+    ?? mentors.find((mentor) => (mentor.expertise ?? []).some((item) => {
+      const expertise = String(item).toLowerCase();
+      return expertise === normalizedTrack || expertise.includes(normalizedTrack) || normalizedTrack.includes(expertise);
+    }))
+    ?? mentors[0]
+    ?? { id: 'mentor-auto', name: challenge?.mentor || 'Mentor Demo' };
+}
+
 app.get('/api/health', async (_req, res) => {
   res.json({ ok: true, service: 'portfolio-api', time: new Date().toISOString() });
 });
@@ -463,6 +514,13 @@ app.get('/api/submissions', async (req, res, next) => {
 
 app.post('/api/submissions', async (req, res, next) => {
   try {
+    const challenge = await Challenge.findOne({ id: req.body.challengeId }).lean();
+    const validation = buildSubmissionChecks(req.body, challenge);
+    if ((req.body.status || 'draft') === 'submitted' && validation.errors.length) {
+      res.status(422).json({ message: 'Submission validation failed', validation });
+      return;
+    }
+    const mentor = await findMatchedMentor(challenge);
     const payload = {
       id: req.body.id || `sub-${req.body.userId || 'demo-student'}-${req.body.challengeId}`,
       userId: req.body.userId || 'demo-student',
@@ -470,7 +528,13 @@ app.post('/api/submissions', async (req, res, next) => {
       status: req.body.status || 'draft',
       primaryLink: req.body.primaryLink || '',
       secondaryLink: req.body.secondaryLink || '',
+      skills: req.body.skills || '',
       notes: req.body.notes || '',
+      mentorId: req.body.mentorId || mentor.id,
+      mentor: req.body.mentor || mentor.name,
+      validationChecks: req.body.validationChecks || validation.checks,
+      validationScore: req.body.validationScore || validation.score,
+      matchedAt: req.body.matchedAt || ((req.body.status || 'draft') === 'submitted' ? new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) : ''),
       updatedAt: new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
     };
     const saved = await Submission.findOneAndUpdate(

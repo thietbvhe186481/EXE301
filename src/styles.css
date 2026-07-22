@@ -1528,6 +1528,67 @@ textarea {
   font-weight: 800;
 }
 
+.validation-panel {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid rgba(14, 165, 233, 0.22);
+  border-radius: 10px;
+  background: rgba(224, 247, 250, 0.54);
+}
+
+.validation-panel.compact {
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.validation-panel > div:first-child {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.validation-panel > div:first-child strong {
+  color: var(--ink);
+  font-size: 16px;
+}
+
+.validation-row {
+  display: grid;
+  grid-template-columns: 22px 1fr;
+  gap: 9px;
+  align-items: start;
+  padding: 9px 10px;
+  border-radius: 9px;
+  color: var(--muted);
+}
+
+.validation-row.ok {
+  background: rgba(16, 185, 129, 0.12);
+}
+
+.validation-row.warn {
+  background: rgba(244, 63, 94, 0.1);
+}
+
+.validation-row svg {
+  margin-top: 2px;
+}
+
+.validation-row.ok svg {
+  color: #059669;
+}
+
+.validation-row.warn svg {
+  color: #e11d48;
+}
+
+.validation-row b {
+  display: block;
+  color: var(--ink);
+}
+
 .submit-actions {
   display: grid;
   grid-template-columns: 1fr 1.2fr;

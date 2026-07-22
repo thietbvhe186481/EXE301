@@ -487,11 +487,67 @@ function formatVnd(value) {
 }
 
 const statusLabels = {
-  draft: 'Bản nháp',
-  submitted: 'Đang review',
-  reviewed: 'Đã có feedback',
-  rejected: 'Cần nộp lại'
+  draft: 'B\u1ea3n nh\u00e1p',
+  submitted: '\u0110ang review',
+  reviewed: '\u0110\u00e3 c\u00f3 feedback',
+  rejected: 'C\u1ea7n n\u1ed9p l\u1ea1i',
+  validation_failed: 'C\u1ea7n ki\u1ec3m tra link'
 };
+
+function isValidHttpUrl(value) {
+  if (!value?.trim()) return false;
+  try {
+    const url = new URL(value.trim());
+    return ['http:', 'https:'].includes(url.protocol) && url.hostname.includes('.');
+  } catch {
+    return false;
+  }
+}
+
+function splitSkillInput(value) {
+  return String(value || '')
+    .split(/[,;\n]/)
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function validateSubmissionPayload(payload, challenge, currentMajor) {
+  const primaryOk = isValidHttpUrl(payload.primaryLink);
+  const secondaryBlank = !payload.secondaryLink?.trim();
+  const secondaryOk = secondaryBlank || isValidHttpUrl(payload.secondaryLink);
+  const skills = splitSkillInput(payload.skills);
+  const noteLength = String(payload.notes || '').trim().length;
+  const challengeTags = challenge?.tags ?? [];
+  const skillOverlap = skills.filter((skill) => (
+    challengeTags.some((tag) => tag.toLowerCase().includes(skill.toLowerCase()) || skill.toLowerCase().includes(tag.toLowerCase()))
+  ));
+  const checks = [
+    { key: 'primaryLink', label: 'Link ch\u00ednh h\u1ee3p l\u1ec7', ok: primaryOk, detail: primaryOk ? 'URL c\u00f3 th\u1ec3 m\u1edf \u0111\u1ec3 mentor xem b\u00e0i.' : 'D\u00e1n link GitHub, Figma, Google Docs ho\u1eb7c demo b\u1eaft \u0111\u1ea7u b\u1eb1ng http/https.' },
+    { key: 'secondaryLink', label: 'Link minh ch\u1ee9ng ph\u00f9 h\u1ee3p', ok: secondaryOk, detail: secondaryOk ? 'Link ph\u1ee5 s\u1eb5n s\u00e0ng ho\u1eb7c c\u00f3 th\u1ec3 b\u1ed5 sung sau.' : 'Link ph\u1ee5 kh\u00f4ng \u0111\u00fang \u0111\u1ecbnh d\u1ea1ng URL.' },
+    { key: 'skills', label: 'Khai b\u00e1o k\u1ef9 n\u0103ng', ok: skills.length >= 2, detail: skills.length >= 2 ? String(skills.length) + ' k\u1ef9 n\u0103ng \u0111\u01b0\u1ee3c ghi nh\u1eadn.' : 'Nh\u1eadp \u00edt nh\u1ea5t 2 k\u1ef9 n\u0103ng, v\u00ed d\u1ee5: React, API, UX.' },
+    { key: 'notes', label: 'Ghi ch\u00fa nghi\u1ec7p v\u1ee5', ok: noteLength >= 20, detail: noteLength >= 20 ? 'Ghi ch\u00fa \u0111\u1ee7 \u0111\u1ec3 mentor n\u1eafm b\u1ed1i c\u1ea3nh.' : 'M\u00f4 t\u1ea3 ng\u1eafn lu\u1ed3ng x\u1eed l\u00fd, logic ch\u00ednh v\u00e0 ph\u1ea7n c\u1ea7n mentor xem.' },
+    { key: 'trackMatch', label: 'Kh\u1edbp challenge \u0111ang ch\u1ecdn', ok: Boolean(challenge?.id && currentMajor?.key === challenge.majorKey), detail: 'B\u00e0i n\u1ed9p \u0111\u01b0\u1ee3c g\u1eafn v\u1edbi ' + (challenge?.track ?? 'track') + ' / ' + (currentMajor?.title ?? 'major') + '.' }
+  ];
+  return {
+    checks,
+    errors: checks.filter((item) => !item.ok),
+    score: Math.round((checks.filter((item) => item.ok).length / checks.length) * 100),
+    skillOverlap
+  };
+}
+
+function matchMentorForChallenge(challenge, mentors = []) {
+  const normalizedTrack = String(challenge?.track || '').toLowerCase();
+  const normalizedMentor = String(challenge?.mentor || '').toLowerCase();
+  return mentors.find((mentor) => mentor.id === challenge?.mentorId)
+    ?? mentors.find((mentor) => String(mentor.name || '').toLowerCase() === normalizedMentor)
+    ?? mentors.find((mentor) => (mentor.expertise ?? []).some((item) => {
+      const expertise = String(item).toLowerCase();
+      return expertise === normalizedTrack || expertise.includes(normalizedTrack) || normalizedTrack.includes(expertise);
+    }))
+    ?? mentors.find((mentor) => String(mentor.role || '').toLowerCase() === 'mentor')
+    ?? { id: 'mentor-auto', name: challenge?.mentor || 'Mentor Demo', expertise: [challenge?.track].filter(Boolean) };
+}
 
 function App() {
   const [page, setPage] = useState('auth');
@@ -783,21 +839,40 @@ function App() {
     }
   };
   const persistSubmission = (challengeId, status, payload = {}) => {
-    if (apiStatus !== 'mongo') return;
+    const optimisticSubmission = {
+      id: payload.id || `sub-${demoUser?.id ?? 'demo-student'}-${challengeId}`,
+      userId: demoUser?.id ?? 'demo-student',
+      challengeId,
+      status,
+      ...payload,
+      updatedAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    };
 
-    fetch(`${API_BASE_URL}/api/submissions`, {
+    setRemoteData((current) => {
+      const source = current ?? appData;
+      return {
+        ...source,
+        submissions: [
+          ...(source?.submissions ?? []).filter((item) => !(item.userId === optimisticSubmission.userId && item.challengeId === challengeId)),
+          optimisticSubmission
+        ]
+      };
+    });
+
+    if (apiStatus !== 'mongo') return Promise.resolve(optimisticSubmission);
+
+    return fetch(`${API_BASE_URL}/api/submissions`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        userId: demoUser?.id ?? 'demo-student',
+        userId: optimisticSubmission.userId,
         challengeId,
         status,
         ...payload
       })
     })
-      .then((response) => response.ok ? response.json() : null)
+      .then((response) => response.ok ? response.json() : Promise.reject(new Error('submission failed')))
       .then((submission) => {
-        if (!submission) return;
         setRemoteData((current) => ({
           ...current,
           submissions: [
@@ -807,10 +882,18 @@ function App() {
         }));
         setSubmissionStatus((current) => ({
           ...current,
-          [challengeId]: { status: submission.status, updatedAt: submission.updatedAt }
+          [challengeId]: {
+            status: submission.status,
+            updatedAt: submission.updatedAt,
+            mentor: submission.mentor,
+            mentorId: submission.mentorId,
+            validationChecks: submission.validationChecks,
+            validationScore: submission.validationScore
+          }
         }));
+        return submission;
       })
-      .catch(() => undefined);
+      .catch(() => optimisticSubmission);
   };
 
   const updatePortfolio = () => {
@@ -844,18 +927,33 @@ function App() {
 
   const refreshData = () => loadBootstrap();
   const saveDraft = (challengeId, payload = {}) => {
+    const challenge = challengeList.find((item) => item.id === challengeId);
+    const mentor = matchMentorForChallenge(challenge, appData.mentors ?? []);
+    const validation = validateSubmissionPayload(payload, challenge, currentMajor);
     setSubmissionStatus((current) => ({
       ...current,
-      [challengeId]: { status: 'draft', updatedAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }
+      [challengeId]: { status: 'draft', updatedAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), mentor: mentor.name, mentorId: mentor.id, validationChecks: validation.checks, validationScore: validation.score }
     }));
-    persistSubmission(challengeId, 'draft', payload);
+    persistSubmission(challengeId, 'draft', { ...payload, mentor: mentor.name, mentorId: mentor.id, validationChecks: validation.checks, validationScore: validation.score });
+    return { ok: true, validation, mentor };
   };
   const submitChallenge = (challengeId, payload = {}) => {
+    const challenge = challengeList.find((item) => item.id === challengeId);
+    const mentor = matchMentorForChallenge(challenge, appData.mentors ?? []);
+    const validation = validateSubmissionPayload(payload, challenge, currentMajor);
+    if (validation.errors.length) {
+      setSubmissionStatus((current) => ({
+        ...current,
+        [challengeId]: { status: 'validation_failed', updatedAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), mentor: mentor.name, mentorId: mentor.id, validationChecks: validation.checks, validationScore: validation.score }
+      }));
+      return { ok: false, validation, mentor };
+    }
     setSubmissionStatus((current) => ({
       ...current,
-      [challengeId]: { status: 'submitted', updatedAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }
+      [challengeId]: { status: 'submitted', updatedAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), mentor: mentor.name, mentorId: mentor.id, validationChecks: validation.checks, validationScore: validation.score }
     }));
-    persistSubmission(challengeId, 'submitted', payload);
+    persistSubmission(challengeId, 'submitted', { ...payload, mentor: mentor.name, mentorId: mentor.id, validationChecks: validation.checks, validationScore: validation.score, matchedAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) });
+    return { ok: true, validation, mentor };
   };
 
   const createFeedback = (challengeId, submissionUserId = userId) => {
@@ -1484,6 +1582,12 @@ function SubmitProjectPage({ challenge, currentMajor, joined, submission, joinCh
     skills: '',
     notes: submission?.notes ?? ''
   });
+  const [validation, setValidation] = useState(() => ({
+    checks: submission?.validationChecks ?? [],
+    errors: [],
+    score: submission?.validationScore ?? 0
+  }));
+  const assignedMentor = submission?.mentor || matchMentorForChallenge(challenge).name;
   const updateForm = (key, value) => setForm((current) => ({ ...current, [key]: value }));
   return (
     <section className="content-page form-layout">
@@ -1495,6 +1599,7 @@ function SubmitProjectPage({ challenge, currentMajor, joined, submission, joinCh
           <span>{joined ? 'Đã tham gia' : 'Chưa tham gia'}</span>
           <span>{isReviewed ? `Đã được góp ý ${submission.updatedAt}` : isSubmitted ? `Đã nộp ${submission.updatedAt}` : isRejected ? `Cần nộp lại ${submission.updatedAt}` : isDraft ? `Bản nháp ${submission.updatedAt}` : 'Chưa có bản nháp'}</span>
           <span>{challenge.track}</span>
+          <span>Mentor: {assignedMentor}</span>
         </div>
         <div className="submission-guide-grid">
           <GuideAccordion eyebrow="Submission standard" title="Hồ sơ nộp bài cần có" count={submitGuide.submissionPackage.length} tone="wide">
@@ -1533,6 +1638,21 @@ function SubmitProjectPage({ challenge, currentMajor, joined, submission, joinCh
         <label>{rules.secondaryLabel}<input value={form.secondaryLink} onChange={(event) => updateForm('secondaryLink', event.target.value)} placeholder="Dán link minh chứng hoặc demo" /></label>
         <label>Kỹ năng sử dụng<input value={form.skills} onChange={(event) => updateForm('skills', event.target.value)} placeholder={rules.skillPlaceholder} /></label>
         <label>Ghi chú sản phẩm<textarea value={form.notes} onChange={(event) => updateForm('notes', event.target.value)} placeholder={rules.notePlaceholder} /></label>
+        <div className="validation-panel">
+          <div>
+            <p className="mono-label">Kiểm tra trước khi gửi</p>
+            <strong>{validation.checks.length ? `${validation.score}/100 điểm hợp lệ` : 'Chưa kiểm tra'}</strong>
+          </div>
+          {(validation.checks.length ? validation.checks : [
+            { key: 'primaryLink', label: 'Link chính hợp lệ', ok: false, detail: 'Hệ thống sẽ kiểm tra khi bạn lưu hoặc gửi.' },
+            { key: 'mentorMatch', label: 'Tự match mentor phù hợp', ok: true, detail: `Dự kiến match với ${assignedMentor}.` }
+          ]).map((item) => (
+            <div className={`validation-row ${item.ok ? 'ok' : 'warn'}`} key={item.key}>
+              {item.ok ? <Check size={16} /> : <X size={16} />}
+              <span><b>{item.label}</b>{item.detail}</span>
+            </div>
+          ))}
+        </div>
         <div className="upload-zone">
           <FileUp size={30} />
           <strong>Thả ảnh minh chứng tại đây</strong>
@@ -1549,7 +1669,11 @@ function SubmitProjectPage({ challenge, currentMajor, joined, submission, joinCh
         {isReviewed && <div className="status-banner"><Check size={17} /> Mentor đã nhận xét bài này. Mở trang góp ý để cập nhật portfolio.</div>}
         {locked && <div className="status-banner premium-banner"><Crown size={17} /> Đây là challenge nâng cao. Free có thể xem yêu cầu, Premium mới được nộp bài và nhận review.</div>}
         <div className="submit-actions">
-          <button className="ghost-action" disabled={locked} onClick={() => { joinChallenge(challenge.id); saveDraft(challenge.id, form); }}>
+          <button className="ghost-action" disabled={locked} onClick={() => {
+            joinChallenge(challenge.id);
+            const result = saveDraft(challenge.id, form);
+            setValidation(result.validation);
+          }}>
             <Save size={17} />
             Lưu bản nháp
           </button>
@@ -1563,7 +1687,9 @@ function SubmitProjectPage({ challenge, currentMajor, joined, submission, joinCh
               return;
             }
             joinChallenge(challenge.id);
-            submitChallenge(challenge.id, form);
+            const result = submitChallenge(challenge.id, form);
+            setValidation(result.validation);
+            if (!result.ok) return;
             go('feedback');
           }}>
             {locked ? 'Nâng cấp để nộp bài' : isReviewed ? 'Xem góp ý mentor' : isRejected ? 'Nộp lại cho mentor' : 'Gửi người hướng dẫn góp ý'}
@@ -1837,6 +1963,16 @@ function MentorPage({ apiStatus, data, currentUser, refreshData, createFeedback,
     : 0;
   const challengeName = (id) => challengesData.find((item) => item.id === id)?.title ?? id;
   const studentName = (id) => students.find((item) => item.id === id)?.name ?? id;
+  const assignedToCurrentMentor = (submission) => {
+    const challenge = challengesData.find((item) => item.id === submission.challengeId);
+    const mentorName = String(mentorProfile.name || currentUser?.user?.name || '').toLowerCase();
+    const mentorId = mentorProfile.id || currentUser?.user?.id;
+    if (!mentorName && !mentorId) return true;
+    return submission.mentorId === mentorId
+      || String(submission.mentor || '').toLowerCase() === mentorName
+      || String(challenge?.mentor || '').toLowerCase() === mentorName
+      || (mentorProfile.expertise ?? []).some((item) => String(challenge?.track || '').toLowerCase().includes(String(item).toLowerCase()) || String(item).toLowerCase().includes(String(challenge?.track || '').toLowerCase()));
+  };
   const activeChallenge = activeSubmission ? challengesData.find((item) => item.id === activeSubmission.challengeId) : null;
   const activeStudent = activeSubmission ? students.find((item) => item.id === activeSubmission.userId) : null;
   const mentorMajorOptions = [...new Set(challengesData.map((item) => item.majorKey).filter(Boolean))];
@@ -1862,8 +1998,8 @@ function MentorPage({ apiStatus, data, currentUser, refreshData, createFeedback,
       submission.notes
     ].some((value) => String(value ?? '').toLowerCase().includes(keyword));
   };
-  const filteredPending = pending.filter(matchMentorSubmission);
-  const filteredReviewed = reviewed.filter(matchMentorSubmission);
+  const filteredPending = pending.filter(assignedToCurrentMentor).filter(matchMentorSubmission);
+  const filteredReviewed = reviewed.filter(assignedToCurrentMentor).filter(matchMentorSubmission);
 
   const reviewSubmission = (submission) => {
     const challenge = challengesData.find((item) => item.id === submission.challengeId);
@@ -2087,6 +2223,18 @@ function MentorPage({ apiStatus, data, currentUser, refreshData, createFeedback,
                 Demo / tài liệu phụ
               </a>
             </div>
+
+            <article className="review-notes">
+              <h3>{'Checklist validate khi student n\u1ed9p'}</h3>
+              <div className="validation-panel compact">
+                {(activeSubmission.validationChecks?.length ? activeSubmission.validationChecks : validateSubmissionPayload(activeSubmission, activeChallenge, { key: activeChallenge?.majorKey, title: activeChallenge?.majorKey }).checks).map((item) => (
+                  <div className={'validation-row ' + (item.ok ? 'ok' : 'warn')} key={item.key}>
+                    {item.ok ? <Check size={16} /> : <X size={16} />}
+                    <span><b>{item.label}</b>{item.detail}</span>
+                  </div>
+                ))}
+              </div>
+            </article>
 
             <article className="review-notes">
               <h3>Ghi chú bài nộp</h3>
