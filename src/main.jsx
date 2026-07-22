@@ -1314,7 +1314,10 @@ function Header({ page, go, currentUser, theme, setTheme, logout }) {
         ? [{ id: 'admin-work', label: 'Admin console', icon: ShieldCheck, items: roleFlow }]
         : [
             { id: 'intro', label: 'Giới thiệu', icon: Sparkles, target: 'auth', matches: ['auth'] },
-            { id: 'discover', label: 'Khám phá', icon: Compass, items: publicFlow.filter((item) => ['roadmap-preview', 'trends-preview', 'challenge-preview', 'premium-preview'].includes(item.id)) },
+            { id: 'roadmap-preview', label: 'Bản đồ nghề', icon: Compass, target: 'roadmap' },
+            { id: 'trends-preview', label: 'Xu hướng thị trường', icon: Sparkles, target: 'trends' },
+            { id: 'challenge-preview', label: 'Thử thách', icon: LayoutDashboard, target: 'hub' },
+            { id: 'premium-preview', label: 'Premium', icon: Crown, target: 'premium' },
             { id: 'about', label: 'About us', icon: BookOpen, target: 'about' }
           ];
   const isNavItemActive = (item) => page === item.id || item.target === page || item.matches?.includes(page);
