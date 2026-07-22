@@ -615,6 +615,42 @@ const workGalleryBase = {
   ]
 };
 
+const specializationDescriptions = {
+  dev: {
+    Frontend: 'Xây giao diện người dùng, tối ưu trải nghiệm trên web và đảm bảo sản phẩm hiển thị tốt trên nhiều thiết bị.',
+    Backend: 'Thiết kế API, xử lý dữ liệu, bảo mật và xây nền tảng vận hành ổn định cho sản phẩm.',
+    'Full Stack': 'Kết nối frontend, backend và database để tạo tính năng end-to-end có thể demo được.',
+    Mobile: 'Phát triển ứng dụng di động, xử lý luồng đăng nhập, dữ liệu, trạng thái và trải nghiệm người dùng trên app.',
+    DevOps: 'Tự động hóa build, test, deploy, giám sát hệ thống và giúp sản phẩm vận hành đáng tin cậy.',
+    'AI / Data': 'Xử lý dữ liệu, xây tính năng AI, tìm kiếm thông minh và dashboard hỗ trợ ra quyết định.',
+    'Software Architecture': 'Thiết kế kiến trúc hệ thống, phân rã module, định hướng kỹ thuật và kiểm soát khả năng mở rộng.'
+  },
+  mkt: {
+    Content: 'Lên ý tưởng, viết nội dung và biến thông điệp thương hiệu thành bài viết, kịch bản, landing page hoặc case campaign.',
+    SEO: 'Nghiên cứu từ khóa, tối ưu nội dung và cấu trúc website để tăng lượng truy cập tự nhiên từ Google.',
+    'Performance Marketing': 'Chạy quảng cáo, tối ưu ngân sách, đo CPA/ROAS và cải thiện hiệu quả chuyển đổi theo dữ liệu.',
+    'Social Media': 'Quản lý kênh mạng xã hội, xây lịch nội dung, tương tác cộng đồng và tăng nhận diện thương hiệu.',
+    'Brand Marketing': 'Xây định vị thương hiệu, thông điệp, campaign concept và đảm bảo trải nghiệm thương hiệu nhất quán.',
+    Growth: 'Thiết kế thử nghiệm tăng trưởng, phân tích funnel và tìm cách kéo người dùng mới hoặc tăng retention.',
+    'CRM / Lifecycle': 'Chăm sóc vòng đời khách hàng qua email, automation, phân nhóm người dùng và chiến dịch giữ chân.',
+    'Market Research': 'Thu thập insight thị trường, phân tích đối thủ, khảo sát khách hàng và đề xuất hướng đi sản phẩm.'
+  },
+  design: {
+    'Product Design': 'Thiết kế luồng sản phẩm từ problem, user flow, wireframe đến prototype có thể kiểm thử.',
+    'UI Design': 'Xây giao diện đẹp, dễ dùng, nhất quán về màu sắc, typography, spacing và component.',
+    'UX Research': 'Nghiên cứu người dùng, phỏng vấn, tổng hợp insight và biến dữ liệu thành quyết định thiết kế.',
+    'Design System': 'Xây bộ component, token, guideline và quy chuẩn giúp đội ngũ thiết kế/phát triển nhanh hơn.',
+    'Brand Design': 'Tạo nhận diện thương hiệu, visual direction, key visual và tài sản truyền thông nhất quán.',
+    'Motion Design': 'Thiết kế chuyển động, micro-interaction và animation giúp sản phẩm sinh động, dễ hiểu hơn.',
+    'Service Design': 'Thiết kế trải nghiệm dịch vụ nhiều điểm chạm, kết nối quy trình, con người và công cụ vận hành.'
+  }
+};
+
+function getSpecializationDescription(majorKey, column) {
+  return specializationDescriptions[majorKey]?.[column.title]
+    ?? `Tập trung xây năng lực thực hành trong ${column.title}, từ kỹ năng nền tảng đến sản phẩm có thể đưa vào portfolio.`;
+}
+
 function makeWorkIllustrationSrc({ title, subtitle, accent, roleTitle, majorShort }, index) {
   const safeTitle = String(title).replace(/[<&>]/g, '');
   const safeSubtitle = String(subtitle).replace(/[<&>]/g, '');
@@ -1884,7 +1920,7 @@ function CareerMapPage({ majors, currentMajor, changeMajor, columns, levels, sel
                   onClick={() => { setSelectedRoleId(column.roles[2].id); setCareerStep('role'); }}
                 >
                   <span>{column.title}</span>
-                  <small>{column.roles[0].title} → {column.roles[column.roles.length - 1].title}</small>
+                  <small>{getSpecializationDescription(currentMajor.key, column)}</small>
                 </button>
               );
             })}
