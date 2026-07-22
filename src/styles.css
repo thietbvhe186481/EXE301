@@ -7979,14 +7979,32 @@ body:has(.auth-page) main {
   gap: 7px;
 }
 
+.project-outcome-list > span,
+.project-achievement span {
+  color: #28455f !important;
+  opacity: 1 !important;
+}
+
+.project-outcome-list > span {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr);
+  gap: 8px;
+  align-items: start;
+  padding: 9px 11px;
+  border-radius: 11px;
+  background: rgba(240, 249, 255, 0.78);
+  border: 1px solid rgba(14, 165, 233, 0.08);
+  font-weight: 760;
+}
+
 .mentor-highlight {
   display: grid;
   grid-template-columns: 22px minmax(0, 1fr);
   gap: 9px;
   padding: 12px;
   border-radius: 12px;
-  background: rgba(245, 158, 11, 0.12);
-  color: #92400e;
+  background: rgba(254, 243, 199, 0.92);
+  color: #8a3b06 !important;
   font-weight: 850;
 }
 
@@ -8324,8 +8342,8 @@ body {
   align-items: start;
   padding: 11px;
   border-radius: 12px;
-  background: rgba(16, 185, 129, 0.12);
-  color: #047857;
+  background: rgba(236, 253, 245, 0.88);
+  color: #047857 !important;
   font-weight: 850;
 }
 
@@ -8336,8 +8354,34 @@ body {
 }
 
 .app-shell[data-theme="dark"] .project-achievement {
-  color: #bbf7d0;
+  color: #bbf7d0 !important;
   background: rgba(20, 83, 45, 0.38);
+}
+
+.app-shell[data-theme="dark"] .project-outcome-list > span {
+  color: #d9ecff !important;
+  background: rgba(15, 35, 58, 0.88);
+  border-color: rgba(125, 211, 252, 0.14);
+}
+
+.app-shell[data-theme="dark"] .mentor-highlight {
+  color: #fde68a !important;
+  background: rgba(120, 53, 15, 0.38);
+}
+
+.app-shell[data-theme="light"] .featured-project-card .mono-label,
+.app-shell[data-theme="light"] .featured-project-card .tag-row span,
+.app-shell[data-theme="light"] .portfolio-project-card .tag-row span,
+.app-shell[data-theme="light"] .portfolio-project-card .status-pill {
+  color: #075985 !important;
+  background: rgba(224, 242, 254, 0.92) !important;
+  opacity: 1 !important;
+}
+
+.app-shell[data-theme="light"] .featured-project-card p,
+.app-shell[data-theme="light"] .portfolio-project-card p {
+  color: #334e68 !important;
+  opacity: 1 !important;
 }
 
 @media (max-width: 1180px) {
