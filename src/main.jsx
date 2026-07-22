@@ -2269,11 +2269,6 @@ function SubmitProjectPage({ challenge, currentMajor, joined, submission, mentor
               <div className="requirement-item compact" key={item}><ShieldCheck size={16} /><span>{item}</span></div>
             ))}
           </GuideAccordion>
-          <GuideAccordion eyebrow="Review workflow" title="Luồng xử lý sau khi nộp" count={submitGuide.reviewFlow.length}>
-            <ol className="process-list">
-              {submitGuide.reviewFlow.map((item) => <li key={item}>{item}</li>)}
-            </ol>
-          </GuideAccordion>
           <GuideAccordion eyebrow="Common rejection" title="Lỗi dễ bị mentor trả bài" count={submitGuide.rejectionReasons.length} tone="danger">
             {submitGuide.rejectionReasons.map((item) => (
               <div className="requirement-item compact" key={item}><X size={16} /><span>{item}</span></div>
