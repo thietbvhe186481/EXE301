@@ -5360,6 +5360,21 @@ html[data-theme="dark"] body {
   overflow: visible !important;
 }
 
+body:has(.feedback-page-layout) {
+  overflow-y: auto !important;
+}
+
+body:has(.feedback-page-layout) .app-shell,
+body:has(.feedback-page-layout) main {
+  height: auto !important;
+  min-height: 100vh !important;
+  overflow: visible !important;
+}
+
+body:has(.feedback-page-layout) main {
+  padding-bottom: 40px;
+}
+
 .feedback-page-layout > div {
   min-width: 0;
 }
