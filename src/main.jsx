@@ -1081,7 +1081,7 @@ function App() {
         )}
         {page === 'join' && <JoinChallengePage challenge={selectedChallenge} currentMajor={currentMajor} joined={joinedChallengeIds.includes(selectedChallenge.id)} submission={submissionStatus[selectedChallenge.id]} joinChallenge={joinChallenge} isPremium={isPremium} go={go} />}
         {page === 'submit' && <SubmitProjectPage challenge={selectedChallenge} currentMajor={currentMajor} joined={joinedChallengeIds.includes(selectedChallenge.id)} submission={submissionStatus[selectedChallenge.id]} mentors={appData.mentors ?? []} joinChallenge={joinChallenge} saveDraft={saveDraft} submitChallenge={submitChallenge} submissionRulesData={rulesByMajor} isPremium={isPremium} go={go} />}
-        {page === 'feedback' && <MentorFeedbackPage go={go} challenge={selectedChallenge} submission={submissionList.find((item) => item.userId === userId && item.challengeId === selectedChallenge.id)} feedback={feedbackList.find((item) => item.userId === userId && item.challengeId === selectedChallenge.id)} createFeedback={() => createFeedback(selectedChallenge.id, userId)} />}
+        {page === 'feedback' && <MentorFeedbackPage go={go} challenge={selectedChallenge} submission={submissionList.find((item) => item.userId === userId && item.challengeId === selectedChallenge.id)} feedback={feedbackList.find((item) => item.userId === userId && item.challengeId === selectedChallenge.id)} mentors={appData.mentors ?? []} createFeedback={() => createFeedback(selectedChallenge.id, userId)} />}
         {page === 'portfolio' && <PortfolioPage pathRoles={pathRoles} currentMajor={currentMajor} go={go} demoUser={demoUser} apiStatus={apiStatus} submissions={submissionList} challenges={challengeList} updatePortfolio={updatePortfolio} isPremium={isPremium} />}
         {page === 'premium' && <PremiumPage plans={premiumPlans} activeSubscription={activeSubscription} upgradePlan={upgradePlan} go={go} />}
         {page === 'mentor' && <MentorPage apiStatus={apiStatus} data={appData} currentUser={currentUser} refreshData={refreshData} createFeedback={createFeedback} setNotice={setAdminNotice} notice={adminNotice} />}
@@ -1745,8 +1745,13 @@ function SubmitProjectPage({ challenge, currentMajor, joined, submission, mentor
   );
 }
 
-function MentorFeedbackPage({ go, challenge, submission, feedback, createFeedback }) {
+function MentorFeedbackPage({ go, challenge, submission, feedback, mentors, createFeedback }) {
   const hasFeedback = Boolean(feedback);
+  const matchedMentor = mentors.find((item) => item.id === submission?.mentorId)
+    ?? mentors.find((item) => item.name === submission?.mentor)
+    ?? mentors.find((item) => item.name === feedback?.reviewer)
+    ?? matchMentorForChallenge(challenge, mentors);
+  const reviewerName = feedback?.reviewer ?? submission?.mentor ?? matchedMentor?.name ?? challenge.mentor;
   const strengths = feedback?.strengths ?? ['Sản phẩm đã được nộp thành công', 'Có đủ link minh chứng để mentor xem xét', 'Đúng luồng nghiệp vụ của challenge'];
   const improvements = feedback?.improvements ?? ['Đang chờ mentor duyệt bài', 'Sau khi admin review, điểm và nhận xét sẽ xuất hiện tại đây', 'Có thể quay lại cập nhật bản nộp nếu cần'];
   return (
@@ -1758,7 +1763,9 @@ function MentorFeedbackPage({ go, challenge, submission, feedback, createFeedbac
           <span>{feedback?.score ?? '...'}</span>
           <div>
             <h2>{feedback?.title ?? 'Đang chờ mentor feedback'}</h2>
-            <p>{hasFeedback ? `Reviewer: ${feedback.reviewer}. Bài đã được nhận xét và có thể cập nhật vào portfolio.` : `Bài nộp trạng thái ${submission?.status ?? 'chưa nộp'}. Admin hoặc mentor cần duyệt để tạo feedback chính thức.`}</p>
+            <p>{hasFeedback
+              ? 'Reviewer: ' + reviewerName + '. B\u00e0i \u0111\u00e3 \u0111\u01b0\u1ee3c nh\u1eadn x\u00e9t v\u00e0 c\u00f3 th\u1ec3 c\u1eadp nh\u1eadt v\u00e0o portfolio.'
+              : 'B\u00e0i n\u1ed9p tr\u1ea1ng th\u00e1i ' + (submission?.status ?? 'ch\u01b0a n\u1ed9p') + '. Mentor ' + reviewerName + ' s\u1ebd xem b\u00e0i v\u00e0 tr\u1ea3 feedback ch\u00ednh th\u1ee9c.'}</p>
           </div>
         </div>
         <div className="feedback-grid">
@@ -1767,6 +1774,27 @@ function MentorFeedbackPage({ go, challenge, submission, feedback, createFeedbac
         </div>
       </div>
       <aside className="side-card">
+        <article className="matched-mentor-card feedback-mentor-card">
+          <button type="button">
+            <span>
+              <i className="mono-label">{hasFeedback ? 'Mentor \u0111\u00e3 feedback' : 'Mentor \u0111ang review'}</i>
+              <strong>{reviewerName}</strong>
+            </span>
+            <GraduationCap size={18} />
+          </button>
+          <div className="matched-mentor-detail">
+            <p>{matchedMentor.reviewStyle ?? 'Mentor xem link n\u1ed9p, ki\u1ec3m tra minh ch\u1ee9ng, ch\u1ea5m \u0111i\u1ec3m v\u00e0 g\u1ee3i \u00fd c\u00e1ch \u0111\u01b0a b\u00e0i v\u00e0o portfolio.'}</p>
+            <div className="tag-row">
+              {(matchedMentor.expertise ?? [challenge.track]).map((item) => <span key={item}>{item}</span>)}
+            </div>
+            <div className="mentor-facts">
+              <span><b>{matchedMentor.level ?? 'Senior Mentor'}</b> {'tr\u00ecnh \u0111\u1ed9'}</span>
+              <span><b>{matchedMentor.currentCompany ?? 'Portfolio Mentor Network'}</b> {'c\u00f4ng ty'}</span>
+              <span><b>{matchedMentor.yearsOfExperience ?? 5}+ {'n\u0103m'}</b> {'kinh nghi\u1ec7m'}</span>
+              <span><b>{matchedMentor.strongestField ?? challenge.track}</b> {'th\u1ebf m\u1ea1nh'}</span>
+            </div>
+          </div>
+        </article>
         <p className="mono-label">{hasFeedback ? 'Ghi chú người hướng dẫn' : 'Thông tin bài nộp'}</p>
         {(hasFeedback ? feedbackItems : [
           { file: challenge.id, title: 'Trạng thái submission', detail: submission ? `${submission.status} lúc ${submission.updatedAt}` : 'Chưa có submission trong hệ thống.' },

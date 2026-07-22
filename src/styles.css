@@ -1659,6 +1659,10 @@ textarea {
   background: rgba(8, 23, 39, 0.68);
 }
 
+.feedback-mentor-card {
+  margin-bottom: 14px;
+}
+
 .submit-actions {
   display: grid;
   grid-template-columns: 1fr 1.2fr;
