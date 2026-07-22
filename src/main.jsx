@@ -3601,7 +3601,6 @@ function AdminPage({ apiStatus, data, notice, currentUser, refreshData, setAdmin
                 <strong>{user.name}</strong>
                 <span>{user.email} · ngành {user.selectedMajorKey} · {user.status ?? 'active'} · {user.path?.length ?? 0} vị trí</span>
                 <small>{user.school ?? 'Chưa cập nhật trường'} · {user.academicMajor ?? 'Chưa cập nhật chuyên ngành'} · {user.academicYear ?? 'Chưa cập nhật năm học'}</small>
-                <small>Admin chỉ khóa/mở tài khoản; ngành học là lựa chọn ban đầu của sinh viên.</small>
               </div>
               <button onClick={() => updateUser(user.id, { status: user.status === 'locked' ? 'active' : 'locked' })}>
                 {user.status === 'locked' ? 'Mở khóa' : 'Khóa'}
