@@ -8205,3 +8205,143 @@ body:has(.career-page) .career-page {
     align-items: start !important;
   }
 }
+
+/* Global scroll safety: every screen should use normal page scrolling instead of
+   locking content inside fixed-height panels. */
+html,
+body {
+  height: auto !important;
+  min-height: 100% !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+}
+
+.app-shell,
+.app-shell main {
+  height: auto !important;
+  min-height: 100vh !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+.app-shell main {
+  min-height: calc(100vh - 72px) !important;
+}
+
+.auth-page,
+.content-page,
+.career-page,
+.challenge-hub-page,
+.premium-page,
+.trend-page,
+.feedback-page-layout,
+.admin-workspace,
+.mentor-workspace {
+  height: auto !important;
+  min-height: calc(100vh - 72px) !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+.two-column,
+.form-layout,
+.portfolio-body,
+.profile-deep-grid,
+.dashboard-layout,
+.workspace-layout,
+.admin-content,
+.mentor-content {
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+.mission-panel,
+.side-card,
+.submission-form,
+.profile-panel,
+.cv-section,
+.cv-side-section,
+.challenge-grid,
+.admin-list,
+.mentor-list {
+  max-height: none !important;
+}
+
+.featured-projects-section {
+  display: grid;
+  gap: 14px;
+}
+
+.featured-project-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.featured-project-card {
+  display: grid;
+  align-content: start;
+  gap: 12px;
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid var(--border-soft);
+  border-radius: 14px;
+  background:
+    linear-gradient(135deg, rgba(14, 165, 233, 0.09), rgba(16, 185, 129, 0.07)),
+    var(--surface);
+  transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+}
+
+.featured-project-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(14, 165, 233, 0.42);
+  box-shadow: 0 22px 60px rgba(14, 165, 233, 0.14);
+}
+
+.featured-project-card h3,
+.featured-project-card p,
+.project-achievement span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.featured-project-card h3 {
+  margin: 0;
+  font-size: 21px;
+}
+
+.featured-project-card p {
+  margin: 0;
+  color: var(--muted);
+  font-weight: 750;
+}
+
+.project-achievement {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr);
+  gap: 8px;
+  align-items: start;
+  padding: 11px;
+  border-radius: 12px;
+  background: rgba(16, 185, 129, 0.12);
+  color: #047857;
+  font-weight: 850;
+}
+
+.app-shell[data-theme="dark"] .featured-project-card {
+  background:
+    linear-gradient(135deg, rgba(14, 165, 233, 0.16), rgba(16, 185, 129, 0.12)),
+    var(--surface);
+}
+
+.app-shell[data-theme="dark"] .project-achievement {
+  color: #bbf7d0;
+  background: rgba(20, 83, 45, 0.38);
+}
+
+@media (max-width: 1180px) {
+  .featured-project-grid {
+    grid-template-columns: 1fr;
+  }
+}

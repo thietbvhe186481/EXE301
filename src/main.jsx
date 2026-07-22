@@ -2746,12 +2746,31 @@ function PortfolioPage({ pathRoles, currentMajor, go, demoUser, apiStatus, submi
             </article>
           </div>
 
-          <article className="cv-section">
-            <div className="card-topline"><span>Project nổi bật</span><strong>88/100</strong></div>
-            <h2>Case study {currentMajor.title}</h2>
-            <p>Minh chứng được tạo từ ngành đã chọn, lộ trình chuyên ngành, thử thách đã nộp và góp ý từ người hướng dẫn.</p>
-            <div className="tag-row">{currentMajor.columns.slice(0, 3).map((item) => <span key={item.key}>{item.title}</span>)}</div>
-            <button className="ghost-action compact"><LinkIcon size={16} /> Xem case study</button>
+          <article className="cv-section featured-projects-section">
+            <div className="card-topline">
+              <span>Project nổi bật</span>
+              <strong>{portfolioProjectDetails.length} project</strong>
+            </div>
+            <div className="featured-project-grid">
+              {portfolioProjectDetails.slice(0, 3).map((project) => (
+                <article className="featured-project-card" key={project.id}>
+                  <div className="card-topline">
+                    <span>{project.track}</span>
+                    <strong>{project.score}/100</strong>
+                  </div>
+                  <h3>{project.title}</h3>
+                  <p>{project.summary}</p>
+                  <div className="project-achievement">
+                    <BadgeCheck size={16} />
+                    <span>{project.outcome[0]}</span>
+                  </div>
+                  <div className="project-card-footer">
+                    <span>{project.status}</span>
+                    <button className="ghost-action compact"><LinkIcon size={15} /> Xem case study</button>
+                  </div>
+                </article>
+              ))}
+            </div>
           </article>
 
           <div className="cv-two-col portfolio-work-grid">
