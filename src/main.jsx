@@ -1167,51 +1167,89 @@ function App() {
     return { ok: true, validation, mentor };
   };
 
-  const createFeedback = (challengeId, submissionUserId = userId) => {
-    if (apiStatus !== 'mongo') return;
+  const createFeedback = (challengeId, submissionUserId = userId, overrides = {}) => {
     const challenge = challengeList.find((item) => item.id === challengeId);
-    fetch(`${API_BASE_URL}/api/feedback`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        userId: submissionUserId,
-        challengeId,
-        score: 88,
-        reviewer: challenge?.mentor ?? 'Mentor Demo',
-        title: `Feedback cho ${challenge?.title ?? challengeId}`,
-        strengths: [
-          'B\u00e0i l\u00e0m b\u00e1m \u0111\u00fang m\u1ee5c ti\u00eau challenge v\u00e0 c\u00f3 link \u0111\u1ec3 mentor ki\u1ec3m tra.',
-          'C\u00e1ch tr\u00ecnh b\u00e0y s\u1ea3n ph\u1ea9m \u0111\u00e3 \u0111\u1ee7 r\u00f5 \u0111\u1ec3 chuy\u1ec3n th\u00e0nh case study portfolio.',
-          'Minh ch\u1ee9ng n\u1ed9p b\u00e0i ph\u00f9 h\u1ee3p v\u1edbi chuy\u00ean ng\u00e0nh ' + (challenge?.track ?? 'hi\u1ec7n t\u1ea1i') + '.'
-        ],
-        improvements: [
-          'B\u1ed5 sung README ng\u1eafn: c\u00e1ch ch\u1ea1y, t\u00e0i kho\u1ea3n demo, c\u00e1c m\u00e0n h\u00ecnh ho\u1eb7c endpoint quan tr\u1ecdng.',
-          'Vi\u1ebft r\u00f5 trade-off: v\u00ec sao ch\u1ecdn c\u00f4ng ngh\u1ec7 n\u00e0y, ph\u1ea7n n\u00e0o c\u00f3 th\u1ec3 m\u1edf r\u1ed9ng khi l\u00e0m th\u1eadt.',
-          'Th\u00eam \u1ea3nh/video walkthrough \u0111\u1ec3 nh\u00e0 tuy\u1ec3n d\u1ee5ng ho\u1eb7c gi\u1ea3ng vi\u00ean xem nhanh trong 1 ph\u00fat.'
-        ]
-      })
-    })
-      .then((response) => response.ok ? response.json() : null)
-      .then((feedback) => {
-        if (!feedback) return;
-        setRemoteData((current) => ({
-          ...current,
+    const fallbackFeedback = {
+      id: overrides.id || `fb-${submissionUserId}-${challengeId}`,
+      userId: submissionUserId,
+      challengeId,
+      score: Number(overrides.score ?? 88),
+      reviewer: overrides.reviewer ?? challenge?.mentor ?? 'Mentor Demo',
+      title: overrides.title ?? `Feedback cho ${challenge?.title ?? challengeId}`,
+      strengths: overrides.strengths ?? [
+        'B\u00e0i l\u00e0m b\u00e1m \u0111\u00fang m\u1ee5c ti\u00eau challenge v\u00e0 c\u00f3 link \u0111\u1ec3 mentor ki\u1ec3m tra.',
+        'C\u00e1ch tr\u00ecnh b\u00e0y s\u1ea3n ph\u1ea9m \u0111\u00e3 \u0111\u1ee7 r\u00f5 \u0111\u1ec3 chuy\u1ec3n th\u00e0nh case study portfolio.',
+        'Minh ch\u1ee9ng n\u1ed9p b\u00e0i ph\u00f9 h\u1ee3p v\u1edbi chuy\u00ean ng\u00e0nh ' + (challenge?.track ?? 'hi\u1ec7n t\u1ea1i') + '.'
+      ],
+      improvements: overrides.improvements ?? [
+        'B\u1ed5 sung README ng\u1eafn: c\u00e1ch ch\u1ea1y, t\u00e0i kho\u1ea3n demo, c\u00e1c m\u00e0n h\u00ecnh ho\u1eb7c endpoint quan tr\u1ecdng.',
+        'Vi\u1ebft r\u00f5 trade-off: v\u00ec sao ch\u1ecdn c\u00f4ng ngh\u1ec7 n\u00e0y, ph\u1ea7n n\u00e0o c\u00f3 th\u1ec3 m\u1edf r\u1ed9ng khi l\u00e0m th\u1eadt.',
+        'Th\u00eam \u1ea3nh/video walkthrough \u0111\u1ec3 nh\u00e0 tuy\u1ec3n d\u1ee5ng ho\u1eb7c gi\u1ea3ng vi\u00ean xem nhanh trong 1 ph\u00fat.'
+      ],
+      createdAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    };
+    const applyFeedback = (feedback = fallbackFeedback) => {
+      setRemoteData((current) => {
+        const source = current ?? fallbackData;
+        return {
+          ...source,
           mentorFeedback: [
-            ...(current?.mentorFeedback ?? []).filter((item) => !(item.userId === submissionUserId && item.challengeId === challengeId)),
+            ...(source?.mentorFeedback ?? []).filter((item) => !(item.userId === submissionUserId && item.challengeId === challengeId)),
             feedback
           ],
-          submissions: (current?.submissions ?? []).map((item) => (
+          submissions: (source?.submissions ?? []).map((item) => (
             item.userId === submissionUserId && item.challengeId === challengeId
               ? { ...item, status: 'reviewed', feedbackId: feedback.id, updatedAt: feedback.createdAt }
               : item
           ))
-        }));
-        setSubmissionStatus((current) => ({
-          ...current,
-          [challengeId]: { status: 'reviewed', updatedAt: feedback.createdAt }
-        }));
+        };
+      });
+      setSubmissionStatus((current) => ({
+        ...current,
+        [challengeId]: { ...(current[challengeId] ?? {}), status: 'reviewed', updatedAt: feedback.createdAt }
+      }));
+      return feedback;
+    };
+    if (apiStatus !== 'mongo') {
+      return Promise.resolve(applyFeedback(fallbackFeedback));
+    }
+    return fetch(`${API_BASE_URL}/api/feedback`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        ...fallbackFeedback,
+        ...overrides
       })
-      .catch(() => undefined);
+    })
+      .then((response) => response.ok ? response.json() : Promise.reject(new Error('feedback failed')))
+      .then((feedback) => applyFeedback(feedback))
+      .catch(() => applyFeedback(fallbackFeedback));
+  };
+  const updateSubmissionFromMentor = (submission, updates = {}) => {
+    const updatedAt = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const payload = { ...submission, ...updates, updatedAt };
+    setRemoteData((current) => {
+      const source = current ?? fallbackData;
+      const exists = (source?.submissions ?? []).some((item) => item.userId === payload.userId && item.challengeId === payload.challengeId);
+      return {
+        ...source,
+        submissions: exists
+          ? (source?.submissions ?? []).map((item) => item.userId === payload.userId && item.challengeId === payload.challengeId ? { ...item, ...payload } : item)
+          : [...(source?.submissions ?? []), payload]
+      };
+    });
+    setSubmissionStatus((current) => ({
+      ...current,
+      [payload.challengeId]: { ...(current[payload.challengeId] ?? {}), status: payload.status, updatedAt }
+    }));
+    if (apiStatus === 'mongo') {
+      fetch(`${API_BASE_URL}/api/submissions`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      }).catch(() => undefined);
+    }
+    return payload;
   };
   const movePath = (index, direction) => {
     setPath((current) => {
@@ -1298,7 +1336,7 @@ function App() {
         {page === 'portfolio' && <PortfolioPage pathRoles={pathRoles} currentMajor={currentMajor} go={go} demoUser={demoUser} apiStatus={apiStatus} submissions={submissionList} challenges={challengeList} updatePortfolio={updatePortfolio} isPremium={isPremium} />}
         {page === 'premium' && <PremiumPage plans={premiumPlans} activeSubscription={activeSubscription} upgradePlan={upgradePlan} go={go} />}
         {page === 'about' && <AboutPage go={go} />}
-        {page === 'mentor' && <MentorPage apiStatus={apiStatus} data={managementData} currentUser={currentUser} refreshData={refreshData} createFeedback={createFeedback} setNotice={setAdminNotice} notice={adminNotice} />}
+        {page === 'mentor' && <MentorPage apiStatus={apiStatus} data={managementData} currentUser={currentUser} refreshData={refreshData} createFeedback={createFeedback} updateSubmissionFromMentor={updateSubmissionFromMentor} setNotice={setAdminNotice} notice={adminNotice} />}
         {page === 'admin' && <AdminPage apiStatus={apiStatus} data={managementData} notice={adminNotice} currentUser={currentUser} refreshData={refreshData} setAdminNotice={setAdminNotice} createFeedback={createFeedback} />}
       </main>
     </div>
@@ -2584,7 +2622,7 @@ function PremiumPage({ plans, activeSubscription, upgradePlan, go }) {
   );
 }
 
-function MentorPage({ apiStatus, data, currentUser, refreshData, createFeedback, setNotice, notice }) {
+function MentorPage({ apiStatus, data, currentUser, refreshData, createFeedback, updateSubmissionFromMentor, setNotice, notice }) {
   const submissionsData = data?.submissions ?? [];
   const challengesData = data?.challenges ?? [];
   const feedbackData = data?.mentorFeedback ?? [];
@@ -2701,44 +2739,30 @@ function MentorPage({ apiStatus, data, currentUser, refreshData, createFeedback,
 
   const submitMentorReview = () => {
     if (!activeSubmission) return;
-    fetch(`${API_BASE_URL}/api/feedback`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        userId: activeSubmission.userId,
-        challengeId: activeSubmission.challengeId,
-        score: Number(reviewForm.score || 0),
-        title: reviewForm.title,
-        strengths: reviewForm.strengths.split('\n').map((item) => item.trim()).filter(Boolean),
-        improvements: reviewForm.improvements.split('\n').map((item) => item.trim()).filter(Boolean),
-        reviewer: mentorProfile.name ?? currentUser?.user?.name ?? 'Mentor Demo'
-      })
+    createFeedback(activeSubmission.challengeId, activeSubmission.userId, {
+      score: Number(reviewForm.score || 0),
+      title: reviewForm.title,
+      strengths: reviewForm.strengths.split('\n').map((item) => item.trim()).filter(Boolean),
+      improvements: reviewForm.improvements.split('\n').map((item) => item.trim()).filter(Boolean),
+      reviewer: mentorProfile.name ?? currentUser?.user?.name ?? 'Mentor Demo'
     })
-      .then((response) => response.ok ? response.json() : Promise.reject(new Error('review failed')))
       .then(() => {
         setNotice(`Đã chấm ${studentName(activeSubmission.userId)} - ${challengeName(activeSubmission.challengeId)}`);
         setActiveSubmission(null);
-        refreshData();
       })
-      .catch(() => setNotice('Không lưu được feedback. Kiểm tra API/MongoDB.'));
+      .catch(() => setNotice('Không lưu được feedback. Vui lòng thử lại.'));
   };
 
   const rejectSubmission = (submission) => {
-    fetch(`${API_BASE_URL}/api/submissions`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        ...submission,
-        status: 'rejected',
-        notes: `${submission.notes || ''} Cần bổ sung minh chứng trước khi review.`
-      })
-    })
-      .then(() => {
-        setNotice(`Đã yêu cầu nộp lại ${challengeName(submission.challengeId)}`);
-        if (activeSubmission?.id === submission.id) setActiveSubmission(null);
-        refreshData();
-      })
-      .catch(() => setNotice('Không cập nhật được trạng thái submission'));
+    if (!submission) return;
+    updateSubmissionFromMentor(submission, {
+      status: 'rejected',
+      notes: `${submission.notes || ''} Cần bổ sung minh chứng trước khi review.`
+    });
+    setNotice(`Đã yêu cầu nộp lại ${challengeName(submission.challengeId)}`);
+    if (activeSubmission?.id === submission.id || (activeSubmission?.userId === submission.userId && activeSubmission?.challengeId === submission.challengeId)) {
+      setActiveSubmission(null);
+    }
   };
   const updateMentorProfileDraft = (key, value) => {
     setMentorProfileDraft((current) => ({ ...current, [key]: value }));
@@ -2913,7 +2937,10 @@ function MentorPage({ apiStatus, data, currentUser, refreshData, createFeedback,
                 <h2>{activeChallenge?.title ?? activeSubmission.challengeId}</h2>
                 <p>{activeChallenge?.summary ?? 'Mentor xem bài làm, đối chiếu yêu cầu và chấm điểm trước khi gửi feedback.'}</p>
               </div>
-              <button className="ghost-action compact" onClick={() => setActiveSubmission(null)}>
+              <button className="ghost-action compact" onClick={() => {
+                setActiveSubmission(null);
+                if (notice?.startsWith('Đang mở bài nộp')) setNotice('');
+              }}>
                 <X size={16} />
                 Đóng
               </button>
