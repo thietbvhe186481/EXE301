@@ -2626,24 +2626,6 @@ function MentorPage({ apiStatus, data, currentUser, refreshData, createFeedback,
         <button onClick={() => document.querySelector('#mentor-history')?.scrollIntoView({ behavior: 'smooth' })}><MessageSquareText size={16} /> Feedback</button>
       </aside>
 
-      <div className="dashboard-guide" id="mentor-overview">
-        <article className="guide-step-card active">
-          <span>01</span>
-          <strong>Chọn bài cần review</strong>
-          <p>Lọc theo trạng thái, ngành, chuyên ngành hoặc tên sinh viên để lấy đúng bài được giao.</p>
-        </article>
-        <article className="guide-step-card">
-          <span>02</span>
-          <strong>Mở bài nộp</strong>
-          <p>Xem link chính, minh chứng, ghi chú nghiệp vụ và mức độ khớp với rubric.</p>
-        </article>
-        <article className="guide-step-card">
-          <span>03</span>
-          <strong>Chấm điểm</strong>
-          <p>Nhập điểm, điểm mạnh, điểm cần cải thiện rồi accept hoặc yêu cầu nộp lại.</p>
-        </article>
-      </div>
-
       <div className="mentor-profile-grid" id="mentor-profile">
         <article className="mentor-hero-card">
           <p className="mono-label">Mentor profile</p>
@@ -2692,7 +2674,7 @@ function MentorPage({ apiStatus, data, currentUser, refreshData, createFeedback,
         </article>
       </div>
 
-      <div className="admin-stats">
+      <div className="admin-stats" id="mentor-overview">
         <StatCard icon={FileUp} title="Pending reviews" value={pending.length} />
         <StatCard icon={UserRound} title="Active students" value={students.length} />
         <StatCard icon={LayoutDashboard} title="Submissions" value={submissionsData.length} />
