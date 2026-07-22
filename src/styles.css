@@ -5011,7 +5011,8 @@ body:has(.trend-page) main {
 
 .trend-signal-grid,
 .evidence-grid,
-.source-grid {
+.source-grid,
+.research-finding-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 14px;
@@ -5262,15 +5263,154 @@ body:has(.about-page) main {
 }
 
 .source-card strong,
-.source-card i {
+.source-card i,
+.source-card p,
+.source-card small {
   min-width: 0;
   overflow-wrap: anywhere;
+}
+
+.source-card p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+.source-card small {
+  width: fit-content;
+  border-radius: 999px;
+  background: rgba(14, 165, 233, 0.12);
+  color: var(--blue);
+  padding: 4px 8px;
+  font-weight: 900;
 }
 
 .source-card i {
   color: var(--muted);
   font-size: 13px;
   font-style: normal;
+}
+
+.research-brief-grid,
+.analyst-action-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(280px, 0.75fr);
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.research-method-card,
+.research-finding-card {
+  border: 1px solid var(--border-soft);
+  border-radius: 12px;
+  background:
+    linear-gradient(145deg, rgba(14, 165, 233, 0.08), rgba(16, 185, 129, 0.05)),
+    var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.research-method-card {
+  display: grid;
+  gap: 12px;
+  padding: 18px;
+}
+
+.research-method-card h2 {
+  margin: 0;
+  font-size: clamp(24px, 3vw, 36px);
+}
+
+.research-method-card strong {
+  color: var(--label-green);
+}
+
+.research-method-card p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.research-method-card.compact h2 {
+  font-size: 24px;
+}
+
+.method-list {
+  display: grid;
+  gap: 9px;
+}
+
+.method-list span {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr);
+  gap: 8px;
+  padding: 10px;
+  border: 1px solid rgba(14, 165, 233, 0.14);
+  border-radius: 9px;
+  background: rgba(14, 165, 233, 0.07);
+  color: var(--text);
+  font-weight: 850;
+  line-height: 1.45;
+}
+
+.research-finding-card {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  gap: 12px;
+  padding: 15px;
+}
+
+.research-finding-card > b {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--cyan), var(--blue));
+  color: white;
+}
+
+.research-finding-card h3 {
+  margin: 0 0 8px;
+  font-size: 20px;
+}
+
+.research-finding-card p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.source-badge-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.source-badge-row a,
+.source-badge-row span {
+  border: 1px solid rgba(14, 165, 233, 0.2);
+  border-radius: 999px;
+  background: rgba(14, 165, 233, 0.09);
+  color: var(--blue);
+  padding: 6px 9px;
+  font-size: 12px;
+  font-weight: 900;
+  text-decoration: none;
+}
+
+.source-badge-row a:hover {
+  background: rgba(14, 165, 233, 0.16);
+}
+
+.analyst-action-grid .trend-reasoning-card {
+  margin-top: 0;
+}
+
+.trend-reasoning-card.warning {
+  background:
+    linear-gradient(145deg, rgba(245, 158, 11, 0.1), rgba(14, 165, 233, 0.03)),
+    var(--surface);
 }
 
 .trend-note {
@@ -5289,6 +5429,9 @@ body:has(.about-page) main {
   .trend-hero-grid,
   .trend-signal-grid,
   .evidence-grid,
+  .research-brief-grid,
+  .research-finding-grid,
+  .analyst-action-grid,
   .source-grid,
   .source-mini-grid {
     grid-template-columns: 1fr;
