@@ -8060,3 +8060,148 @@ body:has(.career-page) .career-page {
 .career-page .recommended-challenge-grid {
   overflow: visible !important;
 }
+
+/* Final Career Map step layout reset: keep every step scrollable and prevent old
+   three-panel styles from sitting behind the current progressive flow. */
+body:has(.career-page),
+html:has(.career-page) {
+  height: auto !important;
+  min-height: 100% !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+}
+
+body:has(.career-page) .app-shell,
+body:has(.career-page) .app-shell main,
+body:has(.career-page) main {
+  height: auto !important;
+  min-height: 100vh !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+body:has(.career-page) .career-page {
+  display: block !important;
+  height: auto !important;
+  min-height: calc(100vh - 72px) !important;
+  max-height: none !important;
+  overflow: visible !important;
+  padding: 18px 20px 48px !important;
+}
+
+.career-page > .section-heading {
+  position: relative !important;
+  z-index: 2;
+  display: flex !important;
+  align-items: end !important;
+  gap: 18px !important;
+  margin: 0 0 16px !important;
+}
+
+.career-page .career-step-progress {
+  position: relative !important;
+  z-index: 1 !important;
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 14px !important;
+  width: 100% !important;
+  margin: 0 0 22px !important;
+  padding: 0 !important;
+  overflow: visible !important;
+}
+
+.career-page .career-step-progress button {
+  position: relative !important;
+  min-height: 76px !important;
+  padding: 16px !important;
+  opacity: 1 !important;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.92), rgba(236, 254, 255, 0.9)),
+    var(--surface) !important;
+  border-color: rgba(14, 116, 144, 0.18) !important;
+  box-shadow: 0 16px 44px rgba(14, 116, 144, 0.08) !important;
+}
+
+.career-page .career-step-progress button.active {
+  background:
+    linear-gradient(135deg, rgba(224, 242, 254, 0.98), rgba(240, 253, 250, 0.96)),
+    var(--surface) !important;
+  border-color: rgba(14, 165, 233, 0.58) !important;
+}
+
+.career-page .career-step-progress button:not(.active) {
+  filter: none !important;
+}
+
+.career-page .career-step-progress span,
+.career-page .career-step-progress small {
+  color: var(--text) !important;
+}
+
+.career-page .career-step-progress small {
+  color: var(--muted) !important;
+}
+
+.career-page .career-step-card,
+.career-page .career-focus-panel,
+.career-page .role-detail-page,
+.career-page .recommended-challenge-panel {
+  clear: both !important;
+  display: block !important;
+  width: 100% !important;
+  min-height: 0 !important;
+  height: auto !important;
+  max-height: none !important;
+  margin: 0 0 18px !important;
+  overflow: visible !important;
+}
+
+.career-page .step-card-grid {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)) !important;
+  gap: 14px !important;
+}
+
+.career-page .step-card-grid button {
+  min-height: 118px !important;
+}
+
+.career-page .step-card-grid button i {
+  display: none !important;
+}
+
+.career-page .career-planner,
+.career-page .path-builder {
+  display: none !important;
+}
+
+.career-page .specialization-panel,
+.career-page .timeline-panel,
+.career-page .detail-panel {
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+.app-shell[data-theme="dark"] .career-page .career-step-progress button {
+  background:
+    linear-gradient(135deg, rgba(15, 39, 64, 0.96), rgba(12, 48, 55, 0.86)),
+    var(--surface) !important;
+  border-color: rgba(125, 211, 252, 0.18) !important;
+}
+
+.app-shell[data-theme="dark"] .career-page .career-step-progress button.active {
+  border-color: rgba(34, 211, 238, 0.58) !important;
+}
+
+@media (max-width: 900px) {
+  .career-page > .section-heading,
+  .career-page .career-step-progress {
+    grid-template-columns: 1fr !important;
+  }
+
+  .career-page > .section-heading {
+    display: grid !important;
+    align-items: start !important;
+  }
+}

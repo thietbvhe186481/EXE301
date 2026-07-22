@@ -1759,7 +1759,6 @@ function CareerMapPage({ majors, currentMajor, changeMajor, columns, levels, sel
                 >
                   <span>{column.title}</span>
                   <small>{column.roles[0].title} → {column.roles[column.roles.length - 1].title}</small>
-                  <i>{column.roles.length} level · {currentMajor.short}</i>
                 </button>
               );
             })}
