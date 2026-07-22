@@ -1533,7 +1533,6 @@ function AuthPage({ authMode, setAuthMode, majors, selectedMajorKey, changeMajor
       </div>
       <div className="auth-panel">
         <div className="auth-title">
-          <p className="mono-label">Bắt đầu hồ sơ nghề nghiệp</p>
           <h2>{authMode === 'login' ? 'Đăng nhập Portfolio' : 'Tạo tài khoản Portfolio'}</h2>
         </div>
         <div className="segmented">
