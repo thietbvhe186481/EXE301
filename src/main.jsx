@@ -1204,15 +1204,6 @@ function App() {
         return;
       }
     }
-    if (id === 'feedback' && currentRole === 'student') {
-      const hasSubmission = Boolean(submissionStatus[selectedChallenge.id])
-        || submissionList.some((item) => item.userId === userId && item.challengeId === selectedChallenge.id);
-      if (!hasSubmission) {
-        setFlowNotice('Bạn chưa nộp bài nên chưa có feedback. Hãy nộp sản phẩm trước để mentor review.');
-        setPage(joinedChallengeIds.includes(selectedChallenge.id) ? 'submit' : 'join');
-        return;
-      }
-    }
     setFlowNotice('');
     setPage(id);
   };
@@ -2356,15 +2347,6 @@ function MarketTrendsPage({ majors, currentMajor, changeMajor, go }) {
             {research.methodology.map((item) => (
               <span key={item}><ShieldCheck size={15} /> {item}</span>
             ))}
-          </div>
-        </article>
-        <article className="research-method-card compact">
-          <p className="mono-label">Cách đọc dữ liệu</p>
-          <h2>Không kết luận bằng một số liệu đơn lẻ.</h2>
-          <p>Trang này dùng nhiều lớp bằng chứng: salary guide, báo cáo tuyển dụng, job board công khai, chuẩn portfolio và logic mentor review. Insight nào không đủ nguồn sẽ chỉ được xem là tín hiệu tham khảo.</p>
-          <div className="source-mini-grid">
-            <span><BadgeCheck size={15} /> Nguồn có thể kiểm chứng</span>
-            <span><Clock size={15} /> Snapshot {updatedLabel}</span>
           </div>
         </article>
       </div>

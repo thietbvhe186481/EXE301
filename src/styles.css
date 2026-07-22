@@ -5294,9 +5294,16 @@ body:has(.about-page) main {
 .research-brief-grid,
 .analyst-action-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1.35fr) minmax(280px, 0.75fr);
   gap: 14px;
   margin-top: 14px;
+}
+
+.research-brief-grid {
+  grid-template-columns: 1fr;
+}
+
+.analyst-action-grid {
+  grid-template-columns: minmax(0, 1.35fr) minmax(280px, 0.75fr);
 }
 
 .research-method-card,
