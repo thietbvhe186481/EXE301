@@ -746,7 +746,27 @@ function App() {
   const selectedColumn = careerColumns.find((column) => column.title === selectedRole.track) ?? careerColumns[0];
   const pathRoles = path.map((roleId) => allRoles.find((roleItem) => roleItem.id === roleId)).filter(Boolean);
 
-  const go = (id) => setPage(id);
+  const go = (id) => {
+    if (id === 'submit' && currentRole === 'student') {
+      if (!selectedChallenge?.id) {
+        setPage('hub');
+        return;
+      }
+      if (!joinedChallengeIds.includes(selectedChallenge.id)) {
+        setPage('join');
+        return;
+      }
+    }
+    if (id === 'feedback' && currentRole === 'student') {
+      const hasSubmission = Boolean(submissionStatus[selectedChallenge.id])
+        || submissionList.some((item) => item.userId === userId && item.challengeId === selectedChallenge.id);
+      if (!hasSubmission) {
+        setPage(joinedChallengeIds.includes(selectedChallenge.id) ? 'submit' : 'join');
+        return;
+      }
+    }
+    setPage(id);
+  };
   const changeMajor = (majorKey) => {
     const nextMajor = catalog.find((item) => item.key === majorKey) ?? catalog[0];
     const nextRole = nextMajor.columns[0].roles[2];
@@ -871,11 +891,12 @@ function App() {
   useEffect(() => {
     const activeRole = currentUser?.type ?? currentUser?.user?.role;
     const rolePages = {
-      student: ['roadmap', 'hub', 'join', 'submit', 'feedback', 'portfolio', 'premium'],
+      student: ['roadmap', 'trends', 'hub', 'join', 'submit', 'feedback', 'portfolio', 'premium'],
       mentor: ['mentor'],
       admin: ['admin']
     };
-    if (!currentUser && page !== 'auth') {
+    const publicPages = ['auth', 'roadmap', 'trends', 'hub', 'premium'];
+    if (!currentUser && !publicPages.includes(page)) {
       setPage('auth');
       return;
     }
@@ -1154,6 +1175,7 @@ function App() {
 
 function Header({ page, go, currentUser, theme, setTheme, logout }) {
   const [openNavGroup, setOpenNavGroup] = useState(null);
+  const [accountOpen, setAccountOpen] = useState(false);
   const currentRole = currentUser?.type ?? currentUser?.user?.role;
   const roleFlow = currentRole === 'student'
     ? flow.filter((item) => ['roadmap', 'trends', 'hub', 'join', 'submit', 'feedback', 'portfolio', 'premium'].includes(item.id))
@@ -1164,17 +1186,19 @@ function Header({ page, go, currentUser, theme, setTheme, logout }) {
         : flow.filter((item) => item.id === 'auth');
   const publicFlow = [
     { id: 'intro', label: 'Gi\u1edbi thi\u1ec7u', icon: Sparkles, target: 'auth', matches: ['auth'] },
-    { id: 'roadmap-preview', label: 'B\u1ea3n \u0111\u1ed3 ngh\u1ec1', icon: Compass, target: currentUser ? 'roadmap' : 'auth' },
-    { id: 'challenge-preview', label: 'Th\u1eed th\u00e1ch', icon: LayoutDashboard, target: currentUser ? 'hub' : 'auth' },
-    { id: 'premium-preview', label: 'Premium', icon: Crown, target: currentUser ? 'premium' : 'auth' },
+    { id: 'roadmap-preview', label: 'B\u1ea3n \u0111\u1ed3 ngh\u1ec1', icon: Compass, target: 'roadmap' },
+    { id: 'trends-preview', label: 'Xu h\u01b0\u1edbng', icon: Sparkles, target: 'trends' },
+    { id: 'challenge-preview', label: 'Th\u1eed th\u00e1ch', icon: LayoutDashboard, target: 'hub' },
+    { id: 'premium-preview', label: 'Premium', icon: Crown, target: 'premium' },
     { id: 'about', label: 'About us', icon: BookOpen, target: 'auth' }
   ];
   const navItems = currentUser ? roleFlow : publicFlow;
   const byId = (id) => navItems.find((item) => item.id === id);
   const navGroups = currentRole === 'student'
     ? [
-        { id: 'career', label: 'Định hướng', icon: Compass, items: ['roadmap', 'trends', 'portfolio', 'premium'].map(byId).filter(Boolean) },
-        { id: 'practice', label: 'Luyện tập', icon: LayoutDashboard, items: ['hub', 'join', 'submit', 'feedback'].map(byId).filter(Boolean) }
+        { id: 'career', label: 'Định hướng', icon: Compass, items: ['roadmap', 'trends'].map(byId).filter(Boolean) },
+        { id: 'practice', label: 'Luyện tập', icon: LayoutDashboard, items: ['hub', 'join', 'submit', 'feedback'].map(byId).filter(Boolean) },
+        { id: 'premium-direct', label: 'Premium', icon: Crown, target: 'premium' }
       ]
     : currentRole === 'mentor'
       ? [{ id: 'mentor-work', label: 'Mentor workspace', icon: GraduationCap, items: roleFlow }]
@@ -1182,7 +1206,7 @@ function Header({ page, go, currentUser, theme, setTheme, logout }) {
         ? [{ id: 'admin-work', label: 'Admin console', icon: ShieldCheck, items: roleFlow }]
         : [
             { id: 'intro', label: 'Giới thiệu', icon: Sparkles, target: 'auth', matches: ['auth'] },
-            { id: 'discover', label: 'Khám phá', icon: Compass, items: publicFlow.filter((item) => ['roadmap-preview', 'challenge-preview', 'premium-preview'].includes(item.id)) },
+            { id: 'discover', label: 'Khám phá', icon: Compass, items: publicFlow.filter((item) => ['roadmap-preview', 'trends-preview', 'challenge-preview', 'premium-preview'].includes(item.id)) },
             { id: 'about', label: 'About us', icon: BookOpen, target: 'auth' }
           ];
   const isNavItemActive = (item) => page === item.id || item.target === page || item.matches?.includes(page);
@@ -1190,6 +1214,7 @@ function Header({ page, go, currentUser, theme, setTheme, logout }) {
   const navigateNavItem = (item) => {
     go(item.target ?? item.id);
     setOpenNavGroup(null);
+    setAccountOpen(false);
   };
   const homePage = currentRole === 'student' ? 'roadmap' : currentRole ?? 'auth';
   const roleLabel = currentUser ? `${(currentRole ?? 'student').toUpperCase()} · ${currentUser.user?.name ?? currentUser.user?.email}` : 'Guest';
@@ -1239,10 +1264,25 @@ function Header({ page, go, currentUser, theme, setTheme, logout }) {
         })}
       </nav>
       <div className="topbar-actions">
-      <div className={`role-chip ${!currentUser ? 'guest-hidden' : ''}`}>
+      <button className={`role-chip account-trigger ${!currentUser ? 'guest-hidden' : ''}`} type="button" onClick={() => setAccountOpen((open) => !open)}>
         <UserRound size={15} />
         <span>{roleLabel}</span>
-      </div>
+        <MoveDown size={13} />
+      </button>
+      {currentUser && accountOpen && (
+        <div className="nav-dropdown account-dropdown">
+          {currentRole === 'student' && (
+            <button type="button" className={`nav-dropdown-item ${page === 'portfolio' ? 'active' : ''}`} onClick={() => navigateNavItem({ id: 'portfolio' })}>
+              <UserRound size={15} />
+              <span>Hồ sơ</span>
+            </button>
+          )}
+          <button type="button" className="nav-dropdown-item danger" onClick={() => { setAccountOpen(false); logout(); }}>
+            <LogOut size={15} />
+            <span>Đăng xuất</span>
+          </button>
+        </div>
+      )}
       {currentUser && (
         <button className="logout-chip" type="button" onClick={logout} title="Đăng xuất để test tài khoản khác">
           <LogOut size={15} />

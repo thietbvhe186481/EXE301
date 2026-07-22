@@ -6212,6 +6212,40 @@ body:has(.challenge-hub-page) main {
   color: #075985 !important;
 }
 
+.topbar-actions {
+  position: relative;
+  overflow: visible !important;
+}
+
+.account-trigger {
+  border: 1px solid rgba(14, 116, 144, 0.18) !important;
+}
+
+.topbar-actions > .logout-chip {
+  display: none !important;
+}
+
+.account-dropdown {
+  left: auto;
+  right: 56px;
+  transform: none;
+}
+
+.account-dropdown::before {
+  left: auto;
+  right: 24px;
+  transform: rotate(45deg);
+}
+
+.nav-dropdown-item.danger {
+  color: #be123c !important;
+}
+
+.nav-dropdown-item.danger:hover {
+  background: rgba(244, 63, 94, 0.1);
+  color: #9f1239 !important;
+}
+
 .topbar-actions .role-chip {
   max-width: min(280px, 24vw);
 }
