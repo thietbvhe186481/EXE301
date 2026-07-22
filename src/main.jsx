@@ -1703,7 +1703,7 @@ function CareerMapPage({ majors, currentMajor, changeMajor, columns, levels, sel
   ];
 
   useEffect(() => {
-    document.querySelector('.career-planner')?.scrollTo({ left: 0, top: 0 });
+    document.querySelector('.career-page')?.scrollTo({ left: 0, top: 0 });
     setCareerStep('specialization');
   }, [currentMajor.key]);
 

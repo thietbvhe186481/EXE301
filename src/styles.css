@@ -8011,3 +8011,52 @@ body:has(.auth-page) main {
     grid-template-columns: 1fr;
   }
 }
+
+/* Career map step flow must not inherit the old locked three-panel layout. */
+body:has(.career-page) {
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+}
+
+body:has(.career-page) .app-shell,
+body:has(.career-page) main {
+  height: auto !important;
+  min-height: 100vh !important;
+  overflow: visible !important;
+}
+
+body:has(.career-page) .career-page {
+  height: auto !important;
+  min-height: calc(100vh - 64px) !important;
+  overflow: visible !important;
+  padding-bottom: 40px;
+}
+
+.career-page .career-step-card,
+.career-page .timeline-panel,
+.career-page .detail-panel,
+.career-page .role-detail-page,
+.career-page .recommended-challenge-panel {
+  position: relative !important;
+  inset: auto !important;
+  top: auto !important;
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+.career-page .timeline-panel::before,
+.career-page .detail-panel::before,
+.career-page .career-step-card::before {
+  display: none !important;
+}
+
+.career-page .career-step-layout {
+  overflow: visible !important;
+}
+
+.career-page .vertical-roadmap,
+.career-page .role-detail-grid,
+.career-page .recommended-challenge-grid {
+  overflow: visible !important;
+}
