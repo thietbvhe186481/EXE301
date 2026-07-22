@@ -56,7 +56,7 @@ const flow = [
   { id: 'admin', label: 'Admin', icon: ShieldCheck }
 ];
 
-flow.splice(2, 0, { id: 'trends', label: 'Xu hướng', icon: Sparkles });
+flow.splice(2, 0, { id: 'trends', label: 'Xu h\u01b0\u1edbng', icon: Sparkles });
 
 const levels = [
   { key: 'nen-tang', label: 'Foundation', short: '01' },

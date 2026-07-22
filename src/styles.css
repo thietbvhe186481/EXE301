@@ -5822,3 +5822,183 @@ body:has(.feedback-page-layout) main {
     overflow: visible !important;
   }
 }
+
+/* Clean two-tier SaaS header */
+.topbar,
+.topbar:has(.theme-toggle),
+.topbar:has(.logout-chip) {
+  display: grid !important;
+  grid-template-columns: auto minmax(0, 1fr) auto !important;
+  grid-template-areas:
+    "brand spacer actions"
+    "nav nav nav" !important;
+  height: 96px !important;
+  min-height: 96px !important;
+  gap: 8px 18px !important;
+  padding: 10px 22px 8px !important;
+  border-bottom: 1px solid rgba(14, 116, 144, 0.14) !important;
+  background: rgba(255, 255, 255, 0.86) !important;
+  box-shadow: 0 10px 26px rgba(14, 116, 144, 0.08) !important;
+  backdrop-filter: blur(18px) saturate(1.25) !important;
+}
+
+.app-shell[data-theme="dark"] .topbar,
+.app-shell[data-theme="dark"] .topbar:has(.theme-toggle),
+.app-shell[data-theme="dark"] .topbar:has(.logout-chip) {
+  border-bottom-color: rgba(125, 211, 252, 0.16) !important;
+  background: rgba(5, 15, 28, 0.9) !important;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.24) !important;
+}
+
+.brand {
+  grid-area: brand !important;
+  min-width: max-content;
+}
+
+.brand span:last-child {
+  display: inline !important;
+}
+
+.topbar-actions {
+  grid-area: actions !important;
+  justify-self: end;
+}
+
+.flow-nav {
+  grid-area: nav !important;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  gap: 4px !important;
+  width: 100%;
+  min-width: 0;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  overflow-x: auto;
+  -webkit-mask-image: none !important;
+  mask-image: none !important;
+}
+
+.flow-pill {
+  position: relative;
+  min-height: 36px !important;
+  padding: 0 13px !important;
+  border: 0 !important;
+  border-radius: 9px !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: #456579 !important;
+  font-size: 15px;
+  transition: background 150ms ease, color 150ms ease;
+}
+
+.flow-pill:hover {
+  transform: none !important;
+  background: rgba(14, 165, 233, 0.08) !important;
+  color: #075985 !important;
+}
+
+.flow-pill.visited {
+  color: #155e75 !important;
+}
+
+.flow-pill.active {
+  background: rgba(14, 165, 233, 0.12) !important;
+  color: #075985 !important;
+}
+
+.flow-pill.active::after {
+  content: "";
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: -7px;
+  width: auto;
+  height: 3px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #06b6d4, #2563eb);
+  opacity: 1;
+  transform: none;
+}
+
+.app-shell[data-theme="dark"] .flow-pill {
+  color: #a9c4d8 !important;
+}
+
+.app-shell[data-theme="dark"] .flow-pill:hover,
+.app-shell[data-theme="dark"] .flow-pill.active,
+.app-shell[data-theme="dark"] .flow-pill.visited {
+  color: #e0f2fe !important;
+}
+
+.app-shell[data-theme="dark"] .flow-pill:hover,
+.app-shell[data-theme="dark"] .flow-pill.active {
+  background: rgba(14, 116, 144, 0.24) !important;
+}
+
+.topbar-actions .role-chip,
+.topbar-actions .logout-chip,
+.topbar-actions .theme-toggle {
+  min-height: 38px !important;
+  border-radius: 10px !important;
+}
+
+.app-shell main {
+  height: calc(100vh - 96px) !important;
+}
+
+body:has(.premium-page) main,
+body:has(.trend-page) main,
+body:has(.feedback-page-layout) main {
+  height: auto !important;
+}
+
+@media (max-width: 980px) {
+  .topbar,
+  .topbar:has(.theme-toggle),
+  .topbar:has(.logout-chip) {
+    height: 100px !important;
+    min-height: 100px !important;
+    padding-inline: 14px !important;
+  }
+
+  .flow-nav {
+    justify-content: flex-start;
+  }
+
+  .flow-pill {
+    flex: 0 0 auto;
+    padding: 0 11px !important;
+  }
+
+  .app-shell main {
+    height: calc(100vh - 100px) !important;
+  }
+}
+
+@media (max-width: 720px) {
+  .brand span:last-child,
+  .flow-pill span,
+  .topbar-actions .role-chip span,
+  .topbar-actions .logout-chip span,
+  .topbar-actions .theme-toggle span {
+    display: none !important;
+  }
+
+  .topbar-actions .role-chip,
+  .topbar-actions .logout-chip,
+  .topbar-actions .theme-toggle {
+    width: 38px !important;
+    min-width: 38px !important;
+    max-width: 38px !important;
+    padding: 0 !important;
+  }
+
+  .flow-pill {
+    min-width: 42px;
+    padding: 0 !important;
+  }
+}
