@@ -5353,6 +5353,39 @@ html[data-theme="dark"] body {
   color: #fecdd3 !important;
 }
 
+.feedback-page-layout {
+  align-items: start;
+  height: auto !important;
+  min-height: calc(100vh - 90px);
+  overflow: visible !important;
+}
+
+.feedback-page-layout > div {
+  min-width: 0;
+}
+
+.feedback-page-layout > .side-card {
+  align-self: start;
+  max-height: calc(100vh - 112px) !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+}
+
+.feedback-page-layout .code-note,
+.feedback-page-layout .code-note span,
+.feedback-page-layout .code-note p {
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.feedback-page-layout .primary-action {
+  width: 100%;
+  min-width: 0;
+  white-space: normal;
+}
+
 @media (max-width: 760px) {
   .topbar:has(.theme-toggle) {
     display: flex !important;
@@ -5365,5 +5398,17 @@ html[data-theme="dark"] body {
 
   .theme-toggle span {
     display: none;
+  }
+}
+
+@media (max-width: 960px) {
+  .feedback-page-layout {
+    min-height: auto;
+  }
+
+  .feedback-page-layout > .side-card {
+    position: static;
+    max-height: none !important;
+    overflow: visible !important;
   }
 }
