@@ -763,6 +763,7 @@ function App() {
   const [currentUser, setCurrentUser] = useState(null);
   const [adminNotice, setAdminNotice] = useState('');
   const [flowNotice, setFlowNotice] = useState('');
+  const [autoOpenPublicPortfolio, setAutoOpenPublicPortfolio] = useState(false);
   const [selectedMajorKey, setSelectedMajorKey] = useState('dev');
   const [selectedRoleId, setSelectedRoleId] = useState('dev-fullstack-trung-cap');
   const [path, setPath] = useState(['dev-frontend-so-cap', 'dev-fullstack-trung-cap', 'dev-architecture-cao-cap']);
@@ -849,23 +850,40 @@ function App() {
   const isPremium = activeSubscription.status === 'active' && activeSubscription.planId !== 'free';
   const upgradePlan = (plan) => {
     const expiresAt = plan.id === 'premium-month' ? '20/08/2026' : plan.id === 'premium-quarter' ? '20/10/2026' : '20/07/2027';
+    const premiumSubscription = {
+      planId: plan.id,
+      planName: plan.name,
+      status: 'active',
+      startedAt: '20/07/2026',
+      expiresAt
+    };
     setCurrentUser((current) => {
-      if (!current?.user) return current;
+      const role = current?.type ?? current?.user?.role;
+      if (!current?.user || role !== 'student') {
+        const baseUser = appData?.demoUser ?? demoUsers[0];
+        return {
+          type: 'student',
+          user: {
+            ...baseUser,
+            role: 'student',
+            selectedMajorKey,
+            path: path.length ? path : baseUser.path,
+            subscription: premiumSubscription
+          }
+        };
+      }
       return {
         ...current,
         user: {
           ...current.user,
-          subscription: {
-            planId: plan.id,
-            planName: plan.name,
-            status: 'active',
-            startedAt: '20/07/2026',
-            expiresAt
-          }
+          role: current.user.role ?? 'student',
+          subscription: premiumSubscription
         }
       };
     });
     setAdminNotice(`Đã nâng cấp ${plan.name}. Các tính năng Premium đã được mở khóa.`);
+    setAutoOpenPublicPortfolio(true);
+    setPage('portfolio');
   };
 
   useEffect(() => {
@@ -1365,7 +1383,7 @@ function App() {
         {page === 'join' && <JoinChallengePage challenge={selectedChallenge} currentMajor={currentMajor} joined={joinedChallengeIds.includes(selectedChallenge.id)} submission={submissionStatus[selectedChallenge.id]} joinChallenge={joinChallenge} isPremium={isPremium} go={go} />}
         {page === 'submit' && <SubmitProjectPage challenge={selectedChallenge} currentMajor={currentMajor} joined={joinedChallengeIds.includes(selectedChallenge.id)} submission={submissionStatus[selectedChallenge.id]} mentors={appData.mentors ?? []} joinChallenge={joinChallenge} saveDraft={saveDraft} submitChallenge={submitChallenge} submissionRulesData={rulesByMajor} isPremium={isPremium} go={go} />}
         {page === 'feedback' && <MentorFeedbackPage go={go} challenge={selectedChallenge} submission={submissionList.find((item) => item.userId === userId && item.challengeId === selectedChallenge.id)} feedback={feedbackList.find((item) => item.userId === userId && item.challengeId === selectedChallenge.id)} mentors={appData.mentors ?? []} createFeedback={() => createFeedback(selectedChallenge.id, userId)} />}
-        {page === 'portfolio' && <PortfolioPage pathRoles={pathRoles} currentMajor={currentMajor} go={go} demoUser={demoUser} apiStatus={apiStatus} submissions={submissionList} challenges={challengeList} updatePortfolio={updatePortfolio} isPremium={isPremium} />}
+        {page === 'portfolio' && <PortfolioPage pathRoles={pathRoles} currentMajor={currentMajor} go={go} demoUser={demoUser} apiStatus={apiStatus} submissions={submissionList} challenges={challengeList} updatePortfolio={updatePortfolio} isPremium={isPremium} autoOpenPublicPortfolio={autoOpenPublicPortfolio} onPublicPortfolioOpened={() => setAutoOpenPublicPortfolio(false)} />}
         {page === 'premium' && <PremiumPage plans={premiumPlans} activeSubscription={activeSubscription} upgradePlan={upgradePlan} go={go} />}
         {page === 'about' && <AboutPage go={go} />}
         {page === 'mentor' && <MentorPage apiStatus={apiStatus} data={managementData} currentUser={currentUser} refreshData={refreshData} createFeedback={createFeedback} updateSubmissionFromMentor={updateSubmissionFromMentor} setNotice={setAdminNotice} notice={adminNotice} />}
@@ -2463,7 +2481,7 @@ function MentorFeedbackPage({ go, challenge, submission, feedback, mentors, crea
     </section>
   );
 }
-function PortfolioPage({ pathRoles, currentMajor, go, demoUser, apiStatus, submissions, challenges, updatePortfolio, isPremium }) {
+function PortfolioPage({ pathRoles, currentMajor, go, demoUser, apiStatus, submissions, challenges, updatePortfolio, isPremium, autoOpenPublicPortfolio, onPublicPortfolioOpened }) {
   const [showPublicPreview, setShowPublicPreview] = useState(false);
   const mainSpecs = currentMajor.columns.slice(0, 5);
   const stats = demoUser?.stats ?? { completedChallenges: 6, mentorRating: 4.8, portfolioProjects: 4, verifiedSkills: 18 };
@@ -2485,6 +2503,12 @@ function PortfolioPage({ pathRoles, currentMajor, go, demoUser, apiStatus, submi
     'Career Path Certified'
   ];
   const certificateCode = `PF-${currentMajor.short.toUpperCase()}-${String(demoUser?.id ?? 'demo').slice(-4).toUpperCase()}-2026`;
+  useEffect(() => {
+    if (autoOpenPublicPortfolio && isPremium) {
+      setShowPublicPreview(true);
+      onPublicPortfolioOpened?.();
+    }
+  }, [autoOpenPublicPortfolio, isPremium, onPublicPortfolioOpened]);
   return (
     <section className="content-page portfolio-page">
       <div className="portfolio-header">
@@ -2510,39 +2534,6 @@ function PortfolioPage({ pathRoles, currentMajor, go, demoUser, apiStatus, submi
         <div className="status-banner premium-banner">
           <Crown size={17} />
           Free lưu hồ sơ nội bộ. Premium mở public portfolio, badge xác thực kỹ năng và template xuất bản chuyên nghiệp.
-        </div>
-      )}
-      {isPremium && (
-        <div className="premium-portfolio-grid">
-          <article>
-            <p className="mono-label">Public portfolio</p>
-            <h2>{publicPortfolioUrl}</h2>
-            <span>Trang công khai có case study, kỹ năng xác thực và lịch sử mentor feedback.</span>
-          </article>
-          <article>
-            <p className="mono-label">Báo cáo tháng này</p>
-            <div className="mini-metric-row">
-              {monthlyReport.map((item) => (
-                <span key={item.label}><strong>{item.value}</strong>{item.label}</span>
-              ))}
-            </div>
-          </article>
-          <article>
-            <p className="mono-label">Badge xác thực</p>
-            <div className="tag-row">
-              {premiumBadges.map((item) => <span key={item}>{item}</span>)}
-            </div>
-          </article>
-          <article>
-            <p className="mono-label">Mentor ưu tiên</p>
-            <h2>{currentMajor.title} specialist</h2>
-            <span>Ưu tiên match mentor theo chuyên ngành, challenge và kỹ năng đang cần review.</span>
-          </article>
-          <article>
-            <p className="mono-label">Chứng nhận lộ trình</p>
-            <h2>{certificateCode}</h2>
-            <span>Cấp khi hoàn thành đủ lộ trình, challenge bắt buộc và mentor feedback đạt chuẩn.</span>
-          </article>
         </div>
       )}
       {showPublicPreview && (
@@ -2582,6 +2573,39 @@ function PortfolioPage({ pathRoles, currentMajor, go, demoUser, apiStatus, submi
             </article>
           </div>
         </section>
+      )}
+      {isPremium && (
+        <div className="premium-portfolio-grid">
+          <article>
+            <p className="mono-label">Public portfolio</p>
+            <h2>{publicPortfolioUrl}</h2>
+            <span>Trang công khai có case study, kỹ năng xác thực và lịch sử mentor feedback.</span>
+          </article>
+          <article>
+            <p className="mono-label">Báo cáo tháng này</p>
+            <div className="mini-metric-row">
+              {monthlyReport.map((item) => (
+                <span key={item.label}><strong>{item.value}</strong>{item.label}</span>
+              ))}
+            </div>
+          </article>
+          <article>
+            <p className="mono-label">Badge xác thực</p>
+            <div className="tag-row">
+              {premiumBadges.map((item) => <span key={item}>{item}</span>)}
+            </div>
+          </article>
+          <article>
+            <p className="mono-label">Mentor ưu tiên</p>
+            <h2>{currentMajor.title} specialist</h2>
+            <span>Ưu tiên match mentor theo chuyên ngành, challenge và kỹ năng đang cần review.</span>
+          </article>
+          <article>
+            <p className="mono-label">Chứng nhận lộ trình</p>
+            <h2>{certificateCode}</h2>
+            <span>Cấp khi hoàn thành đủ lộ trình, challenge bắt buộc và mentor feedback đạt chuẩn.</span>
+          </article>
+        </div>
       )}
       <div className="profile-summary">
         <article>
