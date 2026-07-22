@@ -1443,7 +1443,7 @@ function AuthPage({ authMode, setAuthMode, majors, selectedMajorKey, changeMajor
           <div className="hero-stats">
             <Stat value="3" label={'ng\u00e0nh l\u1edbn'} />
             <Stat value="22" label="specializations" />
-            <Stat value="14+" label={'b\u00e0i t\u1eadp m\u1eabu'} />
+            <Stat value="60+" label={'b\u00e0i t\u1eadp m\u1eabu'} />
           </div>
         </div>
       </div>
@@ -1807,7 +1807,7 @@ function AboutPage({ go }) {
   const companyStats = [
     { value: '3', label: 'career domains', note: 'Developer, Marketing, Designer' },
     { value: '22+', label: 'specializations', note: 'lộ trình hẹp theo từng ngành' },
-    { value: '14+', label: 'portfolio challenges', note: 'bài tập mô phỏng nghiệp vụ thật' },
+    { value: '60+', label: 'portfolio challenges', note: '20 bài tập cho mỗi ngành lớn' },
     { value: '1:1', label: 'mentor workflow', note: 'match mentor theo chuyên ngành' }
   ];
   const operatingPrinciples = ['Không chỉ chọn nghề, phải chứng minh được năng lực bằng sản phẩm.', 'Dữ liệu thị trường cần có nguồn, ngày cập nhật và mức độ tin cậy.', 'Mỗi challenge phải dẫn tới một artifact có thể đưa vào portfolio.', 'Mentor feedback phải cụ thể: điểm mạnh, điểm yếu, hành động cần sửa.'];
@@ -1849,8 +1849,8 @@ function AboutPage({ go }) {
         </article>
         <article className="about-card">
           <p className="mono-label">Data trust</p>
-          <h2>Thông tin nghề nghiệp phải có nguồn.</h2>
-          <p>Trang Xu hướng sử dụng nguồn tham khảo như ITviec Salary Report, Adecco Salary Guide, VietnamWorks và các job board công khai. Trong bản demo, hệ thống hiển thị snapshot dữ liệu; khi triển khai thật, admin sẽ kiểm duyệt nguồn trước khi publish cho student.</p>
+          <h2>Career data phải đáng tin, cập nhật và dễ kiểm chứng.</h2>
+          <p>Portfolio tổng hợp tín hiệu từ báo cáo lương, job board công khai và nguồn tuyển dụng có uy tín để người học hiểu bức tranh thị trường trước khi chọn lộ trình. Mỗi insight quan trọng đều đi kèm nguồn tham khảo, thời điểm cập nhật và phần giải thích ngắn để người dùng biết vì sao thông tin đó đáng dùng.</p>
         </article>
       </div>
 
@@ -2904,6 +2904,11 @@ function AdminPage({ apiStatus, data, notice, currentUser, refreshData, setAdmin
     submissionStatus: 'all',
     submissionMajor: 'all'
   });
+  const [adminListPages, setAdminListPages] = useState({
+    challenges: 1,
+    users: 1,
+    submissions: 1
+  });
   const isAdmin = (currentUser?.type ?? currentUser?.user?.role) === 'admin';
   const challengesData = data?.challenges ?? [];
   const users = data?.users?.length ? data.users : data?.demoUser ? [data.demoUser] : [];
@@ -2925,19 +2930,25 @@ function AdminPage({ apiStatus, data, notice, currentUser, refreshData, setAdmin
   const adminTrackOptions = [...new Set(challengesData.map((item) => item.track).filter(Boolean))];
   const adminDifficultyOptions = [...new Set(challengesData.map((item) => item.difficulty).filter(Boolean))];
   const adminMentorOptions = [...new Set(challengesData.map((item) => item.mentor).filter(Boolean))];
-  const updateAdminFilter = (key, value) => setAdminFilters((current) => ({ ...current, [key]: value }));
-  const resetAdminFilters = () => setAdminFilters({
-    challengeKeyword: '',
-    challengeMajor: 'all',
-    challengeTrack: 'all',
-    challengeDifficulty: 'all',
-    challengeMentor: 'all',
-    userKeyword: '',
-    userMajor: 'all',
-    submissionKeyword: '',
-    submissionStatus: 'all',
-    submissionMajor: 'all'
-  });
+  const updateAdminFilter = (key, value) => {
+    setAdminFilters((current) => ({ ...current, [key]: value }));
+    setAdminListPages({ challenges: 1, users: 1, submissions: 1 });
+  };
+  const resetAdminFilters = () => {
+    setAdminFilters({
+      challengeKeyword: '',
+      challengeMajor: 'all',
+      challengeTrack: 'all',
+      challengeDifficulty: 'all',
+      challengeMentor: 'all',
+      userKeyword: '',
+      userMajor: 'all',
+      submissionKeyword: '',
+      submissionStatus: 'all',
+      submissionMajor: 'all'
+    });
+    setAdminListPages({ challenges: 1, users: 1, submissions: 1 });
+  };
   const challengeById = (id) => challengesData.find((item) => item.id === id);
   const userById = (id) => users.find((item) => item.id === id);
   const filteredChallenges = challengesData.filter((challenge) => {
@@ -2967,6 +2978,30 @@ function AdminPage({ apiStatus, data, notice, currentUser, refreshData, setAdmin
     return [submission.challengeId, submission.userId, submission.status, submission.notes, challenge?.title, challenge?.track, user?.name, user?.email]
       .some((value) => String(value ?? '').toLowerCase().includes(keyword));
   });
+  const pageSize = 5;
+  const paginate = (items, key) => {
+    const totalPages = Math.max(1, Math.ceil(items.length / pageSize));
+    const currentPage = Math.min(adminListPages[key] ?? 1, totalPages);
+    return {
+      items: items.slice((currentPage - 1) * pageSize, currentPage * pageSize),
+      currentPage,
+      totalPages,
+      totalItems: items.length
+    };
+  };
+  const challengePage = paginate(filteredChallenges, 'challenges');
+  const userPage = paginate(filteredUsers, 'users');
+  const submissionPage = paginate(filteredSubmissions, 'submissions');
+  const changeAdminListPage = (key, direction) => {
+    setAdminListPages((current) => {
+      const source = key === 'challenges' ? filteredChallenges : key === 'users' ? filteredUsers : filteredSubmissions;
+      const totalPages = Math.max(1, Math.ceil(source.length / pageSize));
+      return {
+        ...current,
+        [key]: Math.min(totalPages, Math.max(1, (current[key] ?? 1) + direction))
+      };
+    });
+  };
 
   const updateForm = (key, value) => setForm((current) => ({ ...current, [key]: value }));
   const resetForm = () => {
@@ -3271,7 +3306,7 @@ function AdminPage({ apiStatus, data, notice, currentUser, refreshData, setAdmin
         <article className="admin-panel">
           <h2>Challenge đang có</h2>
           <div className="admin-list">
-            {filteredChallenges.map((challenge) => (
+            {challengePage.items.map((challenge) => (
               <div className="admin-row" key={challenge.id}>
                 <div>
                   <strong>{challenge.title}</strong>
@@ -3283,13 +3318,14 @@ function AdminPage({ apiStatus, data, notice, currentUser, refreshData, setAdmin
             ))}
             {!filteredChallenges.length && <div className="empty-state">Không có challenge phù hợp với bộ lọc.</div>}
           </div>
+          <ListPager page={challengePage} onPrev={() => changeAdminListPage('challenges', -1)} onNext={() => changeAdminListPage('challenges', 1)} />
         </article>
       </div>
 
       <div className="admin-grid compact">
         <article className="admin-panel">
           <h2>Người dùng</h2>
-          {filteredUsers.map((user) => (
+          {userPage.items.map((user) => (
             <div className="admin-row" key={user.id}>
               <div>
                 <strong>{user.name}</strong>
@@ -3304,10 +3340,11 @@ function AdminPage({ apiStatus, data, notice, currentUser, refreshData, setAdmin
             </div>
           ))}
           {!filteredUsers.length && <div className="empty-state">Không có người dùng phù hợp.</div>}
+          <ListPager page={userPage} onPrev={() => changeAdminListPage('users', -1)} onNext={() => changeAdminListPage('users', 1)} />
         </article>
         <article className="admin-panel">
           <h2>Lịch sử nộp bài</h2>
-          {filteredSubmissions.map((submission) => (
+          {submissionPage.items.map((submission) => (
             <div className="admin-row" key={`${submission.userId}-${submission.challengeId}`}>
               <div>
                 <strong>{challengeById(submission.challengeId)?.title ?? submission.challengeId}</strong>
@@ -3323,6 +3360,7 @@ function AdminPage({ apiStatus, data, notice, currentUser, refreshData, setAdmin
             </div>
           ))}
           {!filteredSubmissions.length && <div className="empty-state">Không có bài nộp phù hợp.</div>}
+          <ListPager page={submissionPage} onPrev={() => changeAdminListPage('submissions', -1)} onNext={() => changeAdminListPage('submissions', 1)} />
         </article>
       </div>
 
@@ -3366,6 +3404,19 @@ function AdminPage({ apiStatus, data, notice, currentUser, refreshData, setAdmin
 
 function Stat({ value, label }) {
   return <div className="stat"><strong>{value}</strong><span>{label}</span></div>;
+}
+
+function ListPager({ page, onPrev, onNext }) {
+  if (!page.totalItems) return null;
+  return (
+    <div className="list-pager">
+      <span>Hiển thị {page.items.length}/{page.totalItems} mục · Trang {page.currentPage}/{page.totalPages}</span>
+      <div>
+        <button onClick={onPrev} disabled={page.currentPage <= 1}>Trước</button>
+        <button onClick={onNext} disabled={page.currentPage >= page.totalPages}>Sau</button>
+      </div>
+    </div>
+  );
 }
 
 function StatCard({ icon: Icon, title, value }) {
