@@ -1186,6 +1186,7 @@ function Header({ page, go, currentUser, theme, setTheme, logout }) {
           );
         })}
       </nav>
+      <div className="topbar-actions">
       <div className="role-chip">
         <UserRound size={15} />
         <span>{roleLabel}</span>
@@ -1205,6 +1206,7 @@ function Header({ page, go, currentUser, theme, setTheme, logout }) {
         {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
         <span>{theme === 'dark' ? 'Light' : 'Dark'}</span>
       </button>
+      </div>
     </header>
   );
 }
