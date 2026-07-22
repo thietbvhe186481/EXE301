@@ -4167,6 +4167,31 @@ body:has(.app-shell.page-mentor) {
   min-width: 0;
 }
 
+body:has(.premium-page) {
+  overflow-y: auto !important;
+}
+
+body:has(.premium-page) .app-shell,
+body:has(.premium-page) main {
+  height: auto !important;
+  min-height: 100vh !important;
+  overflow: visible !important;
+}
+
+.premium-page {
+  height: auto !important;
+  min-height: calc(100vh - 64px);
+  overflow: visible !important;
+  padding-bottom: 36px;
+}
+
+.premium-page .section-heading,
+.premium-page .pricing-grid,
+.premium-page .admin-grid,
+.premium-page .submit-actions {
+  min-width: 0;
+}
+
 @media (max-width: 960px) {
   .pricing-grid {
     grid-template-columns: 1fr !important;
