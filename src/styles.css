@@ -8672,16 +8672,19 @@ body {
   }
 }
 
-.cv-achievement-section {
+.cv-achievement-section,
+.recruiter-signal-section {
   align-content: start;
 }
 
-.cv-achievement-grid {
+.cv-achievement-grid,
+.recruiter-signal-grid {
   display: grid;
   gap: 10px;
 }
 
-.cv-achievement-card {
+.cv-achievement-card,
+.recruiter-signal-card {
   display: grid;
   grid-template-columns: 22px minmax(0, 1fr);
   gap: 10px;
@@ -8694,34 +8697,53 @@ body {
     var(--surface-soft);
 }
 
-.cv-achievement-card svg {
-  margin-top: 2px;
-  color: #0ea5e9;
+.recruiter-signal-section > .mono-label {
+  margin: 0 0 4px;
 }
 
-.cv-achievement-card span {
+.cv-achievement-card svg,
+.recruiter-signal-card svg {
+  margin-top: 2px;
+  color: #0284c7;
+}
+
+.cv-achievement-card span,
+.recruiter-signal-card span {
   display: grid;
   gap: 4px;
   min-width: 0;
 }
 
-.cv-achievement-card strong {
+.cv-achievement-card strong,
+.recruiter-signal-card strong {
   color: var(--text);
   font-size: 16px;
 }
 
-.cv-achievement-card small {
-  color: var(--muted);
+.cv-achievement-card small,
+.recruiter-signal-card small {
+  color: #334e68;
   font-size: 14px;
   font-weight: 750;
   line-height: 1.45;
 }
 
-.app-shell[data-theme="dark"] .cv-achievement-card {
+.recruiter-signal-card {
+  background:
+    linear-gradient(135deg, rgba(14, 165, 233, 0.07), rgba(255, 255, 255, 0.72)),
+    var(--surface);
+}
+
+.app-shell[data-theme="dark"] .cv-achievement-card,
+.app-shell[data-theme="dark"] .recruiter-signal-card {
   border-color: rgba(125, 211, 252, 0.16);
   background:
     linear-gradient(135deg, rgba(14, 165, 233, 0.13), rgba(16, 185, 129, 0.1)),
     var(--surface-soft);
+}
+
+.app-shell[data-theme="dark"] .recruiter-signal-card small {
+  color: #cfe5f8;
 }
 
 /* CV page: keep the profile feeling like one complete resume page. */

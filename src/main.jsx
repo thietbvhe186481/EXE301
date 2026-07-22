@@ -2833,27 +2833,27 @@ function PortfolioPage({ pathRoles, currentMajor, go, demoUser, apiStatus, submi
     'Portfolio Ready',
     'Career Path Certified'
   ];
-  const cvAchievements = [
+  const recruiterSignals = [
     {
-      title: 'Lộ trình nghề nghiệp rõ ràng',
-      detail: `Định hướng ${careerGoal} với các mốc kỹ năng cụ thể để nhà tuyển dụng thấy mục tiêu phát triển.`
+      title: 'Vai trò có thể đảm nhận',
+      detail: `Ứng viên đang hướng tới ${careerGoal}; có nền tảng ${currentMajor.title} và các kỹ năng liên quan tới vị trí mục tiêu.`
     },
     {
-      title: 'Project có mentor review',
-      detail: `${reviewedSubmissions || 2} bài đã có nhận xét/chấm điểm, giúp CV có bằng chứng năng lực thay vì chỉ liệt kê kỹ năng.`
+      title: 'Sản phẩm có thể kiểm tra',
+      detail: `${stats.portfolioProjects ?? 4} project có link minh chứng, mô tả bài toán và đầu ra để nhà tuyển dụng mở xem trực tiếp.`
     },
     {
-      title: 'Minh chứng sản phẩm thật',
-      detail: `${stats.portfolioProjects ?? 4} project có link, mô tả nghiệp vụ và kết quả có thể đưa vào portfolio ứng tuyển.`
+      title: 'Độ tin cậy từ review',
+      detail: `${reviewedSubmissions || 2} bài đã/đang được mentor xem xét; phù hợp để trao đổi sâu trong vòng phỏng vấn kỹ thuật hoặc portfolio review.`
     },
     {
-      title: 'Kỹ năng được xác thực',
-      detail: `${stats.verifiedSkills ?? 18} kỹ năng gắn với bài tập, feedback và chuyên ngành ${currentMajor.title}.`
+      title: 'Điểm nên hỏi khi phỏng vấn',
+      detail: `Có thể hỏi thêm về quyết định triển khai, trade-off, cách đo kết quả và phần người học tự làm trong từng project.`
     },
     ...(isPremium ? [
       {
-        title: 'Public portfolio chuyên nghiệp',
-        detail: 'Có trang portfolio công khai, case study nổi bật và chứng nhận hoàn thành lộ trình.'
+        title: 'Portfolio công khai sẵn sàng gửi',
+        detail: 'Premium mở public portfolio, giúp nhà tuyển dụng xem case study, feedback và chứng nhận trong một đường link.'
       }
     ] : [])
   ];
@@ -3057,12 +3057,13 @@ function PortfolioPage({ pathRoles, currentMajor, go, demoUser, apiStatus, submi
               </div>
             </article>
 
-            <article className="cv-section cv-achievement-section">
-              <h2>Thành tựu nổi bật cho CV</h2>
-              <div className="cv-achievement-grid">
-                {cvAchievements.map((item) => (
-                  <div className="cv-achievement-card" key={item.title}>
-                    <BadgeCheck size={17} />
+            <article className="cv-section recruiter-signal-section">
+              <p className="mono-label">Recruiter view</p>
+              <h2>Nhà tuyển dụng nhìn thấy gì?</h2>
+              <div className="recruiter-signal-grid">
+                {recruiterSignals.map((item) => (
+                  <div className="recruiter-signal-card" key={item.title}>
+                    <BriefcaseBusiness size={17} />
                     <span>
                       <strong>{item.title}</strong>
                       <small>{item.detail}</small>
