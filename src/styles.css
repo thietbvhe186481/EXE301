@@ -568,6 +568,41 @@ p {
   color: white;
 }
 
+.signup-type-switch {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.signup-type-switch button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 40px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--muted);
+  font-weight: 900;
+}
+
+.signup-type-switch button.active {
+  border-color: rgba(14, 165, 233, 0.45);
+  background: linear-gradient(135deg, var(--cyan), var(--blue));
+  color: white;
+}
+
+.mentor-signup-box {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.mentor-signup-box .wide {
+  grid-column: 1 / -1;
+}
+
 .major-picker {
   display: grid;
   grid-template-columns: 1fr;
@@ -3886,6 +3921,26 @@ body:has(.app-shell.page-mentor) {
 
 .admin-grid.compact {
   grid-template-columns: 1fr 1fr;
+}
+
+.admin-grid.compact .wide-admin-panel {
+  grid-column: 1 / -1;
+}
+
+.admin-row small {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted);
+  font-weight: 750;
+  line-height: 1.35;
+}
+
+.mentor-admin-row {
+  align-items: start;
+}
+
+.mentor-admin-row button {
+  white-space: nowrap;
 }
 
 .mentor-feedback-history {

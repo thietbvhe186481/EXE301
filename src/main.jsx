@@ -1434,11 +1434,26 @@ function AuthPage({ authMode, setAuthMode, majors, selectedMajorKey, changeMajor
     email: 'student@portfolio.vn',
     password: '123456'
   });
+  const [signupType, setSignupType] = useState('student');
+  const [signupForm, setSignupForm] = useState({
+    name: 'Người dùng mới',
+    goal: 'Xây portfolio xin thực tập',
+    mentorTitle: 'Senior Mentor',
+    mentorCompany: 'Tech Company',
+    mentorExpertise: 'Backend, Full Stack, Career Review',
+    mentorExperience: '5',
+    mentorProof: 'LinkedIn, chứng chỉ hoặc portfolio đã review'
+  });
   const updateCredentials = (key, value) => setCredentials((current) => ({ ...current, [key]: value }));
+  const updateSignupForm = (key, value) => setSignupForm((current) => ({ ...current, [key]: value }));
   const submitLogin = () => {
     if (!credentials.email || !credentials.password) return;
     loginAs('student', credentials);
   };
+  const submitSignup = () => {
+    loginAs(signupType === 'mentor' ? 'mentor' : 'student');
+  };
+  const isSignup = authMode === 'signup';
   return (
     <section className="auth-page page-grid">
       <div className="auth-visual">
@@ -1467,15 +1482,29 @@ function AuthPage({ authMode, setAuthMode, majors, selectedMajorKey, changeMajor
           <button className={authMode === 'login' ? 'active' : ''} onClick={() => setAuthMode('login')}>Đăng nhập</button>
           <button className={authMode === 'signup' ? 'active' : ''} onClick={() => setAuthMode('signup')}>Đăng ký</button>
         </div>
+        {isSignup && (
+          <div className="signup-type-switch">
+            <button className={signupType === 'student' ? 'active' : ''} onClick={() => setSignupType('student')}>
+              <UserRound size={16} />
+              Student
+            </button>
+            <button className={signupType === 'mentor' ? 'active' : ''} onClick={() => setSignupType('mentor')}>
+              <GraduationCap size={16} />
+              Mentor
+            </button>
+          </div>
+        )}
         <div className="auth-fields">
           <label>Email<input type="email" value={credentials.email} onChange={(event) => updateCredentials('email', event.target.value)} placeholder="ban@example.com" /></label>
           <label>Mật khẩu<input type="password" value={credentials.password} onChange={(event) => updateCredentials('password', event.target.value)} placeholder="Nhập mật khẩu" /></label>
+          {isSignup && <label>Họ tên<input value={signupForm.name} onChange={(event) => updateSignupForm('name', event.target.value)} placeholder="Tên hiển thị" /></label>}
+          {isSignup && signupType === 'student' && <label>Mục tiêu<input value={signupForm.goal} onChange={(event) => updateSignupForm('goal', event.target.value)} placeholder="VD: Frontend Intern trong 3 tháng" /></label>}
         </div>
-        <div className="auth-helper">
+        {!isSignup && <div className="auth-helper">
           <span>Demo account</span>
           <b>student@portfolio.vn / 123456</b>
-        </div>
-        <div className="major-picker">
+        </div>}
+        {(!isSignup || signupType === 'student') && <div className="major-picker">
           {majors.map((major) => (
             <button
               key={major.key}
@@ -1487,27 +1516,46 @@ function AuthPage({ authMode, setAuthMode, majors, selectedMajorKey, changeMajor
                 <strong>{major.title}</strong>
               </button>
             ))}
-        </div>
-        <div className="selected-major-note" style={{ '--accent': selectedMajor.accent }}>
+        </div>}
+        {(!isSignup || signupType === 'student') && <div className="selected-major-note" style={{ '--accent': selectedMajor.accent }}>
           <strong>{selectedMajor.title}</strong>
           <span>{selectedMajor.columns.length} specializations · {submissionRulesData[selectedMajor.key].accepted}</span>
-        </div>
-        <button className="primary-action" onClick={submitLogin}>
+        </div>}
+        {isSignup && signupType === 'student' && (
+          <div className="login-rule-box">
+            <strong>Quy trình student</strong>
+            <span>Chọn ngành lớn, xây lộ trình cá nhân, tham gia challenge đúng chuyên ngành rồi nộp sản phẩm để mentor góp ý.</span>
+          </div>
+        )}
+        {isSignup && signupType === 'mentor' && (
+          <div className="mentor-signup-box">
+            <label>Chức danh<input value={signupForm.mentorTitle} onChange={(event) => updateSignupForm('mentorTitle', event.target.value)} /></label>
+            <label>Công ty hiện tại<input value={signupForm.mentorCompany} onChange={(event) => updateSignupForm('mentorCompany', event.target.value)} /></label>
+            <label>Kinh nghiệm<input type="number" min="1" value={signupForm.mentorExperience} onChange={(event) => updateSignupForm('mentorExperience', event.target.value)} /></label>
+            <label className="wide">Chuyên môn mạnh<input value={signupForm.mentorExpertise} onChange={(event) => updateSignupForm('mentorExpertise', event.target.value)} /></label>
+            <label className="wide">Minh chứng mentor<textarea value={signupForm.mentorProof} onChange={(event) => updateSignupForm('mentorProof', event.target.value)} /></label>
+            <div className="login-rule-box wide">
+              <strong>Quy trình mentor</strong>
+              <span>Hồ sơ mentor cần được admin duyệt, kiểm tra chuyên môn, công ty từng làm và chứng chỉ trước khi được nhận bài review.</span>
+            </div>
+          </div>
+        )}
+        <button className="primary-action" onClick={isSignup ? submitSignup : submitLogin}>
           <LockKeyhole size={18} />
-          Đăng nhập bằng tài khoản đã nhập
+          {isSignup ? `Tạo tài khoản ${signupType === 'mentor' ? 'Mentor' : 'Student'} demo` : 'Đăng nhập bằng tài khoản đã nhập'}
         </button>
-        <button className="ghost-action" onClick={() => loginAs('student')}>
+        {!isSignup && <button className="ghost-action" onClick={() => loginAs('student')}>
           <Rocket size={18} />
           Student demo vào bản đồ {selectedMajor.short}
-        </button>
-        <button className="ghost-action" onClick={() => loginAs('admin')}>
+        </button>}
+        {!isSignup && <button className="ghost-action" onClick={() => loginAs('admin')}>
           <ShieldCheck size={18} />
           Đăng nhập Admin demo
-        </button>
-        <button className="ghost-action" onClick={() => loginAs('mentor')}>
+        </button>}
+        {!isSignup && <button className="ghost-action" onClick={() => loginAs('mentor')}>
           <GraduationCap size={18} />
           Đăng nhập Mentor demo
-        </button>
+        </button>}
       </div>
     </section>
   );
@@ -3094,6 +3142,7 @@ function AdminPage({ apiStatus, data, notice, currentUser, refreshData, setAdmin
   const [adminListPages, setAdminListPages] = useState({
     challenges: 1,
     users: 1,
+    mentors: 1,
     submissions: 1
   });
   const [adminSection, setAdminSection] = useState('overview');
@@ -3120,7 +3169,7 @@ function AdminPage({ apiStatus, data, notice, currentUser, refreshData, setAdmin
   const adminMentorOptions = [...new Set(challengesData.map((item) => item.mentor).filter(Boolean))];
   const updateAdminFilter = (key, value) => {
     setAdminFilters((current) => ({ ...current, [key]: value }));
-    setAdminListPages({ challenges: 1, users: 1, submissions: 1 });
+    setAdminListPages({ challenges: 1, users: 1, mentors: 1, submissions: 1 });
   };
   const resetAdminFilters = () => {
     setAdminFilters({
@@ -3135,7 +3184,7 @@ function AdminPage({ apiStatus, data, notice, currentUser, refreshData, setAdmin
       submissionStatus: 'all',
       submissionMajor: 'all'
     });
-    setAdminListPages({ challenges: 1, users: 1, submissions: 1 });
+    setAdminListPages({ challenges: 1, users: 1, mentors: 1, submissions: 1 });
   };
   const challengeById = (id) => challengesData.find((item) => item.id === id);
   const userById = (id) => users.find((item) => item.id === id);
@@ -3154,6 +3203,12 @@ function AdminPage({ apiStatus, data, notice, currentUser, refreshData, setAdmin
     if (adminFilters.userMajor !== 'all' && user.selectedMajorKey !== adminFilters.userMajor) return false;
     if (!keyword) return true;
     return [user.name, user.email, user.selectedMajorKey, user.careerGoal, user.badges?.join(' ')]
+      .some((value) => String(value ?? '').toLowerCase().includes(keyword));
+  });
+  const filteredMentors = mentors.filter((mentor) => {
+    const keyword = adminFilters.userKeyword.trim().toLowerCase();
+    if (!keyword) return true;
+    return [mentor.name, mentor.email, mentor.jobTitle, mentor.currentCompany, mentor.strongestField, mentor.expertise?.join(' '), mentor.certifications?.join(' ')]
       .some((value) => String(value ?? '').toLowerCase().includes(keyword));
   });
   const filteredSubmissions = submissionsData.filter((submission) => {
@@ -3179,10 +3234,11 @@ function AdminPage({ apiStatus, data, notice, currentUser, refreshData, setAdmin
   };
   const challengePage = paginate(filteredChallenges, 'challenges');
   const userPage = paginate(filteredUsers, 'users');
+  const mentorPage = paginate(filteredMentors, 'mentors');
   const submissionPage = paginate(filteredSubmissions, 'submissions');
   const changeAdminListPage = (key, direction) => {
     setAdminListPages((current) => {
-      const source = key === 'challenges' ? filteredChallenges : key === 'users' ? filteredUsers : filteredSubmissions;
+      const source = key === 'challenges' ? filteredChallenges : key === 'users' ? filteredUsers : key === 'mentors' ? filteredMentors : filteredSubmissions;
       const totalPages = Math.max(1, Math.ceil(source.length / pageSize));
       return {
         ...current,
@@ -3295,7 +3351,7 @@ function AdminPage({ apiStatus, data, notice, currentUser, refreshData, setAdmin
         <button className={adminSection === 'profile' ? 'active' : ''} onClick={() => setAdminSection('profile')}><ShieldCheck size={16} /> Vận hành</button>
         <button className={adminSection === 'commerce' ? 'active' : ''} onClick={() => setAdminSection('commerce')}><Crown size={16} /> Premium</button>
         <button className={adminSection === 'challenges' ? 'active' : ''} onClick={() => setAdminSection('challenges')}><Blocks size={16} /> Bộ lọc & challenge</button>
-        <button className={adminSection === 'users' ? 'active' : ''} onClick={() => setAdminSection('users')}><UserRound size={16} /> User & bài nộp</button>
+        <button className={adminSection === 'users' ? 'active' : ''} onClick={() => setAdminSection('users')}><UserRound size={16} /> Sinh viên & mentor</button>
         <button className={adminSection === 'system' ? 'active' : ''} onClick={() => setAdminSection('system')}><Save size={16} /> Hệ thống</button>
       </aside>
 
@@ -3502,25 +3558,45 @@ function AdminPage({ apiStatus, data, notice, currentUser, refreshData, setAdmin
 
       <div className={`admin-grid compact workspace-section ${adminSection === 'users' ? 'active' : ''}`} id="admin-users">
         <article className="admin-panel">
-          <h2>Người dùng</h2>
+          <p className="mono-label">Student accounts</p>
+          <h2>Sinh viên</h2>
           {userPage.items.map((user) => (
             <div className="admin-row" key={user.id}>
               <div>
                 <strong>{user.name}</strong>
-                <span>{user.email} · {user.selectedMajorKey} · {user.status ?? 'active'} · {user.path?.length ?? 0} vị trí</span>
+                <span>{user.email} · ngành {user.selectedMajorKey} · {user.status ?? 'active'} · {user.path?.length ?? 0} vị trí</span>
+                <small>Admin chỉ khóa/mở tài khoản; ngành học là lựa chọn ban đầu của sinh viên.</small>
               </div>
               <button onClick={() => updateUser(user.id, { status: user.status === 'locked' ? 'active' : 'locked' })}>
                 {user.status === 'locked' ? 'Mở khóa' : 'Khóa'}
               </button>
-              <button onClick={() => updateUser(user.id, { selectedMajorKey: user.selectedMajorKey === 'dev' ? 'mkt' : user.selectedMajorKey === 'mkt' ? 'design' : 'dev', path: [] })}>
-                Đổi ngành
-              </button>
             </div>
           ))}
-          {!filteredUsers.length && <div className="empty-state">Không có người dùng phù hợp.</div>}
+          {!filteredUsers.length && <div className="empty-state">Không có sinh viên phù hợp.</div>}
           <ListPager page={userPage} onPrev={() => changeAdminListPage('users', -1)} onNext={() => changeAdminListPage('users', 1)} />
         </article>
         <article className="admin-panel">
+          <p className="mono-label">Mentor accounts</p>
+          <h2>Mentor</h2>
+          {mentorPage.items.map((mentor) => (
+            <div className="admin-row mentor-admin-row" key={mentor.id}>
+              <div>
+                <strong>{mentor.name}</strong>
+                <span>{mentor.email} · {mentor.jobTitle ?? mentor.level} · {mentor.currentCompany ?? 'Portfolio Network'}</span>
+                <small>{mentor.strongestField ?? 'Project Review'} · {(mentor.expertise ?? []).slice(0, 3).join(', ')}</small>
+              </div>
+              <button onClick={() => setAdminNotice(`Đã duyệt hồ sơ mentor ${mentor.name} trong bản demo`)}>
+                Duyệt
+              </button>
+              <button onClick={() => setAdminNotice(`Đã yêu cầu ${mentor.name} bổ sung chứng chỉ/chuyên môn`)}>
+                Yêu cầu bổ sung
+              </button>
+            </div>
+          ))}
+          {!filteredMentors.length && <div className="empty-state">Không có mentor phù hợp.</div>}
+          <ListPager page={mentorPage} onPrev={() => changeAdminListPage('mentors', -1)} onNext={() => changeAdminListPage('mentors', 1)} />
+        </article>
+        <article className="admin-panel wide-admin-panel">
           <h2>Lịch sử nộp bài</h2>
           {submissionPage.items.map((submission) => (
             <div className="admin-row" key={`${submission.userId}-${submission.challengeId}`}>
