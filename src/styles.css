@@ -7047,3 +7047,26 @@ body:has(.challenge-hub-page) main {
   background: #dff6ff !important;
   color: #075985 !important;
 }
+
+/* Auth/intro page must remain scrollable when signup or smaller screens add content. */
+body:has(.auth-page) {
+  overflow-y: auto !important;
+}
+
+body:has(.auth-page) .app-shell,
+body:has(.auth-page) main {
+  height: auto !important;
+  min-height: 100vh !important;
+  overflow: visible !important;
+}
+
+.auth-page {
+  height: auto !important;
+  min-height: calc(100vh - 96px) !important;
+  overflow: visible !important;
+  align-items: stretch;
+}
+
+.auth-panel {
+  overflow: visible !important;
+}
