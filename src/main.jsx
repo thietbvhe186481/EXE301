@@ -1474,12 +1474,11 @@ function AuthPage({ authMode, setAuthMode, majors, selectedMajorKey, changeMajor
               className={`major-card ${selectedMajorKey === major.key ? 'active' : ''}`}
               style={{ '--accent': major.accent }}
               onClick={() => changeMajor(major.key)}
-            >
-              <span>{major.short}</span>
-              <strong>{major.title}</strong>
-              <i>{major.salary} - {major.growth}</i>
-            </button>
-          ))}
+              >
+                <span>{major.short}</span>
+                <strong>{major.title}</strong>
+              </button>
+            ))}
         </div>
         <div className="selected-major-note" style={{ '--accent': selectedMajor.accent }}>
           <strong>{selectedMajor.title}</strong>
