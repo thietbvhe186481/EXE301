@@ -8,6 +8,7 @@ import {
   Check,
   ChevronsUp,
   CircleDollarSign,
+  Clock,
   Compass,
   CreditCard,
   Crown,
@@ -2126,6 +2127,15 @@ function CareerMapPage({ majors, currentMajor, changeMajor, columns, levels, sel
                   <button key={key} className={tab === key ? 'active' : ''} onClick={() => setTab(key)}>{value.label}</button>
                 ))}
               </div>
+              <div className="proof-tab-panel">
+                <p className="mono-label">{tabItems[tab].label} cần thể hiện</p>
+                {tabItems[tab].items.slice(0, 5).map((item) => (
+                  <div className="requirement-item compact narrative proof-row" key={item}>
+                    <BadgeCheck size={15} />
+                    <span>{item}</span>
+                  </div>
+                ))}
+              </div>
             </article>
           </div>
           <article className="source-credibility-card">
@@ -2383,34 +2393,51 @@ function ChallengeHubPage({ currentMajor, activeTrack, setActiveTrack, visibleCh
   const tracks = ['Tất cả', ...currentMajor.columns.map((item) => item.title)];
   const premiumChallengeCount = visibleChallenges.filter(isPremiumChallenge).length;
   const marketSignal = marketSignalsByMajor[currentMajor.key] ?? marketSignalsByMajor.dev;
+  const reviewedCount = visibleChallenges.filter((challenge) => submissionStatus[challenge.id]?.status === 'reviewed').length;
+  const joinedCount = visibleChallenges.filter((challenge) => joinedChallengeIds.includes(challenge.id)).length;
   return (
     <section className="content-page challenge-hub-page">
-      <div className="section-heading inline">
+      <div className="challenge-hub-hero">
         <div>
           <p className="mono-label">Trung tâm thử thách {currentMajor.short}</p>
-          <h1>Luyện tập bằng nhiệm vụ có thể đưa vào portfolio</h1>
+          <h1>Luyện tập bằng bài tập có thể đưa vào portfolio</h1>
+          <p>Chọn bài theo chuyên ngành, tham gia, nộp link sản phẩm và nhận feedback từ mentor phù hợp.</p>
         </div>
-        <div className="filter-row">
-          <Filter size={17} />
+        <div className="challenge-hub-stats">
+          <span><strong>{visibleChallenges.length}</strong>bài tập</span>
+          <span><strong>{joinedCount}</strong>đã tham gia</span>
+          <span><strong>{reviewedCount}</strong>có feedback</span>
+        </div>
+      </div>
+
+      <div className="challenge-filter-panel">
+        <span><Filter size={17} /> Lọc theo hướng đi</span>
+        <div className="filter-row compact-filter-row">
           {tracks.map((track) => <button key={track} className={activeTrack === track ? 'active' : ''} onClick={() => setActiveTrack(track)}>{track}</button>)}
         </div>
+        <button className="ghost-action compact" onClick={() => setActiveTrack('Tất cả')}>Đặt lại</button>
       </div>
-      <div className={`status-banner ${isPremium ? 'premium-unlocked-banner' : 'premium-banner'}`}>
-        <Crown size={17} />
-        {isPremium
-          ? `Premium đang mở khóa toàn bộ ${visibleChallenges.length} thử thách trong ngành ${currentMajor.title}, gồm ${premiumChallengeCount} challenge nâng cao và quyền nộp lại nhiều lần.`
-          : `Free có thể làm challenge cơ bản. ${premiumChallengeCount} challenge nâng cao cần Premium để nộp bài, nộp lại và nhận mentor review sâu.`}
-      </div>
+
+      {!visibleChallenges.length && (
+        <div className="empty-state challenge-empty-state">
+          <LayoutDashboard size={24} />
+          <h2>Chưa có bài tập cho bộ lọc này</h2>
+          <p>Hãy chọn `Tất cả` hoặc đổi chuyên ngành hẹp để xem lại danh sách bài tập phù hợp.</p>
+          <button className="primary-action compact" onClick={() => setActiveTrack('Tất cả')}>Xem tất cả bài tập</button>
+        </div>
+      )}
+
       <div className="challenge-grid">
-        {visibleChallenges.map((challenge) => {
+        {visibleChallenges.map((challenge, index) => {
           const joined = joinedChallengeIds.includes(challenge.id);
           const submission = submissionStatus[challenge.id];
           const locked = isPremiumChallenge(challenge) && !isPremium;
+          const photo = makeWorkIllustrationSrc(null, index + (currentMajor.key === 'mkt' ? 4 : currentMajor.key === 'design' ? 8 : 0));
           return (
             <article className={`challenge-card ${locked ? 'premium-locked-card' : ''}`} key={challenge.id}>
-              <div className="challenge-illustration" data-track={challenge.track}>
+              <div className="challenge-photo" style={{ '--challenge-photo': `url("${photo}")` }}>
                 <span>{challenge.track}</span>
-                <b>{currentMajor.short}</b>
+                <b>{locked ? 'Premium' : challenge.difficulty}</b>
               </div>
               <div className="card-topline">
                 <span>{challenge.track}</span>
@@ -2418,24 +2445,24 @@ function ChallengeHubPage({ currentMajor, activeTrack, setActiveTrack, visibleCh
               </div>
               <h2>{challenge.title}</h2>
               <p>{challenge.summary}</p>
+              <div className="challenge-business-row">
+                <span><Sparkles size={15} /> {challenge.xp} XP</span>
+                <span><GraduationCap size={15} /> {challenge.mentor}</span>
+                <span><Clock size={15} /> {challenge.due}</span>
+              </div>
               <div className="market-chip">
                 <Sparkles size={15} />
-                <span>{marketSignal.metrics[0]?.value ?? 'Cao'} · {marketSignal.metrics[0]?.label ?? 'nhu cầu thị trường'}</span>
+                <span>{marketSignal.metrics[0]?.label ?? 'Tín hiệu thị trường'}: {marketSignal.metrics[0]?.value ?? 'Cao'}</span>
               </div>
-              {locked && <div className="status-banner premium-banner"><Crown size={16} /> Challenge nâng cao cần Premium để nộp bài và nhận mentor review.</div>}
-              <div className="tag-row">{challenge.tags.map((tag) => <span key={tag}>{tag}</span>)}</div>
-              <div className="challenge-meta">
-                <span><GraduationCap size={16} /> {challenge.mentor}</span>
-                <span><CircleDollarSign size={16} /> {challenge.difficulty}</span>
-                <span><Sparkles size={16} /> {challenge.due}</span>
-              </div>
+              {locked && <div className="status-banner premium-banner"><Crown size={16} /> Cần Premium để nộp bài và nhận mentor review sâu.</div>}
+              <div className="tag-row">{challenge.tags.slice(0, 4).map((tag) => <span key={tag}>{tag}</span>)}</div>
               <div className="card-actions">
                 <button className="ghost-action compact" onClick={() => { setSelectedChallengeId(challenge.id); if (!locked) joinChallenge(challenge.id); go(locked ? 'premium' : 'join'); }}>
-                  {locked ? 'Xem gói' : joined ? 'Xem chi tiết' : 'Tham gia'}
+                  {locked ? 'Xem gói' : joined ? 'Chi tiết' : 'Tham gia'}
                   <Rocket size={16} />
                 </button>
                 <button className="primary-action compact" onClick={() => { setSelectedChallengeId(challenge.id); if (locked) { go('premium'); return; } joinChallenge(challenge.id); go(submission?.status === 'reviewed' ? 'feedback' : 'submit'); }}>
-                  {locked ? 'Mở khóa Premium' : submission?.status === 'reviewed' ? 'Xem feedback' : submission?.status === 'submitted' ? 'Xem bài nộp' : 'Nộp bài'}
+                  {locked ? 'Mở khóa' : submission?.status === 'reviewed' ? 'Feedback' : submission?.status === 'submitted' ? 'Bài đã nộp' : 'Nộp bài'}
                   <Send size={16} />
                 </button>
               </div>
@@ -2833,30 +2860,6 @@ function PortfolioPage({ pathRoles, currentMajor, go, demoUser, apiStatus, submi
     'Portfolio Ready',
     'Career Path Certified'
   ];
-  const recruiterSignals = [
-    {
-      title: 'Vai trò có thể đảm nhận',
-      detail: `Ứng viên đang hướng tới ${careerGoal}; có nền tảng ${currentMajor.title} và các kỹ năng liên quan tới vị trí mục tiêu.`
-    },
-    {
-      title: 'Sản phẩm có thể kiểm tra',
-      detail: `${stats.portfolioProjects ?? 4} project có link minh chứng, mô tả bài toán và đầu ra để nhà tuyển dụng mở xem trực tiếp.`
-    },
-    {
-      title: 'Độ tin cậy từ review',
-      detail: `${reviewedSubmissions || 2} bài đã/đang được mentor xem xét; phù hợp để trao đổi sâu trong vòng phỏng vấn kỹ thuật hoặc portfolio review.`
-    },
-    {
-      title: 'Điểm nên hỏi khi phỏng vấn',
-      detail: `Có thể hỏi thêm về quyết định triển khai, trade-off, cách đo kết quả và phần người học tự làm trong từng project.`
-    },
-    ...(isPremium ? [
-      {
-        title: 'Portfolio công khai sẵn sàng gửi',
-        detail: 'Premium mở public portfolio, giúp nhà tuyển dụng xem case study, feedback và chứng nhận trong một đường link.'
-      }
-    ] : [])
-  ];
   const certificateCode = `PF-${currentMajor.short.toUpperCase()}-${String(demoUser?.id ?? 'demo').slice(-4).toUpperCase()}-2026`;
   const portfolioProjectDetails = (userSubmissions.length ? userSubmissions : [
     { challengeId: 'dev-dashboard', status: 'reviewed', updatedAt: '15:10' },
@@ -3057,19 +3060,13 @@ function PortfolioPage({ pathRoles, currentMajor, go, demoUser, apiStatus, submi
               </div>
             </article>
 
-            <article className="cv-section recruiter-signal-section">
-              <p className="mono-label">Recruiter view</p>
-              <h2>Nhà tuyển dụng nhìn thấy gì?</h2>
-              <div className="recruiter-signal-grid">
-                {recruiterSignals.map((item) => (
-                  <div className="recruiter-signal-card" key={item.title}>
-                    <BriefcaseBusiness size={17} />
-                    <span>
-                      <strong>{item.title}</strong>
-                      <small>{item.detail}</small>
-                    </span>
-                  </div>
-                ))}
+            <article className="cv-section cv-interview-section">
+              <p className="mono-label">Interview ready</p>
+              <h2>Chuẩn bị trao đổi với nhà tuyển dụng</h2>
+              <div className="interview-proof-list">
+                <div><BriefcaseBusiness size={17} /><span>Giải thích được vai trò của mình trong từng project.</span></div>
+                <div><LinkIcon size={17} /><span>Có link sản phẩm/minh chứng để mở xem trực tiếp.</span></div>
+                <div><BadgeCheck size={17} /><span>Nắm rõ quyết định triển khai, trade-off và phần cần cải thiện.</span></div>
               </div>
               {isPremium && <div className="certificate-chip"><Crown size={16} /> {certificateCode}</div>}
             </article>
