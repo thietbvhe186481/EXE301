@@ -2846,6 +2846,20 @@ function MentorPage({ apiStatus, data, currentUser, refreshData, createFeedback,
             <button onClick={addMentorCertificate}><Plus size={16} /> Thêm</button>
           </div>
         </article>
+        <article className="admin-panel mentor-profile-editor mentor-work-history-card">
+          <h2>Công ty từng làm</h2>
+          <div className="admin-list">
+            {(mentorProfile.workHistory ?? []).map((job) => (
+              <div className="admin-row" key={`${job.company}-${job.period}`}>
+                <div>
+                  <strong>{job.company}</strong>
+                  <span>{job.role} · {job.period}</span>
+                </div>
+              </div>
+            ))}
+            <div className="status-banner muted"><Sparkles size={16} /> Lịch review: {mentorProfile.availability ?? 'Theo lịch mentor'}</div>
+          </div>
+        </article>
       </div>
 
       <div className={`admin-stats workspace-section ${mentorSection === 'overview' ? 'active' : ''}`} id="mentor-overview">
@@ -3049,20 +3063,6 @@ function MentorPage({ apiStatus, data, currentUser, refreshData, createFeedback,
           </div>
         </article>
 
-        <article className="admin-panel">
-          <h2>Công ty từng làm</h2>
-          <div className="admin-list">
-            {(mentorProfile.workHistory ?? []).map((job) => (
-              <div className="admin-row" key={`${job.company}-${job.period}`}>
-                <div>
-                  <strong>{job.company}</strong>
-                  <span>{job.role} · {job.period}</span>
-                </div>
-              </div>
-            ))}
-            <div className="status-banner muted"><Sparkles size={16} /> Lịch review: {mentorProfile.availability ?? 'Theo lịch mentor'}</div>
-          </div>
-        </article>
         </div>
       </div>
 

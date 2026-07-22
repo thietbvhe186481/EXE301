@@ -3954,6 +3954,10 @@ body:has(.app-shell.page-mentor) {
   align-content: start;
 }
 
+.mentor-work-history-card {
+  grid-column: 1 / -1;
+}
+
 .admin-grid {
   display: grid;
   grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.35fr);
