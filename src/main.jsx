@@ -1752,29 +1752,27 @@ function MentorFeedbackPage({ go, challenge, submission, feedback, mentors, crea
     ?? mentors.find((item) => item.name === feedback?.reviewer)
     ?? matchMentorForChallenge(challenge, mentors);
   const reviewerName = feedback?.reviewer ?? submission?.mentor ?? matchedMentor?.name ?? challenge.mentor;
-  const strengths = feedback?.strengths ?? ['Sản phẩm đã được nộp thành công', 'Có đủ link minh chứng để mentor xem xét', 'Đúng luồng nghiệp vụ của challenge'];
-  const improvements = feedback?.improvements ?? ['Đang chờ mentor duyệt bài', 'Sau khi admin review, điểm và nhận xét sẽ xuất hiện tại đây', 'Có thể quay lại cập nhật bản nộp nếu cần'];
+  const strengths = feedback?.strengths ?? ['S\u1ea3n ph\u1ea9m \u0111\u00e3 \u0111\u01b0\u1ee3c n\u1ed9p th\u00e0nh c\u00f4ng', 'C\u00f3 \u0111\u1ee7 link minh ch\u1ee9ng \u0111\u1ec3 mentor xem x\u00e9t', '\u0110\u00fang lu\u1ed3ng nghi\u1ec7p v\u1ee5 c\u1ee7a challenge'];
+  const improvements = feedback?.improvements ?? ['\u0110ang ch\u1edd mentor duy\u1ec7t b\u00e0i', 'Sau khi mentor review, \u0111i\u1ec3m v\u00e0 nh\u1eadn x\u00e9t s\u1ebd xu\u1ea5t hi\u1ec7n t\u1ea1i \u0111\u00e2y', 'C\u00f3 th\u1ec3 quay l\u1ea1i c\u1eadp nh\u1eadt b\u1ea3n n\u1ed9p n\u1ebfu c\u1ea7n'];
+  const nextSteps = hasFeedback
+    ? ['\u0110\u1ecdc k\u1ef9 g\u00f3p \u00fd c\u1ee7a mentor', 'C\u1eadp nh\u1eadt README/case study theo nh\u1eadn x\u00e9t', '\u0110\u01b0a phi\u00ean b\u1ea3n t\u1ed1t nh\u1ea5t v\u00e0o portfolio']
+    : ['Mentor ki\u1ec3m tra link v\u00e0 minh ch\u1ee9ng', 'Mentor ch\u1ea5m \u0111i\u1ec3m theo rubric', 'Student nh\u1eadn feedback r\u1ed3i c\u1eadp nh\u1eadt portfolio'];
   return (
-    <section className="content-page two-column">
+    <section className="content-page two-column feedback-page-layout">
       <div>
-        <p className="mono-label">Nhận góp ý từ người hướng dẫn</p>
+        <p className="mono-label">{'Nh\u1eadn g\u00f3p \u00fd t\u1eeb ng\u01b0\u1eddi h\u01b0\u1edbng d\u1eabn'}</p>
         <h1>{challenge.title}</h1>
         <div className="feedback-score">
           <span>{feedback?.score ?? '...'}</span>
           <div>
-            <h2>{feedback?.title ?? 'Đang chờ mentor feedback'}</h2>
+            <h2>{feedback?.title ?? '\u0110ang ch\u1edd mentor feedback'}</h2>
             <p>{hasFeedback
               ? 'Reviewer: ' + reviewerName + '. B\u00e0i \u0111\u00e3 \u0111\u01b0\u1ee3c nh\u1eadn x\u00e9t v\u00e0 c\u00f3 th\u1ec3 c\u1eadp nh\u1eadt v\u00e0o portfolio.'
               : 'B\u00e0i n\u1ed9p tr\u1ea1ng th\u00e1i ' + (submission?.status ?? 'ch\u01b0a n\u1ed9p') + '. Mentor ' + reviewerName + ' s\u1ebd xem b\u00e0i v\u00e0 tr\u1ea3 feedback ch\u00ednh th\u1ee9c.'}</p>
           </div>
         </div>
-        <div className="feedback-grid">
-          <article><h3>Điểm mạnh</h3>{strengths.map((item) => <p key={item}>{item}</p>)}</article>
-          <article><h3>Cần cải thiện</h3>{improvements.map((item) => <p key={item}>{item}</p>)}</article>
-        </div>
-      </div>
-      <aside className="side-card">
-        <article className="matched-mentor-card feedback-mentor-card">
+
+        <article className="matched-mentor-card feedback-mentor-card feedback-mentor-main">
           <button type="button">
             <span>
               <i className="mono-label">{hasFeedback ? 'Mentor \u0111\u00e3 feedback' : 'Mentor \u0111ang review'}</i>
@@ -1795,11 +1793,25 @@ function MentorFeedbackPage({ go, challenge, submission, feedback, mentors, crea
             </div>
           </div>
         </article>
-        <p className="mono-label">{hasFeedback ? 'Ghi chú người hướng dẫn' : 'Thông tin bài nộp'}</p>
+
+        <div className="feedback-grid">
+          <article><h3>{'\u0110i\u1ec3m m\u1ea1nh'}</h3>{strengths.map((item) => <p key={item}>{item}</p>)}</article>
+          <article><h3>{'C\u1ea7n c\u1ea3i thi\u1ec7n'}</h3>{improvements.map((item) => <p key={item}>{item}</p>)}</article>
+        </div>
+
+        <article className="feedback-next-steps">
+          <p className="mono-label">{'B\u01b0\u1edbc ti\u1ebfp theo'}</p>
+          {nextSteps.map((item, index) => (
+            <div className="activity-row" key={item}><span>{String(index + 1).padStart(2, '0')}</span><strong>{item}</strong></div>
+          ))}
+        </article>
+      </div>
+      <aside className="side-card">
+        <p className="mono-label">{hasFeedback ? 'Ghi ch\u00fa ng\u01b0\u1eddi h\u01b0\u1edbng d\u1eabn' : 'Th\u00f4ng tin b\u00e0i n\u1ed9p'}</p>
         {(hasFeedback ? feedbackItems : [
-          { file: challenge.id, title: 'Trạng thái submission', detail: submission ? `${submission.status} lúc ${submission.updatedAt}` : 'Chưa có submission trong hệ thống.' },
-          { file: submission?.primaryLink ?? 'Chưa có link chính', title: 'Link chính', detail: submission?.primaryLink || 'Student cần bổ sung link chính trước khi mentor review.' },
-          { file: submission?.secondaryLink ?? 'Chưa có link phụ', title: 'Link minh chứng', detail: submission?.secondaryLink || 'Có thể là demo URL, Figma, deck hoặc API docs.' }
+          { file: challenge.id, title: 'Tr\u1ea1ng th\u00e1i submission', detail: submission ? submission.status + ' l\u00fac ' + submission.updatedAt : 'Ch\u01b0a c\u00f3 submission trong h\u1ec7 th\u1ed1ng.' },
+          { file: submission?.primaryLink ?? 'Ch\u01b0a c\u00f3 link ch\u00ednh', title: 'Link ch\u00ednh', detail: submission?.primaryLink || 'Student c\u1ea7n b\u1ed5 sung link ch\u00ednh tr\u01b0\u1edbc khi mentor review.' },
+          { file: submission?.secondaryLink ?? 'Ch\u01b0a c\u00f3 link ph\u1ee5', title: 'Link minh ch\u1ee9ng', detail: submission?.secondaryLink || 'C\u00f3 th\u1ec3 l\u00e0 demo URL, Figma, deck ho\u1eb7c API docs.' }
         ]).map((item) => (
           <div className="code-note" key={item.file}>
             <strong>{item.title}</strong>
@@ -1808,14 +1820,13 @@ function MentorFeedbackPage({ go, challenge, submission, feedback, mentors, crea
           </div>
         ))}
         <button className="primary-action" onClick={() => go('portfolio')}>
-          Cập nhật portfolio
+          {'C\u1eadp nh\u1eadt portfolio'}
           <WandSparkles size={17} />
         </button>
       </aside>
     </section>
   );
 }
-
 function PortfolioPage({ pathRoles, currentMajor, go, demoUser, apiStatus, submissions, challenges, updatePortfolio, isPremium }) {
   const mainSpecs = currentMajor.columns.slice(0, 5);
   const stats = demoUser?.stats ?? { completedChallenges: 6, mentorRating: 4.8, portfolioProjects: 4, verifiedSkills: 18 };
