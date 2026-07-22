@@ -2766,6 +2766,30 @@ function PortfolioPage({ pathRoles, currentMajor, go, demoUser, apiStatus, submi
     'Portfolio Ready',
     'Career Path Certified'
   ];
+  const cvAchievements = [
+    {
+      title: 'Lộ trình nghề nghiệp rõ ràng',
+      detail: `Định hướng ${careerGoal} với các mốc kỹ năng cụ thể để nhà tuyển dụng thấy mục tiêu phát triển.`
+    },
+    {
+      title: 'Project có mentor review',
+      detail: `${reviewedSubmissions || 2} bài đã có nhận xét/chấm điểm, giúp CV có bằng chứng năng lực thay vì chỉ liệt kê kỹ năng.`
+    },
+    {
+      title: 'Minh chứng sản phẩm thật',
+      detail: `${stats.portfolioProjects ?? 4} project có link, mô tả nghiệp vụ và kết quả có thể đưa vào portfolio ứng tuyển.`
+    },
+    {
+      title: 'Kỹ năng được xác thực',
+      detail: `${stats.verifiedSkills ?? 18} kỹ năng gắn với bài tập, feedback và chuyên ngành ${currentMajor.title}.`
+    },
+    ...(isPremium ? [
+      {
+        title: 'Public portfolio chuyên nghiệp',
+        detail: 'Có trang portfolio công khai, case study nổi bật và chứng nhận hoàn thành lộ trình.'
+      }
+    ] : [])
+  ];
   const certificateCode = `PF-${currentMajor.short.toUpperCase()}-${String(demoUser?.id ?? 'demo').slice(-4).toUpperCase()}-2026`;
   const portfolioProjectDetails = (userSubmissions.length ? userSubmissions : [
     { challengeId: 'dev-dashboard', status: 'reviewed', updatedAt: '15:10' },
@@ -2805,12 +2829,6 @@ function PortfolioPage({ pathRoles, currentMajor, go, demoUser, apiStatus, submi
   }, [demoUser?.school, demoUser?.academicMajor, demoUser?.academicYear, demoUser?.portfolio?.links?.[0], currentMajor.title]);
   return (
     <section className="content-page portfolio-page">
-      {!isPremium && (
-        <div className="status-banner premium-banner">
-          <Crown size={17} />
-          Free lưu hồ sơ nội bộ. Premium mở public portfolio, badge xác thực kỹ năng và template xuất bản chuyên nghiệp.
-        </div>
-      )}
       {showPublicPreview && (
         <section className="public-portfolio-preview">
           <div className="public-preview-hero">
@@ -2972,11 +2990,17 @@ function PortfolioPage({ pathRoles, currentMajor, go, demoUser, apiStatus, submi
               </div>
             </article>
 
-            <article className="cv-section">
-              <h2>Badge & chứng nhận</h2>
-              <div className="badge-grid">
-                {['Xây lộ trình', 'Sẵn sàng thử thách', 'Đã được góp ý', 'Có minh chứng portfolio', ...(isPremium ? premiumBadges.slice(0, 2) : [])].map((item) => (
-                  <span key={item}><Blocks size={16} />{item}</span>
+            <article className="cv-section cv-achievement-section">
+              <h2>Thành tựu nổi bật cho CV</h2>
+              <div className="cv-achievement-grid">
+                {cvAchievements.map((item) => (
+                  <div className="cv-achievement-card" key={item.title}>
+                    <BadgeCheck size={17} />
+                    <span>
+                      <strong>{item.title}</strong>
+                      <small>{item.detail}</small>
+                    </span>
+                  </div>
                 ))}
               </div>
               {isPremium && <div className="certificate-chip"><Crown size={16} /> {certificateCode}</div>}
