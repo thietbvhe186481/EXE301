@@ -420,7 +420,15 @@ const demoSubmissions = [
 
 const demoMentorFeedback = [
   { id: 'fb-demo-dashboard', userId: 'demo-student', challengeId: 'dev-dashboard', score: 86, title: 'Dashboard đã đủ minh chứng portfolio', strengths: ['Luồng filter rõ', 'Có trạng thái trống', 'UI dễ scan'], improvements: ['Thêm số liệu trước-sau', 'Bổ sung test responsive'], reviewer: 'Anh Tran', createdAt: '15:10' },
-  { id: 'fb-khanh-seo', userId: 'student-mkt-seo', challengeId: 'mkt-seo', score: 72, title: 'Cần bổ sung dữ liệu cạnh tranh', strengths: ['Keyword map rõ', 'Có cấu trúc audit'], improvements: ['Thêm benchmark đối thủ', 'Bổ sung timeline 30 ngày'], reviewer: 'Duy Lam', createdAt: '13:50' }
+  { id: 'fb-demo-api', userId: 'demo-student', challengeId: 'dev-api', score: 91, title: 'API có cấu trúc review tốt', strengths: ['Tách module product/order/auth rõ ràng', 'Có Swagger để mentor kiểm thử nhanh', 'Seed data giúp demo mượt'], improvements: ['Bổ sung rate limit cho auth', 'Viết thêm test cho validation đơn hàng'], reviewer: 'Anh Tran', createdAt: '09:45', reviewedAt: '18/07/2026' },
+  { id: 'fb-bao-api', userId: 'student-dev-backend', challengeId: 'dev-api', score: 84, title: 'Backend ổn, cần làm rõ database design', strengths: ['Endpoint chính chạy đúng', 'Có phân quyền cơ bản', 'README có hướng dẫn setup'], improvements: ['Thêm ERD hoặc schema diagram', 'Chuẩn hóa error response', 'Giải thích transaction cho checkout'], reviewer: 'Anh Tran', createdAt: '10:55', reviewedAt: '19/07/2026' },
+  { id: 'fb-bao-devops', userId: 'student-dev-backend', challengeId: 'dev-devops', score: 79, title: 'Pipeline đã chạy, cần tăng khả năng quan sát', strengths: ['Có build và deploy step', 'Rollback được mô tả rõ', 'Dockerfile gọn'], improvements: ['Thêm health check endpoint', 'Bổ sung log/metric dashboard', 'Gắn trạng thái failed deployment vào README'], reviewer: 'Anh Tran', createdAt: '16:20', reviewedAt: '20/07/2026' },
+  { id: 'fb-oanh-app', userId: 'student-design-ui', challengeId: 'design-app', score: 88, title: 'Prototype rõ luồng người dùng', strengths: ['User flow dễ theo dõi', 'Component state đầy đủ', 'Có rationale cho onboarding'], improvements: ['Bổ sung empty/error state', 'Chuẩn hóa spacing token', 'Thêm kết quả test với 3 người dùng'], reviewer: 'Linh Đào', createdAt: '11:40', reviewedAt: '18/07/2026' },
+  { id: 'fb-oanh-system', userId: 'student-design-ui', challengeId: 'design-system', score: 82, title: 'Design system có nền tảng tốt', strengths: ['Token màu và typography rõ', 'Button/input có trạng thái hover/focus', 'Tài liệu component dễ đọc'], improvements: ['Thêm accessibility contrast note', 'Bổ sung usage guideline cho form', 'Tạo trang release note cho component'], reviewer: 'Nora Vũ', createdAt: '14:25', reviewedAt: '21/07/2026' },
+  { id: 'fb-khanh-seo', userId: 'student-mkt-seo', challengeId: 'mkt-seo', score: 72, title: 'Cần bổ sung dữ liệu cạnh tranh', strengths: ['Keyword map rõ', 'Có cấu trúc audit'], improvements: ['Thêm benchmark đối thủ', 'Bổ sung timeline 30 ngày'], reviewer: 'Duy Lam', createdAt: '13:50', reviewedAt: '17/07/2026' },
+  { id: 'fb-khanh-campaign', userId: 'student-mkt-seo', challengeId: 'mkt-campaign', score: 80, title: 'Campaign plan đã có funnel nhưng thiếu KPI phụ', strengths: ['Persona mô tả đúng pain point', 'Thông điệp nhất quán theo kênh', 'Timeline triển khai hợp lý'], improvements: ['Thêm KPI theo từng giai đoạn funnel', 'Nêu giả định ngân sách rõ hơn', 'Bổ sung rủi ro và phương án xử lý'], reviewer: 'Mai Nguyễn', createdAt: '08:35', reviewedAt: '20/07/2026' },
+  { id: 'fb-demo-mobile', userId: 'demo-student', challengeId: 'dev-mobile', score: 87, title: 'Mobile booking đủ điều kiện đưa vào portfolio', strengths: ['Luồng đặt lịch liền mạch', 'Có trạng thái trống lịch sử', 'Firebase auth tích hợp ổn'], improvements: ['Bổ sung rule bảo mật Firestore', 'Thêm loading skeleton khi tải lịch', 'Quay video walkthrough 60 giây'], reviewer: 'Linh Đào', createdAt: '17:10', reviewedAt: '21/07/2026' },
+  { id: 'fb-demo-ai', userId: 'demo-student', challengeId: 'dev-ai', score: 90, title: 'AI search có bằng chứng kỹ thuật tốt', strengths: ['Có trích dẫn nguồn theo từng câu trả lời', 'Pipeline ingest tài liệu rõ', 'UI thể hiện confidence score'], improvements: ['Thêm đánh giá hallucination case', 'Bổ sung fallback khi vector search rỗng', 'Ghi rõ chi phí chạy demo'], reviewer: 'Nam Hồ', createdAt: '09:15', reviewedAt: '22/07/2026' }
 ];
 
 const demoCategories = [
@@ -2527,6 +2535,7 @@ function MentorPage({ apiStatus, data, currentUser, refreshData, createFeedback,
   ]);
   const [certificateInput, setCertificateInput] = useState('');
   const [mentorSection, setMentorSection] = useState('overview');
+  const [selectedFeedbackId, setSelectedFeedbackId] = useState(null);
   const pending = submissionsData.filter((item) => item.status === 'submitted');
   const reviewed = submissionsData.filter((item) => item.status === 'reviewed' || feedbackData.some((feedback) => feedback.challengeId === item.challengeId && feedback.userId === item.userId));
   const averageScore = feedbackData.length
@@ -2571,6 +2580,22 @@ function MentorPage({ apiStatus, data, currentUser, refreshData, createFeedback,
   };
   const filteredPending = pending.filter(assignedToCurrentMentor).filter(matchMentorSubmission);
   const filteredReviewed = reviewed.filter(assignedToCurrentMentor).filter(matchMentorSubmission);
+  const filteredFeedbackHistory = feedbackData.filter((feedback) => {
+    const submission = submissionsData.find((item) => item.userId === feedback.userId && item.challengeId === feedback.challengeId) ?? { userId: feedback.userId, challengeId: feedback.challengeId, status: 'reviewed' };
+    const challenge = challengesData.find((item) => item.id === feedback.challengeId);
+    const student = students.find((item) => item.id === feedback.userId);
+    const keyword = mentorFilters.keyword.trim().toLowerCase();
+    if (mentorFilters.status !== 'all' && submission.status !== mentorFilters.status) return false;
+    if (mentorFilters.majorKey !== 'all' && challenge?.majorKey !== mentorFilters.majorKey) return false;
+    if (mentorFilters.track !== 'all' && challenge?.track !== mentorFilters.track) return false;
+    if (mentorFilters.studentId !== 'all' && feedback.userId !== mentorFilters.studentId) return false;
+    if (!keyword) return true;
+    return [feedback.title, feedback.reviewer, feedback.score, feedback.reviewedAt, challenge?.title, challenge?.track, challenge?.majorKey, student?.name, student?.email]
+      .some((value) => String(value ?? '').toLowerCase().includes(keyword));
+  });
+  const selectedFeedback = filteredFeedbackHistory.find((item) => item.id === selectedFeedbackId) ?? filteredFeedbackHistory[0];
+  const selectedFeedbackChallenge = selectedFeedback ? challengesData.find((item) => item.id === selectedFeedback.challengeId) : null;
+  const selectedFeedbackStudent = selectedFeedback ? students.find((item) => item.id === selectedFeedback.userId) : null;
 
   const reviewSubmission = (submission) => {
     const challenge = challengesData.find((item) => item.id === submission.challengeId);
@@ -2933,31 +2958,107 @@ function MentorPage({ apiStatus, data, currentUser, refreshData, createFeedback,
         </div>
       </div>
 
-      <div className={`admin-grid compact workspace-section ${mentorSection === 'feedback' ? 'active' : ''}`} id="mentor-history">
-        <article className="admin-panel">
-          <h2>Active students</h2>
-          {students.filter((student) => mentorFilters.studentId === 'all' || student.id === mentorFilters.studentId).map((student) => (
-            <div className="admin-row" key={student.id}>
-              <div>
-                <strong>{student.name}</strong>
-                <span>{student.email} · {student.selectedMajorKey} · {student.joinedChallengeIds?.length ?? 0} challenges</span>
-              </div>
+      <div className={`mentor-feedback-history workspace-section ${mentorSection === 'feedback' ? 'active' : ''}`} id="mentor-history">
+        <article className="admin-panel feedback-history-list">
+          <div className="section-heading inline compact-heading">
+            <div>
+              <p className="mono-label">Feedback history</p>
+              <h2>{filteredFeedbackHistory.length} feedback đã tạo</h2>
             </div>
-          ))}
+            <button className="ghost-action compact" onClick={resetMentorFilters}><Filter size={16} /> Xóa lọc</button>
+          </div>
+          <div className="management-filters feedback-history-filter">
+            <label>
+              Tìm kiếm
+              <input value={mentorFilters.keyword} onChange={(event) => updateMentorFilter('keyword', event.target.value)} placeholder="Tên học sinh, bài tập, reviewer..." />
+            </label>
+            <label>
+              Ngành
+              <select value={mentorFilters.majorKey} onChange={(event) => updateMentorFilter('majorKey', event.target.value)}>
+                <option value="all">Tất cả</option>
+                {mentorMajorOptions.map((item) => <option value={item} key={item}>{item}</option>)}
+              </select>
+            </label>
+            <label>
+              Học sinh
+              <select value={mentorFilters.studentId} onChange={(event) => updateMentorFilter('studentId', event.target.value)}>
+                <option value="all">Tất cả</option>
+                {students.map((student) => <option value={student.id} key={student.id}>{student.name}</option>)}
+              </select>
+            </label>
+          </div>
+          <div className="feedback-history-scroll">
+            {filteredFeedbackHistory.map((feedback) => (
+              <button
+                type="button"
+                className={`feedback-history-item ${selectedFeedback?.id === feedback.id ? 'active' : ''}`}
+                key={feedback.id}
+                onClick={() => setSelectedFeedbackId(feedback.id)}
+              >
+                <span>{feedback.score}/100</span>
+                <div>
+                  <strong>{challengeName(feedback.challengeId)}</strong>
+                  <small>{studentName(feedback.userId)} · {feedback.reviewer} · {feedback.reviewedAt ?? feedback.createdAt}</small>
+                </div>
+              </button>
+            ))}
+            {!filteredFeedbackHistory.length && <div className="empty-state">Chưa có feedback phù hợp với bộ lọc.</div>}
+          </div>
         </article>
-        <article className="admin-panel">
-          <h2>Feedback đã tạo</h2>
-          {feedbackData.filter((feedback) => {
-            const submission = submissionsData.find((item) => item.userId === feedback.userId && item.challengeId === feedback.challengeId) ?? { userId: feedback.userId, challengeId: feedback.challengeId, status: 'reviewed' };
-            return matchMentorSubmission(submission);
-          }).map((feedback) => (
-            <div className="admin-row" key={feedback.id}>
-              <div>
-                <strong>{challengeName(feedback.challengeId)}</strong>
-                <span>{feedback.reviewer} · {feedback.score}/100 · {feedback.title}</span>
+
+        <article className="admin-panel feedback-detail-panel">
+          {selectedFeedback ? (
+            <>
+              <p className="mono-label">Chi tiết feedback cũ</p>
+              <div className="feedback-detail-head">
+                <div>
+                  <h2>{selectedFeedback.title}</h2>
+                  <span>{selectedFeedbackStudent?.name ?? selectedFeedback.userId} · {selectedFeedbackChallenge?.track ?? selectedFeedback.challengeId} · {selectedFeedback.reviewedAt ?? selectedFeedback.createdAt}</span>
+                </div>
+                <strong>{selectedFeedback.score}/100</strong>
               </div>
-            </div>
-          ))}
+              <div className="submission-evidence-grid compact">
+                <article>
+                  <p className="mono-label">Student</p>
+                  <h3>{selectedFeedbackStudent?.name ?? selectedFeedback.userId}</h3>
+                  <span>{selectedFeedbackStudent?.email ?? 'Demo student'}</span>
+                </article>
+                <article>
+                  <p className="mono-label">Challenge</p>
+                  <h3>{challengeName(selectedFeedback.challengeId)}</h3>
+                  <span>{selectedFeedbackChallenge?.majorKey ?? 'portfolio'} · {selectedFeedbackChallenge?.difficulty ?? 'reviewed'}</span>
+                </article>
+                <article>
+                  <p className="mono-label">Reviewer</p>
+                  <h3>{selectedFeedback.reviewer}</h3>
+                  <span>Mentor feedback đã lưu</span>
+                </article>
+              </div>
+              <div className="feedback-detail-grid">
+                <div>
+                  <h3>Điểm mạnh</h3>
+                  {(selectedFeedback.strengths ?? []).map((item) => (
+                    <div className="activity-row" key={item}><Check size={15} /><span>{item}</span></div>
+                  ))}
+                </div>
+                <div>
+                  <h3>Cần cải thiện</h3>
+                  {(selectedFeedback.improvements ?? []).map((item) => (
+                    <div className="activity-row" key={item}><Sparkles size={15} /><span>{item}</span></div>
+                  ))}
+                </div>
+              </div>
+              <button className="primary-action compact" onClick={() => {
+                const submission = submissionsData.find((item) => item.userId === selectedFeedback.userId && item.challengeId === selectedFeedback.challengeId);
+                if (submission) reviewSubmission(submission);
+              }}>
+                <FileUp size={16} />
+                Mở lại bài nộp
+              </button>
+            </>
+          ) : (
+            <div className="empty-state">Chọn một feedback để xem chi tiết.</div>
+          )}
         </article>
       </div>
     </section>
