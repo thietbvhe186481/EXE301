@@ -1765,12 +1765,6 @@ function MentorFeedbackPage({ go, challenge, submission, feedback, createFeedbac
           <article><h3>Điểm mạnh</h3>{strengths.map((item) => <p key={item}>{item}</p>)}</article>
           <article><h3>Cần cải thiện</h3>{improvements.map((item) => <p key={item}>{item}</p>)}</article>
         </div>
-        {!hasFeedback && (
-          <button className="ghost-action feedback-demo-action" onClick={createFeedback}>
-            <MessageSquareText size={17} />
-            Demo: tạo feedback mentor
-          </button>
-        )}
       </div>
       <aside className="side-card">
         <p className="mono-label">{hasFeedback ? 'Ghi chú người hướng dẫn' : 'Thông tin bài nộp'}</p>

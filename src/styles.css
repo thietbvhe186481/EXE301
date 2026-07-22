@@ -1714,6 +1714,8 @@ textarea {
 .code-note {
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.06);
+  min-width: 0;
+  overflow: hidden;
 }
 
 .code-note span {
@@ -1721,6 +1723,28 @@ textarea {
   margin: 6px 0;
   color: #84f5ca;
   font: 500 12px 'DM Mono', monospace;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  white-space: normal;
+}
+
+.code-note p {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.side-card,
+.side-card * {
+  min-width: 0;
+}
+
+.side-card .primary-action,
+.side-card .ghost-action {
+  width: 100%;
+  max-width: 100%;
+  justify-content: center;
+  white-space: normal;
 }
 
 .portfolio-header {
@@ -3952,10 +3976,6 @@ body:has(.app-shell.page-mentor) {
 .card-actions .ghost-action {
   min-height: 42px;
   padding: 8px 10px;
-}
-
-.feedback-demo-action {
-  margin-top: 12px;
 }
 
 .section-heading.inline > .primary-action + .primary-action {
