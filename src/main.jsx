@@ -3169,30 +3169,7 @@ function AdminPage({ apiStatus, data, notice, currentUser, refreshData, setAdmin
         <button onClick={() => document.querySelector('#admin-system')?.scrollIntoView({ behavior: 'smooth' })}><Save size={16} /> Hệ thống</button>
       </aside>
 
-      <div className="dashboard-guide" id="admin-overview">
-        <article className="guide-step-card active">
-          <span>01</span>
-          <strong>Tổng quan vận hành</strong>
-          <p>Theo dõi số ngành, thử thách, người dùng, submission, mentor và premium active.</p>
-        </article>
-        <article className="guide-step-card">
-          <span>02</span>
-          <strong>Quản lý thử thách</strong>
-          <p>Thêm, sửa, xóa bài tập; dùng filter để kiểm tra đúng ngành, mentor và cấp độ.</p>
-        </article>
-        <article className="guide-step-card">
-          <span>03</span>
-          <strong>Điều phối review</strong>
-          <p>Xem bài đã nộp, trạng thái xử lý, user liên quan và tạo feedback demo khi cần.</p>
-        </article>
-        <article className="guide-step-card">
-          <span>04</span>
-          <strong>Quản lý người dùng</strong>
-          <p>Kiểm tra ngành đang chọn, lộ trình, premium và hồ sơ portfolio của từng tài khoản.</p>
-        </article>
-      </div>
-
-      <div className="admin-stats">
+      <div className="admin-stats" id="admin-overview">
         <StatCard icon={Blocks} title="Ngành lớn" value={overview.majors} />
         <StatCard icon={LayoutDashboard} title="Challenge" value={overview.challenges} />
         <StatCard icon={UserRound} title="Người dùng" value={overview.users} />
