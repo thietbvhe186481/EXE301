@@ -6134,3 +6134,122 @@ body:has(.challenge-hub-page) main {
     padding: 0;
   }
 }
+
+/* Smart grouped navigation */
+.flow-nav.role-nav {
+  overflow: visible !important;
+}
+
+.topbar {
+  overflow: visible !important;
+}
+
+.nav-group {
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.nav-group-trigger {
+  gap: 8px !important;
+}
+
+.nav-group-trigger svg:last-child {
+  transition: transform 160ms ease;
+}
+
+.nav-group-trigger.open svg:last-child {
+  transform: rotate(180deg);
+}
+
+.nav-dropdown {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 50%;
+  z-index: 60;
+  display: grid;
+  min-width: 230px;
+  gap: 6px;
+  padding: 8px;
+  border: 1px solid rgba(14, 116, 144, 0.16);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 20px 46px rgba(14, 116, 144, 0.18);
+  transform: translateX(-50%);
+}
+
+.nav-dropdown::before {
+  content: "";
+  position: absolute;
+  top: -6px;
+  left: 50%;
+  width: 12px;
+  height: 12px;
+  border-left: 1px solid rgba(14, 116, 144, 0.16);
+  border-top: 1px solid rgba(14, 116, 144, 0.16);
+  background: inherit;
+  transform: translateX(-50%) rotate(45deg);
+}
+
+.nav-dropdown-item {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 40px;
+  padding: 0 11px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: #24465d !important;
+  font-weight: 800;
+  text-align: left;
+}
+
+.nav-dropdown-item:hover,
+.nav-dropdown-item.active {
+  background: rgba(14, 165, 233, 0.1);
+  color: #075985 !important;
+}
+
+.topbar-actions .role-chip {
+  max-width: min(280px, 24vw);
+}
+
+.app-shell[data-theme="dark"] .nav-dropdown {
+  border-color: rgba(125, 211, 252, 0.18);
+  background: rgba(8, 23, 39, 0.98);
+  box-shadow: 0 22px 48px rgba(0, 0, 0, 0.36);
+}
+
+.app-shell[data-theme="dark"] .nav-dropdown-item {
+  color: #d9f2ff !important;
+}
+
+.app-shell[data-theme="dark"] .nav-dropdown-item:hover,
+.app-shell[data-theme="dark"] .nav-dropdown-item.active {
+  background: rgba(14, 116, 144, 0.3);
+  color: #e0f2fe !important;
+}
+
+@media (max-width: 980px) {
+  .flow-nav.role-nav {
+    justify-content: center !important;
+  }
+
+  .topbar-actions .role-chip {
+    max-width: 46px;
+  }
+}
+
+@media (max-width: 720px) {
+  .nav-dropdown {
+    left: 0;
+    transform: none;
+  }
+
+  .nav-dropdown::before {
+    left: 22px;
+    transform: rotate(45deg);
+  }
+}

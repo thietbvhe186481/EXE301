@@ -1153,6 +1153,7 @@ function App() {
 }
 
 function Header({ page, go, currentUser, theme, setTheme, logout }) {
+  const [openNavGroup, setOpenNavGroup] = useState(null);
   const currentRole = currentUser?.type ?? currentUser?.user?.role;
   const roleFlow = currentRole === 'student'
     ? flow.filter((item) => ['roadmap', 'trends', 'hub', 'join', 'submit', 'feedback', 'portfolio', 'premium'].includes(item.id))
@@ -1169,7 +1170,27 @@ function Header({ page, go, currentUser, theme, setTheme, logout }) {
     { id: 'about', label: 'About us', icon: BookOpen, target: 'auth' }
   ];
   const navItems = currentUser ? roleFlow : publicFlow;
-  const activeIndex = navItems.findIndex((item) => item.id === page || item.target === page || item.matches?.includes(page));
+  const byId = (id) => navItems.find((item) => item.id === id);
+  const navGroups = currentRole === 'student'
+    ? [
+        { id: 'career', label: 'Định hướng', icon: Compass, items: ['roadmap', 'trends', 'portfolio', 'premium'].map(byId).filter(Boolean) },
+        { id: 'practice', label: 'Luyện tập', icon: LayoutDashboard, items: ['hub', 'join', 'submit', 'feedback'].map(byId).filter(Boolean) }
+      ]
+    : currentRole === 'mentor'
+      ? [{ id: 'mentor-work', label: 'Mentor workspace', icon: GraduationCap, items: roleFlow }]
+      : currentRole === 'admin'
+        ? [{ id: 'admin-work', label: 'Admin console', icon: ShieldCheck, items: roleFlow }]
+        : [
+            { id: 'intro', label: 'Giới thiệu', icon: Sparkles, target: 'auth', matches: ['auth'] },
+            { id: 'discover', label: 'Khám phá', icon: Compass, items: publicFlow.filter((item) => ['roadmap-preview', 'challenge-preview', 'premium-preview'].includes(item.id)) },
+            { id: 'about', label: 'About us', icon: BookOpen, target: 'auth' }
+          ];
+  const isNavItemActive = (item) => page === item.id || item.target === page || item.matches?.includes(page);
+  const isGroupActive = (group) => group.items?.some(isNavItemActive) || isNavItemActive(group);
+  const navigateNavItem = (item) => {
+    go(item.target ?? item.id);
+    setOpenNavGroup(null);
+  };
   const homePage = currentRole === 'student' ? 'roadmap' : currentRole ?? 'auth';
   const roleLabel = currentUser ? `${(currentRole ?? 'student').toUpperCase()} · ${currentUser.user?.name ?? currentUser.user?.email}` : 'Guest';
   return (
@@ -1179,18 +1200,41 @@ function Header({ page, go, currentUser, theme, setTheme, logout }) {
         <span>Portfolio</span>
       </button>
       <nav className="flow-nav role-nav" aria-label="Điều hướng theo vai trò">
-        {navItems.map((item, index) => {
-          const Icon = item.icon;
+        {navGroups.map((group) => {
+          const Icon = group.icon;
+          const active = isGroupActive(group);
+          const open = openNavGroup === group.id;
           return (
+            <div className="nav-group" key={group.id}>
             <button
-              key={item.id}
-              className={`flow-pill ${page === item.id || item.target === page || item.matches?.includes(page) ? 'active' : ''} ${index <= activeIndex ? 'visited' : ''}`}
-              onClick={() => go(item.target ?? item.id)}
-              title={item.label}
+              type="button"
+              className={`flow-pill nav-group-trigger ${active ? 'active visited' : ''} ${open ? 'open' : ''}`}
+              onClick={() => group.items ? setOpenNavGroup(open ? null : group.id) : navigateNavItem(group)}
+              title={group.label}
             >
               <Icon size={15} />
-              <span>{item.label}</span>
+              <span>{group.label}</span>
+              {group.items && <MoveDown size={13} />}
             </button>
+            {group.items && open && (
+              <div className="nav-dropdown">
+                {group.items.map((item) => {
+                  const ItemIcon = item.icon;
+                  return (
+                    <button
+                      type="button"
+                      key={item.id}
+                      className={`nav-dropdown-item ${isNavItemActive(item) ? 'active' : ''}`}
+                      onClick={() => navigateNavItem(item)}
+                    >
+                      <ItemIcon size={15} />
+                      <span>{item.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+            </div>
           );
         })}
       </nav>
