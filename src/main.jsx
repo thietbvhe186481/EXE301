@@ -2482,6 +2482,7 @@ function MentorPage({ apiStatus, data, currentUser, refreshData, createFeedback,
     'Portfolio Mentor Certification'
   ]);
   const [certificateInput, setCertificateInput] = useState('');
+  const [mentorSection, setMentorSection] = useState('overview');
   const pending = submissionsData.filter((item) => item.status === 'submitted');
   const reviewed = submissionsData.filter((item) => item.status === 'reviewed' || feedbackData.some((feedback) => feedback.challengeId === item.challengeId && feedback.userId === item.userId));
   const averageScore = feedbackData.length
@@ -2538,8 +2539,8 @@ function MentorPage({ apiStatus, data, currentUser, refreshData, createFeedback,
       improvements: (existingFeedback?.improvements ?? ['Bổ sung số liệu đo lường', 'Giải thích trade-off ngắn gọn hơn', 'Thêm ảnh hoặc video walkthrough']).join('\n'),
       decision: 'approved'
     });
+    setMentorSection('review');
     setNotice(`Đang mở bài nộp của ${studentName(submission.userId)} để review`);
-    setTimeout(() => document.querySelector('.mentor-review-workspace')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 80);
   };
 
   const updateReviewForm = (key, value) => {
@@ -2619,14 +2620,14 @@ function MentorPage({ apiStatus, data, currentUser, refreshData, createFeedback,
 
       <aside className="workspace-sidebar">
         <p className="mono-label">Mentor menu</p>
-        <button onClick={() => document.querySelector('#mentor-overview')?.scrollIntoView({ behavior: 'smooth' })}><LayoutDashboard size={16} /> Tổng quan</button>
-        <button onClick={() => document.querySelector('#mentor-profile')?.scrollIntoView({ behavior: 'smooth' })}><UserRound size={16} /> Hồ sơ mentor</button>
-        <button onClick={() => document.querySelector('#mentor-filter')?.scrollIntoView({ behavior: 'smooth' })}><Filter size={16} /> Bộ lọc bài</button>
-        <button onClick={() => document.querySelector('#mentor-review')?.scrollIntoView({ behavior: 'smooth' })}><FileUp size={16} /> Review bài nộp</button>
-        <button onClick={() => document.querySelector('#mentor-history')?.scrollIntoView({ behavior: 'smooth' })}><MessageSquareText size={16} /> Feedback</button>
+        <button className={mentorSection === 'overview' ? 'active' : ''} onClick={() => setMentorSection('overview')}><LayoutDashboard size={16} /> Tổng quan</button>
+        <button className={mentorSection === 'profile' ? 'active' : ''} onClick={() => setMentorSection('profile')}><UserRound size={16} /> Hồ sơ mentor</button>
+        <button className={mentorSection === 'filter' ? 'active' : ''} onClick={() => setMentorSection('filter')}><Filter size={16} /> Bộ lọc bài</button>
+        <button className={mentorSection === 'review' ? 'active' : ''} onClick={() => setMentorSection('review')}><FileUp size={16} /> Review bài nộp</button>
+        <button className={mentorSection === 'feedback' ? 'active' : ''} onClick={() => setMentorSection('feedback')}><MessageSquareText size={16} /> Feedback</button>
       </aside>
 
-      <div className="mentor-profile-grid" id="mentor-profile">
+      <div className={`mentor-profile-grid workspace-section ${mentorSection === 'profile' ? 'active' : ''}`} id="mentor-profile">
         <article className="mentor-hero-card">
           <p className="mono-label">Mentor profile</p>
           <h2>{mentorProfile.name ?? 'Mentor'}</h2>
@@ -2674,14 +2675,14 @@ function MentorPage({ apiStatus, data, currentUser, refreshData, createFeedback,
         </article>
       </div>
 
-      <div className="admin-stats" id="mentor-overview">
+      <div className={`admin-stats workspace-section ${mentorSection === 'overview' ? 'active' : ''}`} id="mentor-overview">
         <StatCard icon={FileUp} title="Pending reviews" value={pending.length} />
         <StatCard icon={UserRound} title="Active students" value={students.length} />
         <StatCard icon={LayoutDashboard} title="Submissions" value={submissionsData.length} />
         <StatCard icon={Star} title="Average score" value={averageScore || '-'} />
       </div>
 
-      <div className="admin-grid compact">
+      <div className={`admin-grid compact workspace-section ${mentorSection === 'overview' ? 'active' : ''}`}>
         <article className="admin-panel">
           <p className="mono-label">Công việc hiện tại</p>
           <div className="admin-list">
@@ -2706,7 +2707,7 @@ function MentorPage({ apiStatus, data, currentUser, refreshData, createFeedback,
         </article>
       </div>
 
-      <section className="management-filters" id="mentor-filter">
+      <section className={`management-filters workspace-section ${mentorSection === 'filter' ? 'active' : ''}`} id="mentor-filter">
         <div>
           <p className="mono-label">Bộ lọc mentor</p>
           <strong>{filteredPending.length} bài chờ · {filteredReviewed.length} bài đã review</strong>
@@ -2752,8 +2753,9 @@ function MentorPage({ apiStatus, data, currentUser, refreshData, createFeedback,
         </button>
       </section>
 
-      {activeSubmission && (
-        <section className="mentor-review-workspace" id="mentor-review">
+      <div className={`workspace-section ${mentorSection === 'review' ? 'active' : ''}`} id="mentor-review">
+        {activeSubmission && (
+        <section className="mentor-review-workspace">
           <div className="review-main-panel">
             <div className="section-heading inline">
               <div>
@@ -2851,9 +2853,9 @@ function MentorPage({ apiStatus, data, currentUser, refreshData, createFeedback,
             </div>
           </aside>
         </section>
-      )}
+        )}
 
-      <div className="admin-grid" id="mentor-history">
+        <div className="admin-grid">
         <article className="admin-panel">
           <h2>Bài đang chờ review</h2>
           <div className="admin-list">
@@ -2885,9 +2887,10 @@ function MentorPage({ apiStatus, data, currentUser, refreshData, createFeedback,
             <div className="status-banner muted"><Sparkles size={16} /> Lịch review: {mentorProfile.availability ?? 'Theo lịch mentor'}</div>
           </div>
         </article>
+        </div>
       </div>
 
-      <div className="admin-grid compact">
+      <div className={`admin-grid compact workspace-section ${mentorSection === 'feedback' ? 'active' : ''}`} id="mentor-history">
         <article className="admin-panel">
           <h2>Active students</h2>
           {students.filter((student) => mentorFilters.studentId === 'all' || student.id === mentorFilters.studentId).map((student) => (
@@ -2949,6 +2952,7 @@ function AdminPage({ apiStatus, data, notice, currentUser, refreshData, setAdmin
     users: 1,
     submissions: 1
   });
+  const [adminSection, setAdminSection] = useState('overview');
   const isAdmin = (currentUser?.type ?? currentUser?.user?.role) === 'admin';
   const challengesData = data?.challenges ?? [];
   const users = data?.users?.length ? data.users : data?.demoUser ? [data.demoUser] : [];
@@ -3072,9 +3076,10 @@ function AdminPage({ apiStatus, data, notice, currentUser, refreshData, setAdmin
   const startCreate = () => {
     resetForm();
     setAdminNotice('Đang tạo challenge mới. Điền form rồi bấm Lưu thử thách.');
-    document.querySelector('.admin-form')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    setAdminSection('challenges');
   };
   const editChallenge = (challenge) => {
+    setAdminSection('challenges');
     setEditingId(challenge.id);
     setForm({
       id: challenge.id,
@@ -3142,16 +3147,16 @@ function AdminPage({ apiStatus, data, notice, currentUser, refreshData, setAdmin
 
       <aside className="workspace-sidebar">
         <p className="mono-label">Admin menu</p>
-        <button onClick={() => document.querySelector('#admin-overview')?.scrollIntoView({ behavior: 'smooth' })}><LayoutDashboard size={16} /> Tổng quan</button>
-        <button onClick={() => document.querySelector('#admin-profile')?.scrollIntoView({ behavior: 'smooth' })}><ShieldCheck size={16} /> Vận hành</button>
-        <button onClick={() => document.querySelector('#admin-commerce')?.scrollIntoView({ behavior: 'smooth' })}><Crown size={16} /> Premium</button>
-        <button onClick={() => document.querySelector('#admin-filter')?.scrollIntoView({ behavior: 'smooth' })}><Filter size={16} /> Bộ lọc</button>
-        <button onClick={() => document.querySelector('#admin-challenges')?.scrollIntoView({ behavior: 'smooth' })}><Blocks size={16} /> Challenge</button>
-        <button onClick={() => document.querySelector('#admin-users')?.scrollIntoView({ behavior: 'smooth' })}><UserRound size={16} /> User & bài nộp</button>
-        <button onClick={() => document.querySelector('#admin-system')?.scrollIntoView({ behavior: 'smooth' })}><Save size={16} /> Hệ thống</button>
+        <button className={adminSection === 'overview' ? 'active' : ''} onClick={() => setAdminSection('overview')}><LayoutDashboard size={16} /> Tổng quan</button>
+        <button className={adminSection === 'profile' ? 'active' : ''} onClick={() => setAdminSection('profile')}><ShieldCheck size={16} /> Vận hành</button>
+        <button className={adminSection === 'commerce' ? 'active' : ''} onClick={() => setAdminSection('commerce')}><Crown size={16} /> Premium</button>
+        <button className={adminSection === 'filter' ? 'active' : ''} onClick={() => setAdminSection('filter')}><Filter size={16} /> Bộ lọc</button>
+        <button className={adminSection === 'challenges' ? 'active' : ''} onClick={() => setAdminSection('challenges')}><Blocks size={16} /> Challenge</button>
+        <button className={adminSection === 'users' ? 'active' : ''} onClick={() => setAdminSection('users')}><UserRound size={16} /> User & bài nộp</button>
+        <button className={adminSection === 'system' ? 'active' : ''} onClick={() => setAdminSection('system')}><Save size={16} /> Hệ thống</button>
       </aside>
 
-      <div className="admin-stats" id="admin-overview">
+      <div className={`admin-stats workspace-section ${adminSection === 'overview' ? 'active' : ''}`} id="admin-overview">
         <StatCard icon={Blocks} title="Ngành lớn" value={overview.majors} />
         <StatCard icon={LayoutDashboard} title="Challenge" value={overview.challenges} />
         <StatCard icon={UserRound} title="Người dùng" value={overview.users} />
@@ -3160,7 +3165,7 @@ function AdminPage({ apiStatus, data, notice, currentUser, refreshData, setAdmin
         <StatCard icon={Crown} title="Premium active" value={activePremiumCount} />
       </div>
 
-      <div className="admin-grid compact" id="admin-profile">
+      <div className={`admin-grid compact workspace-section ${adminSection === 'profile' ? 'active' : ''}`} id="admin-profile">
         <article className="admin-panel">
           <p className="mono-label">Admin profile</p>
           <h2>{adminProfile.name ?? 'Portfolio Admin'}</h2>
@@ -3204,7 +3209,7 @@ function AdminPage({ apiStatus, data, notice, currentUser, refreshData, setAdmin
         </article>
       </div>
 
-      <div className="admin-grid compact" id="admin-commerce">
+      <div className={`admin-grid compact workspace-section ${adminSection === 'commerce' ? 'active' : ''}`} id="admin-commerce">
         <article className="admin-panel">
           <p className="mono-label">Premium & doanh thu</p>
           <h2>{formatVnd(premiumRevenue)}</h2>
@@ -3229,7 +3234,7 @@ function AdminPage({ apiStatus, data, notice, currentUser, refreshData, setAdmin
         </article>
       </div>
 
-      <section className="management-filters admin-management-filters" id="admin-filter">
+      <section className={`management-filters admin-management-filters workspace-section ${adminSection === 'filter' ? 'active' : ''}`} id="admin-filter">
         <div>
           <p className="mono-label">Bộ lọc admin</p>
           <strong>{filteredChallenges.length} challenges · {filteredUsers.length} users · {filteredSubmissions.length} submissions</strong>
@@ -3304,7 +3309,7 @@ function AdminPage({ apiStatus, data, notice, currentUser, refreshData, setAdmin
         </button>
       </section>
 
-      <div className="admin-grid" id="admin-challenges">
+      <div className={`admin-grid workspace-section ${adminSection === 'challenges' ? 'active' : ''}`} id="admin-challenges">
         <article className="admin-panel">
           <h2>{editingId ? 'Sửa challenge' : 'Thêm challenge'}</h2>
           <div className="admin-form">
@@ -3350,7 +3355,7 @@ function AdminPage({ apiStatus, data, notice, currentUser, refreshData, setAdmin
         </article>
       </div>
 
-      <div className="admin-grid compact" id="admin-users">
+      <div className={`admin-grid compact workspace-section ${adminSection === 'users' ? 'active' : ''}`} id="admin-users">
         <article className="admin-panel">
           <h2>Người dùng</h2>
           {userPage.items.map((user) => (
@@ -3392,7 +3397,7 @@ function AdminPage({ apiStatus, data, notice, currentUser, refreshData, setAdmin
         </article>
       </div>
 
-      <div className="admin-grid compact" id="admin-system">
+      <div className={`admin-grid compact workspace-section ${adminSection === 'system' ? 'active' : ''}`} id="admin-system">
         <article className="admin-panel">
           <h2>Categories & Career Domains</h2>
           {categories.map((category) => (

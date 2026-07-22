@@ -3675,6 +3675,14 @@ body:has(.app-shell.page-mentor) {
   grid-column: 2;
 }
 
+.workspace-section {
+  display: none !important;
+}
+
+.workspace-section.active {
+  display: grid !important;
+}
+
 .workspace-sidebar button {
   display: flex;
   align-items: center;
@@ -3692,6 +3700,13 @@ body:has(.app-shell.page-mentor) {
 .workspace-sidebar button:hover {
   border-color: rgba(14, 165, 233, 0.28);
   background: rgba(14, 165, 233, 0.1);
+}
+
+.workspace-sidebar button.active {
+  border-color: rgba(14, 165, 233, 0.45);
+  background: linear-gradient(135deg, rgba(14, 165, 233, 0.2), rgba(37, 99, 235, 0.14));
+  color: var(--text);
+  box-shadow: inset 3px 0 0 var(--cyan);
 }
 
 .certificate-add-row {
