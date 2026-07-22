@@ -576,6 +576,74 @@ const marketSignalsByMajor = {
   }
 };
 
+const workGalleryBase = {
+  dev: [
+    ['Code review', 'Pull request', '#2563eb'],
+    ['API design', 'Endpoint map', '#06b6d4'],
+    ['Database', 'Schema flow', '#10b981'],
+    ['Dashboard', 'UI states', '#8b5cf6'],
+    ['Deploy', 'CI/CD', '#f59e0b'],
+    ['Testing', 'Edge cases', '#ef4444'],
+    ['Architecture', 'System map', '#0f766e'],
+    ['Debugging', 'Logs', '#334155'],
+    ['Team sync', 'Sprint board', '#ec4899'],
+    ['Demo day', 'Portfolio proof', '#14b8a6']
+  ],
+  mkt: [
+    ['SEO audit', 'Keyword map', '#0ea5e9'],
+    ['Campaign', 'Funnel plan', '#10b981'],
+    ['Content', 'Calendar', '#f59e0b'],
+    ['Ads', 'A/B test', '#8b5cf6'],
+    ['Analytics', 'KPI board', '#ef4444'],
+    ['Persona', 'Insight', '#14b8a6'],
+    ['Landing page', 'CRO', '#2563eb'],
+    ['Budget', 'Media mix', '#64748b'],
+    ['Report', 'Executive deck', '#ec4899'],
+    ['Market scan', 'Competitor', '#0f766e']
+  ],
+  design: [
+    ['User flow', 'Journey map', '#06b6d4'],
+    ['Wireframe', 'Low-fi', '#8b5cf6'],
+    ['UI system', 'Components', '#10b981'],
+    ['Prototype', 'Interaction', '#f59e0b'],
+    ['Usability', 'Testing', '#ef4444'],
+    ['Research', 'Interview', '#14b8a6'],
+    ['Brand', 'Visual kit', '#2563eb'],
+    ['Motion', 'Micro UX', '#ec4899'],
+    ['Handoff', 'Specs', '#0f766e'],
+    ['Case study', 'Rationale', '#64748b']
+  ]
+};
+
+function makeWorkIllustrationSrc({ title, subtitle, accent, roleTitle, majorShort }, index) {
+  const safeTitle = String(title).replace(/[<&>]/g, '');
+  const safeSubtitle = String(subtitle).replace(/[<&>]/g, '');
+  const safeRole = String(roleTitle).replace(/[<&>]/g, '');
+  const svg = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="520" height="340" viewBox="0 0 520 340">
+      <defs>
+        <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+          <stop offset="0" stop-color="${accent}" stop-opacity="0.92"/>
+          <stop offset="1" stop-color="#e0f2fe" stop-opacity="0.96"/>
+        </linearGradient>
+        <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+          <feDropShadow dx="0" dy="18" stdDeviation="18" flood-color="#0f172a" flood-opacity="0.18"/>
+        </filter>
+      </defs>
+      <rect width="520" height="340" rx="34" fill="url(#bg)"/>
+      <circle cx="${420 - index * 7}" cy="${78 + index * 5}" r="72" fill="#fff" opacity="0.28"/>
+      <rect x="38" y="44" width="180" height="32" rx="16" fill="#fff" opacity="0.48"/>
+      <rect x="${255 + (index % 3) * 12}" y="70" width="160" height="112" rx="22" fill="#fff" opacity="0.58" filter="url(#shadow)" transform="rotate(${index % 2 ? 7 : -6} 335 126)"/>
+      <rect x="42" y="210" width="436" height="76" rx="20" fill="#fff" opacity="0.38"/>
+      <path d="M78 132h126m-126 28h210m-210 28h156" stroke="#fff" stroke-width="14" stroke-linecap="round" opacity="0.68"/>
+      <text x="42" y="112" fill="#083344" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="900">${majorShort}</text>
+      <text x="42" y="256" fill="#0f172a" font-family="Inter, Arial, sans-serif" font-size="38" font-weight="950">${safeTitle}</text>
+      <text x="42" y="294" fill="#334155" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="800">${safeSubtitle}</text>
+      <text x="286" y="152" fill="#0f172a" font-family="Inter, Arial, sans-serif" font-size="20" font-weight="900">${safeRole}</text>
+    </svg>`;
+  return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+}
+
 function getMarketUpdatedLabel() {
   return new Date().toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
 }
@@ -1754,6 +1822,11 @@ function CareerMapPage({ majors, currentMajor, changeMajor, columns, levels, sel
     `Hiểu bối cảnh ${currentMajor.title} và chuyên ngành ${selectedRole.track}`,
     ...(selectedRole.skills ?? []).slice(0, 3)
   ];
+  const workIllustrations = (workGalleryBase[currentMajor.key] ?? workGalleryBase.dev).map(([title, subtitle, accent], index) => ({
+    title,
+    subtitle,
+    src: makeWorkIllustrationSrc({ title, subtitle, accent, roleTitle: selectedRole.title, majorShort: currentMajor.short }, index)
+  }));
 
   useEffect(() => {
     document.querySelector('.career-page')?.scrollTo({ left: 0, top: 0 });
@@ -1905,6 +1978,23 @@ function CareerMapPage({ majors, currentMajor, changeMajor, columns, levels, sel
               Chỉ xem tham khảo. Bạn chỉ có thể lập lộ trình cho ngành đã chọn khi đăng nhập.
             </div>
           )}
+          <section className="role-work-gallery">
+            <div className="card-topline">
+              <span>Ảnh minh họa công việc</span>
+              <strong>{workIllustrations.length} ảnh</strong>
+            </div>
+            <div className="work-gallery-grid">
+              {workIllustrations.map((item) => (
+                <figure className="work-gallery-card" key={`${selectedRole.id}-${item.title}`}>
+                  <img src={item.src} alt={`${item.title} - ${selectedRole.title}`} loading="lazy" />
+                  <figcaption>
+                    <strong>{item.title}</strong>
+                    <span>{item.subtitle}</span>
+                  </figcaption>
+                </figure>
+              ))}
+            </div>
+          </section>
           <div className="role-detail-grid">
             <article>
               <h3>Làm việc hằng ngày</h3>
