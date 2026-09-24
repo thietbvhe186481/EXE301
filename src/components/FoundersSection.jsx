@@ -49,14 +49,14 @@ export function FoundersSection() {
   ];
 
   return (
-    <section className="jr-founders-section">
+    <section className="jr-founders-open-section">
       <div className="jr-founders-badge">
         <Sparkles size={14} />
         <span>ĐỘI NGŨ SÁNG LẬP</span>
       </div>
 
       <h2 className="jr-founders-title">
-        <span className="white-text">NGƯỜI</span>
+        <span className="white-text">NGƯỜI </span>
         <span className="gold-text">SÁNG LẬP</span>
       </h2>
 
@@ -64,14 +64,14 @@ export function FoundersSection() {
         Đội ngũ sinh viên đam mê công nghệ và khát vọng xây dựng bệ phóng nghề nghiệp vững chắc cho sinh viên FPT.
       </p>
 
-      <div className="jr-founders-grid">
+      <div className="jr-founders-grid-unboxed">
         {foundersList.map((founder) => (
-          <div className="jr-founder-card" key={founder.id}>
-            <div className="jr-founder-avatar-frame">
+          <div className="jr-founder-unboxed-card" key={founder.id}>
+            <div className="jr-founder-avatar-unboxed">
               <CuteFounderAvatar id={founder.id} name={founder.name} role={founder.role} />
             </div>
-            <strong className="jr-founder-name">{founder.name}</strong>
-            <span className="jr-founder-role">{founder.role}</span>
+            <strong className="jr-founder-name-unboxed">{founder.name}</strong>
+            <span className="jr-founder-role-pill">{founder.role}</span>
           </div>
         ))}
       </div>

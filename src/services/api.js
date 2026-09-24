@@ -78,5 +78,142 @@ export const apiService = {
     } catch {
       return [];
     }
+  },
+
+  // Majors & Challenges (MongoDB)
+  async getMajors() {
+    return fetchWithAuth('/api/majors');
+  },
+  async getChallenges(params = {}) {
+    const query = new URLSearchParams(params).toString();
+    return fetchWithAuth(`/api/challenges${query ? `?${query}` : ''}`);
+  },
+  async getChallenge(id) {
+    return fetchWithAuth(`/api/challenges/${id}`);
+  },
+  async createChallenge(data) {
+    return fetchWithAuth('/api/challenges', { method: 'POST', body: JSON.stringify(data) });
+  },
+  async updateChallenge(id, data) {
+    return fetchWithAuth(`/api/challenges/${id}`, { method: 'PUT', body: JSON.stringify(data) });
+  },
+  async updateChallengeStatus(id, status) {
+    return fetchWithAuth(`/api/challenges/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status }) });
+  },
+  async deleteChallenge(id) {
+    return fetchWithAuth(`/api/challenges/${id}`, { method: 'DELETE' });
+  },
+
+  // Users CRUD
+  async getUsers(params = {}) {
+    const query = new URLSearchParams(params).toString();
+    return fetchWithAuth(`/api/users${query ? `?${query}` : ''}`);
+  },
+  async getUser(id) {
+    return fetchWithAuth(`/api/users/${id}`);
+  },
+  async createUser(data) {
+    return fetchWithAuth('/api/users', { method: 'POST', body: JSON.stringify(data) });
+  },
+  async updateUser(id, data) {
+    return fetchWithAuth(`/api/users/${id}`, { method: 'PUT', body: JSON.stringify(data) });
+  },
+  async updateUserStatus(id, status, reason = '') {
+    return fetchWithAuth(`/api/users/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status, reason }) });
+  },
+  async deleteUser(id) {
+    return fetchWithAuth(`/api/users/${id}`, { method: 'DELETE' });
+  },
+
+  // Mentors CRUD
+  async getMentors(params = {}) {
+    const query = new URLSearchParams(params).toString();
+    return fetchWithAuth(`/api/mentors${query ? `?${query}` : ''}`);
+  },
+  async getMentor(id) {
+    return fetchWithAuth(`/api/mentors/${id}`);
+  },
+  async createMentor(data) {
+    return fetchWithAuth('/api/mentors', { method: 'POST', body: JSON.stringify(data) });
+  },
+  async updateMentor(id, data) {
+    return fetchWithAuth(`/api/mentors/${id}`, { method: 'PUT', body: JSON.stringify(data) });
+  },
+  async updateMentorStatus(id, status, warningReason = '') {
+    return fetchWithAuth(`/api/mentors/${id}/status`, { method: 'PUT', body: JSON.stringify({ status, warningReason }) });
+  },
+  async deleteMentor(id) {
+    return fetchWithAuth(`/api/mentors/${id}`, { method: 'DELETE' });
+  },
+
+  // Submissions CRUD
+  async getSubmissions(params = {}) {
+    const query = new URLSearchParams(params).toString();
+    return fetchWithAuth(`/api/submissions${query ? `?${query}` : ''}`);
+  },
+  async getSubmission(id) {
+    return fetchWithAuth(`/api/submissions/${id}`);
+  },
+  async createSubmission(data) {
+    return fetchWithAuth('/api/submissions', { method: 'POST', body: JSON.stringify(data) });
+  },
+  async updateSubmission(id, data) {
+    return fetchWithAuth(`/api/submissions/${id}`, { method: 'PUT', body: JSON.stringify(data) });
+  },
+  async updateSubmissionStatus(id, status, note = '') {
+    return fetchWithAuth(`/api/submissions/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status, note }) });
+  },
+  async deleteSubmission(id) {
+    return fetchWithAuth(`/api/submissions/${id}`, { method: 'DELETE' });
+  },
+
+  // Reviews CRUD
+  async updateReview(id, data) {
+    return fetchWithAuth(`/api/reviews/${id}`, { method: 'PUT', body: JSON.stringify(data) });
+  },
+  async updateReviewStatus(id, status, reason = '') {
+    return fetchWithAuth(`/api/reviews/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status, reason }) });
+  },
+  async deleteReview(id) {
+    return fetchWithAuth(`/api/reviews/${id}`, { method: 'DELETE' });
+  },
+
+  // Subscriptions & Orders
+  async getSubscriptionOrders(params = {}) {
+    const query = new URLSearchParams(params).toString();
+    return fetchWithAuth(`/api/subscriptions/orders${query ? `?${query}` : ''}`);
+  },
+  async updateSubscriptionOrderStatus(orderId, status, note = '') {
+    return fetchWithAuth(`/api/subscriptions/orders/${orderId}/status`, { method: 'PATCH', body: JSON.stringify({ status, note }) });
+  },
+  async deleteSubscriptionOrder(orderId) {
+    return fetchWithAuth(`/api/subscriptions/orders/${orderId}`, { method: 'DELETE' });
+  },
+
+  // Resources CRUD
+  async getResources(params = {}) {
+    const query = new URLSearchParams(params).toString();
+    return fetchWithAuth(`/api/resources${query ? `?${query}` : ''}`);
+  },
+  async createResource(data) {
+    return fetchWithAuth('/api/resources', { method: 'POST', body: JSON.stringify(data) });
+  },
+  async updateResource(id, data) {
+    return fetchWithAuth(`/api/resources/${id}`, { method: 'PUT', body: JSON.stringify(data) });
+  },
+  async deleteResource(id) {
+    return fetchWithAuth(`/api/resources/${id}`, { method: 'DELETE' });
+  },
+
+  // Inquiries CRUD
+  async getInquiries(params = {}) {
+    const query = new URLSearchParams(params).toString();
+    return fetchWithAuth(`/api/inquiries${query ? `?${query}` : ''}`);
+  },
+  async updateInquiryStatus(inquiryId, status, adminNotes = '') {
+    return fetchWithAuth(`/api/inquiries/${inquiryId}/status`, { method: 'PATCH', body: JSON.stringify({ status, adminNotes }) });
+  },
+  async deleteInquiry(inquiryId) {
+    return fetchWithAuth(`/api/inquiries/${inquiryId}`, { method: 'DELETE' });
   }
 };

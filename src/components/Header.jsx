@@ -9,15 +9,13 @@ import {
   LayoutDashboard,
   LogOut,
   MessageSquareText,
-  Moon,
   MoveDown,
   Rocket,
   ShieldCheck,
-  Sun,
   UserRound
 } from 'lucide-react';
 
-export function Header({ page, go, currentUser, theme, setTheme, logout, loginAs, onOpenQrPayment }) {
+export function Header({ page, go, currentUser, logout, loginAs, onOpenQrPayment }) {
   const [accountOpen, setAccountOpen] = useState(false);
   const [demoMenuOpen, setDemoMenuOpen] = useState(false);
   const currentRole = currentUser?.type ?? currentUser?.user?.role;
@@ -161,16 +159,6 @@ export function Header({ page, go, currentUser, theme, setTheme, logout, loginAs
             )}
           </div>
         )}
-
-        <button
-          className="theme-toggle"
-          type="button"
-          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-          title={theme === 'dark' ? 'Chuyển sang Light mode' : 'Chuyển sang Dark mode'}
-        >
-          {theme === 'dark' ? <Sun size={15} /> : <Moon size={15} />}
-          <span>{theme === 'dark' ? 'Light' : 'Dark'}</span>
-        </button>
       </div>
     </header>
   );

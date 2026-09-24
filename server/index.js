@@ -857,6 +857,402 @@ app.get('/api/founders', async (_req, res, next) => {
   }
 });
 
+// ============================================================================
+// EXPANDED CRUD & STATUS MANAGEMENT APIS (REAL MONGODB OPERATIONS)
+// ============================================================================
+
+// --- 1. USER CRUD & STATUS ---
+app.get('/api/users/:id', async (req, res, next) => {
+  try {
+    const user = await UserProfile.findOne({ id: req.params.id }).lean();
+    if (!user) return res.status(404).json({ message: 'User không tồn tại' });
+    res.json(cleanDoc(user));
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.post('/api/users', async (req, res, next) => {
+  try {
+    const exists = await UserProfile.findOne({ email: req.body.email });
+    if (exists) return res.status(409).json({ message: 'Email đã tồn tại' });
+    const newUser = await UserProfile.create({
+      id: req.body.id || `user-${Date.now()}`,
+      name: req.body.name,
+      email: req.body.email,
+      passwordHash: req.body.password ? await bcrypt.hash(req.body.password, 10) : '',
+      role: req.body.role || 'student',
+      mssv: req.body.mssv || '',
+      school: req.body.school || 'Đại học FPT',
+      majorKey: req.body.majorKey || 'dev',
+      specialization: req.body.specialization || '',
+      phone: req.body.phone || '',
+      status: req.body.status || 'active',
+      isPremium: Boolean(req.body.isPremium)
+    });
+    res.status(201).json(cleanDoc(newUser));
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.patch('/api/users/:id/status', async (req, res, next) => {
+  try {
+    const { status, reason } = req.body;
+    const user = await UserProfile.findOne({ id: req.params.id });
+    if (!user) return res.status(404).json({ message: 'User không tồn tại' });
+    user.status = status;
+    user.statusReason = reason || '';
+    if (!user.statusHistory) user.statusHistory = [];
+    user.statusHistory.push({ status, changedAt: new Date(), reason });
+    await user.save();
+    res.json(cleanDoc(user));
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.delete('/api/users/:id', async (req, res, next) => {
+  try {
+    const result = await UserProfile.deleteOne({ id: req.params.id });
+    await Submission.deleteMany({ userId: req.params.id });
+    await MentorFeedback.deleteMany({ userId: req.params.id });
+    res.json({ ok: result.deletedCount > 0 });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// --- 2. MENTOR CRUD & STATUS ---
+app.get('/api/mentors/:id', async (req, res, next) => {
+  try {
+    const mentor = await MentorAccount.findOne({ id: req.params.id }).lean();
+    if (!mentor) return res.status(404).json({ message: 'Mentor không tồn tại' });
+    res.json(cleanDoc(mentor));
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.post('/api/mentors', async (req, res, next) => {
+  try {
+    const exists = await MentorAccount.findOne({ email: req.body.email });
+    if (exists) return res.status(409).json({ message: 'Email mentor đã tồn tại' });
+    const newMentor = await MentorAccount.create({
+      id: req.body.id || `mentor-${Date.now()}`,
+      name: req.body.name,
+      email: req.body.email,
+      passwordHash: req.body.password ? await bcrypt.hash(req.body.password, 10) : '',
+      title: req.body.title || 'Senior Software Engineer & Mentor',
+      company: req.body.company || 'FPT Software',
+      bio: req.body.bio || '',
+      expertise: Array.isArray(req.body.expertise) ? req.body.expertise : (req.body.expertise || '').split(',').map(s => s.trim()).filter(Boolean),
+      hourlyRate: Number(req.body.hourlyRate) || 0,
+      ratingAvg: 5.0,
+      totalReviews: 0,
+      status: req.body.status || 'active',
+      badge: req.body.badge || 'Mentor Doanh nghiệp'
+    });
+    res.status(201).json(cleanDoc(newMentor));
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.put('/api/mentors/:id', async (req, res, next) => {
+  try {
+    const updated = await MentorAccount.findOneAndUpdate(
+      { id: req.params.id },
+      { $set: req.body },
+      { new: true }
+    );
+    if (!updated) return res.status(404).json({ message: 'Mentor không tồn tại' });
+    res.json(cleanDoc(updated));
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.delete('/api/mentors/:id', async (req, res, next) => {
+  try {
+    const result = await MentorAccount.deleteOne({ id: req.params.id });
+    res.json({ ok: result.deletedCount > 0 });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// --- 3. CHALLENGE DETAILS & STATUS ---
+app.get('/api/challenges/:id', async (req, res, next) => {
+  try {
+    const item = await Challenge.findOne({ id: req.params.id }).lean();
+    if (!item) return res.status(404).json({ message: 'Challenge không tồn tại' });
+    res.json(item);
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.patch('/api/challenges/:id/status', async (req, res, next) => {
+  try {
+    const updated = await Challenge.findOneAndUpdate(
+      { id: req.params.id },
+      { status: req.body.status },
+      { new: true }
+    );
+    if (!updated) return res.status(404).json({ message: 'Challenge không tồn tại' });
+    res.json(updated);
+  } catch (error) {
+    next(error);
+  }
+});
+
+// --- 4. SUBMISSION DETAILS & STATUS ---
+app.get('/api/submissions/:id', async (req, res, next) => {
+  try {
+    const item = await Submission.findOne({ id: req.params.id }).lean();
+    if (!item) return res.status(404).json({ message: 'Bài nộp không tồn tại' });
+    res.json(item);
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.put('/api/submissions/:id', async (req, res, next) => {
+  try {
+    const updated = await Submission.findOneAndUpdate(
+      { id: req.params.id },
+      { $set: req.body },
+      { new: true }
+    );
+    if (!updated) return res.status(404).json({ message: 'Bài nộp không tồn tại' });
+    res.json(updated);
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.patch('/api/submissions/:id/status', async (req, res, next) => {
+  try {
+    const { status, note, changedBy } = req.body;
+    const sub = await Submission.findOne({ id: req.params.id });
+    if (!sub) return res.status(404).json({ message: 'Bài nộp không tồn tại' });
+    sub.status = status;
+    if (!sub.statusHistory) sub.statusHistory = [];
+    sub.statusHistory.push({ status, changedBy: changedBy || 'system', note: note || '', changedAt: new Date() });
+    await sub.save();
+    res.json(sub);
+  } catch (error) {
+    next(error);
+  }
+});
+
+// --- 5. REVIEWS CRUD & STATUS ---
+app.put('/api/reviews/:id', async (req, res, next) => {
+  try {
+    const updated = await StudentReview.findOneAndUpdate(
+      { id: req.params.id },
+      { $set: req.body },
+      { new: true }
+    );
+    if (!updated) return res.status(404).json({ message: 'Review không tồn tại' });
+    res.json(updated);
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.patch('/api/reviews/:id/status', async (req, res, next) => {
+  try {
+    const { status, reason } = req.body;
+    const updated = await StudentReview.findOneAndUpdate(
+      { id: req.params.id },
+      { status, statusReason: reason || '' },
+      { new: true }
+    );
+    if (!updated) return res.status(404).json({ message: 'Review không tồn tại' });
+    res.json(updated);
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.delete('/api/reviews/:id', async (req, res, next) => {
+  try {
+    const result = await StudentReview.deleteOne({ id: req.params.id });
+    res.json({ ok: result.deletedCount > 0 });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// --- 6. SUBSCRIPTION ORDERS LIST & STATUS ---
+app.get('/api/subscriptions/orders', async (req, res, next) => {
+  try {
+    const filter = {};
+    if (req.query.userId) filter.userId = req.query.userId;
+    if (req.query.status) filter.status = req.query.status;
+    const orders = await SubscriptionOrder.find(filter).sort({ createdAt: -1 }).lean();
+    res.json(orders);
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.patch('/api/subscriptions/orders/:orderId/status', async (req, res, next) => {
+  try {
+    const { status, note } = req.body;
+    const order = await SubscriptionOrder.findOne({ orderId: req.params.orderId });
+    if (!order) return res.status(404).json({ message: 'Đơn hàng không tồn tại' });
+    order.status = status;
+    if (!order.statusHistory) order.statusHistory = [];
+    order.statusHistory.push({ status, changedAt: new Date(), note: note || '' });
+    await order.save();
+    
+    // If completed or refunded, sync user's isPremium
+    if (status === 'completed') {
+      await UserProfile.updateOne({ id: order.userId }, { $set: { isPremium: true, planId: order.planId, planName: order.planName } });
+    } else if (status === 'refunded' || status === 'cancelled') {
+      await UserProfile.updateOne({ id: order.userId }, { $set: { isPremium: false, planId: '', planName: '' } });
+    }
+    res.json(order);
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.delete('/api/subscriptions/orders/:orderId', async (req, res, next) => {
+  try {
+    const result = await SubscriptionOrder.deleteOne({ orderId: req.params.orderId });
+    res.json({ ok: result.deletedCount > 0 });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// --- 7. LEARNING RESOURCES CRUD ---
+app.post('/api/resources', async (req, res, next) => {
+  try {
+    const resourceData = {
+      id: req.body.id || `res-${Date.now()}`,
+      code: req.body.code || 'PRN231',
+      title: req.body.title,
+      majorKey: req.body.majorKey || 'dev',
+      majorLabel: req.body.majorLabel || 'Software Engineering',
+      uni: req.body.uni || 'Đại học FPT',
+      format: req.body.format || 'PDF + Source Code',
+      desc: req.body.desc || '',
+      downloadUrl: req.body.downloadUrl || '#',
+      status: req.body.status || 'active'
+    };
+    const created = await Resource.create(resourceData);
+    res.status(201).json(created);
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.put('/api/resources/:id', async (req, res, next) => {
+  try {
+    const updated = await Resource.findOneAndUpdate(
+      { id: req.params.id },
+      { $set: req.body },
+      { new: true }
+    );
+    if (!updated) return res.status(404).json({ message: 'Tài liệu không tồn tại' });
+    res.json(updated);
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.delete('/api/resources/:id', async (req, res, next) => {
+  try {
+    const result = await Resource.deleteOne({ id: req.params.id });
+    res.json({ ok: result.deletedCount > 0 });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// --- 8. CONTACT INQUIRIES LIST & STATUS ---
+app.get('/api/inquiries', async (req, res, next) => {
+  try {
+    const filter = {};
+    if (req.query.status) filter.status = req.query.status;
+    const inquiries = await ContactInquiry.find(filter).sort({ submittedAt: -1 }).lean();
+    res.json(inquiries);
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.patch('/api/inquiries/:inquiryId/status', async (req, res, next) => {
+  try {
+    const { status, adminNotes } = req.body;
+    const inquiry = await ContactInquiry.findOne({ inquiryId: req.params.inquiryId });
+    if (!inquiry) return res.status(404).json({ message: 'Yêu cầu không tồn tại' });
+    inquiry.status = status;
+    if (adminNotes) inquiry.adminNotes = adminNotes;
+    if (status === 'resolved') inquiry.resolvedAt = new Date();
+    await inquiry.save();
+    res.json(inquiry);
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.delete('/api/inquiries/:inquiryId', async (req, res, next) => {
+  try {
+    const result = await ContactInquiry.deleteOne({ inquiryId: req.params.inquiryId });
+    res.json({ ok: result.deletedCount > 0 });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// --- 9. FOUNDERS CRUD ---
+app.post('/api/founders', async (req, res, next) => {
+  try {
+    const founder = await Founder.create({
+      id: req.body.id || `founder-${Date.now()}`,
+      name: req.body.name,
+      role: req.body.role,
+      mssv: req.body.mssv || '',
+      bio: req.body.bio || '',
+      avatarType: req.body.avatarType || 'cute-bear',
+      order: Number(req.body.order) || 0,
+      status: req.body.status || 'active'
+    });
+    res.status(201).json(founder);
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.put('/api/founders/:id', async (req, res, next) => {
+  try {
+    const updated = await Founder.findOneAndUpdate(
+      { id: req.params.id },
+      { $set: req.body },
+      { new: true }
+    );
+    if (!updated) return res.status(404).json({ message: 'Thành viên sáng lập không tồn tại' });
+    res.json(updated);
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.delete('/api/founders/:id', async (req, res, next) => {
+  try {
+    const result = await Founder.deleteOne({ id: req.params.id });
+    res.json({ ok: result.deletedCount > 0 });
+  } catch (error) {
+    next(error);
+  }
+});
+
 app.use((error, _req, res, _next) => {
   console.error(error);
   res.status(500).json({ message: 'Server error', detail: error.message });

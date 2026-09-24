@@ -11,16 +11,23 @@ export function VipUpgradeModal({ isOpen, onClose, plans, initialPlan, currentUs
   useEffect(() => {
     if (initialPlan) {
       setSelectedPlan(initialPlan);
+      if (isOpen) {
+        setStep('payment');
+      }
+    } else {
+      if (plans && plans.length > 0) {
+        setSelectedPlan((prev) => prev || plans[1] || plans[0]);
+      }
+      if (isOpen) {
+        setStep('select_plan');
+      }
     }
-    if (isOpen) {
-      setStep('select_plan');
-    }
-  }, [initialPlan, isOpen]);
+  }, [initialPlan, isOpen, plans]);
 
   if (!isOpen) return null;
 
   const currentPlans = plans || [];
-  const studentMssv = currentUser?.user?.id || currentUser?.user?.mssv || 'SE174281';
+  const studentMssv = currentUser?.user?.id || currentUser?.user?.mssv || currentUser?.id || 'SE174281';
   const planCode = (selectedPlan?.id || 'PRO').replace('premium-', '').toUpperCase();
   const transferContent = `EXE301 ${planCode} ${studentMssv}`;
   const qrPrice = selectedPlan?.price || 199000;
@@ -37,15 +44,16 @@ export function VipUpgradeModal({ isOpen, onClose, plans, initialPlan, currentUs
     try {
       // Save order and upgrade subscription in MongoDB
       await apiService.upgradeSubscription({
-        userId: currentUser?.user?.id || 'demo-student',
-        planId: selectedPlan.id,
-        planName: selectedPlan.name,
-        price: selectedPlan.price,
+        userId: currentUser?.user?.id || currentUser?.id || 'demo-student',
+        mssv: studentMssv,
+        planId: selectedPlan?.id || 'premium-quarter',
+        planName: selectedPlan?.name || 'Premium 3 Tháng',
+        price: selectedPlan?.price || 199000,
         paymentMethod: 'VietQR MB Bank',
         transactionCode: transferContent
       });
-    } catch {
-      // Fallback
+    } catch (err) {
+      console.warn('Subscription upgrade error, fallback to client:', err);
     }
     setIsProcessing(false);
     setStep('success');

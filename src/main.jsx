@@ -65,6 +65,7 @@ import { apiService } from './services/api';
 import { Header } from './components/Header';
 import { HomePage } from './pages/HomePage';
 import { AboutPage } from './pages/AboutPage';
+import { MarketTrendsPage } from './pages/MarketTrendsPage';
 
 
 
@@ -1188,13 +1189,7 @@ function App() {
   const [footerModalData, setFooterModalData] = useState(null);
   const [page, setPage] = useState('home');
   const [authMode, setAuthMode] = useState('login');
-  const [theme, setTheme] = useState(() => {
-    try {
-      return localStorage.getItem('portfolio-theme') || 'light';
-    } catch {
-      return 'light';
-    }
-  });
+  const theme = 'light';
   const [remoteData, setRemoteData] = useState(null);
   const [apiStatus, setApiStatus] = useState('local');
   const [currentUser, setCurrentUser] = useState(null);
@@ -1259,13 +1254,13 @@ function App() {
   }, []);
 
   useEffect(() => {
-    document.documentElement.dataset.theme = theme;
+    document.documentElement.dataset.theme = 'light';
     try {
-      localStorage.setItem('portfolio-theme', theme);
+      localStorage.setItem('portfolio-theme', 'light');
     } catch {
-      // Ignore storage errors in restricted browser contexts.
+      // Ignore storage errors
     }
-  }, [theme]);
+  }, []);
 
   const catalog = appData?.majors?.length ? appData.majors : majorCatalog;
   const remoteChallenges = appData?.challenges?.length ? appData.challenges : [];
@@ -1806,13 +1801,11 @@ function App() {
   };
 
   return (
-    <div className={`app-shell page-${page}`} data-theme={theme}>
+    <div className={`app-shell page-${page}`} data-theme="light">
       <Header
         page={page}
         go={go}
         currentUser={currentUser}
-        theme={theme}
-        setTheme={setTheme}
         logout={logout}
         loginAs={loginAs}
         onOpenQrPayment={() => setIsVipModalOpen(true)}
@@ -1828,7 +1821,6 @@ function App() {
         currentUser={currentUser}
         onPaymentSuccess={(plan) => {
           upgradePlan(plan);
-          alert(`🎉 Chúc mừng bạn đã nâng cấp thành công gói ${plan.name}! Quyền lợi Mentor Review và Chat 1-on-1 đã được kích hoạt.`);
         }}
       />
       <FooterDetailModal
@@ -1890,7 +1882,7 @@ function App() {
             go={go}
           />
         )}
-        {page === 'trends' && <MarketTrendsPage majors={catalog} currentMajor={currentMajor} changeMajor={changeMajor} go={go} />}
+        {page === 'trends' && <MarketTrendsPage majors={catalog} currentMajor={currentMajor} changeMajor={changeMajor} go={go} marketSignalsByMajor={marketSignalsByMajor} marketResearchBriefByMajor={marketResearchBriefByMajor} trustedMarketSources={trustedMarketSources} getMarketUpdatedLabel={getMarketUpdatedLabel} />}
         {page === 'hub' && (
           <ChallengeHubPage
             currentMajor={currentMajor}
@@ -2074,6 +2066,7 @@ function CareerMapPage({ majors, currentMajor, changeMajor, columns, levels, sel
   const [tab, setTab] = useState('skills');
   const [query, setQuery] = useState('');
   const [careerStep, setCareerStep] = useState('specialization');
+  const [detailTab, setDetailTab] = useState('overview');
   const filteredRoleIds = useMemo(() => {
     const normalized = query.trim().toLowerCase();
     if (!normalized) return null;
@@ -2257,266 +2250,144 @@ function CareerMapPage({ majors, currentMajor, changeMajor, columns, levels, sel
               Chỉ xem tham khảo. Bạn chỉ có thể lập lộ trình cho ngành đã chọn khi đăng nhập.
             </div>
           )}
-          <section className="role-work-gallery">
-            <div className="card-topline">
-              <span>Ảnh minh họa công việc</span>
-              <strong>{workIllustrations.length} ảnh</strong>
-            </div>
-            <div className="work-gallery-grid">
-              {workIllustrations.map((item) => (
-                <figure className="work-gallery-card" key={`${selectedRole.id}-${item.title}`}>
-                  <img src={item.src} alt={`${item.title} - ${selectedRole.title}`} loading="lazy" />
-                  <figcaption>
-                    <strong>{item.title}</strong>
-                    <span>{item.subtitle}</span>
-                  </figcaption>
-                </figure>
-              ))}
-            </div>
-          </section>
-          <div className="role-detail-grid">
-            <article className="role-reality-card">
-              <p className="mono-label">Trong một ngày làm việc</p>
-              <h3>Một ngày của {selectedRole.title}</h3>
-              {dailyWork.map((item) => <div className="requirement-item compact narrative" key={item}><Check size={16} /><span>{item}</span></div>)}
-            </article>
-            <article className="role-reality-card">
-              <p className="mono-label">Trách nhiệm nghề nghiệp</p>
-              <h3>Bạn chịu trách nhiệm gì?</h3>
-              {roleResponsibilities.map((item) => <div className="requirement-item compact narrative" key={item}><BadgeCheck size={16} /><span>{item}</span></div>)}
-            </article>
-            <article className="role-reality-card">
-              <p className="mono-label">Áp lực thực tế</p>
-              <h3>Tình huống thường gặp</h3>
-              {roleSituations.map((item) => <div className="requirement-item compact narrative" key={item}><ShieldCheck size={16} /><span>{item}</span></div>)}
-            </article>
-            <article className="role-reality-card">
-              <p className="mono-label">Portfolio proof</p>
-              <h3>Năng lực cần chứng minh</h3>
-              {roleProof.map((item) => (
-                <div className="requirement-item compact narrative" key={item}>
-                  <BadgeCheck size={16} />
-                  <span>{item}</span>
+
+          {/* TABBED NAVIGATION FOR SECTION 03 */}
+          <div className="interactive-subnav-tabs">
+            <button className={`interactive-tab-btn ${detailTab === 'overview' ? 'active' : ''}`} onClick={() => setDetailTab('overview')}>
+              🎯 Tổng quan & Công việc
+            </button>
+            <button className={`interactive-tab-btn ${detailTab === 'responsibilities' ? 'active' : ''}`} onClick={() => setDetailTab('responsibilities')}>
+              🛠 Trách nhiệm & Năng lực
+            </button>
+            <button className={`interactive-tab-btn ${detailTab === 'challenges' ? 'active' : ''}`} onClick={() => setDetailTab('challenges')}>
+              🚀 Dự án & Thử thách
+            </button>
+          </div>
+
+          {/* TAB 1: TỔNG QUAN & CÔNG VIỆC */}
+          {detailTab === 'overview' && (
+            <>
+              <section className="role-work-gallery">
+                <div className="card-topline">
+                  <span>Ảnh minh họa công việc</span>
+                  <strong>{workIllustrations.length} ảnh</strong>
                 </div>
-              ))}
-              <div className="tabs compact-tabs">
-                {Object.entries(tabItems).map(([key, value]) => (
-                  <button key={key} className={tab === key ? 'active' : ''} onClick={() => setTab(key)}>{value.label}</button>
-                ))}
+                <div className="work-gallery-grid">
+                  {workIllustrations.map((item) => (
+                    <figure className="work-gallery-card" key={`${selectedRole.id}-${item.title}`}>
+                      <img src={item.src} alt={`${item.title} - ${selectedRole.title}`} loading="lazy" />
+                      <figcaption>
+                        <strong>{item.title}</strong>
+                        <span>{item.subtitle}</span>
+                      </figcaption>
+                    </figure>
+                  ))}
+                </div>
+              </section>
+              <div className="role-detail-grid">
+                <article className="role-reality-card">
+                  <p className="mono-label">Trong một ngày làm việc</p>
+                  <h3>Một ngày của {selectedRole.title}</h3>
+                  {dailyWork.map((item) => <div className="requirement-item compact narrative" key={item}><Check size={16} /><span>{item}</span></div>)}
+                </article>
               </div>
-              <div className="proof-tab-panel">
-                <p className="mono-label">{tabItems[tab].label} cần thể hiện</p>
-                {tabItems[tab].items.slice(0, 5).map((item) => (
-                  <div className="requirement-item compact narrative proof-row" key={item}>
-                    <BadgeCheck size={15} />
+            </>
+          )}
+
+          {/* TAB 2: TRÁCH NHIỆM & NĂNG LỰC */}
+          {detailTab === 'responsibilities' && (
+            <div className="role-detail-grid">
+              <article className="role-reality-card">
+                <p className="mono-label">Trách nhiệm nghề nghiệp</p>
+                <h3>Bạn chịu trách nhiệm gì?</h3>
+                {roleResponsibilities.map((item) => <div className="requirement-item compact narrative" key={item}><BadgeCheck size={16} /><span>{item}</span></div>)}
+              </article>
+              <article className="role-reality-card">
+                <p className="mono-label">Áp lực thực tế</p>
+                <h3>Tình huống thường gặp</h3>
+                {roleSituations.map((item) => <div className="requirement-item compact narrative" key={item}><ShieldCheck size={16} /><span>{item}</span></div>)}
+              </article>
+              <article className="role-reality-card">
+                <p className="mono-label">Portfolio proof</p>
+                <h3>Năng lực cần chứng minh</h3>
+                {roleProof.map((item) => (
+                  <div className="requirement-item compact narrative" key={item}>
+                    <BadgeCheck size={16} />
                     <span>{item}</span>
                   </div>
                 ))}
-              </div>
-            </article>
-          </div>
-          <article className="source-credibility-card">
-            <div>
-              <p className="mono-label">Nguồn & độ tin cậy</p>
-              <strong>Cập nhật {updatedLabel}</strong>
+                <div className="tabs compact-tabs">
+                  {Object.entries(tabItems).map(([key, value]) => (
+                    <button key={key} className={tab === key ? 'active' : ''} onClick={() => setTab(key)}>{value.label}</button>
+                  ))}
+                </div>
+                <div className="proof-tab-panel">
+                  <p className="mono-label">{tabItems[tab].label} cần thể hiện</p>
+                  {tabItems[tab].items.slice(0, 5).map((item) => (
+                    <div className="requirement-item compact narrative proof-row" key={item}>
+                      <BadgeCheck size={15} />
+                      <span>{item}</span>
+                    </div>
+                  ))}
+                </div>
+              </article>
             </div>
-            <p>{marketSignal.headline}</p>
-            <div className="source-mini-grid">
-              <span><BadgeCheck size={14} /> {marketSignal.confidence}</span>
-              <span><BookOpen size={14} /> {trustedMarketSources.length} nguồn</span>
-            </div>
-            <button className="ghost-action compact" onClick={() => go('trends')}>
-              Xem xu hướng thị trường
-              <Sparkles size={15} />
-            </button>
-          </article>
+          )}
 
-          <div className="recommended-challenge-panel embedded">
-            <div className="step-heading">
-              <b>04</b>
-              <div>
-                <p className="mono-label">Bài tập đề xuất</p>
-                <h2>Để đạt vị trí {selectedRole.title}</h2>
-              </div>
-            </div>
-            <div className="recommended-challenge-grid">
-              {(suggestedChallenges.length ? suggestedChallenges : (challenges ?? []).filter((challenge) => challenge.majorKey === currentMajor.key).slice(0, 3)).map((challenge) => (
-                <article className="recommended-challenge-card" key={challenge.id}>
-                  <div className="challenge-illustration mini" data-track={challenge.track}>
-                    <span>{challenge.track}</span>
-                  </div>
+          {/* TAB 3: DỰ ÁN & THỬ THÁCH */}
+          {detailTab === 'challenges' && (
+            <>
+              <article className="source-credibility-card">
+                <div>
+                  <p className="mono-label">Nguồn & độ tin cậy</p>
+                  <strong>Cập nhật {updatedLabel}</strong>
+                </div>
+                <p>{marketSignal.headline}</p>
+                <div className="source-mini-grid">
+                  <span><BadgeCheck size={14} /> {marketSignal.confidence}</span>
+                  <span><BookOpen size={14} /> {trustedMarketSources.length} nguồn</span>
+                </div>
+                <button className="ghost-action compact" onClick={() => go('trends')}>
+                  Xem xu hướng thị trường
+                  <Sparkles size={15} />
+                </button>
+              </article>
+
+              <div className="recommended-challenge-panel embedded">
+                <div className="step-heading">
+                  <b>04</b>
                   <div>
-                    <strong>{challenge.title}</strong>
-                    <span>{challenge.difficulty} · {challenge.xp} XP · {challenge.due}</span>
+                    <p className="mono-label">Bài tập đề xuất</p>
+                    <h2>Để đạt vị trí {selectedRole.title}</h2>
                   </div>
-                  <button className="ghost-action compact" onClick={() => { setSelectedChallengeId(challenge.id); go('join'); }}>
-                    Xem bài
-                    <Rocket size={15} />
-                  </button>
-                </article>
-              ))}
-            </div>
-          </div>
+                </div>
+                <div className="recommended-challenge-grid">
+                  {(suggestedChallenges.length ? suggestedChallenges : (challenges ?? []).filter((challenge) => challenge.majorKey === currentMajor.key).slice(0, 3)).map((challenge) => (
+                    <article className="recommended-challenge-card" key={challenge.id}>
+                      <div className="challenge-illustration mini" data-track={challenge.track}>
+                        <span>{challenge.track}</span>
+                      </div>
+                      <div>
+                        <strong>{challenge.title}</strong>
+                        <span>{challenge.difficulty} · {challenge.xp} XP · {challenge.due}</span>
+                      </div>
+                      <button className="ghost-action compact" onClick={() => { setSelectedChallengeId(challenge.id); go('join'); }}>
+                        Xem bài
+                        <Rocket size={15} />
+                      </button>
+                    </article>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
         </section>
       )}
     </section>
   );
 }
 
-function MarketTrendsPage({ majors, currentMajor, changeMajor, go }) {
-  const signal = marketSignalsByMajor[currentMajor.key] ?? marketSignalsByMajor.dev;
-  const evidence = marketEvidenceByMajor[currentMajor.key] ?? marketEvidenceByMajor.dev;
-  const research = marketResearchBriefByMajor[currentMajor.key] ?? marketResearchBriefByMajor.dev;
-  const updatedLabel = getMarketUpdatedLabel();
-  const sourcePreview = trustedMarketSources.filter((source) => source.majorKeys?.includes(currentMajor.key));
-  const sourceByName = Object.fromEntries(trustedMarketSources.map((source) => [source.name, source]));
-  return (
-    <section className="content-page trend-page">
-      <div className="section-heading inline">
-        <div>
-          <p className="mono-label">Market intelligence · {currentMajor.short}</p>
-          <h1>Xu hướng thị trường {currentMajor.title}</h1>
-          <p>Dữ liệu dùng để tham khảo khi chọn chuyên ngành, ưu tiên kỹ năng và chọn bài tập portfolio. Các chỉ báo được tổng hợp từ báo cáo lương, job board và nguồn tuyển dụng công khai.</p>
-        </div>
-        <div className="trend-heading-actions">
-          <div className="major-switcher trend-major-switcher">
-            {majors.map((major) => (
-              <button key={major.key} className={currentMajor.key === major.key ? 'active' : ''} onClick={() => changeMajor(major.key)}>
-                {major.short}
-              </button>
-            ))}
-          </div>
-          <div className="market-freshness-card">
-            <Sparkles size={20} />
-            <div>
-              <strong>Cập nhật {updatedLabel}</strong>
-              <span>Trạng thái nguồn: đang theo dõi</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="trend-hero-grid">
-        <article className="trend-summary-card">
-          <p className="mono-label">Tín hiệu chính</p>
-          <h2>{signal.headline}</h2>
-          <p>{signal.updatedPolicy}</p>
-          <div className="source-mini-grid">
-            <span><BadgeCheck size={15} /> Độ tin cậy: {signal.confidence}</span>
-            <span><BookOpen size={15} /> {trustedMarketSources.length} nguồn tham khảo</span>
-          </div>
-        </article>
-        <article className="trend-skill-cloud">
-          <p className="mono-label">Kỹ năng nên ưu tiên</p>
-          <div className="tag-row">
-            {signal.hotSkills.map((skill) => <span key={skill}>{skill}</span>)}
-          </div>
-        </article>
-      </div>
-
-      <div className="research-brief-grid">
-        <article className="research-method-card">
-          <p className="mono-label">Research question</p>
-          <h2>{research.researchQuestion}</h2>
-          <strong>Kết luận analyst</strong>
-          <p>{research.analystConclusion}</p>
-          <div className="method-list">
-            {research.methodology.map((item) => (
-              <span key={item}><ShieldCheck size={15} /> {item}</span>
-            ))}
-          </div>
-        </article>
-      </div>
-
-      <div className="research-finding-grid">
-        {research.findings.map((finding, index) => (
-          <article className="research-finding-card" key={finding.claim}>
-            <b>{String(index + 1).padStart(2, '0')}</b>
-            <div>
-              <h3>{finding.claim}</h3>
-              <p>{finding.evidence}</p>
-              <div className="source-badge-row">
-                {finding.sources.map((name) => {
-                  const source = sourceByName[name];
-                  return source ? (
-                    <a href={source.url} target="_blank" rel="noreferrer" key={name}>{name}</a>
-                  ) : (
-                    <span key={name}>{name}</span>
-                  );
-                })}
-              </div>
-            </div>
-          </article>
-        ))}
-      </div>
-
-      <div className="trend-signal-grid">
-        {signal.signals.map((item) => (
-          <article className="trend-signal-card" key={item.label}>
-            <span>{item.label}</span>
-            <h2>{item.value}</h2>
-            <p>{item.note}</p>
-          </article>
-        ))}
-      </div>
-
-      <div className="evidence-grid">
-        {evidence.metrics.map((item) => (
-          <article className="evidence-card" key={`${item.label}-${item.value}`}>
-            <span>{item.source}</span>
-            <h2>{item.value}</h2>
-            <strong>{item.label}</strong>
-            <p>{item.note}</p>
-          </article>
-        ))}
-      </div>
-
-      <article className="trend-reasoning-card">
-        <p className="mono-label">Lý luận đề xuất lộ trình</p>
-        {evidence.reasoning.map((item) => (
-          <div className="activity-row" key={item}><ShieldCheck size={15} /><span>{item}</span></div>
-        ))}
-      </article>
-
-      <div className="analyst-action-grid">
-        <article className="trend-reasoning-card">
-          <p className="mono-label">Khuyến nghị hành động</p>
-          {research.implications.map((item) => (
-            <div className="activity-row" key={item}><Check size={15} /><span>{item}</span></div>
-          ))}
-        </article>
-        <article className="trend-reasoning-card warning">
-          <p className="mono-label">Rủi ro khi diễn giải</p>
-          {research.riskNotes.map((item) => (
-            <div className="activity-row" key={item}><Sparkles size={15} /><span>{item}</span></div>
-          ))}
-        </article>
-      </div>
-
-      <div className="source-grid">
-        {sourcePreview.map((source) => (
-          <a className="source-card" href={source.url} target="_blank" rel="noreferrer" key={source.name}>
-            <span>{source.type}</span>
-            <strong>{source.name}</strong>
-            <p>{source.useFor}</p>
-            <small>{source.reliability}</small>
-            <i>{source.url.replace(/^https?:\/\//, '')}</i>
-          </a>
-        ))}
-      </div>
-
-      <div className="trend-note">
-        <ShieldCheck size={18} />
-        <span>Business rule demo: salary trong bản đồ nghề là mức tham khảo theo band, không phải cam kết. Khi nối API thật, hệ thống sẽ lưu snapshot nguồn theo ngày để admin kiểm duyệt trước khi hiển thị cho student.</span>
-      </div>
-
-      <div className="submit-actions">
-        <button className="ghost-action" onClick={() => go('roadmap')}><Compass size={17} /> Quay lại bản đồ nghề</button>
-        <button className="primary-action" onClick={() => go('hub')}><LayoutDashboard size={17} /> Chọn thử thách theo xu hướng</button>
-      </div>
-    </section>
-  );
-}
+/* MarketTrendsPage extracted to src/pages/MarketTrendsPage.jsx */
 
 function LearningPage({ go }) {
   const [selectedMajor, setSelectedMajor] = useState('Tất cả');
