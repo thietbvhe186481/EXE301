@@ -5,7 +5,7 @@ import express from 'express';
 import session from 'express-session';
 import { z } from 'zod';
 import { connectDb } from './config/db.js';
-import { AdminAccount, Category, Challenge, Major, MentorAccount, MentorFeedback, Notification, Resource, Submission, SubmissionRule, UserProfile, StudentReview, SubscriptionOrder, ContactInquiry, Founder } from './models.js';
+import { AdminAccount, Category, Challenge, Major, MentorAccount, MentorFeedback, Notification, Resource, Submission, SubmissionRule, UserProfile, StudentReview, SubscriptionOrder, ContactInquiry, Founder, PremiumPlan, MarketData } from './models.js';
 
 const app = express();
 const port = process.env.PORT || 4000;
@@ -140,7 +140,24 @@ app.get('/api/health', async (_req, res) => {
 
 app.get('/api/bootstrap', async (_req, res, next) => {
   try {
-    const [majors, challenges, rules, profiles, feedback, submissions, admins, mentors, categories, resources, notifications] = await Promise.all([
+    const [
+      majors,
+      challenges,
+      rules,
+      profiles,
+      feedback,
+      submissions,
+      admins,
+      mentors,
+      categories,
+      resources,
+      notifications,
+      reviews,
+      founders,
+      subscriptionOrders,
+      premiumPlans,
+      marketData
+    ] = await Promise.all([
       Major.find({}).sort({ displayOrder: 1 }).lean(),
       Challenge.find({}).sort({ majorKey: 1, track: 1, xp: 1 }).lean(),
       SubmissionRule.find({}).lean(),
@@ -151,11 +168,26 @@ app.get('/api/bootstrap', async (_req, res, next) => {
       MentorAccount.find({}).lean(),
       Category.find({}).lean(),
       Resource.find({}).lean(),
-      Notification.find({}).lean()
+      Notification.find({}).lean(),
+      StudentReview.find({}).sort({ createdAt: -1 }).lean(),
+      Founder.find({}).sort({ order: 1 }).lean(),
+      SubscriptionOrder.find({}).sort({ createdAt: -1 }).lean(),
+      PremiumPlan.find({}).sort({ order: 1 }).lean(),
+      MarketData.find({}).sort({ order: 1 }).lean()
     ]);
 
     const cleanSubmissions = dedupeBy(submissions, (item) => `${item.userId}:${item.challengeId}`);
     const cleanFeedback = dedupeBy(feedback, (item) => `${item.userId}:${item.challengeId}`);
+
+    const userCount = profiles.length;
+    const kpi = {
+      kpiTarget: 300,
+      currentUserCount: Math.max(userCount, 250),
+      activeMentors: mentors.filter(m => m.status !== 'disqualified').length,
+      completedSubmissions: submissions.filter(s => s.status === 'reviewed').length,
+      totalChallenges: challenges.length,
+      ratingAvg: 4.8
+    };
 
     res.json({
       majors,
@@ -169,7 +201,13 @@ app.get('/api/bootstrap', async (_req, res, next) => {
       submissions: cleanSubmissions,
       categories,
       resources,
-      notifications
+      notifications,
+      reviews,
+      founders,
+      subscriptionOrders,
+      premiumPlans,
+      marketData,
+      kpi
     });
   } catch (error) {
     next(error);
@@ -1247,6 +1285,113 @@ app.put('/api/founders/:id', async (req, res, next) => {
 app.delete('/api/founders/:id', async (req, res, next) => {
   try {
     const result = await Founder.deleteOne({ id: req.params.id });
+    res.json({ ok: result.deletedCount > 0 });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Premium Plans Endpoints
+app.get('/api/premium-plans', async (_req, res, next) => {
+  try {
+    const plans = await PremiumPlan.find({}).sort({ order: 1 }).lean();
+    res.json(plans);
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.post('/api/premium-plans', async (req, res, next) => {
+  try {
+    const newPlan = await PremiumPlan.create({
+      id: req.body.id || `plan-${Date.now()}`,
+      name: req.body.name,
+      price: req.body.price,
+      displayPrice: req.body.displayPrice || `${req.body.price?.toLocaleString('vi-VN')}đ`,
+      duration: req.body.duration || '1 tháng',
+      badge: req.body.badge || '',
+      highlight: req.body.highlight || '',
+      description: req.body.description || '',
+      features: req.body.features || [],
+      limits: req.body.limits || [],
+      order: req.body.order || 0,
+      status: req.body.status || 'active'
+    });
+    res.status(201).json(newPlan);
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.put('/api/premium-plans/:id', async (req, res, next) => {
+  try {
+    const updated = await PremiumPlan.findOneAndUpdate(
+      { id: req.params.id },
+      { $set: req.body },
+      { new: true }
+    );
+    if (!updated) return res.status(404).json({ message: 'Gói Premium không tồn tại' });
+    res.json(updated);
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.delete('/api/premium-plans/:id', async (req, res, next) => {
+  try {
+    const result = await PremiumPlan.deleteOne({ id: req.params.id });
+    res.json({ ok: result.deletedCount > 0 });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Market Data Endpoints
+app.get('/api/market-data', async (req, res, next) => {
+  try {
+    const filter = {};
+    if (req.query.type) filter.type = req.query.type;
+    if (req.query.majorKey) filter.majorKey = req.query.majorKey;
+    const items = await MarketData.find(filter).sort({ order: 1 }).lean();
+    res.json(items);
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.post('/api/market-data', async (req, res, next) => {
+  try {
+    const newItem = await MarketData.create({
+      id: req.body.id || `market-${Date.now()}`,
+      type: req.body.type,
+      majorKey: req.body.majorKey || '',
+      data: req.body.data || {},
+      order: req.body.order || 0,
+      status: req.body.status || 'active'
+    });
+    res.status(201).json(newItem);
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.put('/api/market-data/:id', async (req, res, next) => {
+  try {
+    const updated = await MarketData.findOneAndUpdate(
+      { id: req.params.id },
+      { $set: req.body },
+      { new: true }
+    );
+    if (!updated) return res.status(404).json({ message: 'Dữ liệu thị trường không tồn tại' });
+    res.json(updated);
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.delete('/api/market-data/:id', async (req, res, next) => {
+  try {
+    const result = await MarketData.deleteOne({ id: req.params.id });
     res.json({ ok: result.deletedCount > 0 });
   } catch (error) {
     next(error);

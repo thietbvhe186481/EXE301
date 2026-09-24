@@ -1263,6 +1263,34 @@ function App() {
   }, []);
 
   const catalog = appData?.majors?.length ? appData.majors : majorCatalog;
+  const activePremiumPlans = useMemo(() => {
+    return appData?.premiumPlans?.length ? appData.premiumPlans : premiumPlans;
+  }, [appData?.premiumPlans]);
+
+  const marketSignalsByMajorFromRemote = useMemo(() => {
+    if (!appData?.marketData?.length) return marketSignalsByMajor;
+    const signals = {};
+    appData.marketData.filter(m => m.type === 'signal').forEach(item => {
+      if (item.majorKey) signals[item.majorKey] = item.data;
+    });
+    return Object.keys(signals).length ? { ...marketSignalsByMajor, ...signals } : marketSignalsByMajor;
+  }, [appData?.marketData]);
+
+  const marketResearchBriefByMajorFromRemote = useMemo(() => {
+    if (!appData?.marketData?.length) return marketResearchBriefByMajor;
+    const briefs = {};
+    appData.marketData.filter(m => m.type === 'research').forEach(item => {
+      if (item.majorKey) briefs[item.majorKey] = item.data;
+    });
+    return Object.keys(briefs).length ? { ...marketResearchBriefByMajor, ...briefs } : marketResearchBriefByMajor;
+  }, [appData?.marketData]);
+
+  const trustedMarketSourcesFromRemote = useMemo(() => {
+    if (!appData?.marketData?.length) return trustedMarketSources;
+    const sources = appData.marketData.filter(m => m.type === 'source').map(m => m.data);
+    return sources.length ? sources : trustedMarketSources;
+  }, [appData?.marketData]);
+
   const remoteChallenges = appData?.challenges?.length ? appData.challenges : [];
   const challengeList = remoteChallenges.length
     ? [
@@ -1293,7 +1321,7 @@ function App() {
     setCurrentUser((current) => {
       const role = current?.type ?? current?.user?.role;
       if (!current?.user || role !== 'student') {
-        const baseUser = appData?.demoUser ?? demoUsers[0];
+        const baseUser = appData?.demoUser ?? (appData?.users?.[0] ?? demoUsers[0]);
         return {
           type: 'student',
           user: {
@@ -1422,7 +1450,8 @@ function App() {
     }
   };
   const loginAs = (type, customPayload = null) => {
-    const selectedDemoUser = demoUsers.find((user) => user.selectedMajorKey === selectedMajorKey) ?? appData?.demoUser ?? demoUsers[0];
+    const userPool = appData?.users?.length ? appData.users : demoUsers;
+    const selectedDemoUser = userPool.find((user) => user.selectedMajorKey === selectedMajorKey) ?? appData?.demoUser ?? userPool[0];
     const buildStudentForSelectedMajor = (baseUser = selectedDemoUser) => {
       const loginMajor = catalog.find((item) => item.key === selectedMajorKey) ?? catalog[0];
       const loginPath = baseUser.selectedMajorKey === selectedMajorKey && baseUser.path?.length
@@ -1479,9 +1508,9 @@ function App() {
       })
       .catch(() => {
         const fallback = type === 'admin'
-          ? { type: 'admin', user: demoAdmins[0] }
+          ? { type: 'admin', user: (appData?.admins?.length ? appData.admins : demoAdmins)[0] }
           : type === 'mentor'
-            ? { type: 'mentor', user: demoMentors[0] }
+            ? { type: 'mentor', user: (appData?.mentors?.length ? appData.mentors : demoMentors)[0] }
             : { type: 'student', user: buildStudentForSelectedMajor().user };
         setCurrentUser(fallback);
         if (type === 'student') {
@@ -1816,8 +1845,8 @@ function App() {
           setIsVipModalOpen(false);
           setQrModalPlan(null);
         }}
-        plans={premiumPlans}
-        initialPlan={qrModalPlan || premiumPlans[1]}
+        plans={activePremiumPlans}
+        initialPlan={qrModalPlan || activePremiumPlans[1]}
         currentUser={currentUser}
         onPaymentSuccess={(plan) => {
           upgradePlan(plan);
@@ -1852,6 +1881,7 @@ function App() {
             submissionRulesData={rulesByMajor}
             loginAs={loginAs}
             go={go}
+            users={appData.users ?? []}
           />
         )}
         {page === 'learning' && <LearningPage go={go} />}
@@ -1879,10 +1909,22 @@ function App() {
             userMajorKey={userMajorKey}
             challenges={challengeList}
             setSelectedChallengeId={setSelectedChallengeId}
+            marketSignalsByMajor={marketSignalsByMajorFromRemote}
             go={go}
           />
         )}
-        {page === 'trends' && <MarketTrendsPage majors={catalog} currentMajor={currentMajor} changeMajor={changeMajor} go={go} marketSignalsByMajor={marketSignalsByMajor} marketResearchBriefByMajor={marketResearchBriefByMajor} trustedMarketSources={trustedMarketSources} getMarketUpdatedLabel={getMarketUpdatedLabel} />}
+        {page === 'trends' && (
+          <MarketTrendsPage
+            majors={catalog}
+            currentMajor={currentMajor}
+            changeMajor={changeMajor}
+            go={go}
+            marketSignalsByMajor={marketSignalsByMajorFromRemote}
+            marketResearchBriefByMajor={marketResearchBriefByMajorFromRemote}
+            trustedMarketSources={trustedMarketSourcesFromRemote}
+            getMarketUpdatedLabel={getMarketUpdatedLabel}
+          />
+        )}
         {page === 'hub' && (
           <ChallengeHubPage
             currentMajor={currentMajor}
@@ -1905,7 +1947,7 @@ function App() {
         {page === 'submissionHistory' && <SubmissionHistoryPage demoUser={demoUser} submissions={submissionList} challenges={challengeList} feedbackList={feedbackList} setSelectedChallengeId={setSelectedChallengeId} go={go} />}
         {(page === 'premium' || page === 'pricing') && (
           <PremiumPage
-            plans={premiumPlans}
+            plans={activePremiumPlans}
             activeSubscription={activeSubscription}
             upgradePlan={upgradePlan}
             onOpenQr={(p) => {
@@ -1929,10 +1971,11 @@ function App() {
   );
 }
 
-function AuthPage({ authMode, setAuthMode, majors, selectedMajorKey, changeMajor, submissionRulesData, loginAs, go }) {
+function AuthPage({ authMode, setAuthMode, majors, selectedMajorKey, changeMajor, submissionRulesData, loginAs, go, users = [] }) {
   const selectedMajor = majors.find((item) => item.key === selectedMajorKey) ?? majors[0];
   const isSignup = authMode === 'signup';
-  const selectedDemoStudent = demoUsers.find((user) => user.selectedMajorKey === selectedMajorKey) ?? demoUsers[0];
+  const userPool = users?.length ? users : demoUsers;
+  const selectedDemoStudent = userPool.find((user) => user.selectedMajorKey === selectedMajorKey) ?? userPool[0];
   const selectedDemoCredentials = {
     email: selectedDemoStudent.email,
     password: '123456'
@@ -2062,7 +2105,7 @@ function AuthPage({ authMode, setAuthMode, majors, selectedMajorKey, changeMajor
   );
 }
 
-function CareerMapPage({ majors, currentMajor, changeMajor, columns, levels, selectedColumn, selectedRole, selectedRoleId, setSelectedRoleId, path, pathRoles, allRoles, addToPath, removeFromPath, movePath, clearPath, savePath, savedPathName, canBuildPath, userMajorKey, challenges, setSelectedChallengeId, go }) {
+function CareerMapPage({ majors, currentMajor, changeMajor, columns, levels, selectedColumn, selectedRole, selectedRoleId, setSelectedRoleId, path, pathRoles, allRoles, addToPath, removeFromPath, movePath, clearPath, savePath, savedPathName, canBuildPath, userMajorKey, challenges, setSelectedChallengeId, marketSignalsByMajor = {}, go }) {
   const [tab, setTab] = useState('skills');
   const [query, setQuery] = useState('');
   const [careerStep, setCareerStep] = useState('specialization');
@@ -2084,7 +2127,7 @@ function CareerMapPage({ majors, currentMajor, changeMajor, columns, levels, sel
     tools: { label: 'Công cụ', items: selectedRole.tools }
   };
 
-  const marketSignal = marketSignalsByMajor[currentMajor.key] ?? marketSignalsByMajor.dev;
+  const marketSignal = marketSignalsByMajor?.[currentMajor.key] ?? marketSignalsByMajor?.dev ?? {};
   const updatedLabel = getMarketUpdatedLabel();
   const suggestedChallenges = (challenges ?? [])
     .filter((challenge) => challenge.majorKey === currentMajor.key && challenge.track === selectedRole.track)

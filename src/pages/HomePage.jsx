@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   ArrowRight,
   Compass,
@@ -12,8 +12,88 @@ import {
 } from 'lucide-react';
 import { FoundersSection } from '../components/FoundersSection';
 import { PortfolioFooter } from '../components/PortfolioFooter';
+import { apiService } from '../services/api';
 
-export function HomePage({ go, onOpenUpgrade, onOpenFooterModal }) {
+const defaultReviews = [
+  {
+    id: 'rev-01',
+    name: 'Trần Hương',
+    school: 'ĐH FPT HCM',
+    roleTrack: 'Frontend Developer Intern',
+    quote: 'Mình đã từng không biết bắt đầu từ đâu khi làm CV. Nhờ hệ thống Portfolio này, mình có ngay lộ trình rõ ràng, làm 3 dự án thực tế và gửi portfolio trực tiếp cho nhà tuyển dụng. Kết quả: nhận intern tại FPT Software chỉ sau 2 tuần!',
+    avatarBg: '#8b5cf6'
+  },
+  {
+    id: 'rev-02',
+    name: 'Nguyễn Minh',
+    school: 'ĐH FPT Hà Nội',
+    roleTrack: 'Backend Engineer',
+    quote: 'Điều mình thích nhất là mentor review chuyên sâu theo khung STAR. Không chỉ chấm điểm mà còn gợi ý cách trình bày case study sao cho nhà tuyển dụng ấn tượng. Portfolio của mình sau khi hoàn thiện đã giúp mình pass vòng CV ở Viettel Digital.',
+    avatarBg: '#10b981',
+    featured: true
+  },
+  {
+    id: 'rev-03',
+    name: 'Lê Thảo',
+    school: 'ĐH FPT Cần Thơ',
+    roleTrack: 'Data Analyst Intern',
+    quote: 'Tính năng thẩm định CV chuẩn ATS cực kỳ hữu ích. Mình đã quét CV qua hệ thống, phát hiện thiếu từ khóa quan trọng và sửa ngay. Điểm ATS từ 45 lên 92. HR gọi phỏng vấn ngay tuần sau!',
+    avatarBg: '#0284c7'
+  },
+  {
+    id: 'rev-04',
+    name: 'Phạm Đức',
+    school: 'ĐH FPT Đà Nẵng',
+    roleTrack: 'DevOps Engineer',
+    quote: 'Bản đồ nghề nghiệp giúp mình nhìn rõ career path từ Junior đến Senior. Mình chọn track DevOps, làm challenge về Docker + CI/CD và được mentor đánh giá 95/100. Case study này trở thành highlight trong portfolio xin việc.',
+    avatarBg: '#f59e0b'
+  },
+  {
+    id: 'rev-05',
+    name: 'Vũ Linh',
+    school: 'ĐH FPT TP.HCM',
+    roleTrack: 'Mobile Developer',
+    quote: 'Mình ấn tượng với tính năng phỏng vấn AI. Nó giả lập phỏng vấn thật, hỏi behavioral + technical questions và cho feedback tức thì. Sau 5 lần luyện, mình pass vòng phỏng vấn cuối ở MoMo mà không run.',
+    avatarBg: '#ec4899'
+  },
+  {
+    id: 'rev-06',
+    name: 'Hoàng Anh',
+    school: 'Coursera & ĐH FPT',
+    roleTrack: 'Fullstack Developer',
+    quote: 'Gói Premium rất xứng đáng. Mình được mentor senior ở VNG review từng bài, gợi ý cải thiện code quality và portfolio layout. Public portfolio link mình gửi thẳng cho HR, không cần CV truyền thống nữa.',
+    avatarBg: '#14b8a6'
+  }
+];
+
+export function HomePage({ go, onOpenUpgrade, onOpenFooterModal, appData }) {
+  const [reviews, setReviews] = useState(defaultReviews);
+  const [kpiStats, setKpiStats] = useState({
+    currentUserCount: 250,
+    activeMentors: 50,
+    completedSubmissions: 100,
+    progressPercent: 83.3
+  });
+
+  useEffect(() => {
+    // 1. Fetch live student reviews from MongoDB
+    apiService.getReviews().then((data) => {
+      if (data && data.length > 0) {
+        setReviews(data);
+      }
+    }).catch(() => {});
+
+    // 2. Fetch live KPI stats from MongoDB
+    fetch('http://127.0.0.1:4000/api/kpi')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && data.currentUserCount) {
+          setKpiStats(data);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   return (
     <div className="jr-home-wrapper">
       {/* Hero Section */}
@@ -50,10 +130,10 @@ export function HomePage({ go, onOpenUpgrade, onOpenFooterModal }) {
           </button>
         </div>
 
-        {/* Live Stats */}
+        {/* Live Stats from MongoDB */}
         <div className="jr-stats-grid">
           <div className="jr-stat-card">
-            <span className="jr-stat-num">250+</span>
+            <span className="jr-stat-num">{kpiStats.currentUserCount}+</span>
             <span className="jr-stat-label">Sinh viên ĐH đã tạo Portfolio (KPI 200-300)</span>
           </div>
           <div className="jr-stat-card">
@@ -61,11 +141,11 @@ export function HomePage({ go, onOpenUpgrade, onOpenFooterModal }) {
             <span className="jr-stat-label">Portfolio đạt chuẩn tuyển dụng doanh nghiệp</span>
           </div>
           <div className="jr-stat-card">
-            <span className="jr-stat-num">100+</span>
+            <span className="jr-stat-num">{kpiStats.completedSubmissions || 100}+</span>
             <span className="jr-stat-label">Dự án & Thử thách thực tế đưa vào hồ sơ</span>
           </div>
           <div className="jr-stat-card">
-            <span className="jr-stat-num">50+</span>
+            <span className="jr-stat-num">{kpiStats.activeMentors || 50}+</span>
             <span className="jr-stat-label">Mentor chuyên gia (FPT Software, VNG, Viettel)</span>
           </div>
         </div>

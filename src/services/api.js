@@ -215,5 +215,34 @@ export const apiService = {
   },
   async deleteInquiry(inquiryId) {
     return fetchWithAuth(`/api/inquiries/${inquiryId}`, { method: 'DELETE' });
+  },
+
+  // Premium Plans CRUD
+  async getPremiumPlans() {
+    return fetchWithAuth('/api/premium-plans');
+  },
+  async createPremiumPlan(data) {
+    return fetchWithAuth('/api/premium-plans', { method: 'POST', body: JSON.stringify(data) });
+  },
+  async updatePremiumPlan(id, data) {
+    return fetchWithAuth(`/api/premium-plans/${id}`, { method: 'PUT', body: JSON.stringify(data) });
+  },
+  async deletePremiumPlan(id) {
+    return fetchWithAuth(`/api/premium-plans/${id}`, { method: 'DELETE' });
+  },
+
+  // Market Data CRUD
+  async getMarketData(params = {}) {
+    const query = new URLSearchParams(params).toString();
+    return fetchWithAuth(`/api/market-data${query ? `?${query}` : ''}`);
+  },
+  async createMarketData(data) {
+    return fetchWithAuth('/api/market-data', { method: 'POST', body: JSON.stringify(data) });
+  },
+  async updateMarketData(id, data) {
+    return fetchWithAuth(`/api/market-data/${id}`, { method: 'PUT', body: JSON.stringify(data) });
+  },
+  async deleteMarketData(id) {
+    return fetchWithAuth(`/api/market-data/${id}`, { method: 'DELETE' });
   }
 };

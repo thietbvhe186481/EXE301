@@ -266,6 +266,32 @@ const CategorySchema = new mongoose.Schema({
   status: { type: String, enum: ['active', 'hidden'], default: 'active' }
 }, baseSchemaOptions);
 
+// 16. Premium Plan
+const PremiumPlanSchema = new mongoose.Schema({
+  id: { type: String, required: true, unique: true },
+  name: { type: String, required: true },
+  price: { type: Number, required: true },
+  displayPrice: { type: String, required: true },
+  duration: { type: String, required: true },
+  badge: { type: String, default: '' },
+  highlight: { type: String, default: '' },
+  description: { type: String, default: '' },
+  features: { type: [String], default: [] },
+  limits: { type: [String], default: [] },
+  order: { type: Number, default: 0 },
+  status: { type: String, enum: ['active', 'hidden'], default: 'active' }
+}, baseSchemaOptions);
+
+// 17. Market Data (signals, evidence, research, sources)
+const MarketDataSchema = new mongoose.Schema({
+  id: { type: String, required: true, unique: true },
+  type: { type: String, enum: ['signal', 'evidence', 'research', 'source'], required: true, index: true },
+  majorKey: { type: String, default: '' },
+  data: { type: mongoose.Schema.Types.Mixed, default: {} },
+  order: { type: Number, default: 0 },
+  status: { type: String, enum: ['active', 'hidden'], default: 'active' }
+}, baseSchemaOptions);
+
 export const Major = mongoose.models.Major || mongoose.model('Major', MajorSchema);
 export const Challenge = mongoose.models.Challenge || mongoose.model('Challenge', ChallengeSchema);
 export const SubmissionRule = mongoose.models.SubmissionRule || mongoose.model('SubmissionRule', SubmissionRuleSchema);
@@ -281,3 +307,5 @@ export const StudentReview = mongoose.models.StudentReview || mongoose.model('St
 export const SubscriptionOrder = mongoose.models.SubscriptionOrder || mongoose.model('SubscriptionOrder', SubscriptionOrderSchema);
 export const ContactInquiry = mongoose.models.ContactInquiry || mongoose.model('ContactInquiry', ContactInquirySchema);
 export const Founder = mongoose.models.Founder || mongoose.model('Founder', FounderSchema);
+export const PremiumPlan = mongoose.models.PremiumPlan || mongoose.model('PremiumPlan', PremiumPlanSchema);
+export const MarketData = mongoose.models.MarketData || mongoose.model('MarketData', MarketDataSchema);
