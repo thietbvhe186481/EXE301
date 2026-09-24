@@ -1172,6 +1172,7 @@ function matchMentorForChallenge(challenge, mentors = []) {
 }
 
 function App() {
+  const [qrModalPlan, setQrModalPlan] = useState(null);
   const [page, setPage] = useState('home');
   const [authMode, setAuthMode] = useState('login');
   const [theme, setTheme] = useState(() => {
@@ -1491,7 +1492,7 @@ function App() {
       mentor: ['mentor', 'home', 'learning', 'pricing', 'about', 'roadmap', 'trends'],
       admin: ['admin', 'home', 'learning', 'pricing', 'about', 'roadmap', 'trends']
     };
-    const publicPages = ['home', 'learning', 'pricing', 'about', 'roadmap', 'trends', 'auth'];
+    const publicPages = ['home', 'learning', 'pricing', 'about', 'roadmap', 'trends', 'hub', 'portfolio', 'auth'];
     if (!currentUser && !publicPages.includes(page)) {
       setPage('home');
       return;
@@ -1793,7 +1794,26 @@ function App() {
 
   return (
     <div className={`app-shell page-${page}`} data-theme={theme}>
-      <Header page={page} go={go} currentUser={currentUser} theme={theme} setTheme={setTheme} logout={logout} loginAs={loginAs} />
+      <Header
+        page={page}
+        go={go}
+        currentUser={currentUser}
+        theme={theme}
+        setTheme={setTheme}
+        logout={logout}
+        loginAs={loginAs}
+        onOpenQrPayment={() => setQrModalPlan(premiumPlans[0])}
+      />
+      <VietQrPaymentModal
+        isOpen={Boolean(qrModalPlan)}
+        onClose={() => setQrModalPlan(null)}
+        plan={qrModalPlan}
+        currentUser={currentUser}
+        onPaymentSuccess={(plan) => {
+          upgradePlan(plan);
+          alert(`🎉 Chúc mừng bạn đã nâng cấp thành công gói ${plan.name}! Quyền lợi Mentor Review và Chat 1-on-1 đã được kích hoạt.`);
+        }}
+      />
       <main>
         {flowNotice && <div className="flow-notice status-banner warning"><ShieldCheck size={17} /> {flowNotice}</div>}
         {page === 'home' && <HomePage go={go} />}
@@ -1858,7 +1878,7 @@ function App() {
         {page === 'feedback' && <MentorFeedbackPage go={go} challenge={selectedChallenge} submissions={submissionList} feedbackList={feedbackList} challenges={challengeList} userId={userId} mentors={appData.mentors ?? []} setSelectedChallengeId={setSelectedChallengeId} createFeedback={() => createFeedback(selectedChallenge.id, userId)} />}
         {page === 'portfolio' && <PortfolioPage pathRoles={pathRoles} currentMajor={currentMajor} go={go} demoUser={demoUser} apiStatus={apiStatus} submissions={submissionList} challenges={challengeList} updatePortfolio={updatePortfolio} updateStudentProfile={updateStudentProfile} isPremium={isPremium} autoOpenPublicPortfolio={autoOpenPublicPortfolio} onPublicPortfolioOpened={() => setAutoOpenPublicPortfolio(false)} />}
         {page === 'submissionHistory' && <SubmissionHistoryPage demoUser={demoUser} submissions={submissionList} challenges={challengeList} feedbackList={feedbackList} setSelectedChallengeId={setSelectedChallengeId} go={go} />}
-        {(page === 'premium' || page === 'pricing') && <PremiumPage plans={premiumPlans} activeSubscription={activeSubscription} upgradePlan={upgradePlan} go={go} />}
+        {(page === 'premium' || page === 'pricing') && <PremiumPage plans={premiumPlans} activeSubscription={activeSubscription} upgradePlan={upgradePlan} onOpenQr={(p) => setQrModalPlan(p)} go={go} />}
         {page === 'about' && <AboutPage go={go} />}
         {page === 'mentor' && <MentorPage apiStatus={apiStatus} data={managementData} currentUser={currentUser} refreshData={refreshData} createFeedback={createFeedback} updateSubmissionFromMentor={updateSubmissionFromMentor} setNotice={setAdminNotice} notice={adminNotice} />}
         {page === 'admin' && <AdminPage apiStatus={apiStatus} data={managementData} notice={adminNotice} currentUser={currentUser} refreshData={refreshData} setAdminNotice={setAdminNotice} createFeedback={createFeedback} />}
@@ -1867,173 +1887,167 @@ function App() {
   );
 }
 
-function Header({ page, go, currentUser, theme, setTheme, logout, loginAs }) {
-  const [openNavGroup, setOpenNavGroup] = useState(null);
+function Header({ page, go, currentUser, theme, setTheme, logout, loginAs, onOpenQrPayment }) {
   const [accountOpen, setAccountOpen] = useState(false);
+  const [demoMenuOpen, setDemoMenuOpen] = useState(false);
   const currentRole = currentUser?.type ?? currentUser?.user?.role;
-  const roleFlow = currentRole === 'student'
-    ? flow.filter((item) => ['roadmap', 'trends', 'hub', 'join', 'submit', 'feedback', 'portfolio', 'premium'].includes(item.id))
-    : currentRole === 'mentor'
-      ? flow.filter((item) => item.id === 'mentor')
-      : currentRole === 'admin'
-        ? flow.filter((item) => item.id === 'admin')
-        : flow.filter((item) => item.id === 'auth');
-  const publicFlow = [
-    { id: 'intro', label: 'Trang chủ', icon: Compass, target: 'home' },
-    { id: 'roadmap-preview', label: 'Bản đồ nghề', icon: LayoutDashboard, target: 'roadmap' },
-    { id: 'trends-preview', label: 'Xu hướng thị trường', icon: BarChart2, target: 'trends' },
-    { id: 'hub-preview', label: 'Thử thách dự án', icon: Rocket, target: 'hub' },
-    { id: 'portfolio-preview', label: 'Hồ sơ Portfolio', icon: UserRound, target: 'portfolio' },
-    { id: 'learning-preview', label: 'Học liệu ĐH FPT', icon: GraduationCap, target: 'learning' },
-    { id: 'pricing-preview', label: 'Gói Premium', icon: Crown, target: 'pricing' },
+  const userPlan = currentUser?.user?.subscription?.planName || 'Free';
+  const isVipOrPro = userPlan.toLowerCase().includes('pro') || userPlan.toLowerCase().includes('vip') || userPlan.toLowerCase().includes('premium');
+
+  const studentNav = [
+    { id: 'home', label: 'Trang chủ', icon: Compass, target: 'home' },
+    { id: 'roadmap', label: 'Bản đồ nghề', icon: LayoutDashboard, target: 'roadmap' },
+    { id: 'trends', label: 'Xu hướng', icon: BarChart2, target: 'trends' },
+    { id: 'hub', label: 'Thử thách', icon: Rocket, target: 'hub' },
+    { id: 'submit', label: 'Nộp bài', icon: FileUp, target: 'submit' },
+    { id: 'feedback', label: 'Góp ý Mentor', icon: MessageSquareText, target: 'feedback' },
+    { id: 'portfolio', label: 'Hồ sơ Portfolio', icon: UserRound, target: 'portfolio' },
+    { id: 'learning', label: 'Học liệu FPT', icon: GraduationCap, target: 'learning' },
+    { id: 'pricing', label: 'Gói Premium', icon: Crown, target: 'pricing' }
+  ];
+
+  const publicNav = [
+    { id: 'home', label: 'Trang chủ', icon: Compass, target: 'home' },
+    { id: 'roadmap', label: 'Bản đồ nghề', icon: LayoutDashboard, target: 'roadmap' },
+    { id: 'trends', label: 'Xu hướng thị trường', icon: BarChart2, target: 'trends' },
+    { id: 'hub', label: 'Thử thách dự án', icon: Rocket, target: 'hub' },
+    { id: 'portfolio', label: 'Hồ sơ Portfolio', icon: UserRound, target: 'portfolio' },
+    { id: 'learning', label: 'Học liệu FPT', icon: GraduationCap, target: 'learning' },
+    { id: 'pricing', label: 'Gói Premium', icon: Crown, target: 'pricing' },
     { id: 'about', label: 'Về chúng tôi', icon: BookOpen, target: 'about' }
   ];
-  const navItems = currentUser ? roleFlow : publicFlow;
-  const byId = (id) => navItems.find((item) => item.id === id);
-  const navGroups = currentRole === 'student'
-    ? [
-        { id: 'home-nav', label: 'Trang chủ', icon: Compass, target: 'home' },
-        { id: 'roadmap', label: 'Bản đồ nghề', icon: LayoutDashboard, target: 'roadmap' },
-        { id: 'trends-nav', label: 'Xu hướng thị trường', icon: BarChart2, target: 'trends' },
-        { id: 'practice', label: 'Thử thách dự án', icon: Rocket, items: ['hub', 'join', 'submit', 'feedback'].map(byId).filter(Boolean) },
-        { id: 'portfolio-nav', label: 'Hồ sơ Portfolio', icon: UserRound, target: 'portfolio' },
-        { id: 'learning-nav', label: 'Học liệu FPT', icon: GraduationCap, target: 'learning' },
-        { id: 'premium-direct', label: 'Gói Premium', icon: Crown, target: 'pricing' }
-      ]
-    : currentRole === 'mentor'
-      ? [
-          { id: 'mentor-workspace', label: 'Mentor Workspace', icon: GraduationCap, target: 'mentor', matches: ['mentor'] },
-          { id: 'portfolio-workspace', label: 'Duyệt Portfolio', icon: UserRound, target: 'portfolio' },
-          { id: 'learning-workspace', label: 'Học liệu FPT', icon: GraduationCap, target: 'learning' },
-          { id: 'home-workspace', label: 'Trang chủ', icon: Compass, target: 'home' }
-        ]
-      : currentRole === 'admin'
-        ? [
-            { id: 'admin-workspace', label: 'Admin Workspace', icon: ShieldCheck, target: 'admin', matches: ['admin'] },
-            { id: 'portfolio-workspace', label: 'Quản lý Portfolio', icon: UserRound, target: 'portfolio' },
-            { id: 'learning-workspace', label: 'Học liệu FPT', icon: GraduationCap, target: 'learning' },
-            { id: 'home-workspace', label: 'Trang chủ', icon: Compass, target: 'home' }
-          ]
-        : [
-            { id: 'home-public', label: 'Trang chủ', icon: Compass, target: 'home' },
-            { id: 'roadmap-preview', label: 'Bản đồ nghề', icon: LayoutDashboard, target: 'roadmap' },
-            { id: 'trends-preview', label: 'Xu hướng thị trường', icon: BarChart2, target: 'trends' },
-            { id: 'hub-preview', label: 'Thử thách dự án', icon: Rocket, target: 'hub' },
-            { id: 'portfolio-public', label: 'Hồ sơ Portfolio', icon: UserRound, target: 'portfolio' },
-            { id: 'learning-public', label: 'Học liệu FPT', icon: GraduationCap, target: 'learning' },
-            { id: 'pricing-public', label: 'Gói Premium', icon: Crown, target: 'pricing' },
-            { id: 'about', label: 'Về chúng tôi', icon: BookOpen, target: 'about' }
-          ];
-  const isNavItemActive = (item) => page === item.id || item.target === page || item.matches?.includes(page);
-  const isGroupActive = (group) => group.items?.some(isNavItemActive) || isNavItemActive(group);
-  const navigateNavItem = (item) => {
-    go(item.target ?? item.id);
-    setOpenNavGroup(null);
-    setAccountOpen(false);
-  };
-  const roleLabel = currentUser ? `${(currentRole ?? 'student').toUpperCase()} · ${currentUser.user?.name ?? currentUser.user?.email}` : 'Guest';
+
+  const mentorNav = [
+    { id: 'mentor', label: 'Mentor Workspace', icon: GraduationCap, target: 'mentor' },
+    { id: 'portfolio', label: 'Duyệt Portfolio SV', icon: UserRound, target: 'portfolio' },
+    { id: 'hub', label: 'Kho thử thách', icon: Rocket, target: 'hub' },
+    { id: 'learning', label: 'Học liệu FPT', icon: GraduationCap, target: 'learning' },
+    { id: 'home', label: 'Trang chủ', icon: Compass, target: 'home' }
+  ];
+
+  const adminNav = [
+    { id: 'admin', label: 'Admin Workspace', icon: ShieldCheck, target: 'admin' },
+    { id: 'portfolio', label: 'Quản lý Portfolio', icon: UserRound, target: 'portfolio' },
+    { id: 'learning', label: 'Học liệu FPT', icon: GraduationCap, target: 'learning' },
+    { id: 'home', label: 'Trang chủ', icon: Compass, target: 'home' }
+  ];
+
+  const currentNav = currentRole === 'student' ? studentNav : currentRole === 'mentor' ? mentorNav : currentRole === 'admin' ? adminNav : publicNav;
+
+  const roleBadgeLabel = currentUser
+    ? `${currentUser.user?.name || 'Sinh viên'} (${(currentUser.user?.selectedMajorKey || 'SE').toUpperCase()})`
+    : 'Guest';
+
   return (
     <header className="topbar">
       <button className="brand" onClick={() => go('home')} aria-label="Portfolio Trang chủ">
-        <span className="jr-brand-logo">
-          <Rocket size={22} color="#3b82f6" />
-          <span>Portfolio</span>
-          <span className="jr-brand-badge">CAREER BUILDER</span>
-        </span>
+        <Rocket size={22} color="#0284c7" />
+        <span style={{ fontWeight: 800, fontSize: '18px', color: 'inherit', letterSpacing: '-0.5px' }}>Portfolio</span>
+        <span style={{ fontSize: '10px', background: 'linear-gradient(135deg, #0284c7, #6366f1)', color: '#fff', padding: '2px 8px', borderRadius: '999px', fontWeight: 700, letterSpacing: '0.5px' }}>FPT HUB</span>
       </button>
-      <nav className="flow-nav role-nav" aria-label="Điều hướng theo vai trò">
-        {navGroups.map((group) => {
-          const Icon = group.icon;
-          const active = isGroupActive(group);
-          const open = openNavGroup === group.id;
+
+      <nav className="flow-nav role-nav" aria-label="Điều hướng chính">
+        {currentNav.map((item) => {
+          const Icon = item.icon;
+          const isActive = page === item.id || item.target === page;
           return (
-            <div className="nav-group" key={group.id}>
             <button
               type="button"
-              className={`flow-pill nav-group-trigger ${active ? 'active visited' : ''} ${open ? 'open' : ''}`}
-              onClick={() => group.items ? setOpenNavGroup(open ? null : group.id) : navigateNavItem(group)}
-              title={group.label}
+              key={item.id}
+              className={`flow-pill ${isActive ? 'active' : ''}`}
+              onClick={() => go(item.target)}
             >
               <Icon size={15} />
-              <span>{group.label}</span>
-              {group.items && <MoveDown size={13} />}
+              <span>{item.label}</span>
             </button>
-            {group.items && open && (
-              <div className="nav-dropdown" onClick={(event) => event.stopPropagation()}>
-                {group.items.map((item) => {
-                  const ItemIcon = item.icon;
-                  return (
-                    <button
-                      type="button"
-                      key={item.id}
-                      className={`nav-dropdown-item ${isNavItemActive(item) ? 'active' : ''}`}
-                      onClick={(event) => { event.stopPropagation(); navigateNavItem(item); }}
-                    >
-                      <ItemIcon size={15} />
-                      <span>{item.label}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-            </div>
           );
         })}
       </nav>
+
       <div className="topbar-actions">
-      {!currentUser && (
-        <div className="quick-demo-roles" style={{ display: 'flex', gap: '6px', marginRight: '6px' }}>
-          <button type="button" className="ghost-action compact" onClick={() => loginAs('student')} title="Đăng nhập tài khoản Sinh viên FPT">🎓 SV FPT</button>
-          <button type="button" className="ghost-action compact" onClick={() => loginAs('mentor')} title="Đăng nhập tài khoản Mentor Doanh nghiệp">👨‍🏫 Mentor</button>
-          <button type="button" className="ghost-action compact" onClick={() => loginAs('admin')} title="Đăng nhập tài khoản Admin">🛡️ Admin</button>
-        </div>
-      )}
-      <button className={`role-chip account-trigger ${!currentUser ? 'guest-hidden' : ''}`} type="button" onClick={() => setAccountOpen((open) => !open)}>
-        <UserRound size={15} />
-        <span>{roleLabel}</span>
-        <MoveDown size={13} />
-      </button>
-      {currentUser && accountOpen && (
-        <div className="nav-dropdown account-dropdown">
-          {currentRole === 'student' && (
-            <>
-              <button type="button" className={`nav-dropdown-item ${page === 'portfolio' ? 'active' : ''}`} onClick={() => navigateNavItem({ id: 'portfolio' })}>
-                <UserRound size={15} />
-                <span>Hồ sơ</span>
+        {!currentUser && (
+          <>
+            <div style={{ position: 'relative' }}>
+              <button
+                type="button"
+                className="ghost-action compact"
+                onClick={() => setDemoMenuOpen((o) => !o)}
+                title="Chọn tài khoản demo 1-click"
+                style={{ fontSize: '13px', fontWeight: 600 }}
+              >
+                🎓 Thử Demo <MoveDown size={12} />
               </button>
-              <button type="button" className={`nav-dropdown-item ${page === 'submissionHistory' ? 'active' : ''}`} onClick={() => navigateNavItem({ id: 'submissionHistory' })}>
-                <FileUp size={15} />
-                <span>Lịch sử nộp bài</span>
-              </button>
-            </>
-          )}
-          <button type="button" className="nav-dropdown-item danger" onClick={() => { setAccountOpen(false); logout(); }}>
-            <LogOut size={15} />
-            <span>Đăng xuất</span>
-          </button>
-        </div>
-      )}
-      {currentUser && (
-        <button className="logout-chip" type="button" onClick={logout} title="Đăng xuất để test tài khoản khác">
-          <LogOut size={15} />
-          <span>Đăng xuất</span>
+              {demoMenuOpen && (
+                <div className="nav-dropdown" style={{ minWidth: '220px', right: 0, left: 'auto', transform: 'none' }} onClick={(e) => e.stopPropagation()}>
+                  <button type="button" className="nav-dropdown-item" onClick={() => { setDemoMenuOpen(false); loginAs('student', { email: 'quang.se@fpt.edu.vn', password: '123456' }); }}>
+                    <Rocket size={14} /> <span>SV SE: Quang Nguyễn</span>
+                  </button>
+                  <button type="button" className="nav-dropdown-item" onClick={() => { setDemoMenuOpen(false); loginAs('student', { email: 'khanh.mkt@fpt.edu.vn', password: '123456' }); }}>
+                    <Rocket size={14} /> <span>SV MKT: Khánh Trần</span>
+                  </button>
+                  <button type="button" className="nav-dropdown-item" onClick={() => { setDemoMenuOpen(false); loginAs('student', { email: 'oanh.dg@fpt.edu.vn', password: '123456' }); }}>
+                    <Rocket size={14} /> <span>SV GD: Oanh Đỗ</span>
+                  </button>
+                  <button type="button" className="nav-dropdown-item" onClick={() => { setDemoMenuOpen(false); loginAs('mentor'); }}>
+                    <GraduationCap size={14} /> <span>Mentor Doanh nghiệp</span>
+                  </button>
+                  <button type="button" className="nav-dropdown-item" onClick={() => { setDemoMenuOpen(false); loginAs('admin'); }}>
+                    <ShieldCheck size={14} /> <span>Admin Quản trị</span>
+                  </button>
+                </div>
+              )}
+            </div>
+
+            <button className="login-chip" type="button" onClick={() => go('auth')} title="Đăng nhập tài khoản thật">
+              <LockKeyhole size={14} />
+              <span>Đăng nhập</span>
+            </button>
+          </>
+        )}
+
+        {currentUser && (
+          <div style={{ position: 'relative' }}>
+            <button className="role-chip" type="button" onClick={() => setAccountOpen((open) => !open)}>
+              <UserRound size={15} />
+              <span>{roleBadgeLabel}</span>
+              <span style={{ fontSize: '10px', background: isVipOrPro ? '#10b981' : '#64748b', color: '#fff', padding: '1px 6px', borderRadius: '4px', textTransform: 'uppercase' }}>
+                {userPlan}
+              </span>
+              <MoveDown size={12} />
+            </button>
+
+            {accountOpen && (
+              <div className="nav-dropdown account-dropdown" onClick={(e) => e.stopPropagation()}>
+                {currentRole === 'student' && (
+                  <>
+                    <button type="button" className="nav-dropdown-item" onClick={() => { setAccountOpen(false); go('portfolio'); }}>
+                      <UserRound size={14} /> <span>Hồ sơ Portfolio</span>
+                    </button>
+                    <button type="button" className="nav-dropdown-item" onClick={() => { setAccountOpen(false); go('submissionHistory'); }}>
+                      <FileUp size={14} /> <span>Lịch sử nộp bài</span>
+                    </button>
+                    <button type="button" className="nav-dropdown-item" onClick={() => { setAccountOpen(false); onOpenQrPayment?.(); }}>
+                      <Crown size={14} color="#f59e0b" /> <span>Quét QR Nâng cấp VIP</span>
+                    </button>
+                  </>
+                )}
+                <button type="button" className="nav-dropdown-item danger" onClick={() => { setAccountOpen(false); logout(); }}>
+                  <LogOut size={14} /> <span>Đăng xuất</span>
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
+        <button
+          className="theme-toggle"
+          type="button"
+          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+          title={theme === 'dark' ? 'Chuyển sang Light mode' : 'Chuyển sang Dark mode'}
+        >
+          {theme === 'dark' ? <Sun size={15} /> : <Moon size={15} />}
+          <span>{theme === 'dark' ? 'Light' : 'Dark'}</span>
         </button>
-      )}
-      {!currentUser && (
-        <button className="login-chip" type="button" onClick={() => go('auth')}>
-          <LockKeyhole size={15} />
-          <span>Đăng nhập</span>
-        </button>
-      )}
-      <button
-        className="theme-toggle"
-        type="button"
-        onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-        title={theme === 'dark' ? 'Chuyển sang Light mode' : 'Chuyển sang Dark mode'}
-      >
-        {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
-        <span>{theme === 'dark' ? 'Light' : 'Dark'}</span>
-      </button>
       </div>
     </header>
   );
@@ -4524,7 +4538,68 @@ function SubmissionHistoryPage({ demoUser, submissions, challenges, feedbackList
   );
 }
 
-function PremiumPage({ plans, activeSubscription, upgradePlan, go }) {
+
+function VietQrPaymentModal({ isOpen, onClose, plan, currentUser, onPaymentSuccess }) {
+  if (!isOpen || !plan) return null;
+  const studentMssv = currentUser?.user?.id || currentUser?.user?.mssv || 'SE174281';
+  const studentName = currentUser?.user?.name || 'Sinh viên FPT';
+  const transferContent = `EXE301 ${plan.id || 'PRO'} ${studentMssv}`;
+  const qrPrice = plan.price || 99000;
+  const qrUrl = `https://img.vietqr.io/image/MB-0348888888-compact2.png?amount=${qrPrice}&addInfo=${encodeURIComponent(transferContent)}&accountName=EXE301%20FPT%20PORTFOLIO`;
+
+  return (
+    <div className="vietqr-modal-overlay" onClick={onClose}>
+      <div className="vietqr-modal-card animate-in" onClick={(e) => e.stopPropagation()}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+          <h2 style={{ fontSize: '19px', fontWeight: 800, margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Crown size={20} color="#f59e0b" /> Nâng cấp tài khoản {plan.name}
+          </h2>
+          <button type="button" onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748b' }}>
+            <X size={20} />
+          </button>
+        </div>
+
+        <p style={{ fontSize: '13.5px', color: '#64748b', marginBottom: '12px' }}>
+          Quét mã VietQR bằng bất kỳ App Ngân hàng hoặc MoMo để kích hoạt đặc quyền {plan.name} và kết nối Mentor trực tiếp.
+        </p>
+
+        <div className="vietqr-image-wrapper">
+          <img src={qrUrl} alt="VietQR Thanh toán FPT Portfolio" />
+        </div>
+
+        <table className="vietqr-details-table">
+          <tbody>
+            <tr><td>Ngân hàng thụ hưởng</td><td>MB Bank (Ngân hàng Quân Đội)</td></tr>
+            <tr><td>Số tài khoản</td><td>0348888888</td></tr>
+            <tr><td>Tên chủ tài khoản</td><td>EXE301 FPT PORTFOLIO</td></tr>
+            <tr><td>Số tiền</td><td style={{ color: '#059669', fontSize: '16px' }}>{plan.displayPrice || '99.000 đ'}</td></tr>
+            <tr><td>Nội dung chuyển khoản</td><td style={{ color: '#2563eb' }}>{transferContent}</td></tr>
+            <tr><td>Sinh viên thụ hưởng</td><td>{studentName} ({studentMssv})</td></tr>
+          </tbody>
+        </table>
+
+        <div style={{ display: 'flex', gap: '10px', marginTop: '16px' }}>
+          <button type="button" className="ghost-action" style={{ flex: 1 }} onClick={onClose}>
+            Đóng
+          </button>
+          <button
+            type="button"
+            className="primary-action"
+            style={{ flex: 2, background: 'linear-gradient(135deg, #10b981, #059669)', border: 'none', color: '#fff', fontWeight: 700 }}
+            onClick={() => {
+              onPaymentSuccess(plan);
+              onClose();
+            }}
+          >
+            <CheckCircle2 size={16} /> Tôi đã chuyển khoản thành công
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PremiumPage({ plans, activeSubscription, upgradePlan, onOpenQr, go }) {
   const revenue = demoPremiumSubscriptions.reduce((sum, item) => sum + item.revenue, 0);
   const isActive = (plan) => activeSubscription?.status === 'active' && activeSubscription?.planId === plan.id;
   return (
@@ -4559,7 +4634,7 @@ function PremiumPage({ plans, activeSubscription, upgradePlan, go }) {
                 <div className="activity-row" key={item}><BadgeCheck size={16} /><span>{item}</span></div>
               ))}
             </div>
-            <button className={isActive(plan) ? 'ghost-action' : 'primary-action'} onClick={() => upgradePlan(plan)}>
+            <button className={isActive(plan) ? 'ghost-action' : 'primary-action'} onClick={() => onOpenQr ? onOpenQr(plan) : upgradePlan(plan)}>
               {isActive(plan) ? 'Đang sử dụng' : 'Nâng cấp gói này'}
               <CreditCard size={17} />
             </button>
