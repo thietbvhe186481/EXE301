@@ -5,7 +5,7 @@ import express from 'express';
 import session from 'express-session';
 import { z } from 'zod';
 import { connectDb } from './config/db.js';
-import { AdminAccount, Category, Challenge, Major, MentorAccount, MentorFeedback, Notification, Resource, Submission, SubmissionRule, UserProfile } from './models.js';
+import { AdminAccount, Category, Challenge, Major, MentorAccount, MentorFeedback, Notification, Resource, Submission, SubmissionRule, UserProfile, StudentReview, SubscriptionOrder, ContactInquiry, Founder } from './models.js';
 
 const app = express();
 const port = process.env.PORT || 4000;
@@ -756,6 +756,102 @@ app.get('/api/admin/overview', async (_req, res, next) => {
       MentorFeedback.countDocuments()
     ]);
     res.json({ majorCount, challengeCount, userCount, submissionCount, feedbackCount });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Student Reviews API (MongoDB Persistent)
+app.get('/api/reviews', async (_req, res, next) => {
+  try {
+    const reviews = await StudentReview.find().sort({ createdAt: -1 }).lean();
+    res.json(reviews || []);
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.post('/api/reviews', async (req, res, next) => {
+  try {
+    const reviewData = {
+      id: req.body.id || `rev-${Date.now()}`,
+      name: req.body.name,
+      school: req.body.school || 'Đại học FPT',
+      major: req.body.major || 'Software Engineering',
+      roleTrack: req.body.roleTrack || 'Developer',
+      rating: Number(req.body.rating) || 5,
+      avatarBg: req.body.avatarBg || '#10b981',
+      outcome: req.body.outcome || 'Đã hoàn thành thử thách & có chứng thực Portfolio',
+      quote: req.body.quote,
+      date: req.body.date || new Date().toLocaleDateString('vi-VN'),
+      createdAt: new Date()
+    };
+    const created = await StudentReview.create(reviewData);
+    res.status(201).json(created);
+  } catch (error) {
+    next(error);
+  }
+});
+
+// VIP Upgrade / Subscription Payment API (MongoDB Persistent)
+app.post('/api/subscriptions/upgrade', async (req, res, next) => {
+  try {
+    const { userId, planId, planName, price, paymentMethod, transactionCode } = req.body;
+    const orderData = {
+      orderId: `ORD-${Date.now()}`,
+      userId: userId || 'demo-student',
+      planId,
+      planName,
+      price: Number(price) || 0,
+      paymentMethod: paymentMethod || 'VietQR MB Bank',
+      transactionCode: transactionCode || `EXE301-${Date.now()}`,
+      status: 'completed',
+      activatedAt: new Date(),
+      expiresAt: new Date(Date.now() + (planId === 'premium-year' ? 365 : (planId === 'premium-quarter' ? 90 : 30)) * 24 * 60 * 60 * 1000)
+    };
+    const savedOrder = await SubscriptionOrder.create(orderData);
+
+    if (userId) {
+      await UserProfile.updateOne(
+        { id: userId },
+        { 
+          $set: { 
+            isPremium: true, 
+            planName, 
+            planId, 
+            subscriptionExpiresAt: orderData.expiresAt 
+          } 
+        }
+      );
+    }
+    res.json({ success: true, order: savedOrder });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Contact Inquiries API (MongoDB Persistent)
+app.post('/api/inquiries', async (req, res, next) => {
+  try {
+    const inquiryData = {
+      inquiryId: `INQ-${Date.now()}`,
+      name: req.body.name,
+      email: req.body.email,
+      message: req.body.message,
+      submittedAt: new Date()
+    };
+    const saved = await ContactInquiry.create(inquiryData);
+    res.status(201).json({ success: true, inquiry: saved });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Founders API (MongoDB Persistent)
+app.get('/api/founders', async (_req, res, next) => {
+  try {
+    const founders = await Founder.find().lean();
+    res.json(founders || []);
   } catch (error) {
     next(error);
   }

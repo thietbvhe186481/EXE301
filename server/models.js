@@ -15,3 +15,7 @@ export const MentorAccount = mongoose.model('MentorAccount', flexibleSchema());
 export const Category = mongoose.model('Category', flexibleSchema());
 export const Resource = mongoose.model('Resource', flexibleSchema());
 export const Notification = mongoose.model('Notification', flexibleSchema());
+export const StudentReview = mongoose.model('StudentReview', flexibleSchema());
+export const SubscriptionOrder = mongoose.model('SubscriptionOrder', flexibleSchema());
+export const ContactInquiry = mongoose.model('ContactInquiry', flexibleSchema());
+export const Founder = mongoose.model('Founder', flexibleSchema());
