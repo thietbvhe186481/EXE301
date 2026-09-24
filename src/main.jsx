@@ -2990,6 +2990,101 @@ function HomePage({ go }) {
         </div>
       </section>
 
+      {/* Student Testimonials / Reviews */}
+      <section className="content-page">
+        <div className="jr-section-title-wrap">
+          <span className="jr-sub-pill">Sinh viên nói gì về chúng tôi</span>
+          <h2 className="jr-section-title">Review Từ Các Bạn Sinh Viên Đã Sử Dụng</h2>
+          <p className="jr-section-desc">Hơn 250+ sinh viên từ ĐH FPT, Bách Khoa, KHTN đã xây dựng Portfolio chuyên nghiệp và nhận được offer từ doanh nghiệp hàng đầu.</p>
+        </div>
+
+        <div className="jr-testimonials-grid">
+          <article className="jr-testimonial-card">
+            <div className="jr-testimonial-stars">
+              {[1,2,3,4,5].map(s => <Star key={s} size={14} fill="#f59e0b" color="#f59e0b" />)}
+            </div>
+            <p className="jr-testimonial-quote">"Mình đã từng không biết bắt đầu từ đâu khi làm CV. Nhờ hệ thống Portfolio này, mình có ngay lộ trình rõ ràng, làm 3 dự án thực tế và gửi portfolio trực tiếp cho nhà tuyển dụng. Kết quả: nhận intern tại FPT Software chỉ sau 2 tuần!"</p>
+            <div className="jr-testimonial-author">
+              <div className="jr-testimonial-avatar">TH</div>
+              <div>
+                <strong>Trần Hương</strong>
+                <span>Frontend Developer Intern · ĐH FPT HCM</span>
+              </div>
+            </div>
+          </article>
+
+          <article className="jr-testimonial-card featured">
+            <div className="jr-testimonial-stars">
+              {[1,2,3,4,5].map(s => <Star key={s} size={14} fill="#f59e0b" color="#f59e0b" />)}
+            </div>
+            <p className="jr-testimonial-quote">"Điều mình thích nhất là mentor review chuyên sâu theo khung STAR. Không chỉ chấm điểm mà còn gợi ý cách trình bày case study sao cho nhà tuyển dụng ấn tượng. Portfolio của mình sau khi hoàn thiện đã giúp mình pass vòng CV ở Viettel Digital."</p>
+            <div className="jr-testimonial-author">
+              <div className="jr-testimonial-avatar">NM</div>
+              <div>
+                <strong>Nguyễn Minh</strong>
+                <span>Backend Engineer · ĐH Bách Khoa HN</span>
+              </div>
+            </div>
+          </article>
+
+          <article className="jr-testimonial-card">
+            <div className="jr-testimonial-stars">
+              {[1,2,3,4,5].map(s => <Star key={s} size={14} fill="#f59e0b" color="#f59e0b" />)}
+            </div>
+            <p className="jr-testimonial-quote">"Tính năng thẩm định CV chuẩn ATS cực kỳ hữu ích. Mình đã quét CV qua hệ thống, phát hiện thiếu từ khóa quan trọng và sửa ngay. Điểm ATS từ 45 lên 92. HR của Shopee gọi phỏng vấn ngay tuần sau!"</p>
+            <div className="jr-testimonial-author">
+              <div className="jr-testimonial-avatar">LT</div>
+              <div>
+                <strong>Lê Thảo</strong>
+                <span>Data Analyst Intern · ĐH KHTN HCM</span>
+              </div>
+            </div>
+          </article>
+
+          <article className="jr-testimonial-card">
+            <div className="jr-testimonial-stars">
+              {[1,2,3,4,5].map(s => <Star key={s} size={14} fill="#f59e0b" color="#f59e0b" />)}
+            </div>
+            <p className="jr-testimonial-quote">"Bản đồ nghề nghiệp giúp mình nhìn rõ career path từ Junior đến Senior. Mình chọn track DevOps, làm challenge về Docker + CI/CD và được mentor đánh giá 95/100. Case study này trở thành highlight trong portfolio xin việc."</p>
+            <div className="jr-testimonial-author">
+              <div className="jr-testimonial-avatar">PD</div>
+              <div>
+                <strong>Phạm Đức</strong>
+                <span>DevOps Engineer · ĐH FPT Đà Nẵng</span>
+              </div>
+            </div>
+          </article>
+
+          <article className="jr-testimonial-card">
+            <div className="jr-testimonial-stars">
+              {[1,2,3,4,5].map(s => <Star key={s} size={14} fill="#f59e0b" color="#f59e0b" />)}
+            </div>
+            <p className="jr-testimonial-quote">"Mình ấn tượng với tính năng phỏng vấn AI. Nó giả lập phỏng vấn thật, hỏi behavioral + technical questions và cho feedback tức thì. Sau 5 lần luyện, mình pass vòng phỏng vấn cuối ở MoMo mà không run."</p>
+            <div className="jr-testimonial-author">
+              <div className="jr-testimonial-avatar">VL</div>
+              <div>
+                <strong>Vũ Linh</strong>
+                <span>Mobile Developer · ĐH Bách Khoa HCM</span>
+              </div>
+            </div>
+          </article>
+
+          <article className="jr-testimonial-card">
+            <div className="jr-testimonial-stars">
+              {[1,2,3,4,5].map(s => <Star key={s} size={14} fill="#f59e0b" color="#f59e0b" />)}
+            </div>
+            <p className="jr-testimonial-quote">"Gói Premium rất xứng đáng. Mình được mentor senior ở VNG review từng bài, gợi ý cải thiện code quality và portfolio layout. Public portfolio link mình gửi thẳng cho HR, không cần CV truyền thống nữa."</p>
+            <div className="jr-testimonial-author">
+              <div className="jr-testimonial-avatar">HA</div>
+              <div>
+                <strong>Hoàng Anh</strong>
+                <span>Fullstack Developer · ĐH KHTN HN</span>
+              </div>
+            </div>
+          </article>
+        </div>
+      </section>
+
       {/* CTA Bottom Banner */}
       <section className="content-page">
         <div className="jr-cta-banner">
