@@ -282,28 +282,40 @@ Object.entries(supplementalChallengeCatalog).forEach(([majorKey, items]) => {
 
 const submissionRules = {
   dev: {
-    primaryLabel: 'Repository GitHub',
-    secondaryLabel: 'Link demo / API docs',
-    skillPlaceholder: 'React, Node.js, PostgreSQL, Docker...',
-    notePlaceholder: 'Kiến trúc, luồng dữ liệu, API chính, cách chạy project và trade-off kỹ thuật.',
-    checklist: ['README có hướng dẫn chạy', 'Có link demo hoặc API docs', 'Không commit file .env', 'Có ảnh/video luồng chính'],
-    accepted: 'GitHub, deploy URL, Swagger/Postman, video demo'
+    primaryLabel: 'Repository GitHub / GitLab (Bắt buộc)',
+    secondaryLabel: 'Link Live Demo (Vercel / Render / Netlify)',
+    tertiaryLabel: 'Link API Docs / Swagger / README',
+    primaryPlaceholder: 'https://github.com/fpt-student/se-project',
+    secondaryPlaceholder: 'https://se-project.vercel.app',
+    tertiaryPlaceholder: 'https://api-docs.fpt.edu.vn hoặc swagger link',
+    skillPlaceholder: 'React, Node.js, PostgreSQL, Docker, REST API...',
+    notePlaceholder: 'Mô tả kiến trúc hệ thống, luồng dữ liệu, API chính, cách chạy project và trade-off kỹ thuật.',
+    checklist: ['README có hướng dẫn setup & seed data', 'Có link demo chạy được hoặc API docs', 'Không commit file chứa credentials bí mật (.env)', 'Mô tả rõ các quyết định kỹ thuật và trade-offs'],
+    accepted: 'GitHub, GitLab, Live Demo URL (Vercel/Render), Swagger/Postman API Docs'
   },
   mkt: {
-    primaryLabel: 'Link kế hoạch chiến dịch',
-    secondaryLabel: 'Dashboard / slide báo cáo',
-    skillPlaceholder: 'SEO, Content, Meta Ads, GA4, CRM...',
-    notePlaceholder: 'Mục tiêu chiến dịch, persona, insight, kênh triển khai, KPI và ngân sách.',
-    checklist: ['Có mục tiêu và KPI', 'Có persona rõ ràng', 'Có lịch triển khai', 'Có bảng đo hiệu quả'],
-    accepted: 'Google Slides, Sheet, Looker Studio, PDF case study'
+    primaryLabel: 'Pitch Deck / Slide Chiến dịch (Bắt buộc)',
+    secondaryLabel: 'Kế hoạch chiến dịch chi tiết (Google Docs / Notion)',
+    tertiaryLabel: 'Bảng KPI & Analytics Dashboard (Sheets / Looker)',
+    primaryPlaceholder: 'https://docs.google.com/presentation/d/... (Slides/Deck)',
+    secondaryPlaceholder: 'https://docs.google.com/document/d/... (Campaign Plan)',
+    tertiaryPlaceholder: 'https://lookerstudio.google.com/... hoặc Google Sheets KPI',
+    skillPlaceholder: 'SEO Audit, Content Strategy, Meta Ads, GA4, Funnel...',
+    notePlaceholder: 'Mục tiêu chiến dịch, chân dung khách hàng (Persona), insight, kênh triển khai, ngân sách, KPI và kế hoạch tối ưu.',
+    checklist: ['Mục tiêu và chỉ số KPI đo lường được', 'Chân dung khách hàng mục tiêu & Pain point', 'Lịch triển khai đa kênh và phân bổ ngân sách', 'Phương án tối ưu hóa khi chỉ số chuyển đổi thấp'],
+    accepted: 'Google Slides, Google Docs, Notion, Looker Studio, Google Sheets'
   },
   design: {
-    primaryLabel: 'Link Figma / Behance',
-    secondaryLabel: 'Prototype / case study',
-    skillPlaceholder: 'Figma, UI, UX Research, Motion, Brand...',
-    notePlaceholder: 'Vấn đề thiết kế, user flow, quyết định UI/UX, component và kết quả test.',
-    checklist: ['Prototype bấm được', 'Có design rationale', 'Có màn hình responsive', 'Có guideline hoặc component'],
-    accepted: 'Figma, Behance, Dribbble, PDF case study, video prototype'
+    primaryLabel: 'File thiết kế Figma (Bắt buộc)',
+    secondaryLabel: 'Interactive Prototype URL (Figma Proto / Framer)',
+    tertiaryLabel: 'Case Study chi tiết (Behance / Notion)',
+    primaryPlaceholder: 'https://www.figma.com/file/... (Figma canvas)',
+    secondaryPlaceholder: 'https://www.figma.com/proto/... (Figma interactive prototype)',
+    tertiaryPlaceholder: 'https://www.behance.net/gallery/... (Case study chi tiết)',
+    skillPlaceholder: 'Figma, UI Design System, UX Research, Prototype, Usability...',
+    notePlaceholder: 'Vấn đề người dùng (Problem framing), User Flow, quyết định UI/UX, component states và kết quả usability test.',
+    checklist: ['File Figma view-only có quyền truy cập', 'Prototype có thể click trải nghiệm luồng chính', 'Component có trạng thái: default, hover, focus, disabled', 'Case study nêu rõ lý do ra quyết định thiết kế'],
+    accepted: 'Figma URL, Interactive Prototype, Behance Case Study, Notion'
   }
 };
 
@@ -317,112 +329,146 @@ const demoUsers = [
   {
     id: 'demo-student',
     name: 'Quang Nguyễn',
-    email: 'student@portfolio.vn',
+    email: 'quang.se@fpt.edu.vn',
+    studentId: 'SE174281',
     role: 'student',
     selectedMajorKey: 'dev',
-    school: 'FPT University',
-    academicMajor: 'Software Engineering',
-    academicYear: 'Năm 3',
-    currentSkills: ['React', 'Node.js', 'MongoDB', 'UI Responsive'],
-    careerGoal: 'Senior Architect',
+    school: 'Đại học FPT TP.HCM',
+    academicMajor: 'Kỹ thuật Phần mềm (Software Engineering - SE)',
+    academicYear: 'Năm 3 (K17)',
+    currentSkills: ['React', 'Node.js', 'PostgreSQL', 'Docker', 'REST API', 'Git'],
+    careerGoal: 'Senior Software Architect',
     path: ['dev-frontend-so-cap', 'dev-fullstack-trung-cap', 'dev-architecture-cao-cap'],
     joinedChallengeIds: ['dev-api', 'dev-dashboard', 'dev-devops'],
-    subscription: { planId: 'free', planName: 'Free', status: 'free', expiresAt: null },
-    stats: { completedChallenges: 6, mentorRating: 4.8, portfolioProjects: 4, verifiedSkills: 18 },
+    subscription: { planId: 'free', planName: 'FPT Student', status: 'free', expiresAt: null },
+    stats: { completedChallenges: 6, mentorRating: 4.9, portfolioProjects: 4, verifiedSkills: 18 },
     portfolio: {
-      headline: 'Developer Portfolio - Backend/API oriented',
-      bio: 'Sinh viên đang xây portfolio theo hướng Full Stack và Software Architecture.',
+      headline: 'Software Engineer Portfolio - Full Stack & Architecture',
+      bio: 'Sinh viên Kỹ thuật Phần mềm Đại học FPT, đam mê xây dựng hệ thống web chịu tải cao và kiến trúc phần mềm sạch.',
       publishedProjects: ['API thương mại điện tử', 'Dashboard nghề nghiệp', 'Case study kiến trúc booking'],
-      links: ['https://github.com/demo/portfolio-api', 'https://portfolio.demo']
+      links: ['https://github.com/fpt-student/se-portfolio', 'https://se-portfolio.fpt.edu.vn']
     },
-    badges: ['Xây lộ trình', 'Sẵn sàng thử thách', 'Đã được góp ý', 'Có minh chứng portfolio']
-  },
-  {
-    id: 'student-dev-backend',
-    name: 'Bao Le',
-    email: 'bao.backend@portfolio.vn',
-    role: 'student',
-    selectedMajorKey: 'dev',
-    school: 'University of Information Technology',
-    academicMajor: 'Information Systems',
-    academicYear: 'Năm 4',
-    currentSkills: ['Node.js', 'Express', 'SQL', 'Docker'],
-    careerGoal: 'Lead Backend',
-    path: ['dev-backend-so-cap', 'dev-devops-trung-cap', 'dev-architecture-cao-cap'],
-    joinedChallengeIds: ['dev-api', 'dev-devops'],
-    subscription: { planId: 'premium-month', planName: 'Premium Tháng', status: 'active', expiresAt: '10/08/2026' }
-  },
-  {
-    id: 'student-design-ui',
-    name: 'Oanh Do',
-    email: 'oanh.ui@portfolio.vn',
-    role: 'student',
-    selectedMajorKey: 'design',
-    school: 'RMIT Vietnam',
-    academicMajor: 'Digital Design',
-    academicYear: 'Năm 2',
-    currentSkills: ['Figma', 'Wireframe', 'Prototype', 'User Research'],
-    careerGoal: 'Senior Product Designer',
-    path: ['design-ui-so-cap', 'design-product-trung-cap', 'design-brand-cao-cap'],
-    joinedChallengeIds: ['design-ui', 'design-product'],
-    subscription: { planId: 'premium-year', planName: 'Premium Năm', status: 'active', expiresAt: '15/06/2027' }
+    badges: ['Lộ trình FPT SE', 'Mentor Verified', 'Đã duyệt Portfolio', 'Chuẩn OJT Ready']
   },
   {
     id: 'student-mkt-seo',
-    name: 'Khanh Tran',
-    email: 'khanh.seo@portfolio.vn',
+    name: 'Khánh Trần',
+    email: 'khanh.mkt@fpt.edu.vn',
+    studentId: 'MK160342',
     role: 'student',
     selectedMajorKey: 'mkt',
-    school: 'UEH',
-    academicMajor: 'Digital Marketing',
-    academicYear: 'Năm 3',
-    currentSkills: ['SEO', 'Content', 'Google Analytics', 'Campaign Planning'],
-    careerGoal: 'Growth Lead',
+    school: 'Đại học FPT TP.HCM',
+    academicMajor: 'Digital Marketing (MKT)',
+    academicYear: 'Năm 3 (K17)',
+    currentSkills: ['SEO Audit', 'Content Strategy', 'Meta Ads', 'GA4 Analytics', 'Email Automation'],
+    careerGoal: 'Growth & Performance Lead',
     path: ['mkt-seo-so-cap', 'mkt-content-trung-cap', 'mkt-growth-cao-cap'],
-    joinedChallengeIds: ['mkt-seo', 'mkt-ads'],
-    subscription: { planId: 'free', planName: 'Free', status: 'free', expiresAt: null }
+    joinedChallengeIds: ['mkt-seo', 'mkt-campaign'],
+    subscription: { planId: 'free', planName: 'FPT Student', status: 'free', expiresAt: null },
+    stats: { completedChallenges: 5, mentorRating: 4.8, portfolioProjects: 3, verifiedSkills: 16 },
+    portfolio: {
+      headline: 'Digital Marketing Portfolio - Growth & Data-Driven Strategy',
+      bio: 'Sinh viên Digital Marketing Đại học FPT, tập trung vào chiến lược tăng trưởng, SEO audit và tối ưu phễu chuyển đổi.',
+      publishedProjects: ['Kế hoạch ra mắt chiến dịch', 'Báo cáo audit SEO website FPT', 'Funnel Meta Ads đa kênh'],
+      links: ['https://docs.google.com/presentation/d/demo-mkt-deck', 'https://mkt-portfolio.fpt.edu.vn']
+    },
+    badges: ['Lộ trình FPT MKT', 'Mentor Verified', 'Data-Driven Campaign', 'Chuẩn OJT Ready']
+  },
+  {
+    id: 'student-design-ui',
+    name: 'Oanh Đỗ',
+    email: 'oanh.dg@fpt.edu.vn',
+    studentId: 'GD170195',
+    role: 'student',
+    selectedMajorKey: 'design',
+    school: 'Đại học FPT TP.HCM',
+    academicMajor: 'Thiết kế Mỹ thuật số (Digital Art & Design - DG)',
+    academicYear: 'Năm 3 (K17)',
+    currentSkills: ['Figma UI/UX', 'Design System', 'User Research', 'Interactive Prototype', 'Brand Identity'],
+    careerGoal: 'Senior Product Designer',
+    path: ['design-ui-so-cap', 'design-product-trung-cap', 'design-brand-cao-cap'],
+    joinedChallengeIds: ['design-app', 'design-system'],
+    subscription: { planId: 'free', planName: 'FPT Student', status: 'free', expiresAt: null },
+    stats: { completedChallenges: 5, mentorRating: 4.9, portfolioProjects: 3, verifiedSkills: 17 },
+    portfolio: {
+      headline: 'Product & UI/UX Designer Portfolio - Human-Centered Design',
+      bio: 'Sinh viên Thiết kế Mỹ thuật số Đại học FPT, chuyên sâu thiết kế sản phẩm số, hệ thống UI nhất quán và trải nghiệm người dùng.',
+      publishedProjects: ['Prototype ứng dụng di động FPT Life', 'Mini design system', 'Case study UX research booking app'],
+      links: ['https://figma.com/@fpt-student/portfolio-design', 'https://behance.net/fpt-dg-portfolio']
+    },
+    badges: ['Lộ trình FPT DG', 'Mentor Verified', 'Design System Ready', 'Chuẩn OJT Ready']
   }
 ];
 
 const demoMentors = [
   {
     id: 'mentor-demo',
-    name: 'Anh Tran',
+    name: 'Anh Trần',
     email: 'mentor@portfolio.vn',
     role: 'mentor',
-    expertise: ['Backend', 'Full Stack', 'Software Architecture', 'DevOps'],
-    strongestField: 'Backend API & System Design',
-    level: 'Senior Mentor',
+    majorKey: 'dev',
+    expertise: ['Backend', 'Full Stack', 'Software Architecture', 'DevOps', 'Frontend'],
+    strongestField: 'Backend API & Clean Architecture (FPT Software Alumnus)',
+    level: 'Senior Mentor / Solution Architect',
     jobTitle: 'Solution Architect',
-    currentCompany: 'FinTech SaaS Lab',
+    currentCompany: 'FPT Software / FinTech SaaS Lab',
     yearsOfExperience: 8,
-    strongestTools: ['Node.js', 'MongoDB', 'Docker', 'AWS', 'System Design'],
+    strongestTools: ['Node.js', 'PostgreSQL', 'Docker', 'AWS', 'System Design', 'React'],
     reviewCapacity: 12,
     menteeLevels: ['Junior', 'Mid-level', 'Senior'],
     languages: ['Vietnamese', 'English'],
-    education: ['B.S. Computer Science', 'AWS Solutions Architect Associate', 'MongoDB Node.js Developer Path'],
-    workHistory: [
-      { company: 'FPT Software', role: 'Backend Engineer', period: '2018-2020' },
-      { company: 'Tiki', role: 'Senior Backend Developer', period: '2020-2023' },
-      { company: 'FinTech SaaS Lab', role: 'Solution Architect', period: '2023-2026' }
-    ],
-    domains: ['E-commerce', 'Booking system', 'Payment workflow', 'Career platform', 'API Security'],
-    reviewStyle: 'Review theo checklist: đúng yêu cầu, kiến trúc, bảo mật, README, khả năng đưa vào portfolio.',
-    availability: 'Tue/Thu/Sun 19:30-22:00',
+    education: ['B.S. Software Engineering - FPT University', 'AWS Solutions Architect Professional'],
+    domains: ['E-commerce', 'Booking system', 'High-traffic API', 'SaaS Platform', 'FPT SWP391 Capstone'],
+    reviewStyle: 'Review chi tiết theo rubric: cấu trúc mã nguồn, thiết kế database, xử lý edge-cases, bảo mật và khả năng trình bày vào Portfolio.',
+    availability: 'Thứ 3 / Thứ 5 / Chủ nhật 19:30 - 22:00',
     rating: 4.9,
-    activeStudents: ['demo-student', 'student-dev-backend']
+    activeStudents: ['demo-student']
+  },
+  {
+    id: 'mentor-mkt-head',
+    name: 'Mai Nguyễn',
+    email: 'mai.mkt@portfolio.vn',
+    role: 'mentor',
+    majorKey: 'mkt',
+    expertise: ['Content', 'SEO', 'Performance Marketing', 'Brand Marketing', 'Social Media'],
+    strongestField: 'Integrated Digital Marketing & Growth Strategy',
+    level: 'Lead Mentor / Head of Marketing',
+    jobTitle: 'Head of Growth Marketing',
+    currentCompany: 'FPT Online & E-Commerce Partners',
+    yearsOfExperience: 7,
+    strongestTools: ['GA4', 'Looker Studio', 'Meta Ads', 'Ahrefs', 'Notion', 'HubSpot'],
+    reviewCapacity: 10,
+    menteeLevels: ['Junior', 'Mid-level', 'Specialist'],
+    languages: ['Vietnamese', 'English'],
+    education: ['B.A. Digital Marketing - FPT University', 'Google Analytics & Ads Certified'],
+    domains: ['Omnichannel Campaign', 'SEO Topic Cluster', 'Performance Funnel', 'Brand Positioning'],
+    reviewStyle: 'Review chặt chẽ về dữ liệu: insight khách hàng, tính khả thi của KPI, phân bổ ngân sách và cách thể hiện thành case study thuyết phục.',
+    availability: 'Thứ 2 / Thứ 4 / Thứ 7 20:00 - 22:00',
+    rating: 4.9,
+    activeStudents: ['student-mkt-seo']
   },
   {
     id: 'mentor-design-ui',
-    name: 'Vy Hoang',
+    name: 'Vy Hoàng',
     email: 'vy.ui@portfolio.vn',
     role: 'mentor',
-    expertise: ['UI Design', 'Product Design', 'Brand Design'],
-    strongestField: 'Product Interface Systems',
-    level: 'Lead Mentor',
-    currentCompany: 'FinTech Design',
+    majorKey: 'design',
+    expertise: ['UI Design', 'Product Design', 'UX Research', 'Design System', 'Brand Design'],
+    strongestField: 'Design Systems & Product Interface (FPT Design Lab)',
+    level: 'Lead Mentor / Product Design Lead',
+    jobTitle: 'Product Design Lead',
+    currentCompany: 'FPT Software Design Lab & FinTech Studio',
     yearsOfExperience: 7,
-    rating: 4.8
+    strongestTools: ['Figma', 'FigJam', 'Miro', 'Maze Usability', 'Storybook', 'Adobe Suite'],
+    reviewCapacity: 10,
+    menteeLevels: ['Junior', 'Mid-level', 'Senior'],
+    languages: ['Vietnamese', 'English'],
+    education: ['B.A. Digital Art & Design - FPT University', 'Nielsen Norman UX Master Certified'],
+    domains: ['Design Systems', 'Mobile App UX', 'SaaS Dashboard', 'Interactive Prototyping'],
+    reviewStyle: 'Review theo tư duy sản phẩm: problem framing, trải nghiệm người dùng, tính đồng bộ của component states và lý do ra quyết định thiết kế.',
+    availability: 'Thứ 3 / Thứ 6 / Chủ nhật 19:00 - 21:30',
+    rating: 4.8,
+    activeStudents: ['student-design-ui']
   }
 ];
 
@@ -996,40 +1042,133 @@ function splitSkillInput(value) {
 }
 
 function validateSubmissionPayload(payload, challenge, currentMajor) {
-  const primaryOk = isValidHttpUrl(payload.primaryLink);
-  const secondaryBlank = !payload.secondaryLink?.trim();
-  const secondaryOk = secondaryBlank || isValidHttpUrl(payload.secondaryLink);
+  const majorKey = currentMajor?.key || challenge?.majorKey || 'dev';
+  const primary = String(payload.primaryLink || '').trim();
+  const secondary = String(payload.secondaryLink || '').trim();
+  const tertiary = String(payload.tertiaryLink || '').trim();
   const skills = splitSkillInput(payload.skills);
   const noteLength = String(payload.notes || '').trim().length;
-  const challengeTags = challenge?.tags ?? [];
-  const skillOverlap = skills.filter((skill) => (
-    challengeTags.some((tag) => tag.toLowerCase().includes(skill.toLowerCase()) || skill.toLowerCase().includes(tag.toLowerCase()))
-  ));
-  const checks = [
-    { key: 'primaryLink', label: 'Link ch\u00ednh h\u1ee3p l\u1ec7', ok: primaryOk, detail: primaryOk ? 'URL c\u00f3 th\u1ec3 m\u1edf \u0111\u1ec3 mentor xem b\u00e0i.' : 'D\u00e1n link GitHub, Figma, Google Docs ho\u1eb7c demo b\u1eaft \u0111\u1ea7u b\u1eb1ng http/https.' },
-    { key: 'secondaryLink', label: 'Link minh ch\u1ee9ng ph\u00f9 h\u1ee3p', ok: secondaryOk, detail: secondaryOk ? 'Link ph\u1ee5 s\u1eb5n s\u00e0ng ho\u1eb7c c\u00f3 th\u1ec3 b\u1ed5 sung sau.' : 'Link ph\u1ee5 kh\u00f4ng \u0111\u00fang \u0111\u1ecbnh d\u1ea1ng URL.' },
-    { key: 'skills', label: 'Khai b\u00e1o k\u1ef9 n\u0103ng', ok: skills.length >= 2, detail: skills.length >= 2 ? String(skills.length) + ' k\u1ef9 n\u0103ng \u0111\u01b0\u1ee3c ghi nh\u1eadn.' : 'Nh\u1eadp \u00edt nh\u1ea5t 2 k\u1ef9 n\u0103ng, v\u00ed d\u1ee5: React, API, UX.' },
-    { key: 'notes', label: 'Ghi ch\u00fa nghi\u1ec7p v\u1ee5', ok: noteLength >= 20, detail: noteLength >= 20 ? 'Ghi ch\u00fa \u0111\u1ee7 \u0111\u1ec3 mentor n\u1eafm b\u1ed1i c\u1ea3nh.' : 'M\u00f4 t\u1ea3 ng\u1eafn lu\u1ed3ng x\u1eed l\u00fd, logic ch\u00ednh v\u00e0 ph\u1ea7n c\u1ea7n mentor xem.' }
-  ];
+
+  let primaryCheck = { ok: false, label: '', detail: '' };
+  let secondaryCheck = { ok: true, label: '', detail: '' };
+  let tertiaryCheck = { ok: true, label: '', detail: '' };
+
+  if (majorKey === 'dev') {
+    const isGithub = isValidHttpUrl(primary) && (primary.includes('github.com') || primary.includes('gitlab.com'));
+    primaryCheck = {
+      key: 'primaryLink',
+      label: 'Repository GitHub / GitLab (Bắt buộc)',
+      ok: isGithub || isValidHttpUrl(primary),
+      detail: isGithub ? 'Link repository GitHub/GitLab hợp lệ để mentor xem mã nguồn và kiến trúc.' : isValidHttpUrl(primary) ? 'Đã có URL repository code.' : 'Vui lòng điền link GitHub/GitLab (http/https).'
+    };
+    secondaryCheck = {
+      key: 'secondaryLink',
+      label: 'Live Demo URL (Khuyến khích)',
+      ok: !secondary || isValidHttpUrl(secondary),
+      detail: secondary ? (isValidHttpUrl(secondary) ? 'Link demo chạy thực tế (Vercel/Render/Netlify) hợp lệ.' : 'Link demo không đúng định dạng URL.') : 'Tùy chọn: Thêm link demo live để mentor trải nghiệm ngay.'
+    };
+    tertiaryCheck = {
+      key: 'tertiaryLink',
+      label: 'API Docs / Swagger (Tùy chọn)',
+      ok: !tertiary || isValidHttpUrl(tertiary),
+      detail: tertiary ? 'Có tài liệu API / Swagger docs.' : 'Tùy chọn: Link Swagger, Postman docs hoặc README API.'
+    };
+  } else if (majorKey === 'mkt') {
+    const isSlide = isValidHttpUrl(primary);
+    primaryCheck = {
+      key: 'primaryLink',
+      label: 'Pitch Deck / Slide Chiến dịch (Bắt buộc)',
+      ok: isSlide,
+      detail: isSlide ? 'Link Google Slides / Canva / Presentation hợp lệ.' : 'Vui lòng điền link Pitch Deck chiến dịch (Google Slides/Drive URL).'
+    };
+    secondaryCheck = {
+      key: 'secondaryLink',
+      label: 'Kế hoạch chiến dịch chi tiết (Khuyến khích)',
+      ok: !secondary || isValidHttpUrl(secondary),
+      detail: secondary ? (isValidHttpUrl(secondary) ? 'Link Google Docs / Notion kế hoạch chiến dịch hợp lệ.' : 'Link kế hoạch không đúng định dạng URL.') : 'Tùy chọn: Link Google Docs kế hoạch chi tiết.'
+    };
+    tertiaryCheck = {
+      key: 'tertiaryLink',
+      label: 'Bảng KPI & Analytics Dashboard (Tùy chọn)',
+      ok: !tertiary || isValidHttpUrl(tertiary),
+      detail: tertiary ? 'Có bảng số liệu đo lường Looker Studio / Sheets.' : 'Tùy chọn: Link Google Sheets đo lường chỉ số hoặc Looker Studio.'
+    };
+  } else {
+    // Design
+    const isFigma = isValidHttpUrl(primary) && (primary.includes('figma.com') || primary.includes('behance.net'));
+    primaryCheck = {
+      key: 'primaryLink',
+      label: 'File thiết kế Figma (Bắt buộc)',
+      ok: isFigma || isValidHttpUrl(primary),
+      detail: isFigma ? 'Link Figma file / canvas hợp lệ để mentor xem component và flow.' : isValidHttpUrl(primary) ? 'Đã có link thiết kế (khuyến khích dùng figma.com).' : 'Vui lòng dán link file thiết kế Figma (figma.com).'
+    };
+    secondaryCheck = {
+      key: 'secondaryLink',
+      label: 'Interactive Prototype (Khuyến khích)',
+      ok: !secondary || isValidHttpUrl(secondary),
+      detail: secondary ? (isValidHttpUrl(secondary) ? 'Link prototype bấm được (Figma proto / Framer).' : 'Link prototype không đúng định dạng URL.') : 'Tùy chọn: Link prototype có thể tương tác.'
+    };
+    tertiaryCheck = {
+      key: 'tertiaryLink',
+      label: 'Case Study chi tiết (Tùy chọn)',
+      ok: !tertiary || isValidHttpUrl(tertiary),
+      detail: tertiary ? 'Có link Behance / Notion / Drive case study.' : 'Tùy chọn: Link case study phân tích bài toán UX.'
+    };
+  }
+
+  const skillCheck = {
+    key: 'skills',
+    label: 'Khai báo kỹ năng chuyên môn',
+    ok: skills.length >= 2,
+    detail: skills.length >= 2 ? `${skills.length} kỹ năng chuyên ngành được ghi nhận.` : 'Nhập ít nhất 2 kỹ năng chuyên ngành (ví dụ: React, API, UX).'
+  };
+
+  const noteCheck = {
+    key: 'notes',
+    label: 'Ghi chú nghiệp vụ thực tế',
+    ok: noteLength >= 20,
+    detail: noteLength >= 20 ? 'Ghi chú nghiệp vụ đủ để mentor nắm bối cảnh và trade-offs.' : 'Mô tả ngắn ít nhất 20 ký tự về bài toán nghiệp vụ đã xử lý.'
+  };
+
+  const checks = [primaryCheck, secondaryCheck, tertiaryCheck, skillCheck, noteCheck];
   return {
     checks,
     errors: checks.filter((item) => !item.ok),
     score: Math.round((checks.filter((item) => item.ok).length / checks.length) * 100),
-    skillOverlap
+    skills
   };
 }
 
 function matchMentorForChallenge(challenge, mentors = []) {
+  const challengeMajor = challenge?.majorKey;
   const normalizedTrack = String(challenge?.track || '').toLowerCase();
   const normalizedMentor = String(challenge?.mentor || '').toLowerCase();
-  return mentors.find((mentor) => mentor.id === challenge?.mentorId)
-    ?? mentors.find((mentor) => String(mentor.name || '').toLowerCase() === normalizedMentor)
-    ?? mentors.find((mentor) => (mentor.expertise ?? []).some((item) => {
+
+  // 1. Direct ID / Name match
+  const byId = mentors.find((mentor) => mentor.id === challenge?.mentorId);
+  if (byId) return byId;
+
+  const byName = mentors.find((mentor) => String(mentor.name || '').toLowerCase() === normalizedMentor);
+  if (byName) return byName;
+
+  // 2. Track & Major match
+  const byMajorAndTrack = mentors.find((mentor) => {
+    const majorMatch = !challengeMajor || mentor.majorKey === challengeMajor;
+    const trackMatch = (mentor.expertise ?? []).some((item) => {
       const expertise = String(item).toLowerCase();
       return expertise === normalizedTrack || expertise.includes(normalizedTrack) || normalizedTrack.includes(expertise);
-    }))
-    ?? mentors.find((mentor) => String(mentor.role || '').toLowerCase() === 'mentor')
-    ?? { id: 'mentor-auto', name: challenge?.mentor || 'Mentor Demo', expertise: [challenge?.track].filter(Boolean) };
+    });
+    return majorMatch && trackMatch;
+  });
+  if (byMajorAndTrack) return byMajorAndTrack;
+
+  // 3. Major match fallback
+  const byMajor = mentors.find((mentor) => mentor.majorKey === challengeMajor);
+  if (byMajor) return byMajor;
+
+  // 4. Default mentor
+  return mentors.find((mentor) => String(mentor.role || '').toLowerCase() === 'mentor')
+    ?? { id: 'mentor-auto', name: challenge?.mentor || 'Mentor Demo', expertise: [challenge?.track].filter(Boolean), currentCompany: 'Đại học FPT & Doanh nghiệp đối tác' };
 }
 
 function App() {
@@ -1348,11 +1487,11 @@ function App() {
   useEffect(() => {
     const activeRole = currentUser?.type ?? currentUser?.user?.role;
     const rolePages = {
-      student: ['home', 'cv-gate', 'interview', 'learning', 'pricing', 'about', 'roadmap', 'trends', 'hub', 'join', 'submit', 'feedback', 'portfolio', 'submissionHistory', 'premium'],
-      mentor: ['mentor', 'home', 'cv-gate', 'interview', 'learning', 'pricing', 'about', 'roadmap', 'trends'],
-      admin: ['admin', 'home', 'cv-gate', 'interview', 'learning', 'pricing', 'about', 'roadmap', 'trends']
+      student: ['home', 'learning', 'pricing', 'about', 'roadmap', 'trends', 'hub', 'join', 'submit', 'feedback', 'portfolio', 'submissionHistory', 'premium'],
+      mentor: ['mentor', 'home', 'learning', 'pricing', 'about', 'roadmap', 'trends'],
+      admin: ['admin', 'home', 'learning', 'pricing', 'about', 'roadmap', 'trends']
     };
-    const publicPages = ['home', 'cv-gate', 'interview', 'learning', 'pricing', 'about', 'roadmap', 'trends', 'auth'];
+    const publicPages = ['home', 'learning', 'pricing', 'about', 'roadmap', 'trends', 'auth'];
     if (!currentUser && !publicPages.includes(page)) {
       setPage('home');
       return;
@@ -1698,8 +1837,6 @@ function App() {
             go={go}
           />
         )}
-        {page === 'cv-gate' && <CvGatePage go={go} onUnlockInterview={(res) => setCvResultData(res)} />}
-        {page === 'interview' && <InterviewPracticePage go={go} cvResult={cvResultData} mentors={appData.mentors ?? []} />}
         {page === 'trends' && <MarketTrendsPage majors={catalog} currentMajor={currentMajor} changeMajor={changeMajor} go={go} />}
         {page === 'hub' && (
           <ChallengeHubPage
@@ -1744,11 +1881,10 @@ function Header({ page, go, currentUser, theme, setTheme, logout, loginAs }) {
   const publicFlow = [
     { id: 'intro', label: 'Trang chủ', icon: Compass, target: 'home' },
     { id: 'roadmap-preview', label: 'Bản đồ nghề', icon: LayoutDashboard, target: 'roadmap' },
+    { id: 'trends-preview', label: 'Xu hướng thị trường', icon: BarChart2, target: 'trends' },
     { id: 'hub-preview', label: 'Thử thách dự án', icon: Rocket, target: 'hub' },
     { id: 'portfolio-preview', label: 'Hồ sơ Portfolio', icon: UserRound, target: 'portfolio' },
-    { id: 'cv-gate-preview', label: 'Thẩm định CV & ATS', icon: FileUp, target: 'cv-gate' },
-    { id: 'interview-preview', label: 'Phỏng vấn AI', icon: MessageSquareText, target: 'interview' },
-    { id: 'learning-preview', label: 'Học liệu ĐH', icon: GraduationCap, target: 'learning' },
+    { id: 'learning-preview', label: 'Học liệu ĐH FPT', icon: GraduationCap, target: 'learning' },
     { id: 'pricing-preview', label: 'Gói Premium', icon: Crown, target: 'pricing' },
     { id: 'about', label: 'Về chúng tôi', icon: BookOpen, target: 'about' }
   ];
@@ -1758,39 +1894,33 @@ function Header({ page, go, currentUser, theme, setTheme, logout, loginAs }) {
     ? [
         { id: 'home-nav', label: 'Trang chủ', icon: Compass, target: 'home' },
         { id: 'roadmap', label: 'Bản đồ nghề', icon: LayoutDashboard, target: 'roadmap' },
+        { id: 'trends-nav', label: 'Xu hướng thị trường', icon: BarChart2, target: 'trends' },
         { id: 'practice', label: 'Thử thách dự án', icon: Rocket, items: ['hub', 'join', 'submit', 'feedback'].map(byId).filter(Boolean) },
         { id: 'portfolio-nav', label: 'Hồ sơ Portfolio', icon: UserRound, target: 'portfolio' },
-        { id: 'cv-gate-nav', label: 'Thẩm định CV', icon: FileUp, target: 'cv-gate' },
-        { id: 'interview-nav', label: 'Phỏng Vấn AI', icon: MessageSquareText, target: 'interview' },
-        { id: 'learning-nav', label: 'Học liệu ĐH', icon: GraduationCap, target: 'learning' },
+        { id: 'learning-nav', label: 'Học liệu FPT', icon: GraduationCap, target: 'learning' },
         { id: 'premium-direct', label: 'Gói Premium', icon: Crown, target: 'pricing' }
       ]
     : currentRole === 'mentor'
       ? [
           { id: 'mentor-workspace', label: 'Mentor Workspace', icon: GraduationCap, target: 'mentor', matches: ['mentor'] },
           { id: 'portfolio-workspace', label: 'Duyệt Portfolio', icon: UserRound, target: 'portfolio' },
-          { id: 'cv-gate-workspace', label: 'Thẩm định CV', icon: FileUp, target: 'cv-gate' },
-          { id: 'interview-workspace', label: 'Phỏng vấn AI', icon: MessageSquareText, target: 'interview' },
-          { id: 'learning-workspace', label: 'Học liệu ĐH', icon: GraduationCap, target: 'learning' },
+          { id: 'learning-workspace', label: 'Học liệu FPT', icon: GraduationCap, target: 'learning' },
           { id: 'home-workspace', label: 'Trang chủ', icon: Compass, target: 'home' }
         ]
       : currentRole === 'admin'
         ? [
             { id: 'admin-workspace', label: 'Admin Workspace', icon: ShieldCheck, target: 'admin', matches: ['admin'] },
             { id: 'portfolio-workspace', label: 'Quản lý Portfolio', icon: UserRound, target: 'portfolio' },
-            { id: 'cv-gate-workspace', label: 'Thẩm định CV', icon: FileUp, target: 'cv-gate' },
-            { id: 'interview-workspace', label: 'Phỏng vấn AI', icon: MessageSquareText, target: 'interview' },
-            { id: 'learning-workspace', label: 'Học liệu ĐH', icon: GraduationCap, target: 'learning' },
+            { id: 'learning-workspace', label: 'Học liệu FPT', icon: GraduationCap, target: 'learning' },
             { id: 'home-workspace', label: 'Trang chủ', icon: Compass, target: 'home' }
           ]
         : [
             { id: 'home-public', label: 'Trang chủ', icon: Compass, target: 'home' },
             { id: 'roadmap-preview', label: 'Bản đồ nghề', icon: LayoutDashboard, target: 'roadmap' },
+            { id: 'trends-preview', label: 'Xu hướng thị trường', icon: BarChart2, target: 'trends' },
             { id: 'hub-preview', label: 'Thử thách dự án', icon: Rocket, target: 'hub' },
             { id: 'portfolio-public', label: 'Hồ sơ Portfolio', icon: UserRound, target: 'portfolio' },
-            { id: 'cv-gate-public', label: 'Thẩm định CV & ATS', icon: FileUp, target: 'cv-gate' },
-            { id: 'interview-public', label: 'Luyện phỏng vấn AI', icon: MessageSquareText, target: 'interview' },
-            { id: 'learning-public', label: 'Học liệu ĐH', icon: GraduationCap, target: 'learning' },
+            { id: 'learning-public', label: 'Học liệu FPT', icon: GraduationCap, target: 'learning' },
             { id: 'pricing-public', label: 'Gói Premium', icon: Crown, target: 'pricing' },
             { id: 'about', label: 'Về chúng tôi', icon: BookOpen, target: 'about' }
           ];
@@ -3107,128 +3237,245 @@ function HomePage({ go }) {
 }
 
 function LearningPage({ go }) {
-  const [selectedUni, setSelectedUni] = useState('Tất cả');
+  const [selectedMajor, setSelectedMajor] = useState('Tất cả');
   const [downloadNotice, setDownloadNotice] = useState('');
   const [previewItem, setPreviewItem] = useState(null);
 
-  const resources = [
+  const fptResources = [
+    // Software Engineering (SE)
     {
-      id: 'res-fpt-1',
-      title: 'Bộ 100 Câu Hỏi Phỏng Vấn Frontend & ReactJS Chuyên Sâu',
+      id: 'fpt-se-swp391',
+      code: 'SWP391',
+      title: 'Đề Án Thực Chiến Phần Mềm SWP391 & Khung Chuẩn OJT FPT',
+      majorKey: 'dev',
+      majorLabel: 'Kỹ thuật Phần mềm (SE)',
       uni: 'Đại học FPT',
-      cat: 'Bộ đề phỏng vấn',
-      downloads: 1240,
-      rating: 4.9,
-      format: 'PDF · 45 trang',
-      desc: 'Tổng hợp từ các buổi phỏng vấn OJT & On-the-job training tại FPT Software, FPT Telecom, VNG.'
-    },
-    {
-      id: 'res-bk-1',
-      title: 'Slide Bài Giảng Kiến Trúc Microservices & Distributed System',
-      uni: 'Đại học Bách Khoa',
-      cat: 'Slide bài giảng',
-      downloads: 980,
+      cat: 'Giáo trình & Đồ án thực chiến',
+      downloads: 3420,
       rating: 5.0,
-      format: 'PDF / Slides · 68 trang',
-      desc: 'Giáo trình thiết kế hệ thống chịu tải cao, API Gateway, Docker Container, Message Queue Kafka.'
+      format: 'PDF · 52 trang',
+      desc: 'Tài liệu hướng dẫn xây dựng dự án Full Stack, quản trị quy trình Scrum, thiết kế API, viết Unit Test và checklist nghiệm thu OJT tại FPT Software.'
     },
     {
-      id: 'res-khtn-1',
-      title: 'Ngân Hàng 50 Case Study Phỏng Vấn System Design & Database Tuning',
-      uni: 'Đại học KHTN',
-      cat: 'Case study doanh nghiệp',
-      downloads: 850,
+      id: 'fpt-se-prn211',
+      code: 'PRN211',
+      title: 'Giáo Trình .NET Core, C# & Clean Architecture Doanh Nghiệp',
+      majorKey: 'dev',
+      majorLabel: 'Kỹ thuật Phần mềm (SE)',
+      uni: 'Đại học FPT',
+      cat: 'Tài liệu môn học chính quy',
+      downloads: 2180,
+      rating: 4.9,
+      format: 'PDF / Slides · 78 trang',
+      desc: 'Bộ bài giảng chi tiết về Entity Framework Core, Repository Pattern, Dependency Injection, RESTful API và tối ưu hiệu năng cơ sở dữ liệu SQL Server.'
+    },
+    {
+      id: 'fpt-se-prj301',
+      code: 'PRJ301',
+      title: 'Xây Dựng Web App Phân Tầng Với Java Servlet & Spring Boot',
+      majorKey: 'dev',
+      majorLabel: 'Kỹ thuật Phần mềm (SE)',
+      uni: 'Đại học FPT',
+      cat: 'Giáo trình & Code mẫu',
+      downloads: 2890,
+      rating: 4.9,
+      format: 'PDF · 64 trang',
+      desc: 'Mô hình MVC phân tầng, xác thực JWT, bảo mật Spring Security, tích hợp thanh toán VNPAY/MoMo và cấu trúc dự án chuẩn để nộp bài Portfolio.'
+    },
+    {
+      id: 'fpt-se-swe201c',
+      code: 'SWE201c',
+      title: 'Tiêu Chuẩn Thiết Kế Kiến Trúc Phần Mềm C4 Model & Agile',
+      majorKey: 'dev',
+      majorLabel: 'Kỹ thuật Phần mềm (SE)',
+      uni: 'Đại học FPT',
+      cat: 'Tài liệu chuẩn kiến trúc',
+      downloads: 1650,
       rating: 4.8,
-      format: 'PDF · 38 trang',
-      desc: 'Phân tích các bài toán thiết kế hệ thống thực tế: URL Shortener, Chat Realtime, Rate Limiting.'
+      format: 'PDF · 40 trang',
+      desc: 'Hướng dẫn vẽ sơ đồ hệ thống 4 cấp độ (Context, Container, Component, Code), phân tích Trade-off và viết tài liệu kiến trúc ADR chuyên nghiệp.'
     },
+
+    // Digital Marketing (MKT)
     {
-      id: 'res-fpt-2',
-      title: 'Bộ Template CV Chuẩn ATS Quốc Tế Vượt Qua Vòng Quét Tuyển Dụng',
+      id: 'fpt-mkt-mkt304',
+      code: 'MKT304',
+      title: 'Chiến Lược Digital Marketing Đa Kênh & Tối Ưu Paid Ads Funnel',
+      majorKey: 'mkt',
+      majorLabel: 'Digital Marketing (MKT)',
       uni: 'Đại học FPT',
-      cat: 'Template CV chuẩn ATS',
-      downloads: 2450,
+      cat: 'Kế hoạch chiến dịch mẫu',
+      downloads: 2750,
       rating: 5.0,
-      format: 'DOCX / PDF · 5 mẫu',
-      desc: 'Mẫu CV cấu trúc 1 cột chuẩn ATS được các nhà tuyển dụng tại Shopee, Momo, FPT Software khuyên dùng.'
+      format: 'Slides / Deck · 45 slide',
+      desc: 'Bộ khung lập kế hoạch chiến dịch đa kênh từ Awareness đến Conversion, phân bổ ngân sách Meta/Google Ads và xây dựng bảng đo lường ROAS/CAC.'
     },
     {
-      id: 'res-bk-2',
-      title: 'Bộ Câu Hỏi Phỏng Vấn Tình Huống Behavioral & Khung STAR Chuẩn',
-      uni: 'Đại học Bách Khoa',
-      cat: 'Bộ đề phỏng vấn',
-      downloads: 1530,
+      id: 'fpt-mkt-dmm301',
+      code: 'DMM301',
+      title: 'Cẩm Nang Kỹ Thuật SEO Audit, Topic Cluster & On-Page FPT',
+      majorKey: 'mkt',
+      majorLabel: 'Digital Marketing (MKT)',
+      uni: 'Đại học FPT',
+      cat: 'Tài liệu chuyên môn',
+      downloads: 1980,
       rating: 4.9,
-      format: 'PDF · 30 trang',
-      desc: 'Hướng dẫn cách trả lời các câu hỏi hành vi, xử lý xung đột trong team và thương lượng lương thưởng.'
+      format: 'PDF · 56 trang',
+      desc: 'Phương pháp phân tích từ khóa theo Search Intent, cấu trúc website dạng Topic Cluster, audit Core Web Vitals và lập kế hoạch biên tập nội dung 30 ngày.'
     },
     {
-      id: 'res-khtn-2',
-      title: 'Tài Liệu Ôn Tập Thuật Toán & Cấu Trúc Dữ Liệu Thi Tuyển Dụng',
-      uni: 'Đại học KHTN',
-      cat: 'Bộ đề phỏng vấn',
-      downloads: 1120,
+      id: 'fpt-mkt-mkt101',
+      code: 'MKT101',
+      title: 'Nguyên Lý Tiếp Thị & Khung Nghiên Cứu Chân Dung Khách Hàng (Persona)',
+      majorKey: 'mkt',
+      majorLabel: 'Digital Marketing (MKT)',
+      uni: 'Đại học FPT',
+      cat: 'Giáo trình nền tảng',
+      downloads: 3120,
+      rating: 4.8,
+      format: 'PDF · 48 trang',
+      desc: 'Lý thuyết tiếp thị hiện đại kết hợp thực hành: xác định phân khúc thị trường, định vị thương hiệu, thấu hiểu Insight và thiết kế thông điệp truyền thông.'
+    },
+    {
+      id: 'fpt-mkt-brd201',
+      code: 'BRD201',
+      title: 'Bộ Khung Chiến Dịch Truyền Thông Tích Hợp (IMC) & Định Vị Thương Hiệu',
+      majorKey: 'mkt',
+      majorLabel: 'Digital Marketing (MKT)',
+      uni: 'Đại học FPT',
+      cat: 'Case study doanh nghiệp',
+      downloads: 1840,
       rating: 4.9,
-      format: 'PDF · 80 trang',
-      desc: 'Trọng tâm LeetCode Medium/Easy, Dynamic Programming, Graph, Tree thường gặp trong vòng Tech Test.'
+      format: 'Slides · 38 slide',
+      desc: 'Case study phân tích chiến dịch ra mắt sản phẩm của các thương hiệu hàng đầu Việt Nam, mẫu Pitch Deck báo cáo cho Ban giám đốc.'
+    },
+
+    // Digital Art & Design (DG)
+    {
+      id: 'fpt-dg-uxd301',
+      code: 'UXD301',
+      title: 'Quy Trình Thiết Kế Sản Phẩm UI/UX & Nghiên Cứu Người Dùng',
+      majorKey: 'design',
+      majorLabel: 'Thiết kế Mỹ thuật số (DG)',
+      uni: 'Đại học FPT',
+      cat: 'Giáo trình thực hành UI/UX',
+      downloads: 3600,
+      rating: 5.0,
+      format: 'PDF / Figma · 60 trang',
+      desc: 'Quy trình Design Thinking 5 bước: Empathize, Define, Ideate, Prototype, Test. Bao gồm mẫu câu hỏi phỏng vấn UX, user journey map và wireframe luồng chính.'
+    },
+    {
+      id: 'fpt-dg-dsn301',
+      code: 'DSN301',
+      title: 'Cẩm Nang Xây Dựng Design System & Token Component Trên Figma',
+      majorKey: 'design',
+      majorLabel: 'Thiết kế Mỹ thuật số (DG)',
+      uni: 'Đại học FPT',
+      cat: 'Bộ thư viện Figma mẫu',
+      downloads: 2950,
+      rating: 5.0,
+      format: 'Figma File / PDF',
+      desc: 'Hệ thống Color Tokens, Typography Scale, Spacing Grid, Auto Layout 5.0, Variant states và hướng dẫn Handoff cho lập trình viên Frontend.'
+    },
+    {
+      id: 'fpt-dg-gra201',
+      code: 'GRA201',
+      title: 'Nguyên Lý Thị Giác, Bố Cục & Nhận Diện Thương Hiệu Kỹ Thuật Số',
+      majorKey: 'design',
+      majorLabel: 'Thiết kế Mỹ thuật số (DG)',
+      uni: 'Đại học FPT',
+      cat: 'Tài liệu môn học chính quy',
+      downloads: 2150,
+      rating: 4.9,
+      format: 'PDF · 50 trang',
+      desc: 'Lý thuyết màu sắc, nghệ thuật chữ (Digital Typography), visual hierarchy, quy chuẩn thiết kế logo và brand guidelines chuyên nghiệp cho Portfolio.'
+    },
+    {
+      id: 'fpt-dg-anm201',
+      code: 'ANM201',
+      title: 'Nguyên Tắc Chuyển Động Motion Graphics & Micro-interactions',
+      majorKey: 'design',
+      majorLabel: 'Thiết kế Mỹ thuật số (DG)',
+      uni: 'Đại học FPT',
+      cat: 'Tài liệu kỹ thuật số',
+      downloads: 1720,
+      rating: 4.8,
+      format: 'PDF / Video · 35 trang',
+      desc: '12 nguyên lý hoạt họa Disney ứng dụng trong sản phẩm số, thiết kế transition tương tác, xuất file Lottie/JSON tối ưu cho Web và Mobile App.'
     }
   ];
 
-  const filtered = resources.filter((item) => {
-    return selectedUni === 'Tất cả' || item.uni === selectedUni;
+  const filtered = fptResources.filter((item) => {
+    return selectedMajor === 'Tất cả' || item.majorLabel.includes(selectedMajor) || item.majorKey === selectedMajor;
   });
 
   const handleDownload = (item) => {
-    setDownloadNotice(`Đang tải xuống "${item.title}" (${item.format})...`);
+    setDownloadNotice(`Đang tải xuống tài liệu chính quy FPT: "${item.code} - ${item.title}"...`);
     setTimeout(() => {
-      setDownloadNotice(`✅ Đã tải xuống thành công tài liệu "${item.title}"!`);
-      setTimeout(() => setDownloadNotice(''), 3000);
+      setDownloadNotice(`✅ Đã tải xuống thành công tài liệu Đại học FPT: "${item.code} - ${item.title}" (${item.format})!`);
+      setTimeout(() => setDownloadNotice(''), 3500);
     }, 800);
   };
 
   return (
-    <section className="content-page">
+    <section className="content-page fpt-learning-page">
       <div className="section-heading inline">
         <div>
-          <p className="mono-label">University Learning Hub</p>
-          <h1>Học Liệu & Đề Thi Phỏng Vấn Từ Các Trường Đại Học</h1>
-          <p>Kho học liệu liên kết từ ĐH FPT, Bách Khoa, KHTN... giúp sinh viên chuẩn bị kiến thức kỹ thuật và tình huống phỏng vấn vững chắc.</p>
+          <p className="mono-label">FPT University Academic Hub</p>
+          <h1>Học Liệu & Giáo Trình Chính Quy Đại Học FPT</h1>
+          <p>Kho học liệu, đồ án OJT và khung tham chiếu kỹ năng chính quy từ ĐH FPT dành cho sinh viên 3 chuyên ngành SE, MKT và DG để xây dựng Portfolio đạt chuẩn doanh nghiệp.</p>
+        </div>
+        <div style={{ display: 'flex', gap: '10px' }}>
+          <button className="ghost-action compact" onClick={() => go('roadmap')}>
+            <Compass size={15} /> Bản đồ nghề
+          </button>
+          <button className="primary-action compact" onClick={() => go('hub')}>
+            <Rocket size={15} /> Làm thử thách ngay
+          </button>
         </div>
       </div>
 
       {downloadNotice && <div className="status-banner info mb-3">{downloadNotice}</div>}
 
-      <div className="filter-bar mb-4" style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-        <span style={{ fontSize: '13px', fontWeight: 600, alignSelf: 'center', marginRight: '6px' }}>Trường ĐH:</span>
-        {['Tất cả', 'Đại học FPT', 'Đại học Bách Khoa', 'Đại học KHTN'].map((u) => (
+      <div className="filter-bar mb-4" style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
+        <span style={{ fontSize: '13px', fontWeight: 600, marginRight: '6px' }}>Lọc theo chuyên ngành:</span>
+        {[
+          { key: 'Tất cả', label: 'Tất cả chuyên ngành (12 tài liệu)' },
+          { key: 'dev', label: '💻 Kỹ thuật Phần mềm (SE)' },
+          { key: 'mkt', label: '📊 Digital Marketing (MKT)' },
+          { key: 'design', label: '🎨 Thiết kế Mỹ thuật số (DG)' }
+        ].map((m) => (
           <button
-            key={u}
+            key={m.key}
             type="button"
-            className={`ghost-action compact ${selectedUni === u ? 'active' : ''}`}
-            onClick={() => setSelectedUni(u)}
+            className={`ghost-action compact ${selectedMajor === m.key ? 'active' : ''}`}
+            onClick={() => setSelectedMajor(m.key)}
           >
-            {u}
+            {m.label}
           </button>
         ))}
       </div>
 
       <div className="learning-resources-grid">
         {filtered.map((item) => (
-          <article className="resource-card" key={item.id}>
-            <span className="resource-uni-badge">{item.uni}</span>
-            <h3 style={{ fontSize: '16px', fontWeight: 700, margin: '0 0 10px', color: 'var(--jr-text-main)' }}>{item.title}</h3>
+          <article className="resource-card fpt-resource-card" key={item.id} style={{ display: 'flex', flexDirection: 'column' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px' }}>
+              <span className="resource-uni-badge">{item.uni} · {item.code}</span>
+              <span className="chip-tag">{item.majorLabel.split(' ')[0]}</span>
+            </div>
+            <h3 style={{ fontSize: '16px', fontWeight: 700, margin: '0 0 10px', color: 'var(--jr-text-main)', lineHeight: 1.4 }}>{item.title}</h3>
             <p style={{ fontSize: '13px', color: 'var(--jr-text-sub)', flexGrow: 1, margin: '0 0 14px', lineHeight: 1.5 }}>{item.desc}</p>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '12px', color: 'var(--jr-text-sub)', borderTop: '1px solid var(--jr-card-border)', paddingTop: '12px', marginBottom: '14px' }}>
-              <span>📥 {item.downloads} lượt tải</span>
+              <span>📥 {item.downloads.toLocaleString()} lượt tải</span>
               <span>⭐ {item.rating} / 5.0</span>
               <span className="chip-tag">{item.format}</span>
             </div>
             <div style={{ display: 'flex', gap: '8px' }}>
               <button className="ghost-action compact" style={{ flex: 1 }} onClick={() => setPreviewItem(item)}>
-                👁️ Xem trước
+                👁️ Xem tóm tắt
               </button>
               <button className="primary-action compact" style={{ flex: 1 }} onClick={() => handleDownload(item)}>
-                <Download size={14} /> Tải về
+                <Download size={14} /> Tải tài liệu
               </button>
             </div>
           </article>
@@ -3239,19 +3486,19 @@ function LearningPage({ go }) {
         <div className="modal-backdrop" onClick={() => setPreviewItem(null)}>
           <div className="modal-card" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '640px' }}>
             <div className="modal-header">
-              <h3>{previewItem.title}</h3>
+              <h3>[{previewItem.code}] {previewItem.title}</h3>
               <button className="icon-btn" onClick={() => setPreviewItem(null)}><X size={18} /></button>
             </div>
             <div className="modal-body">
-              <span className="resource-uni-badge mb-2">{previewItem.uni} · {previewItem.cat}</span>
+              <span className="resource-uni-badge mb-2">{previewItem.uni} · {previewItem.majorLabel}</span>
               <p style={{ margin: '14px 0', lineHeight: 1.6 }}>{previewItem.desc}</p>
               <div style={{ background: 'rgba(255,255,255,0.05)', padding: '16px', borderRadius: '12px', margin: '16px 0' }}>
-                <h4 style={{ margin: '0 0 8px', fontSize: '14px' }}>📄 Nội dung tóm tắt:</h4>
+                <h4 style={{ margin: '0 0 8px', fontSize: '14px' }}>📄 Nội dung trọng tâm giáo trình:</h4>
                 <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '13px', color: 'var(--jr-text-sub)' }}>
-                  <li>Chương 1: Khái niệm cốt lõi & Những câu hỏi thường xuyên xuất hiện ở vòng 1</li>
-                  <li>Chương 2: Xử lý các câu hỏi bẫy (Tricky questions) của Nhà tuyển dụng</li>
-                  <li>Chương 3: Hướng dẫn trả lời theo cấu trúc STAR chi tiết từng bước</li>
-                  <li>Chương 4: Bộ tiêu chí đánh giá của Tech Lead & Senior Mentor</li>
+                  <li>Chương 1: Kiến thức nền tảng và chuẩn đầu ra môn học của Đại học FPT</li>
+                  <li>Chương 2: Hướng dẫn thực hành dự án thực tế và checklist nghiệm thu OJT</li>
+                  <li>Chương 3: Bộ rubric chấm điểm của Giảng viên & Mentor doanh nghiệp</li>
+                  <li>Chương 4: Tiêu chuẩn đóng gói sản phẩm để đưa vào Portfolio cá nhân</li>
                 </ul>
               </div>
             </div>
@@ -3263,793 +3510,6 @@ function LearningPage({ go }) {
             </div>
           </div>
         </div>
-      )}
-    </section>
-  );
-}
-
-function CvGatePage({ go, onUnlockInterview }) {
-  const [cvText, setCvText] = useState('');
-  const [targetRole, setTargetRole] = useState('Frontend Developer');
-  const [targetUni, setTargetUni] = useState('Đại học FPT');
-  const [targetLevel, setTargetLevel] = useState('Junior');
-  const [analyzing, setAnalyzing] = useState(false);
-  const [cvResult, setCvResult] = useState(null);
-  const [uploadedFileName, setUploadedFileName] = useState('');
-  const [isDragOver, setIsDragOver] = useState(false);
-
-  const sampleCVs = {
-    'Frontend Developer': `Họ và tên: Trần Hoàng Nam\nEmail: hoangnam.dev@fpt.edu.vn | Điện thoại: 0987654321\nTrường: Đại học FPT (GPA: 3.45/4.0 - Chuyên ngành Kỹ thuật Phần mềm)\nVị trí mong muốn: Frontend Developer (ReactJS / TypeScript)\n\nKINH NGHIỆM & DỰ ÁN:\n1. Dự án E-commerce Web App (Thành viên chính)\n- Công nghệ: ReactJS, TypeScript, Redux Toolkit, TailwindCSS, REST API, Vite, Jest.\n- Xây dựng giao diện responsive, tích hợp giỏ hàng và thanh toán trực tuyến.\n- Tối ưu hiệu năng Lighthouse từ 65 lên 92 điểm nhờ Lazy loading và Memoization.\n\n2. Dự án Quản lý Tuyển dụng Nội bộ (Đồ án tốt nghiệp tại ĐH FPT)\n- Phát triển module ATS lọc hồ sơ và chat realtime bằng Socket.IO.\n- Viết Unit Test với Jest đạt 80% code coverage.\n\nKỸ NĂNG CHUYÊN MÔN:\n- Ngôn ngữ: JavaScript (ES6+), TypeScript, HTML5, CSS3, SCSS\n- Frameworks/Libs: ReactJS, Next.js, Redux Toolkit, React Query\n- Công cụ: Git, Docker, Postman, Figma, CI/CD GitHub Actions`,
-    'Backend Developer': `Họ và tên: Lê Tuấn Anh\nEmail: anh.letuan@hcmut.edu.vn | Điện thoại: 0912345678\nTrường: Đại học Bách Khoa TP.HCM (GPA: 3.3/4.0)\nVị trí mong muốn: Backend Developer (Node.js / Express / MongoDB)\n\nKINH NGHIỆM & DỰ ÁN:\n1. Hệ thống Backend Xử lý Đơn hàng E-commerce\n- Công nghệ: Node.js, Express, MongoDB, Redis, Docker, JWT Authentication.\n- Thiết kế kiến trúc RESTful API phục vụ 10,000+ request/phút, giảm 40% latency nhờ cache Redis.\n- Triển khai phân quyền RBAC và mã hóa mật khẩu an toàn.\n\n2. Hệ thống Notification & Message Queue\n- Sử dụng RabbitMQ để xử lý bất đồng bộ gửi email và push notification.\n\nKỸ NĂNG CHUYÊN MÔN:\n- Backend: Node.js, Express, Go, RESTful API, GraphQL\n- Database: MongoDB, PostgreSQL, Redis, MySQL\n- DevOps/Tools: Docker, Git, CI/CD, Linux, Postman`,
-    'AI / Data Engineer': `Họ và tên: Đặng Minh Triết\nEmail: triet.dang@hcmus.edu.vn | Điện thoại: 0903334444\nTrường: Đại học Khoa học Tự nhiên TP.HCM (GPA: 3.6/4.0)\nVị trí mong muốn: AI / Data Engineer (Python / Machine Learning)\n\nKINH NGHIỆM & DỰ ÁN:\n1. Mô hình Phân loại Hồ sơ Tuyển dụng & Matching JD\n- Sử dụng Python, PyTorch, Transformers (BERT), Sentence-BERT để tính toán vector similarity.\n- Độ chính xác F1-score đạt 89% trên tập dữ liệu 5,000 hồ sơ.\n\n2. Xây dựng Pipeline ETL Dữ liệu Tài chính\n- Sử dụng Apache Spark, Pandas, SQL và PostgreSQL để làm sạch dữ liệu lớn.\n\nKỸ NĂNG CHUYÊN MÔN:\n- Ngôn ngữ: Python, SQL, C++\n- Frameworks: PyTorch, Scikit-learn, TensorFlow, Pandas, NumPy, FastAPI\n- Công cụ: Git, Docker, Jupyter, MLflow`
-  };
-
-  const applySampleCV = (role) => {
-    setTargetRole(role);
-    setCvText(sampleCVs[role] || sampleCVs['Frontend Developer']);
-    setUploadedFileName(`Sample_${role.replace(/\s+/g, '_')}_CV.pdf`);
-  };
-
-  const handleFileUpload = (e) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setUploadedFileName(file.name);
-      if (file.type === 'text/plain' || file.name.endsWith('.txt')) {
-        const reader = new FileReader();
-        reader.onload = (event) => setCvText(event.target.result);
-        reader.readAsText(file);
-      } else {
-        // Simulated ATS text extraction for PDF/Word
-        setCvText(`[Đã trích xuất văn bản từ ${file.name} - Kích thước ${(file.size / 1024).toFixed(1)} KB]\n\nHọ và tên: Ứng viên ${targetUni}\nVị trí: ${targetRole}\nHọc vấn: ${targetUni} (GPA: 3.4/4.0)\nKinh nghiệm: 1+ năm phát triển ứng dụng công nghệ, tham gia dự án thực tế.\nKỹ năng: React, Node.js, TypeScript, REST API, Git, Docker, Agile/Scrum, HTML5, CSS3.\nDự án: Xây dựng hệ thống web responsive và tối ưu trải nghiệm người dùng.`);
-      }
-    }
-  };
-
-  const handleAnalyze = () => {
-    if (!cvText.trim()) return;
-    setAnalyzing(true);
-
-    setTimeout(() => {
-      const text = cvText.toLowerCase();
-
-      // Role-specific keyword dictionaries
-      const roleKeywords = {
-        'Frontend Developer': ['react', 'typescript', 'javascript', 'html', 'css', 'redux', 'api', 'git', 'vite', 'tailwind', 'jest', 'responsive'],
-        'Backend Developer': ['node', 'express', 'mongodb', 'sql', 'database', 'docker', 'redis', 'api', 'jwt', 'rest', 'git', 'microservices'],
-        'AI / Data Engineer': ['python', 'pytorch', 'machine learning', 'sql', 'pandas', 'nlp', 'data', 'spark', 'fastapi', 'git', 'docker', 'model']
-      };
-
-      const expectedKeywords = roleKeywords[targetRole] || ['git', 'api', 'project', 'agile', 'database', 'teamwork', 'communication'];
-      const foundKeywords = expectedKeywords.filter((kw) => text.includes(kw));
-      const missingKeywords = expectedKeywords.filter((kw) => !text.includes(kw));
-
-      const keywordScore = Math.min(25, Math.round((foundKeywords.length / expectedKeywords.length) * 25));
-      const hasMetrics = text.includes('%') || text.includes('kpi') || text.includes('tối ưu') || text.includes('latency') || text.includes('gpa');
-      const metricsScore = hasMetrics ? 23 : 14;
-      const lengthScore = Math.min(25, Math.floor(cvText.length / 40) + 12);
-      const uniScore = text.includes('đại học') || text.includes('fpt') || text.includes('bách khoa') || text.includes('khtn') ? 25 : 18;
-
-      const totalScore = Math.min(96, Math.max(55, Math.round((keywordScore + metricsScore + lengthScore + uniScore) / 4 * 3.8)));
-      const isQualified = totalScore >= 60;
-
-      const result = {
-        totalScore,
-        isQualified,
-        targetRole,
-        targetUni,
-        targetLevel,
-        foundKeywords,
-        missingKeywords,
-        breakdown: {
-          techStack: Math.min(100, Math.round((keywordScore / 25) * 100)),
-          atsFormat: Math.min(100, Math.round((lengthScore / 25) * 100)),
-          impactMetrics: Math.min(100, Math.round((metricsScore / 25) * 100)),
-          education: Math.min(100, Math.round((uniScore / 25) * 100))
-        },
-        strengths: [
-          `Định dạng bố cục rõ ràng, ATS đọc và trích xuất thông tin thuận lợi.`,
-          `Tìm thấy ${foundKeywords.length}/${expectedKeywords.length} từ khóa chuyên môn cốt lõi của vị trí ${targetRole}.`,
-          `Nêu rõ thông tin học vấn từ ${targetUni}, tạo sự tin cậy cao với nhà tuyển dụng.`
-        ],
-        improvements: missingKeywords.length > 0 ? [
-          `Nên bổ sung các từ khóa công nghệ còn thiếu: ${missingKeywords.slice(0, 4).join(', ')}.`,
-          `Cần thêm các con số định lượng kết quả (% cải thiện tốc độ, số lượng người dùng thực tế, doanh thu).`,
-          `Đính kèm đường dẫn GitHub hoặc link sản phẩm demo trực tiếp để chứng minh năng lực thực tế.`
-        ] : [
-          `Bổ sung thêm chứng chỉ chuyên ngành quốc tế (AWS, Google Cloud, Microsoft).`,
-          `Nêu bật vai trò lãnh đạo hoặc làm việc nhóm theo mô hình Agile/Scrum.`
-        ]
-      };
-
-      setCvResult(result);
-      setAnalyzing(false);
-    }, 1100);
-  };
-
-  return (
-    <section className="content-page cv-gate-container">
-      <div className="section-heading inline">
-        <div>
-          <p className="mono-label">CV Gate · Tiêu Chuẩn Thẩm Định ATS JobReady</p>
-          <h1>Thẩm Định & Chấm Điểm CV Bằng AI Trong 30 Giây</h1>
-          <p>Tải lên file CV hoặc dán nội dung để hệ thống kiểm tra độ tương thích ATS, phát hiện từ khóa còn thiếu và mở khóa phòng phỏng vấn.</p>
-        </div>
-      </div>
-
-      <div className="cv-gate-grid">
-        <article className="cv-input-card">
-          <h3 style={{ fontSize: '17px', fontWeight: 700, marginBottom: '14px' }}>1. Thiết lập vị trí ứng tuyển & Tải lên hồ sơ</h3>
-          
-          <div className="form-grid-2 mb-3">
-            <div className="form-group">
-              <label>Vị trí ứng tuyển mục tiêu:</label>
-              <select value={targetRole} onChange={(e) => setTargetRole(e.target.value)}>
-                <option value="Frontend Developer">Frontend Developer (React / TS)</option>
-                <option value="Backend Developer">Backend Developer (Node / Go / DB)</option>
-                <option value="AI / Data Engineer">AI / Data Engineer (Python / ML)</option>
-              </select>
-            </div>
-
-            <div className="form-group">
-              <label>Trường Đại học đào tạo:</label>
-              <select value={targetUni} onChange={(e) => setTargetUni(e.target.value)}>
-                <option value="Đại học FPT">Đại học FPT</option>
-                <option value="Đại học Bách Khoa">Đại học Bách Khoa TP.HCM / HN</option>
-                <option value="Đại học KHTN">Đại học Khoa học Tự nhiên</option>
-                <option value="Trường ĐH khác">Trường Đại học khác</option>
-              </select>
-            </div>
-          </div>
-
-          <div style={{ display: 'flex', gap: '8px', marginBottom: '14px', flexWrap: 'wrap' }}>
-            <span style={{ fontSize: '12px', color: 'var(--jr-text-sub)', alignSelf: 'center' }}>Thử nhanh với mẫu:</span>
-            <button type="button" className="ghost-action compact" onClick={() => applySampleCV('Frontend Developer')}>Mẫu CV Frontend FPT</button>
-            <button type="button" className="ghost-action compact" onClick={() => applySampleCV('Backend Developer')}>Mẫu CV Backend Bách Khoa</button>
-            <button type="button" className="ghost-action compact" onClick={() => applySampleCV('AI / Data Engineer')}>Mẫu CV AI KHTN</button>
-          </div>
-
-          <div
-            className={`cv-upload-zone ${isDragOver ? 'dragover' : ''}`}
-            onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }}
-            onDragLeave={() => setIsDragOver(false)}
-            onDrop={(e) => {
-              e.preventDefault();
-              setIsDragOver(false);
-              const file = e.dataTransfer.files?.[0];
-              if (file) {
-                setUploadedFileName(file.name);
-                setCvText(`[File ${file.name}] Họ và tên: Ứng viên ${targetUni}\nVị trí: ${targetRole}\nKỹ năng: React, Node.js, TypeScript, REST API, Git, Docker, Jest.`);
-              }
-            }}
-          >
-            <div className="cv-upload-icon"><FileUp size={28} /></div>
-            <p style={{ margin: '0 0 6px', fontWeight: 600, color: 'var(--jr-text-main)' }}>
-              Kéo thả file CV (PDF, DOCX, TXT) vào đây hoặc click để chọn file
-            </p>
-            <span style={{ fontSize: '12px', color: 'var(--jr-text-sub)' }}>Hỗ trợ định dạng PDF, DOCX, TXT dưới 10MB</span>
-            <input
-              type="file"
-              accept=".pdf,.doc,.docx,.txt"
-              onChange={handleFileUpload}
-              style={{ display: 'none' }}
-              id="cv-file-input"
-            />
-            <div style={{ marginTop: '12px' }}>
-              <label htmlFor="cv-file-input" className="jr-btn-secondary" style={{ padding: '8px 18px', fontSize: '13px' }}>
-                Chọn file từ máy tính
-              </label>
-            </div>
-            {uploadedFileName && (
-              <div style={{ marginTop: '10px', fontSize: '13px', color: '#38bdf8', fontWeight: 600 }}>
-                📄 {uploadedFileName} (Đã nạp thành công)
-              </div>
-            )}
-          </div>
-
-          <div className="or-divider">— hoặc dán văn bản CV trực tiếp —</div>
-
-          <textarea
-            rows={7}
-            value={cvText}
-            onChange={(e) => setCvText(e.target.value)}
-            placeholder="Dán toàn bộ nội dung CV của bạn vào đây (Họ tên, Vị trí, Học vấn, Kinh nghiệm dự án, Kỹ năng công nghệ, Thành tựu...)..."
-            style={{ width: '100%', borderRadius: '12px', padding: '14px', background: 'rgba(0,0,0,0.2)', border: '1px solid var(--jr-card-border)', color: 'inherit' }}
-          />
-
-          <button
-            className="jr-btn-primary wide mt-3"
-            style={{ width: '100%', justifyContent: 'center' }}
-            onClick={handleAnalyze}
-            disabled={analyzing || !cvText.trim()}
-          >
-            {analyzing ? (
-              <>
-                <RefreshCw size={18} className="spin" />
-                <span>AI đang phân tích từ khóa & ATS...</span>
-              </>
-            ) : (
-              <>
-                <Sparkles size={18} />
-                <span>Thẩm Định & Chấm Điểm CV Chuẩn ATS Ngay</span>
-              </>
-            )}
-          </button>
-        </article>
-
-        {cvResult && (
-          <article className="cv-result-card animate-in">
-            <div className="cv-score-gauge-card">
-              <div className="gauge-circle" style={{ borderColor: cvResult.totalScore >= 70 ? '#10b981' : '#f59e0b' }}>
-                <span className="score-val" style={{ color: cvResult.totalScore >= 70 ? '#10b981' : '#f59e0b' }}>{cvResult.totalScore}</span>
-                <span className="score-max">/ 100 ĐIỂM</span>
-              </div>
-              <div>
-                <span className={`status-badge-pill ${cvResult.isQualified ? 'pass' : 'fail'}`}>
-                  {cvResult.isQualified ? '🎉 ĐẠT CHUẨN ATS (ĐỦ ĐIỀU KIỆN PHỎNG VẤN)' : '⚠️ CẦN BỔ SUNG TỪ KHÓA (>= 60 ĐIỂM)'}
-                </span>
-                <h3 style={{ margin: '8px 0 4px', fontSize: '18px' }}>
-                  {cvResult.isQualified ? 'Hồ sơ đạt tiêu chuẩn tuyển dụng!' : 'Hồ sơ chưa tối ưu chuẩn ATS!'}
-                </h3>
-                <p style={{ margin: 0, fontSize: '13px', color: 'var(--jr-text-sub)' }}>
-                  Vị trí đánh giá: <b>{cvResult.targetRole}</b> · Đối chiếu tiêu chuẩn tuyển dụng 2026
-                </p>
-              </div>
-            </div>
-
-            {/* 4 Pillars */}
-            <div className="score-breakdown-grid mb-3">
-              <div className="breakdown-item">
-                <span>Chuyên Môn & Kỹ Thuật</span>
-                <strong>{cvResult.breakdown.techStack}%</strong>
-              </div>
-              <div className="breakdown-item">
-                <span>Định Dạng Chuẩn ATS</span>
-                <strong>{cvResult.breakdown.atsFormat}%</strong>
-              </div>
-              <div className="breakdown-item">
-                <span>Số Liệu Đo Lường (Impact)</span>
-                <strong>{cvResult.breakdown.impactMetrics}%</strong>
-              </div>
-              <div className="breakdown-item">
-                <span>Học Vấn & Trường ĐH</span>
-                <strong>{cvResult.breakdown.education}%</strong>
-              </div>
-            </div>
-
-            {/* Found vs Missing Keywords */}
-            <div className="cv-keywords-grid">
-              <div className="keywords-card">
-                <h4 style={{ color: '#34d399' }}><CheckCircle2 size={16} /> Từ khóa tìm thấy ({cvResult.foundKeywords.length})</h4>
-                <div className="keyword-chips">
-                  {cvResult.foundKeywords.map((kw, i) => (
-                    <span key={i} className="chip-tag found">{kw}</span>
-                  ))}
-                </div>
-              </div>
-              <div className="keywords-card">
-                <h4 style={{ color: '#f87171' }}><AlertCircle size={16} /> Từ khóa nên bổ sung ({cvResult.missingKeywords.length})</h4>
-                <div className="keyword-chips">
-                  {cvResult.missingKeywords.length > 0 ? (
-                    cvResult.missingKeywords.map((kw, i) => (
-                      <span key={i} className="chip-tag missing">+{kw}</span>
-                    ))
-                  ) : (
-                    <span style={{ fontSize: '12px', color: 'var(--jr-text-sub)' }}>Đầy đủ từ khóa trọng tâm!</span>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Detailed feedback */}
-            <div className="cv-analysis-details">
-              <div className="details-box strengths">
-                <h4><Check size={16} /> Điểm mạnh nổi bật</h4>
-                <ul>
-                  {cvResult.strengths.map((item, idx) => <li key={idx}>{item}</li>)}
-                </ul>
-              </div>
-              <div className="details-box improvements">
-                <h4><Sparkles size={16} /> Khuyến nghị cải thiện quan trọng</h4>
-                <ul>
-                  {cvResult.improvements.map((item, idx) => <li key={idx}>{item}</li>)}
-                </ul>
-              </div>
-            </div>
-
-            {cvResult.isQualified && (
-              <button
-                className="jr-btn-primary wide mt-4"
-                style={{ width: '100%', justifyContent: 'center', padding: '16px 24px', fontSize: '16px' }}
-                onClick={() => {
-                  if (onUnlockInterview) onUnlockInterview(cvResult);
-                  go('interview');
-                }}
-              >
-                <Mic size={20} />
-                <span>Mở Khóa & Bắt Đầu Phỏng Vấn AI Với CV Này Ngay</span>
-                <ArrowRight size={18} />
-              </button>
-            )}
-          </article>
-        )}
-      </div>
-    </section>
-  );
-}
-
-function InterviewPracticePage({ go, cvResult, mentors }) {
-  const [step, setStep] = useState('setup');
-  const [position, setPosition] = useState(cvResult?.targetRole || 'Frontend Developer');
-  const [level, setLevel] = useState('Junior');
-  const [mode, setMode] = useState('mixed');
-  const [interviewer, setInterviewer] = useState('ai');
-  
-  const [currentIdx, setCurrentIdx] = useState(0);
-  const [answers, setAnswers] = useState({});
-  const [currentAnswer, setCurrentAnswer] = useState('');
-  const [hint, setHint] = useState('');
-  const [isRecording, setIsRecording] = useState(false);
-  const [speechNotice, setSpeechNotice] = useState('');
-  const [aiEval, setAiEval] = useState(null);
-  const [evaluating, setEvaluating] = useState(false);
-  const [report, setReport] = useState(null);
-
-  const questionBank = {
-    'Frontend Developer': [
-      {
-        id: 1,
-        type: 'Technical',
-        question: 'Giải thích sự khác biệt giữa State và Props trong ReactJS. Khi nào bạn sử dụng Context API hoặc Redux Toolkit để quản lý state toàn cục?',
-        sampleAnswer: 'Props là dữ liệu truyền từ component cha xuống con (read-only), còn State là dữ liệu nội bộ mà component tự quản lý. Tôi dùng State cục bộ cho form/toggle, và dùng Redux Toolkit cho dữ liệu chia sẻ toàn ứng dụng như Authentication state và Giỏ hàng để tránh hiện tượng prop drilling và tối ưu re-render.'
-      },
-      {
-        id: 2,
-        type: 'Technical',
-        question: 'Bạn áp dụng các kỹ thuật nào (Lazy loading, Code splitting, useMemo, React.memo, Virtualization) để tối ưu trang web React có hàng nghìn phần tử?',
-        sampleAnswer: 'Tôi sử dụng React.lazy kết hợp Suspense để code-splitting theo router, thư viện react-window để render danh sách dài 10,000 item chỉ trong viewport. Ngoài ra dùng useMemo cho các hàm tính toán nặng và React.memo để ngăn chặn re-render không cần thiết.'
-      },
-      {
-        id: 3,
-        type: 'Behavioral',
-        question: 'Mô tả một tình huống bạn tranh luận với Designer hoặc Backend Developer về giao diện/API và cách bạn tìm ra giải pháp tối ưu theo chuẩn STAR?',
-        sampleAnswer: 'Tình huống (S): Designer yêu cầu animation 3D phức tạp gây giật khung hình trên mobile. Nhiệm vụ (T): Giữ trải nghiệm mượt mà 60fps mà không phá vỡ thiết kế. Hành động (A): Tôi đo đạc FPS bằng Chrome DevTools, họp cùng Designer đề xuất giải pháp CSS transform kết hợp Lottie animation nhẹ hơn 80%. Kết quả (R): Trang load nhanh gấp 3 lần và được Designer đồng thuận.'
-      }
-    ],
-    'Backend Developer': [
-      {
-        id: 1,
-        type: 'Technical',
-        question: 'Phân biệt RESTful API và GraphQL. Cách bạn triển khai xác thực JWT (Access Token & Refresh Token) an toàn trong Node.js?',
-        sampleAnswer: 'REST tổ chức theo endpoints tài nguyên, trong khi GraphQL cho phép client chỉ định chính xác các field cần lấy để tránh over-fetching. Khi triển khai JWT, tôi lưu Access Token trong Memory/Header với thời hạn 15 phút, và lưu Refresh Token trong HttpOnly Secure Cookie với thời hạn 7 ngày kèm cơ chế Token Rotation trong Redis.'
-      },
-      {
-        id: 2,
-        type: 'Technical',
-        question: 'Tránh lỗi N+1 Query trong ORM như thế nào? Cách bạn đánh chỉ mục (Index) database để tăng tốc truy vấn MongoDB/PostgreSQL?',
-        sampleAnswer: 'Tôi tránh N+1 Query bằng cách sử dụng Eager Loading (populate/include hoặc join thay vì lặp qua từng bản ghi). Về indexing, tôi đánh Composite Index trên các trường thường xuyên xuất hiện trong WHERE và ORDER BY, đồng thời dùng EXPLAIN ANALYZE để đo thời gian quét index.'
-      },
-      {
-        id: 3,
-        type: 'Behavioral',
-        question: 'Kể lại một sự cố Production nghẽn mạng hoặc tràn RAM và các bước bạn truy vết log & khắc phục sự cố?',
-        sampleAnswer: 'Tình huống (S): Server Node.js bị restart liên tục do Memory Leak vào giờ cao điểm. Nhiệm vụ (T): Xác định nguyên nhân và đưa hệ thống hoạt động ổn định trong 30 phút. Hành động (A): Tôi kiểm tra log Grafana/Kibana, phát hiện hàm xử lý file PDF đọc toàn bộ file vào Buffer thay vì dùng Stream. Tôi sửa lại dùng Streams pipe trực tiếp ra S3. Kết quả (R): RAM giảm từ 95% về 25% và không còn tình trạng crash server.'
-      }
-    ],
-    'AI / Data Engineer': [
-      {
-        id: 1,
-        type: 'Technical',
-        question: 'Giải thích hiện tượng Overfitting trong Machine Learning. Bạn sử dụng các phương pháp nào (Regularization, Dropout, Cross-validation, Early stopping) để khắc phục?',
-        sampleAnswer: 'Overfitting xảy ra khi mô hình học quá kỹ nhiễu của tập Train và không tổng quát hóa tốt trên tập Test. Tôi áp dụng L2 Regularization, Dropout rate 0.2 - 0.5 trong mạng nơ-ron, K-Fold Cross Validation và Early Stopping theo dõi validation loss.'
-      },
-      {
-        id: 2,
-        type: 'Technical',
-        question: 'Quy trình xây dựng Pipeline xử lý dữ liệu lớn (ETL) từ thu thập, làm sạch đến nạp vào Data Warehouse được bạn thiết kế ra sao?',
-        sampleAnswer: 'Tôi sử dụng Apache Kafka để ingest streaming data, Apache Spark để xử lý batch và deduplicate dữ liệu lỗi, sau đó nạp vào PostgreSQL/ClickHouse với schema star schema và lập lịch bằng Airflow.'
-      },
-      {
-        id: 3,
-        type: 'Behavioral',
-        question: 'Bạn xử lý như thế nào khi dữ liệu khách hàng cung cấp bị thiếu sót nghiêm trọng hoặc gán nhãn sai lệch?',
-        sampleAnswer: 'Tôi thống kê tỷ lệ missing values, phân tích xem có ngẫu nhiên hay không. Dùng KNN Imputation hoặc Median cho dữ liệu số, gán nhãn Unspecified cho dữ liệu phân loại, và tổ chức buổi làm việc với Domain Expert để chuẩn hóa lại quy tắc gán nhãn.'
-      }
-    ]
-  };
-
-  const questions = questionBank[position] || questionBank['Frontend Developer'];
-
-  const toggleSpeechRecognition = () => {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-      setSpeechNotice('Trình duyệt của bạn chưa hỗ trợ Web Speech API trực tiếp. Bạn có thể nhập câu trả lời vào ô văn bản bên dưới!');
-      return;
-    }
-
-    if (isRecording) {
-      if (window._currentRecognition) {
-        window._currentRecognition.stop();
-      }
-      setIsRecording(false);
-      setSpeechNotice('');
-    } else {
-      try {
-        const recognition = new SpeechRecognition();
-        recognition.lang = 'vi-VN';
-        recognition.continuous = true;
-        recognition.interimResults = true;
-
-        recognition.onresult = (event) => {
-          let text = '';
-          for (let i = event.resultIndex; i < event.results.length; i++) {
-            text += event.results[i][0].transcript;
-          }
-          if (text) {
-            setCurrentAnswer((prev) => (prev ? prev + ' ' : '') + text);
-          }
-        };
-
-        recognition.onerror = () => {
-          setIsRecording(false);
-        };
-
-        recognition.onend = () => {
-          setIsRecording(false);
-        };
-
-        window._currentRecognition = recognition;
-        recognition.start();
-        setIsRecording(true);
-        setSpeechNotice('🎙️ Đang lắng nghe giọng nói của bạn bằng Tiếng Việt... Hãy tự tin nói!');
-      } catch {
-        setSpeechNotice('Không thể kích hoạt microphone. Vui lòng cấp quyền micro cho trình duyệt!');
-        setIsRecording(false);
-      }
-    }
-  };
-
-  const startInterview = () => {
-    setStep('room');
-    setCurrentIdx(0);
-    setAnswers({});
-    setCurrentAnswer('');
-    setHint('');
-    setAiEval(null);
-    if (isRecording && window._currentRecognition) {
-      window._currentRecognition.stop();
-      setIsRecording(false);
-    }
-  };
-
-  const showAiHint = () => {
-    const q = questions[currentIdx];
-    if (q.type === 'Technical') {
-      setHint('💡 Gợi ý AI: Hãy nêu rõ bản chất khái niệm cốt lõi, đưa ra ví dụ bằng dòng lệnh/code minh họa và phân tích ưu/nhược điểm.');
-    } else {
-      setHint('💡 Gợi ý AI: Trả lời theo cấu trúc STAR (S - Situation: Tình huống -> T - Task: Nhiệm vụ -> A - Action: Hành động công nghệ -> R - Result: Kết quả đo lường).');
-    }
-  };
-
-  const handleEvaluateAnswer = () => {
-    if (!currentAnswer.trim()) return;
-    setEvaluating(true);
-
-    setTimeout(() => {
-      const len = currentAnswer.length;
-      const text = currentAnswer.toLowerCase();
-      const hasSTAR = text.includes('tình huống') || text.includes('kết quả') || text.includes('giải pháp') || text.includes('dự án') || text.includes('tối ưu');
-      const score = Math.min(95, Math.max(68, Math.floor(len / 10) + (hasSTAR ? 35 : 20)));
-
-      setAiEval({
-        score,
-        star: {
-          situation: 'Bối cảnh dự án được mô tả rõ ràng, đúng trọng tâm câu hỏi.',
-          task: 'Xác định chính xác trách nhiệm và thách thức cần giải quyết.',
-          action: 'Các giải pháp kỹ thuật và bước thực thi mạch lạc, tự tin.',
-          result: hasSTAR ? 'Có con số và kết quả đo lường cụ thể.' : 'Nên bổ sung thêm % đo lường hiệu năng hoặc số liệu cụ thể.'
-        },
-        strengths: [
-          'Tư duy logic tốt, ngôn ngữ diễn đạt gãy gọn chuẩn thuật ngữ chuyên ngành.',
-          'Nêu đúng bản chất vấn đề và giải pháp thực thi khả thi.'
-        ],
-        improvements: [
-          'Có thể nhấn mạnh thêm các trade-off (rủi ro và điểm đánh đổi) khi chọn giải pháp này.'
-        ],
-        sample: questions[currentIdx].sampleAnswer
-      });
-      setEvaluating(false);
-    }, 900);
-  };
-
-  const handleNext = () => {
-    const updatedAnswers = { ...answers, [currentIdx]: currentAnswer };
-    setAnswers(updatedAnswers);
-    setCurrentAnswer('');
-    setHint('');
-    setAiEval(null);
-    if (isRecording && window._currentRecognition) {
-      window._currentRecognition.stop();
-      setIsRecording(false);
-    }
-
-    if (currentIdx < questions.length - 1) {
-      setCurrentIdx(currentIdx + 1);
-    } else {
-      const overall = 88;
-      const sessionReport = {
-        overallScore: overall,
-        technicalScore: 90,
-        communicationScore: 86,
-        starScore: 88,
-        problemSolvingScore: 88,
-        position,
-        level,
-        date: new Date().toLocaleDateString('vi-VN'),
-        strengths: [
-          'Nắm vững bản chất cốt lõi của công nghệ và cấu trúc trả lời mạch lạc.',
-          'Giải thích rõ ràng các ví dụ thực tế và giải pháp tối ưu theo chuẩn STAR.',
-          'Thái độ tự tin, tư duy logic phản biện sắc bén.'
-        ],
-        improvements: [
-          'Cần bổ sung thêm ví dụ đo lường cụ thể (thời gian phản hồi API, chỉ số Lighthouse).',
-          'Nêu rõ các phương án dự phòng khi hệ thống gặp tải cao bất ngờ.'
-        ]
-      };
-      setReport(sessionReport);
-      try {
-        const history = JSON.parse(localStorage.getItem('jr_interview_history') || '[]');
-        history.unshift(sessionReport);
-        localStorage.setItem('jr_interview_history', JSON.stringify(history.slice(0, 10)));
-      } catch {
-        // ignore storage errors
-      }
-      setStep('report');
-    }
-  };
-
-  return (
-    <section className="content-page interview-practice-page">
-      <div className="section-heading inline">
-        <div>
-          <p className="mono-label">Interactive AI & Mentor Room</p>
-          <h1>Luyện Tập Phỏng Vấn Thích Ứng (AI & Mentor Thật)</h1>
-          <p>Mô phỏng phỏng vấn thực tế với công nghệ nhận diện giọng nói tiếng Việt. Nhận phản hồi tức thì từ AI hoặc đặt lịch mock interview 1-on-1 với Mentor chuyên gia!</p>
-        </div>
-      </div>
-
-      {step === 'setup' && (
-        <article className="interview-setup-card">
-          <h2>1. Cấu Hình Buổi Phỏng Vấn</h2>
-          <div className="setup-form-grid">
-            <div className="form-group">
-              <label>Vị trí phỏng vấn:</label>
-              <select value={position} onChange={(e) => setPosition(e.target.value)}>
-                <option value="Frontend Developer">Frontend Developer (React / TS)</option>
-                <option value="Backend Developer">Backend Developer (Node.js / Express / DB)</option>
-                <option value="AI / Data Engineer">AI / Data Engineer (Python / ML)</option>
-              </select>
-            </div>
-
-            <div className="form-group">
-              <label>Cấp độ mong muốn (Level):</label>
-              <select value={level} onChange={(e) => setLevel(e.target.value)}>
-                <option value="Intern">Intern (Thực tập sinh)</option>
-                <option value="Junior">Junior (1-2 năm kinh nghiệm)</option>
-                <option value="Mid-level">Mid-level (2-4 năm kinh nghiệm)</option>
-                <option value="Senior">Senior (4+ năm kinh nghiệm)</option>
-              </select>
-            </div>
-
-            <div className="form-group">
-              <label>Dạng câu hỏi:</label>
-              <select value={mode} onChange={(e) => setMode(e.target.value)}>
-                <option value="mixed">Hỗn hợp (Technical + Khung STAR Behavioral)</option>
-                <option value="technical">Kỹ thuật chuyên sâu (Technical Deep-dive)</option>
-                <option value="behavioral">Tình huống & Hành vi (Behavioral STAR)</option>
-              </select>
-            </div>
-
-            <div className="form-group">
-              <label>Người phỏng vấn (Interviewer):</label>
-              <select value={interviewer} onChange={(e) => setInterviewer(e.target.value)}>
-                <option value="ai">🤖 Trợ lý AI Phỏng Vấn (Phản hồi tức thì 0đ)</option>
-                <option value="mentor">👨‍🏫 Đặt Lịch Mock Interview 1-on-1 Với Mentor Thật</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="setup-actions mt-4">
-            <button className="jr-btn-primary wide" style={{ width: '100%', justifyContent: 'center' }} onClick={startInterview}>
-              <Mic size={18} />
-              <span>Bắt Đầu Vào Phòng Phỏng Vấn Ngay</span>
-              <ArrowRight size={18} />
-            </button>
-          </div>
-        </article>
-      )}
-
-      {step === 'room' && (
-        <article className="interview-room-box animate-in">
-          <div className="interviewer-header">
-            <div className="interviewer-avatar">
-              <Mic size={24} />
-            </div>
-            <div style={{ flexGrow: 1 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                <span style={{ fontWeight: 800, fontSize: '16px', color: 'var(--jr-text-main)' }}>AI Senior Tech Interviewer</span>
-                <span className="chip-tag found" style={{ fontSize: '10px' }}>LIVE SESSION</span>
-              </div>
-              <p style={{ margin: 0, fontSize: '13px', color: 'var(--jr-text-sub)' }}>
-                Vị trí: <b>{position}</b> ({level}) · Câu hỏi {currentIdx + 1} / {questions.length} ({questions[currentIdx].type})
-              </p>
-            </div>
-          </div>
-
-          <div className="question-box" style={{ background: 'rgba(37, 99, 235, 0.08)', border: '1px solid rgba(37, 99, 235, 0.25)', borderRadius: '16px', padding: '20px', marginBottom: '20px' }}>
-            <h3 style={{ margin: 0, fontSize: '17px', lineHeight: 1.5, color: 'var(--jr-text-main)' }}>
-              {questions[currentIdx].question}
-            </h3>
-          </div>
-
-          {hint && <div className="ai-hint-box mb-3">{hint}</div>}
-          {speechNotice && <div className="status-banner info mb-3">{speechNotice}</div>}
-
-          <div className="mic-action-bar">
-            <button
-              type="button"
-              className={`btn-mic-record ${isRecording ? 'recording' : ''}`}
-              onClick={toggleSpeechRecognition}
-            >
-              {isRecording ? <MicOff size={16} /> : <Mic size={16} />}
-              <span>{isRecording ? 'Dừng nói (Đang ghi âm)' : 'Bật Micro để nói (Tiếng Việt)'}</span>
-            </button>
-
-            {isRecording && (
-              <div className="audio-wave-visualizer">
-                <span className="audio-bar" />
-                <span className="audio-bar" />
-                <span className="audio-bar" />
-                <span className="audio-bar" />
-                <span className="audio-bar" />
-              </div>
-            )}
-
-            <button type="button" className="ghost-action compact" onClick={showAiHint} style={{ marginLeft: 'auto' }}>
-              💡 Xem gợi ý AI
-            </button>
-          </div>
-
-          <textarea
-            rows={6}
-            value={currentAnswer}
-            onChange={(e) => setCurrentAnswer(e.target.value)}
-            placeholder="Bạn có thể bấm 'Bật Micro để nói' hoặc nhập câu trả lời của bạn tại đây (Áp dụng khung STAR: Tình huống -> Nhiệm vụ -> Hành động -> Kết quả)..."
-            style={{ width: '100%', borderRadius: '14px', padding: '14px', background: 'rgba(0,0,0,0.25)', border: '1px solid var(--jr-card-border)', color: 'inherit', fontSize: '14px', lineHeight: 1.5 }}
-          />
-
-          <div style={{ display: 'flex', gap: '10px', marginTop: '14px' }}>
-            <button
-              type="button"
-              className="jr-btn-secondary"
-              onClick={handleEvaluateAnswer}
-              disabled={evaluating || !currentAnswer.trim()}
-              style={{ fontSize: '13px', padding: '10px 18px' }}
-            >
-              {evaluating ? '⏳ AI đang chấm điểm...' : '✨ Chấm điểm câu này trước'}
-            </button>
-          </div>
-
-          {aiEval && (
-            <div className="ai-star-feedback-card animate-in">
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-                <h4 style={{ margin: 0, fontSize: '15px', color: '#38bdf8' }}>
-                  🎯 Đánh Giá AI Câu Trả Lời: <b>{aiEval.score} / 100 điểm</b>
-                </h4>
-                <span className="chip-tag found">STAR Framework</span>
-              </div>
-
-              <div className="star-grid">
-                <div className="star-cell">
-                  <strong>S - Tình huống</strong>
-                  <p>{aiEval.star.situation}</p>
-                </div>
-                <div className="star-cell">
-                  <strong>T - Nhiệm vụ</strong>
-                  <p>{aiEval.star.task}</p>
-                </div>
-                <div className="star-cell">
-                  <strong>A - Hành động</strong>
-                  <p>{aiEval.star.action}</p>
-                </div>
-                <div className="star-cell">
-                  <strong>R - Kết quả</strong>
-                  <p>{aiEval.star.result}</p>
-                </div>
-              </div>
-
-              <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: '12px', padding: '14px', marginTop: '12px' }}>
-                <strong style={{ fontSize: '13px', color: '#f59e0b', display: 'block', marginBottom: '6px' }}>
-                  🌟 Câu trả lời mẫu xuất sắc (Tham khảo điểm 10):
-                </strong>
-                <p style={{ margin: 0, fontSize: '13px', color: 'var(--jr-text-main)', lineHeight: 1.5 }}>
-                  {aiEval.sample}
-                </p>
-              </div>
-            </div>
-          )}
-
-          <div className="room-footer-actions mt-4" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <button className="ghost-action" onClick={() => setStep('setup')}>
-              Thoát phòng
-            </button>
-            <button className="jr-btn-primary" onClick={handleNext} disabled={!currentAnswer.trim() && !aiEval}>
-              <span>{currentIdx < questions.length - 1 ? 'Chuyển sang câu hỏi tiếp theo' : 'Hoàn thành buổi phỏng vấn & Xem báo cáo'}</span>
-              <ArrowRight size={16} />
-            </button>
-          </div>
-        </article>
-      )}
-
-      {step === 'report' && report && (
-        <article className="interview-report-card animate-in" style={{ maxWidth: '960px', margin: '0 auto' }}>
-          <div className="report-header">
-            <div className="overall-score-circle" style={{ borderColor: '#10b981' }}>
-              <strong style={{ color: '#10b981' }}>{report.overallScore}</strong>
-              <span>/ 100 điểm</span>
-            </div>
-            <div>
-              <span className="pass-status">🎉 ĐẠT KẾT QUẢ PHỎNG VẤN XUẤT SẮC</span>
-              <h2>Báo Cáo Đánh Giá Năng Lực Toàn Diện</h2>
-              <p>Vị trí: <b>{report.position}</b> ({report.level}) · Thực hiện ngày: {report.date}</p>
-            </div>
-          </div>
-
-          <div className="report-competencies-grid">
-            <div className="comp-item">
-              <span>Kiến thức Kỹ thuật</span>
-              <strong>{report.technicalScore}%</strong>
-            </div>
-            <div className="comp-item">
-              <span>Cấu trúc STAR</span>
-              <strong>{report.starScore}%</strong>
-            </div>
-            <div className="comp-item">
-              <span>Kỹ năng Giao tiếp</span>
-              <strong>{report.communicationScore}%</strong>
-            </div>
-            <div className="comp-item">
-              <span>Giải quyết Tình huống</span>
-              <strong>{report.problemSolvingScore}%</strong>
-            </div>
-          </div>
-
-          <div className="report-details-grid">
-            <div className="details-box strengths">
-              <h4><Check size={16} /> Điểm mạnh nổi bật</h4>
-              <ul>
-                {report.strengths.map((item, idx) => <li key={idx}>{item}</li>)}
-              </ul>
-            </div>
-            <div className="details-box improvements">
-              <h4><Sparkles size={16} /> Lộ trình cải thiện thêm</h4>
-              <ul>
-                {report.improvements.map((item, idx) => <li key={idx}>{item}</li>)}
-              </ul>
-            </div>
-          </div>
-
-          <div className="report-footer-actions" style={{ display: 'flex', gap: '14px', flexWrap: 'wrap', marginTop: '24px' }}>
-            <button className="ghost-action" onClick={() => setStep('setup')}>
-              🔄 Luyện tập lại vị trí khác
-            </button>
-            <button className="jr-btn-secondary" onClick={() => go('learning')}>
-              📚 Ôn tập tài liệu ĐH
-            </button>
-            <button className="jr-btn-primary" onClick={() => go('mentor')}>
-              👨‍🏫 Đặt lịch Mock Interview 1-on-1 với Senior Mentor
-            </button>
-          </div>
-        </article>
       )}
     </section>
   );
@@ -4289,6 +3749,7 @@ function SubmitProjectPage({ challenge, currentMajor, joined, submission, mentor
   const [form, setForm] = useState({
     primaryLink: submission?.primaryLink ?? '',
     secondaryLink: submission?.secondaryLink ?? '',
+    tertiaryLink: submission?.tertiaryLink ?? '',
     skills: '',
     notes: submission?.notes ?? ''
   });
@@ -4375,6 +3836,11 @@ function SubmitProjectPage({ challenge, currentMajor, joined, submission, mentor
                       <span><b>{matchedMentor.yearsOfExperience ?? 5}+ năm</b> kinh nghiệm</span>
                       <span><b>{matchedMentor.strongestField ?? challenge.track}</b> thế mạnh</span>
                     </div>
+                    <div style={{ marginTop: '14px', display: 'flex', gap: '8px' }}>
+                      <button type="button" className="jr-btn-primary compact" style={{ padding: '8px 16px', fontSize: '13px' }} onClick={() => go('feedback')}>
+                        <MessageSquareText size={15} /> Xem nhận xét & góp ý của Mentor
+                      </button>
+                    </div>
                   </div>
                 )}
               </article>
@@ -4387,8 +3853,9 @@ function SubmitProjectPage({ challenge, currentMajor, joined, submission, mentor
           <strong>Yêu cầu nộp cho {currentMajor.title}</strong>
           <span>{rules.accepted}</span>
         </div>
-        <label>{rules.primaryLabel}<input value={form.primaryLink} onChange={(event) => updateForm('primaryLink', event.target.value)} placeholder="Dán link chính của sản phẩm (ví dụ: GitHub/Figma/Drive CV)" /></label>
-        <label>{rules.secondaryLabel}<input value={form.secondaryLink} onChange={(event) => updateForm('secondaryLink', event.target.value)} placeholder="Dán link minh chứng hoặc demo" /></label>
+        <label>{rules.primaryLabel}<input value={form.primaryLink} onChange={(event) => updateForm('primaryLink', event.target.value)} placeholder={rules.primaryPlaceholder || 'Dán link chính của sản phẩm'} /></label>
+        <label>{rules.secondaryLabel}<input value={form.secondaryLink} onChange={(event) => updateForm('secondaryLink', event.target.value)} placeholder={rules.secondaryPlaceholder || 'Dán link minh chứng hoặc demo'} /></label>
+        <label>{rules.tertiaryLabel}<input value={form.tertiaryLink} onChange={(event) => updateForm('tertiaryLink', event.target.value)} placeholder={rules.tertiaryPlaceholder || 'Link tài liệu phụ / dashboard / docs'} /></label>
         <label>Kỹ năng sử dụng<input value={form.skills} onChange={(event) => updateForm('skills', event.target.value)} placeholder={rules.skillPlaceholder} /></label>
         <label>Ghi chú sản phẩm<textarea value={form.notes} onChange={(event) => updateForm('notes', event.target.value)} placeholder={rules.notePlaceholder} /></label>
 
@@ -4790,11 +4257,11 @@ function PortfolioPage({ pathRoles, currentMajor, go, demoUser, apiStatus, submi
           <button type="button" className="ghost-action compact" onClick={() => go('hub')}>
             <Rocket size={14} /> Thêm dự án mới
           </button>
-          <button type="button" className="ghost-action compact" onClick={() => go('cv-gate')}>
-            <FileUp size={14} /> Thẩm định ATS
+          <button type="button" className="ghost-action compact" onClick={() => go('feedback')}>
+            <BadgeCheck size={14} /> Xem góp ý Mentor
           </button>
-          <button type="button" className="jr-btn-primary compact" style={{ padding: '8px 16px', fontSize: '13px' }} onClick={() => go('interview')}>
-            <Mic size={14} /> Luyện phỏng vấn bảo vệ dự án
+          <button type="button" className="jr-btn-primary compact" style={{ padding: '8px 16px', fontSize: '13px' }} onClick={() => setShowPublicPreview(true)}>
+            <Sparkles size={14} /> Xem trước Portfolio công khai
           </button>
         </div>
       </div>
