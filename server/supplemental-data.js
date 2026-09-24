@@ -374,11 +374,11 @@ export function augmentSeedData(seed) {
   });
 
   const universityResources = [
-    { id: 'res-bk-co2011', majorKey: 'dev', track: 'Backend', title: 'Giáo trình Cấu trúc dữ liệu & Giải thuật', schoolSource: 'Đại học Bách Khoa TP.HCM', courseCode: 'CO2011', type: 'Giáo trình chính quy', url: 'https://portfolio.demo/resources/bk/co2011', difficulty: 'Junior' },
     { id: 'res-fpt-prn231', majorKey: 'dev', track: 'Full Stack', title: 'Slide & Bài lab Lập trình Web Fullstack (Node/React)', schoolSource: 'Đại học FPT', courseCode: 'PRN231', type: 'Slide & Lab bài tập', url: 'https://portfolio.demo/resources/fpt/prn231', difficulty: 'Mid-level' },
-    { id: 'res-khtn-se402', majorKey: 'dev', track: 'Software Architecture', title: 'Đề án Kiến trúc phần mềm & System Design', schoolSource: 'Đại học KHTN TP.HCM', courseCode: 'SE402', type: 'Đề án xuất sắc', url: 'https://portfolio.demo/resources/khtn/se402', difficulty: 'Senior' },
-    { id: 'res-ueh-mkt301', majorKey: 'mkt', track: 'Content', title: 'Bộ Case Study Digital Marketing & Content Strategy', schoolSource: 'Đại học Kinh tế UEH', courseCode: 'MKT301', type: 'Giáo trình & Case study', url: 'https://portfolio.demo/resources/ueh/mkt301', difficulty: 'Junior' },
-    { id: 'res-rmit-des204', majorKey: 'design', track: 'UI Design', title: 'Tài liệu chuẩn Design System & UI UX Guidelines', schoolSource: 'Đại học RMIT Vietnam', courseCode: 'DES204', type: 'Syllabus & Standard Kit', url: 'https://portfolio.demo/resources/rmit/des204', difficulty: 'Mid-level' }
+    { id: 'res-fpt-swp391', majorKey: 'dev', track: 'Software Project', title: 'Đề án Thực chiến Phát triển Phần mềm & Agile Scrum', schoolSource: 'Đại học FPT', courseCode: 'SWP391', type: 'Đề tài đồ án chính quy', url: 'https://portfolio.demo/resources/fpt/swp391', difficulty: 'Senior' },
+    { id: 'res-coursera-google-dev', majorKey: 'dev', track: 'Backend', title: 'Google IT Automation & Backend Specialization', schoolSource: 'Coursera (Google)', courseCode: 'COURSERA-G01', type: 'Chứng chỉ quốc tế', url: 'https://www.coursera.org/professional-certificates/google-it-automation', difficulty: 'Junior' },
+    { id: 'res-fpt-mkt101', majorKey: 'mkt', track: 'Content', title: 'Bộ Case Study Digital Marketing & Growth Strategy', schoolSource: 'Đại học FPT', courseCode: 'MKT101', type: 'Giáo trình & Case study', url: 'https://portfolio.demo/resources/fpt/mkt101', difficulty: 'Junior' },
+    { id: 'res-coursera-google-ux', majorKey: 'design', track: 'UI Design', title: 'Google UX Design Professional Certificate & Design System', schoolSource: 'Coursera (Google)', courseCode: 'COURSERA-UX', type: 'Syllabus & Standard Kit', url: 'https://www.coursera.org/professional-certificates/google-ux-design', difficulty: 'Mid-level' }
   ];
 
   pushUniqueById(resources, universityResources);

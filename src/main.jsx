@@ -1173,6 +1173,8 @@ function matchMentorForChallenge(challenge, mentors = []) {
 
 function App() {
   const [qrModalPlan, setQrModalPlan] = useState(null);
+  const [isVipModalOpen, setIsVipModalOpen] = useState(false);
+  const [footerModalData, setFooterModalData] = useState(null);
   const [page, setPage] = useState('home');
   const [authMode, setAuthMode] = useState('login');
   const [theme, setTheme] = useState(() => {
@@ -1802,21 +1804,40 @@ function App() {
         setTheme={setTheme}
         logout={logout}
         loginAs={loginAs}
-        onOpenQrPayment={() => setQrModalPlan(premiumPlans[0])}
+        onOpenQrPayment={() => setIsVipModalOpen(true)}
       />
-      <VietQrPaymentModal
-        isOpen={Boolean(qrModalPlan)}
-        onClose={() => setQrModalPlan(null)}
-        plan={qrModalPlan}
+      <VipUpgradeModal
+        isOpen={isVipModalOpen || Boolean(qrModalPlan)}
+        onClose={() => {
+          setIsVipModalOpen(false);
+          setQrModalPlan(null);
+        }}
+        initialPlan={qrModalPlan || premiumPlans[1]}
         currentUser={currentUser}
         onPaymentSuccess={(plan) => {
           upgradePlan(plan);
           alert(`🎉 Chúc mừng bạn đã nâng cấp thành công gói ${plan.name}! Quyền lợi Mentor Review và Chat 1-on-1 đã được kích hoạt.`);
         }}
       />
+      <FooterDetailModal
+        isOpen={Boolean(footerModalData)}
+        onClose={() => setFooterModalData(null)}
+        data={footerModalData}
+        go={go}
+        onOpenUpgrade={() => {
+          setFooterModalData(null);
+          setIsVipModalOpen(true);
+        }}
+      />
       <main>
         {flowNotice && <div className="flow-notice status-banner warning"><ShieldCheck size={17} /> {flowNotice}</div>}
-        {page === 'home' && <HomePage go={go} />}
+        {page === 'home' && (
+          <HomePage
+            go={go}
+            onOpenUpgrade={() => setIsVipModalOpen(true)}
+            onOpenFooterModal={(key) => setFooterModalData(getFooterModalContent(key))}
+          />
+        )}
         {page === 'auth' && (
           <AuthPage
             authMode={authMode}
@@ -1878,8 +1899,25 @@ function App() {
         {page === 'feedback' && <MentorFeedbackPage go={go} challenge={selectedChallenge} submissions={submissionList} feedbackList={feedbackList} challenges={challengeList} userId={userId} mentors={appData.mentors ?? []} setSelectedChallengeId={setSelectedChallengeId} createFeedback={() => createFeedback(selectedChallenge.id, userId)} />}
         {page === 'portfolio' && <PortfolioPage pathRoles={pathRoles} currentMajor={currentMajor} go={go} demoUser={demoUser} apiStatus={apiStatus} submissions={submissionList} challenges={challengeList} updatePortfolio={updatePortfolio} updateStudentProfile={updateStudentProfile} isPremium={isPremium} autoOpenPublicPortfolio={autoOpenPublicPortfolio} onPublicPortfolioOpened={() => setAutoOpenPublicPortfolio(false)} />}
         {page === 'submissionHistory' && <SubmissionHistoryPage demoUser={demoUser} submissions={submissionList} challenges={challengeList} feedbackList={feedbackList} setSelectedChallengeId={setSelectedChallengeId} go={go} />}
-        {(page === 'premium' || page === 'pricing') && <PremiumPage plans={premiumPlans} activeSubscription={activeSubscription} upgradePlan={upgradePlan} onOpenQr={(p) => setQrModalPlan(p)} go={go} />}
-        {page === 'about' && <AboutPage go={go} />}
+        {(page === 'premium' || page === 'pricing') && (
+          <PremiumPage
+            plans={premiumPlans}
+            activeSubscription={activeSubscription}
+            upgradePlan={upgradePlan}
+            onOpenQr={(p) => {
+              setQrModalPlan(p);
+              setIsVipModalOpen(true);
+            }}
+            go={go}
+          />
+        )}
+        {page === 'about' && (
+          <AboutPage
+            go={go}
+            onOpenUpgrade={() => setIsVipModalOpen(true)}
+            onOpenFooterModal={(key) => setFooterModalData(getFooterModalContent(key))}
+          />
+        )}
         {page === 'mentor' && <MentorPage apiStatus={apiStatus} data={managementData} currentUser={currentUser} refreshData={refreshData} createFeedback={createFeedback} updateSubmissionFromMentor={updateSubmissionFromMentor} setNotice={setAdminNotice} notice={adminNotice} />}
         {page === 'admin' && <AdminPage apiStatus={apiStatus} data={managementData} notice={adminNotice} currentUser={currentUser} refreshData={refreshData} setAdminNotice={setAdminNotice} createFeedback={createFeedback} />}
       </main>
@@ -2634,45 +2672,45 @@ function MarketTrendsPage({ majors, currentMajor, changeMajor, go }) {
   );
 }
 
-function AboutPage({ go }) {
+function AboutPage({ go, onOpenUpgrade, onOpenFooterModal }) {
   const companyStats = [
     { value: '238/300', label: 'KPI người dùng', note: 'Giai đoạn 1: Đã đạt 79.3% KPI 200-300 Sinh viên' },
-    { value: '5+', label: 'Trường ĐH đối tác', note: 'Giáo trình & Đề án từ ĐH Bách Khoa, ĐH FPT, UEH, RMIT, KHTN' },
+    { value: '2 đối tác', label: 'Nguồn học liệu chính quy', note: 'Giáo trình & Đề án chuẩn từ Đại học FPT, Coursera & AWS Academy' },
     { value: '2 loại', label: 'Mentor Review Flow', note: '🤖 Mentor AI tự động & 👨‍🏫 Mentor Thật 1-on-1' },
     { value: '2 quy chuẩn', label: 'Hình thức Review', note: 'Nộp CV / Link bài tập HOẶC Chat trực tiếp với Mentor' }
   ];
 
   const universityPartners = [
-    { school: 'Đại học Bách Khoa TP.HCM', field: 'Công nghệ Thông tin & Khoa học Máy tính', code: 'CO2011, CO3001' },
-    { school: 'Đại học FPT', field: 'Software Engineering & AI/Data', code: 'PRN231, SEP490' },
-    { school: 'Đại học KHTN TP.HCM', field: 'Kiến trúc phần mềm & Công nghệ dữ liệu', course: 'SE402, CS300' },
-    { school: 'Đại học Kinh tế UEH', field: 'Digital Marketing & Content Strategy', code: 'MKT301, MKT502' },
-    { school: 'Đại học RMIT Vietnam', field: 'Digital Design & UI UX Design Systems', code: 'DES204, DES310' }
+    { school: 'Đại học FPT', field: 'Software Engineering & AI/Data', code: 'PRN231, SWP391, SEP490' },
+    { school: 'Coursera (Google)', field: 'Google Professional Certificates & IT Automation', code: 'COURSERA-G01' },
+    { school: 'Coursera (Meta)', field: 'Meta Front-End & Back-End Developer Specialization', code: 'COURSERA-META' },
+    { school: 'Coursera (DeepLearning.AI)', field: 'Machine Learning & Generative AI Specialization', code: 'COURSERA-AI' },
+    { school: 'AWS Academy', field: 'Cloud Architecting & Serverless Development', code: 'AWS-ACADEMY' }
   ];
 
   const initialStudentReviews = [
     {
       id: 'rev-01',
       name: 'Nguyễn Hoàng Nam',
-      school: 'Đại học Bách Khoa TP.HCM',
+      school: 'Đại học FPT TP.HCM',
       major: 'Software Engineering (Năm 4)',
       roleTrack: 'Backend Architecture',
       rating: 5,
       avatarBg: '#8b5cf6',
-      outcome: '🎉 Nhận offer Intern Backend Engineer tại Shopee',
-      quote: 'Trước đây khi đi phỏng vấn em chỉ có lý thuyết trên trường nên rất tự ti. Nhờ làm thử thách API Ecommerce trên Portfolio và được Mentor Anh Trần góp ý từng dòng code, em có ngay một project xịn để show trong CV. Nhà tuyển dụng rất ấn tượng với README và sơ đồ hệ thống của em!',
+      outcome: '🎉 Nhận offer Intern Backend Engineer tại FPT Software',
+      quote: 'Trước đây khi đi phỏng vấn em chỉ có lý thuyết trên trường nên rất tự ti. Nhờ làm thử thách API Ecommerce từ đề án SWP391 và được Mentor FPT góp ý từng dòng code, em có ngay một project xịn để show trong CV. Nhà tuyển dụng rất ấn tượng với README và sơ đồ hệ thống của em!',
       date: '22/09/2026'
     },
     {
       id: 'rev-02',
       name: 'Lê Minh Thu',
-      school: 'Đại học RMIT Vietnam',
-      major: 'Digital Design (Năm 3)',
+      school: 'Đại học FPT Hà Nội',
+      major: 'Digital Art & Design (Năm 3)',
       roleTrack: 'UI/UX Design Systems',
       rating: 5,
       avatarBg: '#ec4899',
-      outcome: '🚀 Tăng 300% tương tác Behance & nhận job Design Studio',
-      quote: 'Em cực kỳ ấn tượng với quy chuẩn nộp bài của nền tảng. Không chỉ làm UI đẹp mà còn phải giải thích User Flow, Design System Token và làm Usability Test. Feedback từ Mentor Vy Hoàng vô cùng tỉ mỉ và sát thực tế doanh nghiệp!',
+      outcome: '🚀 Tăng 300% tương tác Behance & nhận job UI/UX Design Studio',
+      quote: 'Em cực kỳ ấn tượng với quy chuẩn nộp bài của nền tảng. Không chỉ làm UI đẹp mà còn phải giải thích User Flow, Design System Token theo chuẩn Google UX Coursera. Feedback từ Mentor Vy Hoàng vô cùng tỉ mỉ và sát thực tế doanh nghiệp!',
       date: '20/09/2026'
     },
     {
@@ -2690,25 +2728,25 @@ function AboutPage({ go }) {
     {
       id: 'rev-04',
       name: 'Phạm Quỳnh Anh',
-      school: 'Đại học Kinh tế UEH',
+      school: 'Đại học FPT Đà Nẵng',
       major: 'Digital Marketing (Năm 4)',
       roleTrack: 'Performance Marketing',
       rating: 5,
       avatarBg: '#f59e0b',
       outcome: '📈 Quản lý ngân sách Ads 30M thực tế cho doanh nghiệp',
-      quote: 'Tài liệu tham khảo từ giáo trình UEH kết hợp với bài tập lập kế hoạch paid ads trên nền tảng giúp em hiểu sâu về CAC, LTV và A/B Testing. Sự hỗ trợ từ Mentor Trang Võ giúp em có một bộ Case Study Marketing ăn điểm!',
+      quote: 'Tài liệu tham khảo từ giáo trình FPT kết hợp với bài tập lập kế hoạch paid ads trên nền tảng giúp em hiểu sâu về CAC, LTV và A/B Testing. Sự hỗ trợ từ Mentor Trang Võ giúp em có một bộ Case Study Marketing ăn điểm!',
       date: '15/09/2026'
     },
     {
       id: 'rev-05',
       name: 'Vũ Quốc Bảo',
-      school: 'Đại học KHTN TP.HCM',
-      major: 'Khoa học Máy tính (Năm 3)',
+      school: 'Coursera & ĐH FPT',
+      major: 'Trí tuệ Nhân tạo (Năm 3)',
       roleTrack: 'AI / Data Engineer',
       rating: 5,
       avatarBg: '#38bdf8',
       outcome: '🌟 Xuất bản thành công trợ lý AI RAG FAQ có trích dẫn',
-      quote: 'Hệ thống bản đồ nghề rất rõ ràng, từng level đều có tiêu chuẩn nộp bài minh bạch. Nhờ đó em không bị lạc hướng giữa hàng trăm công nghệ AI hiện tại.',
+      quote: 'Hệ thống bản đồ nghề rất rõ ràng, kết hợp chứng chỉ DeepLearning.AI Coursera và đề tài môn AI tại FPT. Nhờ đó em không bị lạc hướng giữa hàng trăm công nghệ AI hiện tại.',
       date: '12/09/2026'
     }
   ];
@@ -2716,7 +2754,7 @@ function AboutPage({ go }) {
   const [studentReviews, setStudentReviews] = useState(initialStudentReviews);
   const [newReviewForm, setNewReviewForm] = useState({
     name: '',
-    school: 'Đại học Bách Khoa TP.HCM',
+    school: 'Đại học FPT TP.HCM',
     major: 'Software Engineering',
     roleTrack: 'Developer',
     rating: 5,
@@ -2746,7 +2784,7 @@ function AboutPage({ go }) {
     };
 
     setStudentReviews([createdReview, ...studentReviews]);
-    setNewReviewForm({ name: '', school: 'Đại học Bách Khoa TP.HCM', major: 'Software Engineering', roleTrack: 'Developer', rating: 5, outcome: '', quote: '' });
+    setNewReviewForm({ name: '', school: 'Đại học FPT TP.HCM', major: 'Software Engineering', roleTrack: 'Developer', rating: 5, outcome: '', quote: '' });
     setSubmitSuccessNotice('Cảm ơn bạn! Đánh giá cảm nhận của bạn đã được in lên website công khai.');
   };
 
@@ -2829,7 +2867,7 @@ function AboutPage({ go }) {
         <div className="section-heading centered">
           <p className="mono-label">Cảm nhận từ người dùng & sinh viên</p>
           <h2>Những câu chuyện truyền cảm hứng từ sinh viên thực tế</h2>
-          <p>Trải nghiệm thực tế từ sinh viên các trường ĐH Bách Khoa, ĐH FPT, RMIT, UEH, KHTN đã hoàn thiện Portfolio và chinh phục nhà tuyển dụng.</p>
+          <p>Trải nghiệm thực tế từ sinh viên Đại học FPT và người học chứng chỉ Coursera đã hoàn thiện Portfolio và chinh phục nhà tuyển dụng.</p>
         </div>
 
         <div className="testimonials-grid">
@@ -2966,13 +3004,13 @@ function AboutPage({ go }) {
             <p className="mono-label">Sản phẩm</p>
             <button type="button" onClick={() => go('roadmap')}>Bản đồ nghề</button>
             <button type="button" onClick={() => go('hub')}>Thử thách portfolio</button>
-            <button type="button" onClick={() => go('premium')}>Gói Premium</button>
+            <button type="button" onClick={onOpenUpgrade}>Gói Premium VIP</button>
           </div>
           <div>
             <p className="mono-label">Pháp lý & Quy chuẩn</p>
-            <span>Điều khoản sử dụng</span>
-            <span>Chính sách bảo mật</span>
-            <span>Quy chuẩn Mentor Review & Trao thưởng</span>
+            <button type="button" style={{ background: 'none', border: 'none', padding: 0, color: 'inherit', font: 'inherit', textAlign: 'left', cursor: 'pointer' }} onClick={() => onOpenFooterModal?.('terms')}>Điều khoản sử dụng</button>
+            <button type="button" style={{ background: 'none', border: 'none', padding: 0, color: 'inherit', font: 'inherit', textAlign: 'left', cursor: 'pointer' }} onClick={() => onOpenFooterModal?.('privacy')}>Chính sách bảo mật</button>
+            <button type="button" style={{ background: 'none', border: 'none', padding: 0, color: '#f59e0b', font: 'inherit', textAlign: 'left', cursor: 'pointer', fontWeight: 700 }} onClick={() => onOpenFooterModal?.('mentor-rubric')}>Quy chuẩn Mentor Review & Trao thưởng</button>
           </div>
         </div>
       </footer>
@@ -2980,14 +3018,847 @@ function AboutPage({ go }) {
   );
 }
 
-function HomePage({ go }) {
+
+/* ==========================================================================
+   CUTE FOUNDER AVATAR SVG ILLUSTRATION COMPONENT
+   ========================================================================== */
+function CuteFounderAvatar({ id, name, role }) {
+  // SVG avatar illustrations representing the 6 founders with cute, expressive styles
+  if (id === 'founder-huy') {
+    // Nguyễn Sỹ Huy - CEO
+    return (
+      <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="120" height="120" rx="20" fill="#1e293b"/>
+        <circle cx="60" cy="52" r="28" fill="#fed7aa"/>
+        {/* Hair: modern styled dark hair */}
+        <path d="M34 46C34 30 46 22 62 22C76 22 86 28 86 42C86 45 83 45 81 40C77 30 70 28 60 28C48 28 42 34 38 46Z" fill="#18181b"/>
+        <path d="M33 46C32 40 37 32 44 28C37 34 36 44 33 46Z" fill="#27272a"/>
+        {/* Cool modern glasses */}
+        <rect x="42" y="46" width="14" height="10" rx="3" stroke="#f59e0b" strokeWidth="2.5" fill="none"/>
+        <rect x="64" y="46" width="14" height="10" rx="3" stroke="#f59e0b" strokeWidth="2.5" fill="none"/>
+        <line x1="56" y1="51" x2="64" y2="51" stroke="#f59e0b" strokeWidth="2"/>
+        {/* Eyes behind glasses */}
+        <circle cx="49" cy="51" r="2" fill="#0f172a"/>
+        <circle cx="71" cy="51" r="2" fill="#0f172a"/>
+        {/* Cheerful confident smile */}
+        <path d="M52 64C56 68 64 68 68 64" stroke="#e11d48" strokeWidth="2.5" strokeLinecap="round"/>
+        {/* Blush */}
+        <ellipse cx="40" cy="58" rx="4" ry="2.5" fill="#fda4af" opacity="0.6"/>
+        <ellipse cx="80" cy="58" rx="4" ry="2.5" fill="#fda4af" opacity="0.6"/>
+        {/* Body / Navy Hoodie with gold strings */}
+        <path d="M28 110C28 88 42 80 60 80C78 80 92 88 92 110H28Z" fill="#0284c7"/>
+        <path d="M52 80L50 96M68 80L70 96" stroke="#fbbf24" strokeWidth="2" strokeLinecap="round"/>
+        <path d="M54 80C54 84 66 84 66 80" stroke="#bae6fd" strokeWidth="2"/>
+      </svg>
+    );
+  }
+  if (id === 'founder-thiet') {
+    // Bùi Văn Thiết - CTO
+    return (
+      <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="120" height="120" rx="20" fill="#0f172a"/>
+        <circle cx="60" cy="52" r="28" fill="#fde68a"/>
+        {/* Tech hair with stylish fade */}
+        <path d="M35 44C35 26 48 20 60 20C74 20 85 27 85 44C78 30 70 26 58 26C45 26 38 34 35 44Z" fill="#09090b"/>
+        {/* Headphones on head */}
+        <path d="M32 50C32 34 44 26 60 26C76 26 88 34 88 50" stroke="#f59e0b" strokeWidth="3.5" strokeLinecap="round" fill="none"/>
+        <rect x="29" y="46" width="6" height="14" rx="3" fill="#ea580c"/>
+        <rect x="85" y="46" width="6" height="14" rx="3" fill="#ea580c"/>
+        {/* Focused smiling eyes */}
+        <circle cx="48" cy="50" r="2.5" fill="#18181b"/>
+        <circle cx="72" cy="50" r="2.5" fill="#18181b"/>
+        <path d="M53 63C57 67 63 67 67 63" stroke="#d97706" strokeWidth="2.5" strokeLinecap="round"/>
+        <ellipse cx="41" cy="57" rx="3.5" ry="2" fill="#fbbf24" opacity="0.7"/>
+        <ellipse cx="79" cy="57" rx="3.5" ry="2" fill="#fbbf24" opacity="0.7"/>
+        {/* Tech Developer Dark Jacket */}
+        <path d="M26 110C26 86 40 78 60 78C80 78 94 86 94 110H26Z" fill="#334155"/>
+        <path d="M60 78V110" stroke="#0ea5e9" strokeWidth="2"/>
+        <circle cx="44" cy="92" r="3" fill="#38bdf8"/>
+      </svg>
+    );
+  }
+  if (id === 'founder-linh') {
+    // Lê Phương Linh - COO
+    return (
+      <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="120" height="120" rx="20" fill="#1e1b4b"/>
+        {/* Long cute hair behind */}
+        <path d="M32 50C32 75 34 98 42 105C46 100 48 85 48 70C48 50 72 50 72 70C72 85 74 100 78 105C86 98 88 75 88 50C88 30 76 22 60 22C44 22 32 30 32 50Z" fill="#78350f"/>
+        <circle cx="60" cy="52" r="26" fill="#fef08a"/>
+        {/* Front cute fringe/bangs */}
+        <path d="M36 44C42 36 50 34 60 34C70 34 78 36 84 44C80 34 72 26 60 26C48 26 40 34 36 44Z" fill="#92400e"/>
+        {/* Cute sparkling eyes with lashes */}
+        <circle cx="48" cy="50" r="3" fill="#1e1b4b"/>
+        <circle cx="50" cy="48" r="1" fill="#ffffff"/>
+        <path d="M44 46L46 48" stroke="#1e1b4b" strokeWidth="1.5"/>
+        <circle cx="72" cy="50" r="3" fill="#1e1b4b"/>
+        <circle cx="74" cy="48" r="1" fill="#ffffff"/>
+        <path d="M76 46L74 48" stroke="#1e1b4b" strokeWidth="1.5"/>
+        {/* Sweet smile */}
+        <path d="M53 62C57 66 63 66 67 62" stroke="#f43f5e" strokeWidth="2.5" strokeLinecap="round"/>
+        {/* Pink cheeks */}
+        <ellipse cx="42" cy="57" rx="4.5" ry="3" fill="#f43f5e" opacity="0.5"/>
+        <ellipse cx="78" cy="57" rx="4.5" ry="3" fill="#f43f5e" opacity="0.5"/>
+        {/* Cute star hair pin */}
+        <circle cx="36" cy="38" r="3" fill="#f59e0b"/>
+        {/* Coral/Amber professional blouse */}
+        <path d="M28 110C28 88 42 78 60 78C78 78 92 88 92 110H28Z" fill="#f97316"/>
+        <path d="M60 78L52 92H68L60 78Z" fill="#ffedd5"/>
+      </svg>
+    );
+  }
+  if (id === 'founder-ngoc') {
+    // Lương Hồng Ngọc - CPO
+    return (
+      <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="120" height="120" rx="20" fill="#311042"/>
+        {/* Soft wavy hair */}
+        <path d="M30 52C28 72 32 94 40 102C44 95 45 80 45 68C45 52 75 52 75 68C75 80 76 95 80 102C88 94 92 72 90 52C90 32 78 22 60 22C42 22 30 32 30 52Z" fill="#4c1d95"/>
+        <circle cx="60" cy="52" r="26" fill="#fde047"/>
+        {/* Chic side bangs */}
+        <path d="M35 42C44 32 54 30 64 30C74 30 82 34 85 42C80 30 70 24 58 24C46 24 38 32 35 42Z" fill="#581c87"/>
+        {/* Bright designer eyes */}
+        <circle cx="49" cy="50" r="3" fill="#3b0764"/>
+        <circle cx="51" cy="48" r="1.2" fill="#ffffff"/>
+        <circle cx="71" cy="50" r="3" fill="#3b0764"/>
+        <circle cx="73" cy="48" r="1.2" fill="#ffffff"/>
+        {/* Soft designer smile */}
+        <path d="M53 62C57 66 63 66 67 62" stroke="#ec4899" strokeWidth="2.5" strokeLinecap="round"/>
+        {/* Cheeks */}
+        <ellipse cx="43" cy="57" rx="4" ry="2.5" fill="#f472b6" opacity="0.6"/>
+        <ellipse cx="77" cy="57" rx="4" ry="2.5" fill="#f472b6" opacity="0.6"/>
+        {/* Lavender creative blazer */}
+        <path d="M28 110C28 88 42 78 60 78C78 78 92 88 92 110H28Z" fill="#8b5cf6"/>
+        <path d="M60 78L50 95M60 78L70 95" stroke="#e9d5ff" strokeWidth="2"/>
+      </svg>
+    );
+  }
+  if (id === 'founder-giang') {
+    // Tạ Thị Minh Giang - CMO
+    return (
+      <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="120" height="120" rx="20" fill="#042f2e"/>
+        {/* Dynamic ponytail hair */}
+        <circle cx="60" cy="52" r="26" fill="#fef08a"/>
+        <path d="M34 46C34 28 46 22 60 22C74 22 86 28 86 46C82 32 72 26 60 26C48 26 38 32 34 46Z" fill="#1c1917"/>
+        <path d="M78 28C88 24 98 32 94 48C90 42 86 36 78 28Z" fill="#292524"/>
+        {/* Energetic eyes */}
+        <circle cx="48" cy="50" r="2.8" fill="#0f172a"/>
+        <circle cx="50" cy="48" r="1" fill="#ffffff"/>
+        <circle cx="72" cy="50" r="2.8" fill="#0f172a"/>
+        <circle cx="74" cy="48" r="1" fill="#ffffff"/>
+        {/* Bright cheerful marketing smile */}
+        <path d="M51 61C55 67 65 67 69 61" stroke="#059669" strokeWidth="2.5" strokeLinecap="round"/>
+        <ellipse cx="42" cy="56" rx="4" ry="2.5" fill="#34d399" opacity="0.6"/>
+        <ellipse cx="78" cy="56" rx="4" ry="2.5" fill="#34d399" opacity="0.6"/>
+        {/* Teal growth marketer outfit */}
+        <path d="M28 110C28 86 42 78 60 78C78 78 92 86 92 110H28Z" fill="#0d9488"/>
+        <circle cx="60" cy="92" r="3" fill="#facc15"/>
+      </svg>
+    );
+  }
+  // Phạm Khắc Nghĩa - CFO
+  return (
+    <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="120" height="120" rx="20" fill="#1e293b"/>
+      <circle cx="60" cy="52" r="28" fill="#fed7aa"/>
+      {/* Neat smart executive hair */}
+      <path d="M36 44C36 28 48 22 62 22C74 22 84 27 84 42C80 30 72 26 62 26C50 26 42 32 36 44Z" fill="#27272a"/>
+      {/* Smart finance glasses */}
+      <rect x="42" y="47" width="14" height="9" rx="2.5" stroke="#0284c7" strokeWidth="2" fill="none"/>
+      <rect x="64" y="47" width="14" height="9" rx="2.5" stroke="#0284c7" strokeWidth="2" fill="none"/>
+      <line x1="56" y1="51.5" x2="64" y2="51.5" stroke="#0284c7" strokeWidth="1.5"/>
+      <circle cx="49" cy="51.5" r="2" fill="#0f172a"/>
+      <circle cx="71" cy="51.5" r="2" fill="#0f172a"/>
+      {/* Friendly trustworthy smile */}
+      <path d="M53 64C57 68 63 68 67 64" stroke="#0284c7" strokeWidth="2.5" strokeLinecap="round"/>
+      <ellipse cx="40" cy="58" rx="3.5" ry="2" fill="#38bdf8" opacity="0.5"/>
+      <ellipse cx="80" cy="58" rx="3.5" ry="2" fill="#38bdf8" opacity="0.5"/>
+      {/* Finance Executive Suit & Tie */}
+      <path d="M26 110C26 86 40 78 60 78C80 78 94 86 94 110H26Z" fill="#1e3a8a"/>
+      <path d="M60 78L52 92H68L60 78Z" fill="#ffffff"/>
+      <path d="M60 84L58 106L60 110L62 106L60 84Z" fill="#f59e0b"/>
+    </svg>
+  );
+}
+
+/* ==========================================================================
+   FOUNDERS SECTION (NGƯỜI SÁNG LẬP)
+   ========================================================================== */
+function FoundersSection() {
+  const foundersList = [
+    {
+      id: 'founder-huy',
+      name: 'Nguyễn Sỹ Huy',
+      role: 'CEO',
+      roleFull: 'Chief Executive Officer',
+      bio: 'Định hướng chiến lược & phát triển hệ sinh thái Portfolio sinh viên'
+    },
+    {
+      id: 'founder-thiet',
+      name: 'Bùi Văn Thiết',
+      role: 'CTO',
+      roleFull: 'Chief Technology Officer',
+      bio: 'Kiến trúc sư hệ thống nền tảng, tích hợp AI & phân luồng chấm điểm'
+    },
+    {
+      id: 'founder-linh',
+      name: 'Lê Phương Linh',
+      role: 'COO',
+      roleFull: 'Chief Operating Officer',
+      bio: 'Quản trị vận hành, quy chuẩn Mentor Review & kết nối doanh nghiệp'
+    },
+    {
+      id: 'founder-ngoc',
+      name: 'Lương Hồng Ngọc',
+      role: 'CPO',
+      roleFull: 'Chief Product Officer',
+      bio: 'Thiết kế trải nghiệm người dùng, Bản đồ nghề & Trung tâm thử thách'
+    },
+    {
+      id: 'founder-giang',
+      name: 'Tạ Thị Minh Giang',
+      role: 'CMO',
+      roleFull: 'Chief Marketing Officer',
+      bio: 'Chiến dịch thu hút 200-300 sinh viên & xây dựng cộng đồng FPT'
+    },
+    {
+      id: 'founder-nghia',
+      name: 'Phạm Khắc Nghĩa',
+      role: 'CFO',
+      roleFull: 'Chief Financial Officer',
+      bio: 'Quản trị tài chính, các gói Premium & Quỹ thưởng thù lao Mentor'
+    }
+  ];
+
+  return (
+    <section className="jr-founders-section">
+      <div className="jr-founders-badge">
+        <Sparkles size={14} color="#f59e0b" />
+        <span>ĐỘI NGŨ</span>
+      </div>
+
+      <h2 className="jr-founders-title">
+        <span className="white-text">NGƯỜI</span>
+        <span className="gold-text">SÁNG LẬP</span>
+      </h2>
+
+      <p className="jr-founders-subtitle">
+        Những con người đam mê công nghệ và khát vọng khởi nghiệp
+      </p>
+
+      <div className="jr-founders-grid">
+        {foundersList.map((founder) => (
+          <div className="jr-founder-card" key={founder.id}>
+            <div className="jr-founder-avatar-frame">
+              <CuteFounderAvatar id={founder.id} name={founder.name} role={founder.role} />
+            </div>
+            <strong className="jr-founder-name">{founder.name}</strong>
+            <span className="jr-founder-role">{founder.role}</span>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+/* ==========================================================================
+   VIP UPGRADE MODAL (3 PLANS SELECTION & VIETQR PAYMENT FLOW)
+   ========================================================================== */
+function VipUpgradeModal({ isOpen, onClose, initialPlan, currentUser, onPaymentSuccess }) {
+  const [step, setStep] = useState('select_plan'); // 'select_plan' | 'payment' | 'success'
+  const [selectedPlan, setSelectedPlan] = useState(initialPlan || premiumPlans[1]);
+  const [copyNotice, setCopyNotice] = useState('');
+
+  useEffect(() => {
+    if (initialPlan) {
+      setSelectedPlan(initialPlan);
+    }
+    if (isOpen) {
+      setStep('select_plan');
+    }
+  }, [initialPlan, isOpen]);
+
+  if (!isOpen) return null;
+
+  const studentMssv = currentUser?.user?.id || currentUser?.user?.mssv || 'SE174281';
+  const studentName = currentUser?.user?.name || 'Sinh viên FPT';
+  const planCode = (selectedPlan.id || 'PRO').replace('premium-', '').toUpperCase();
+  const transferContent = `EXE301 ${planCode} ${studentMssv}`;
+  const qrPrice = selectedPlan.price || 199000;
+  const qrUrl = `https://img.vietqr.io/image/MB-0348888888-compact2.png?amount=${qrPrice}&addInfo=${encodeURIComponent(transferContent)}&accountName=EXE301%20FPT%20PORTFOLIO`;
+
+  const copyToClipboard = (text, label) => {
+    navigator.clipboard.writeText(text);
+    setCopyNotice(`Đã sao chép ${label}!`);
+    setTimeout(() => setCopyNotice(''), 2500);
+  };
+
+  const handleConfirmPaid = () => {
+    setStep('success');
+    onPaymentSuccess(selectedPlan);
+  };
+
+  return (
+    <div className="vietqr-modal-overlay" onClick={onClose}>
+      <div className="vip-upgrade-modal-card animate-in" onClick={(e) => e.stopPropagation()}>
+        {/* Modal Header */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '18px' }}>
+          <div>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', color: '#f59e0b', fontSize: '13px', fontWeight: 800, textTransform: 'uppercase', marginBottom: '4px' }}>
+              <Crown size={17} color="#f59e0b" />
+              <span>Nâng Cấp Tài Khoản VIP</span>
+            </div>
+            <h2 style={{ fontSize: '22px', fontWeight: 900, margin: 0, color: 'var(--jr-text-main, #0f172a)' }}>
+              {step === 'select_plan' && 'Chọn Gói Đồng Hành Chuẩn Tuyển Dụng'}
+              {step === 'payment' && `Thanh toán VietQR - ${selectedPlan.name}`}
+              {step === 'success' && '🎉 Nâng Cấp VIP Thành Công!'}
+            </h2>
+          </div>
+          <button type="button" onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748b', padding: '6px' }}>
+            <X size={22} />
+          </button>
+        </div>
+
+        {/* STEP 1: CHỌN 1 TRONG 3 GÓI */}
+        {step === 'select_plan' && (
+          <div>
+            <p style={{ color: '#64748b', fontSize: '14px', margin: '0 0 20px', lineHeight: 1.5 }}>
+              Mở khóa toàn bộ kho thử thách thực tế FPT & Coursera, nhận review 1-on-1 từ Mentor doanh nghiệp và tự động tối ưu CV chuẩn ATS.
+            </p>
+
+            <div className="vip-plans-grid-v2">
+              {premiumPlans.map((plan) => {
+                const isSelected = selectedPlan.id === plan.id;
+                return (
+                  <div
+                    key={plan.id}
+                    className={`vip-plan-card-v2 ${isSelected ? 'active-selected' : ''}`}
+                    onClick={() => setSelectedPlan(plan)}
+                  >
+                    {plan.badge && <span className="vip-plan-badge-top">{plan.badge}</span>}
+                    <span style={{ fontSize: '12px', fontWeight: 700, color: '#f59e0b', textTransform: 'uppercase' }}>
+                      {plan.highlight}
+                    </span>
+                    <h3 className="vip-plan-name-v2">{plan.name}</h3>
+                    <div className="vip-plan-price-line">
+                      <strong>{plan.displayPrice}</strong>
+                      <span>/ {plan.duration}</span>
+                    </div>
+                    <p style={{ fontSize: '12.5px', color: '#64748b', margin: '0 0 12px', minHeight: '36px' }}>
+                      {plan.description}
+                    </p>
+
+                    <div style={{ borderTop: '1px solid rgba(148, 163, 184, 0.2)', paddingTop: '12px' }}>
+                      <strong style={{ fontSize: '12.5px', display: 'block', marginBottom: '8px' }}>Đặc quyền gói:</strong>
+                      <ul className="vip-features-list-v2">
+                        {plan.features.map((feat, idx) => (
+                          <li key={idx}>
+                            <CheckCircle2 size={15} color="#10b981" style={{ flexShrink: 0, marginTop: '2px' }} />
+                            <span>{feat}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    <button
+                      type="button"
+                      style={{
+                        marginTop: 'auto',
+                        width: '100%',
+                        padding: '10px 14px',
+                        borderRadius: '10px',
+                        fontWeight: 800,
+                        fontSize: '13.5px',
+                        cursor: 'pointer',
+                        border: isSelected ? 'none' : '1.5px solid rgba(245, 158, 11, 0.4)',
+                        background: isSelected ? '#f59e0b' : 'transparent',
+                        color: isSelected ? '#000' : 'var(--jr-text-main, #0f172a)'
+                      }}
+                      onClick={() => setSelectedPlan(plan)}
+                    >
+                      {isSelected ? '✓ Đang chọn gói này' : 'Chọn gói'}
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div style={{ background: 'rgba(245, 158, 11, 0.08)', borderRadius: '14px', padding: '14px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
+              <div>
+                <span style={{ fontSize: '13px', color: '#64748b' }}>Gói bạn chọn:</span>
+                <strong style={{ marginLeft: '6px', fontSize: '16px', color: '#d97706' }}>
+                  {selectedPlan.name} ({selectedPlan.displayPrice})
+                </strong>
+              </div>
+              <button
+                type="button"
+                className="jr-btn-gold-action"
+                style={{ padding: '10px 22px', fontSize: '14px' }}
+                onClick={() => setStep('payment')}
+              >
+                Tiến hành thanh toán VietQR cho gói này <ArrowRight size={16} />
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* STEP 2: THANH TOÁN VIETQR THEO GÓI ĐÃ CHỌN */}
+        {step === 'payment' && (
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px' }}>
+              <button
+                type="button"
+                className="ghost-action compact"
+                onClick={() => setStep('select_plan')}
+                style={{ padding: '6px 12px', fontSize: '12.5px' }}
+              >
+                ← Chọn lại gói khác
+              </button>
+              <span style={{ fontSize: '13px', color: '#64748b' }}>
+                Đang xử lý thanh toán cho gói: <b>{selectedPlan.name}</b> ({selectedPlan.displayPrice})
+              </span>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '260px 1fr', gap: '24px', alignItems: 'center' }}>
+              <div style={{ textAlign: 'center' }}>
+                <div className="vietqr-image-wrapper" style={{ margin: 0 }}>
+                  <img src={qrUrl} alt="Mã VietQR Chuyển Khoản" />
+                </div>
+                <span style={{ display: 'block', fontSize: '12px', color: '#64748b', marginTop: '8px' }}>
+                  Mở App Ngân hàng hoặc MoMo để quét mã
+                </span>
+              </div>
+
+              <div>
+                <table className="vietqr-details-table" style={{ margin: '0 0 16px' }}>
+                  <tbody>
+                    <tr>
+                      <td>Ngân hàng thụ hưởng</td>
+                      <td><b>MB Bank (Ngân hàng Quân Đội)</b></td>
+                    </tr>
+                    <tr>
+                      <td>Số tài khoản</td>
+                      <td>
+                        <span style={{ fontFamily: 'monospace', fontWeight: 800, fontSize: '15px' }}>0348888888</span>
+                        <button
+                          type="button"
+                          onClick={() => copyToClipboard('0348888888', 'STK')}
+                          style={{ marginLeft: '8px', background: 'none', border: 'none', color: '#0284c7', cursor: 'pointer', fontSize: '12px', textDecoration: 'underline' }}
+                        >
+                          Sao chép
+                        </button>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>Chủ tài khoản</td>
+                      <td><b>EXE301 FPT PORTFOLIO</b></td>
+                    </tr>
+                    <tr>
+                      <td>Gói cước</td>
+                      <td><b>{selectedPlan.name} ({selectedPlan.duration})</b></td>
+                    </tr>
+                    <tr>
+                      <td>Số tiền thanh toán</td>
+                      <td style={{ color: '#059669', fontSize: '18px', fontWeight: 900 }}>
+                        {selectedPlan.displayPrice}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>Nội dung chuyển khoản</td>
+                      <td>
+                        <span style={{ fontFamily: 'monospace', color: '#2563eb', fontWeight: 800, background: 'rgba(37,99,235,0.08)', padding: '2px 8px', borderRadius: '4px' }}>
+                          {transferContent}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => copyToClipboard(transferContent, 'Nội dung CK')}
+                          style={{ marginLeft: '8px', background: 'none', border: 'none', color: '#0284c7', cursor: 'pointer', fontSize: '12px', textDecoration: 'underline' }}
+                        >
+                          Sao chép
+                        </button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+
+                {copyNotice && (
+                  <div style={{ color: '#059669', fontSize: '13px', fontWeight: 700, marginBottom: '10px' }}>
+                    ✓ {copyNotice}
+                  </div>
+                )}
+
+                <div style={{ display: 'flex', gap: '10px', marginTop: '16px' }}>
+                  <button type="button" className="ghost-action" onClick={() => setStep('select_plan')}>
+                    Đổi gói cước
+                  </button>
+                  <button
+                    type="button"
+                    className="primary-action"
+                    style={{ flex: 1, background: 'linear-gradient(135deg, #10b981, #059669)', border: 'none', color: '#fff', fontWeight: 800 }}
+                    onClick={handleConfirmPaid}
+                  >
+                    <CheckCircle2 size={17} /> Tôi đã chuyển khoản thành công
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* STEP 3: THÀNH CÔNG */}
+        {step === 'success' && (
+          <div style={{ textAlign: 'center', padding: '24px 0' }}>
+            <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: '#dcfce7', color: '#16a34a', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+              <CheckCircle2 size={36} />
+            </div>
+            <h3 style={{ fontSize: '22px', fontWeight: 900, margin: '0 0 10px', color: '#16a34a' }}>
+              Chúc mừng bạn đã kích hoạt thành công {selectedPlan.name}!
+            </h3>
+            <p style={{ color: '#64748b', fontSize: '14.5px', maxWidth: '480px', margin: '0 auto 24px', lineHeight: 1.5 }}>
+              Hệ thống đã cập nhật đặc quyền VIP cho tài khoản của bạn: Mở khóa quyền nộp bài nhận Mentor Review 1-on-1, đặt lịch chat trực tiếp và chứng thực Portfolio công khai.
+            </p>
+            <button
+              type="button"
+              className="jr-btn-gold-action"
+              onClick={onClose}
+              style={{ margin: '0 auto' }}
+            >
+              Bắt đầu trải nghiệm ngay
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ==========================================================================
+   FOOTER DETAIL MODAL CONTENT HELPER
+   ========================================================================== */
+function getFooterModalContent(key) {
+  if (key === 'about') {
+    return {
+      category: 'Về chúng tôi',
+      title: 'Giới Thiệu Nền Tảng Portfolio JobReady',
+      subtitle: 'Dự án khởi nghiệp công nghệ giáo dục từ sinh viên EXE301 - Đại học FPT',
+      body: (
+        <div>
+          <p style={{ lineHeight: 1.6 }}>
+            <b>Portfolio JobReady</b> là nền tảng định hướng nghề nghiệp thực chiến và xây dựng hồ sơ năng lực dành cho sinh viên công nghệ thông tin, marketing và thiết kế đồ họa.
+          </p>
+          <div className="footer-rubric-box">
+            <h4><Rocket size={17} /> Sứ Mệnh & KPI Giai Đoạn 1</h4>
+            <p style={{ margin: 0, fontSize: '13.5px', lineHeight: 1.6 }}>
+              Giải quyết bài toán lớn nhất của sinh viên đại học: <b>"Học xong lý thuyết nhưng thiếu sản phẩm thực tế có minh chứng năng lực và thiếu sự phản biện của chuyên gia"</b>. Mục tiêu dự án giai đoạn 1 là thu hút và đồng hành cùng <b>200 - 300 sinh viên</b> Đại học FPT và người học Coursera hoàn thiện Portfolio đạt chuẩn tuyển dụng doanh nghiệp.
+            </p>
+          </div>
+          <h4 style={{ margin: '18px 0 8px', fontSize: '15px' }}>4 Trụ cột cốt lõi của nền tảng:</h4>
+          <ul style={{ paddingLeft: '20px', lineHeight: 1.7, fontSize: '13.5px' }}>
+            <li><b>Bản đồ nghề nghiệp tương tác:</b> Cung cấp lộ trình kỹ năng từ Junior đến Senior cho từng chuyên ngành.</li>
+            <li><b>Trung tâm thử thách dự án:</b> Đề bài thực tế tham chiếu từ đồ án môn học FPT (SWP391, PRN231) và chứng chỉ Coursera (Google, Meta, AWS).</li>
+            <li><b>Phân luồng Mentor 2 cấp độ:</b> Mentor AI chấm cú pháp tự động 0đ và Senior Mentor doanh nghiệp review 1:1 chuyên sâu.</li>
+            <li><b>Trang Portfolio cá nhân chuẩn ATS:</b> URL công khai chứng thực kỹ năng, tích hợp CV chuẩn hóa và minh chứng sản phẩm.</li>
+          </ul>
+        </div>
+      )
+    };
+  }
+
+  if (key === 'contact') {
+    return {
+      category: 'Về chúng tôi',
+      title: 'Thông Tin Liên Hệ & Hỗ Trợ Sinh Viên',
+      subtitle: 'Đội ngũ phát triển EXE301 - Đại học FPT luôn sẵn sàng đồng hành cùng bạn',
+      body: (
+        <div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', margin: '14px 0 20px' }}>
+            <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(148,163,184,0.2)', padding: '14px', borderRadius: '12px' }}>
+              <strong style={{ display: 'block', color: '#0284c7', marginBottom: '4px' }}>Campus TP. Hồ Chí Minh</strong>
+              <span style={{ fontSize: '13px', color: '#64748b' }}>Lô E2a-7, Đường D1, Khu Công nghệ cao, TP. Thủ Đức, TP.HCM</span>
+            </div>
+            <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(148,163,184,0.2)', padding: '14px', borderRadius: '12px' }}>
+              <strong style={{ display: 'block', color: '#0284c7', marginBottom: '4px' }}>Campus Hòa Lạc (Hà Nội)</strong>
+              <span style={{ fontSize: '13px', color: '#64748b' }}>Khu CNC Hòa Lạc, Km29 Đại lộ Thăng Long, H. Thạch Thất, TP. Hà Nội</span>
+            </div>
+          </div>
+
+          <table className="vietqr-details-table">
+            <tbody>
+              <tr><td>Hotline hỗ trợ sinh viên</td><td><b>1900 6868 (Nhánh 2)</b> hoặc <b>028 7300 5588</b></td></tr>
+              <tr><td>Email chính thức</td><td><b>support@jobready.io.vn</b> / <b>exe301.fpt@gmail.com</b></td></tr>
+              <tr><td>Thời gian hỗ trợ</td><td>Thứ 2 – Thứ 7: 08:30 – 21:00 (Hỗ trợ khẩn cấp qua Discord 24/7)</td></tr>
+            </tbody>
+          </table>
+
+          <div style={{ marginTop: '16px' }}>
+            <h4 style={{ margin: '0 0 10px', fontSize: '14.5px' }}>Gửi thắc mắc hoặc yêu cầu hỗ trợ:</h4>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <input type="text" placeholder="Họ tên của bạn..." style={{ padding: '10px 14px', borderRadius: '8px', border: '1px solid #cbd5e1' }} />
+              <input type="email" placeholder="Email sinh viên (@fpt.edu.vn)..." style={{ padding: '10px 14px', borderRadius: '8px', border: '1px solid #cbd5e1' }} />
+              <textarea rows={3} placeholder="Nội dung cần hỗ trợ về Portfolio, Mentor hoặc tài khoản..." style={{ padding: '10px 14px', borderRadius: '8px', border: '1px solid #cbd5e1' }} />
+              <button type="button" className="jr-btn-gold-action" style={{ alignSelf: 'flex-start', padding: '9px 20px', fontSize: '13.5px' }} onClick={() => alert('Cảm ơn bạn! Yêu cầu hỗ trợ đã được gửi tới đội ngũ vận hành FPT.')}>
+                Gửi tin nhắn liên hệ
+              </button>
+            </div>
+          </div>
+        </div>
+      )
+    };
+  }
+
+  if (key === 'terms') {
+    return {
+      category: 'Pháp lý',
+      title: 'Điều Khoản Sử Dụng Nền Tảng',
+      subtitle: 'Quy định quyền lợi, bản quyền và trách nhiệm của sinh viên & mentor',
+      body: (
+        <div style={{ fontSize: '13.5px', lineHeight: 1.6 }}>
+          <div className="footer-rubric-box">
+            <h4><ShieldCheck size={17} /> 1. Bản Quyền Sản Phẩm & Sở Hữu Trí Tuệ</h4>
+            <p style={{ margin: 0 }}>
+              Sinh viên giữ <b>100% quyền sở hữu trí tuệ</b> đối với mã nguồn, thiết kế đồ họa, nội dung chiến dịch và case study được tải lên nền tảng. Nền tảng Portfolio JobReady cam kết không sử dụng mã nguồn của bạn cho bất kỳ mục đích thương mại nào mà không có thỏa thuận bằng văn bản.
+            </p>
+          </div>
+          <h4 style={{ margin: '14px 0 6px', fontSize: '14.5px' }}>2. Trách nhiệm của Sinh viên</h4>
+          <p>Sinh viên cam kết bài nộp là thành quả tự làm hoặc làm theo nhóm; nghiêm cấm sao chép đạo văn hoặc mạo danh người khác. Trong các buổi Chat trực tiếp với Mentor, sinh viên cần giữ thái độ lịch sự, chuyên nghiệp.</p>
+          <h4 style={{ margin: '14px 0 6px', fontSize: '14.5px' }}>3. Cam kết thời gian phản hồi của Mentor</h4>
+          <p>Mỗi bài nộp gửi đến Mentor thật sẽ được phản hồi chi tiết trong vòng <b>24 – 48 giờ</b>. Nếu quá thời hạn cam kết, sinh viên sẽ được hoàn lại lượt review hoặc cấp thêm 1 buổi review miễn phí.</p>
+        </div>
+      )
+    };
+  }
+
+  if (key === 'privacy') {
+    return {
+      category: 'Pháp lý',
+      title: 'Chính Sách Bảo Mật Thông Tin & Dữ Liệu',
+      subtitle: 'Bảo vệ hồ sơ cá nhân và sản phẩm của sinh viên theo tiêu chuẩn an toàn cao nhất',
+      body: (
+        <div style={{ fontSize: '13.5px', lineHeight: 1.6 }}>
+          <p>Chúng tôi tôn trọng và cam kết bảo vệ dữ liệu cá nhân của sinh viên và người hướng dẫn:</p>
+          <ul style={{ paddingLeft: '20px', lineHeight: 1.7 }}>
+            <li><b>Bảo mật thông tin định danh:</b> Họ tên, mã số sinh viên, số điện thoại và email trường FPT được mã hóa và bảo mật tuyệt đối.</li>
+            <li><b>Quyền kiểm soát Public Portfolio:</b> Bạn có thể bật hoặc tắt chế độ công khai URL hồ sơ bất cứ khi nào bạn muốn.</li>
+            <li><b>Bảo vệ CV ứng tuyển:</b> CV của bạn chỉ được chuyển tiếp đến các đối tác tuyển dụng (FPT Software, TopCV, VNG...) khi có sự đồng ý rõ ràng từ bạn.</li>
+          </ul>
+        </div>
+      )
+    };
+  }
+
+  if (key === 'mentor-rubric') {
+    return {
+      category: 'Nghiệp vụ cốt lõi',
+      title: 'Quy Chuẩn Mentor Review & Cơ Chế Đánh Giá 2 Chiều',
+      subtitle: 'Quy trình thẩm định công bằng, phân luồng AI & Mentor thật, sàng lọc mentor tiêu cực và quỹ thưởng',
+      body: (
+        <div style={{ fontSize: '13.5px', lineHeight: 1.6 }}>
+          <div className="footer-rubric-box">
+            <h4><Crown size={17} /> 1. Hai Hình Thức Review Tiêu Chuẩn</h4>
+            <ul style={{ margin: 0, paddingLeft: '18px', lineHeight: 1.6 }}>
+              <li><b>Hình thức 1 - Nộp link bài nộp / CV (Review Async):</b> Sinh viên gửi link GitHub, demo web, link Figma hoặc CV PDF. Mentor chấm điểm chi tiết theo rubric STAR, ghi chú cụ thể lỗi logic và trả kết quả trong 24-48h.</li>
+              <li><b>Hình thức 2 - Đặt lịch Chat trực tiếp 1-on-1:</b> Dành cho tài khoản VIP. Sinh viên trao đổi trực tiếp với Mentor qua Google Meet hoặc phòng chat 45 phút để được giải đáp thắc mắc, sửa lỗi trực tiếp và phỏng vấn thử.</li>
+            </ul>
+          </div>
+
+          <div style={{ background: 'rgba(2, 132, 199, 0.08)', border: '1px solid rgba(2, 132, 199, 0.3)', borderRadius: '14px', padding: '14px 16px', margin: '14px 0' }}>
+            <h4 style={{ margin: '0 0 6px', color: '#0284c7' }}><Flame size={16} /> 2. Phân Luồng Chấm Điểm AI & Mentor Thật</h4>
+            <p style={{ margin: 0, fontSize: '13px' }}>
+              • <b>Mentor AI (0đ Miễn phí):</b> Tự động quét kiểm tra cấu trúc link, tính hợp lệ của repo, phân tích từ khóa CV ATS và chấm điểm sơ bộ trong 5 giây.<br />
+              • <b>Senior Mentor Thật (Gói VIP):</b> Chuyên gia giàu kinh nghiệm từ FPT Software, Viettel, VNG thẩm định kiến trúc code, khả năng mở rộng hệ thống và tính thực tế doanh nghiệp.
+            </p>
+          </div>
+
+          <div style={{ background: 'rgba(220, 38, 38, 0.08)', border: '1px solid rgba(220, 38, 38, 0.3)', borderRadius: '14px', padding: '14px 16px', margin: '14px 0' }}>
+            <h4 style={{ margin: '0 0 6px', color: '#dc2626' }}><ShieldCheck size={16} /> 3. Đánh Giá 2 Chiều & Sàng Lọc Mentor Tiêu Cực</h4>
+            <p style={{ margin: 0, fontSize: '13px' }}>
+              • <b>Sinh viên chấm điểm Mentor:</b> Sau mỗi lượt review, sinh viên đánh giá sao (1-5 sao) và nhận xét chất lượng góp ý.<br />
+              • <b>Cơ chế sàng lọc nghiêm ngặt:</b> Mentor nhận đánh giá tiêu cực (điểm trung bình dưới 3.5 sao) sẽ bị hệ thống tạm ngưng phân công bài nộp và đưa vào diện loại trừ nếu không cải thiện.<br />
+              • <b>Chính sách Thưởng thù lao:</b> Mentor có điểm đánh giá xuất sắc (từ 4.5 đến 5.0 sao) được nhận thêm thưởng bonus 15% – 25% thù lao theo từng kỳ review.
+            </p>
+          </div>
+        </div>
+      )
+    };
+  }
+
+  // Employer & Partner
+  return {
+    category: 'Nhà tuyển dụng & Đối tác',
+    title: 'Cổng Kết Nối Doanh Nghiệp & Tuyển Dụng Tài Năng FPT',
+    subtitle: 'Tiếp cận 250+ hồ sơ sinh viên đã hoàn thành thử thách thực chiến và được mentor xác thực',
+    body: (
+      <div style={{ fontSize: '13.5px', lineHeight: 1.6 }}>
+        <p>Chúng tôi kết nối trực tiếp các doanh nghiệp công nghệ hàng đầu (FPT Software, TopCV, VNG, VNPT...) với nguồn nhân lực trẻ xuất sắc:</p>
+        <ul style={{ paddingLeft: '20px', lineHeight: 1.7 }}>
+          <li><b>Xem Portfolio có minh chứng thực:</b> Thay vì chỉ xem CV mô tả suông, nhà tuyển dụng được xem mã nguồn GitHub thật, bản vẽ Figma và video demo sản phẩm của ứng viên.</li>
+          <li><b>Kỹ năng được chứng thực bởi Mentor:</b> Điểm đánh giá độc lập từ các Senior Engineer giúp rút ngắn 70% thời gian thẩm định ứng viên.</li>
+          <li><b>Đăng đề bài tuyển dụng dạng Challenge:</b> Doanh nghiệp có thể đưa bài toán thực tế của công ty thành thử thách trên nền tảng để thu hút những ứng viên giải quyết tốt nhất.</li>
+        </ul>
+        <div style={{ background: 'rgba(245, 158, 11, 0.1)', padding: '14px', borderRadius: '12px', marginTop: '16px' }}>
+          <strong>Bộ phận Hợp tác Doanh nghiệp:</strong><br />
+          <span>Hotline: <b>0908 123 456</b> · Email: <b>partnership@jobready.io.vn</b></span>
+        </div>
+      </div>
+    )
+  };
+}
+
+/* ==========================================================================
+   FOOTER DETAIL MODAL COMPONENT
+   ========================================================================== */
+function FooterDetailModal({ isOpen, onClose, data, go, onOpenUpgrade }) {
+  if (!isOpen || !data) return null;
+
+  return (
+    <div className="vietqr-modal-overlay" onClick={onClose}>
+      <div className="footer-info-modal-card animate-in" onClick={(e) => e.stopPropagation()}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
+          <div>
+            <span className="footer-info-category-pill">{data.category}</span>
+            <h2 style={{ fontSize: '21px', fontWeight: 900, margin: '4px 0 6px', color: 'var(--jr-text-main, #0f172a)' }}>
+              {data.title}
+            </h2>
+            <p style={{ color: '#64748b', fontSize: '13.5px', margin: 0 }}>
+              {data.subtitle}
+            </p>
+          </div>
+          <button type="button" onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748b', padding: '6px' }}>
+            <X size={22} />
+          </button>
+        </div>
+
+        <div style={{ margin: '20px 0 24px' }}>
+          {data.body}
+        </div>
+
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', borderTop: '1px solid rgba(148,163,184,0.2)', paddingTop: '16px' }}>
+          <button type="button" className="ghost-action" onClick={onClose}>
+            Đóng
+          </button>
+          <button type="button" className="jr-btn-gold-action" style={{ padding: '8px 18px', fontSize: '13.5px' }} onClick={onOpenUpgrade}>
+            <Crown size={15} /> Xem các gói nâng cấp VIP
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ==========================================================================
+   JOBREADY FOOTER & CTA BANNER COMPONENT
+   ========================================================================== */
+function JobReadyFooter({ go, onOpenUpgrade, onOpenFooterModal }) {
+  return (
+    <footer className="jr-main-footer">
+      <div className="jr-footer-container">
+        {/* CTA BANNER */}
+        <div className="jr-cta-banner-v2" style={{ marginBottom: '56px', marginTop: 0 }}>
+          <h2 className="jr-cta-title-v2">
+            <span className="white-text">SẴN SÀNG BẮT ĐẦU</span>
+            <span className="gold-text">HÀNH TRÌNH MỚI?</span>
+          </h2>
+          <p className="jr-cta-desc-v2">
+            Tham gia cộng đồng Portfolio JobReady — luyện thử thách thực tế, nhận góp ý từ Mentor FPT và kết nối với nhà tuyển dụng hàng đầu.
+          </p>
+          <div className="jr-cta-actions-v2">
+            <button className="jr-btn-gold-action" onClick={() => go('auth')}>
+              <span>Đăng ký miễn phí</span>
+              <ArrowRight size={17} />
+            </button>
+            <button className="jr-btn-glass-action" onClick={onOpenUpgrade}>
+              <FileText size={17} />
+              <span>Xem bảng giá</span>
+            </button>
+          </div>
+        </div>
+
+        {/* FOOTER COLUMNS */}
+        <div className="jr-footer-top">
+          {/* Brand Column */}
+          <div className="jr-footer-brand-wrap">
+            <div className="jr-footer-logo-line">
+              <span className="jr-footer-logo-badge">JR</span>
+              <span className="jr-footer-logo-text">JOBREADY</span>
+            </div>
+            <p className="jr-footer-tagline">
+              Nâng cao kỹ năng phỏng vấn cùng AI & hoàn thiện Portfolio cùng Mentor — tự tin chinh phục mọi nhà tuyển dụng.
+            </p>
+            <div className="jr-footer-socials">
+              <a href="https://facebook.com" target="_blank" rel="noreferrer" className="jr-social-btn" title="Facebook">
+                <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+              </a>
+              <a href="https://linkedin.com" target="_blank" rel="noreferrer" className="jr-social-btn" title="LinkedIn">
+                <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
+              </a>
+              <a href="https://twitter.com" target="_blank" rel="noreferrer" className="jr-social-btn" title="Twitter / X">
+                <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+              </a>
+              <a href="https://instagram.com" target="_blank" rel="noreferrer" className="jr-social-btn" title="Instagram">
+                <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+              </a>
+            </div>
+          </div>
+
+          {/* Col 1: Về chúng tôi */}
+          <div className="jr-footer-col">
+            <h4>Về Chúng Tôi</h4>
+            <ul className="jr-footer-links-list">
+              <li><button type="button" className="jr-footer-link-btn" onClick={() => onOpenFooterModal('about')}>Giới thiệu</button></li>
+              <li><button type="button" className="jr-footer-link-btn" onClick={() => onOpenFooterModal('contact')}>Liên hệ</button></li>
+              <li><button type="button" className="jr-footer-link-btn" onClick={() => onOpenFooterModal('terms')}>Điều khoản sử dụng</button></li>
+              <li><button type="button" className="jr-footer-link-btn" onClick={() => onOpenFooterModal('privacy')}>Chính sách bảo mật</button></li>
+              <li><button type="button" className="jr-footer-link-btn highlight" onClick={() => onOpenFooterModal('mentor-rubric')}>Quy chuẩn Mentor Review</button></li>
+            </ul>
+          </div>
+
+          {/* Col 2: Ứng viên */}
+          <div className="jr-footer-col">
+            <h4>Ứng Viên</h4>
+            <ul className="jr-footer-links-list">
+              <li><button type="button" className="jr-footer-link-btn" onClick={() => go('hub')}>Tìm việc làm & Thử thách</button></li>
+              <li><button type="button" className="jr-footer-link-btn" onClick={() => go('roadmap')}>Lộ trình nghề nghiệp</button></li>
+              <li><button type="button" className="jr-footer-link-btn highlight" onClick={() => onOpenFooterModal('mentor-rubric')}>Luyện phỏng vấn AI</button></li>
+              <li><button type="button" className="jr-footer-link-btn" onClick={() => go('portfolio')}>Phân tích CV chuẩn ATS</button></li>
+              <li><button type="button" className="jr-footer-link-btn" onClick={onOpenUpgrade}>Bảng giá dịch vụ VIP</button></li>
+            </ul>
+          </div>
+
+          {/* Col 3: Nhà tuyển dụng */}
+          <div className="jr-footer-col">
+            <h4>Nhà Tuyển Dụng</h4>
+            <ul className="jr-footer-links-list">
+              <li><button type="button" className="jr-footer-link-btn" onClick={() => onOpenFooterModal('employer')}>Đăng tin tuyển dụng</button></li>
+              <li><button type="button" className="jr-footer-link-btn" onClick={() => onOpenFooterModal('employer')}>Bảng giá dịch vụ doanh nghiệp</button></li>
+              <li><button type="button" className="jr-footer-link-btn highlight" onClick={() => go('portfolio')}>Tìm ứng viên nổi bật</button></li>
+              <li><button type="button" className="jr-footer-link-btn" onClick={() => onOpenFooterModal('contact')}>Liên hệ hợp tác</button></li>
+            </ul>
+          </div>
+        </div>
+
+        {/* BOTTOM COPYRIGHT */}
+        <div className="jr-footer-bottom">
+          <div>
+            © 2026 Portfolio JobReady Career Tech. Tất cả các quyền được bảo lưu.
+          </div>
+          <div>
+            Dự án nghiên cứu & khởi nghiệp của nhóm sinh viên <b>EXE301 - Đại học FPT</b>
+          </div>
+        </div>
+      </div>
+    </footer>
+  );
+}
+
+function HomePage({ go, onOpenUpgrade, onOpenFooterModal }) {
   return (
     <div className="jr-home-wrapper">
       {/* Hero Section */}
       <section className="jr-hero">
         <div className="jr-hero-badge">
           <span className="jr-badge-pulse" />
-          <span>HỆ THỐNG XÂY DỰNG PORTFOLIO NGHỀ NGHIỆP · SINH VIÊN ĐẠI HỌC FPT, BÁCH KHOA, KHTN</span>
+          <span>HỆ THỐNG XÂY DỰNG PORTFOLIO NGHỀ NGHIỆP · SINH VIÊN ĐẠI HỌC FPT & COURSERA</span>
         </div>
 
         <h1 className="jr-hero-title">
@@ -3116,8 +3987,8 @@ function HomePage({ go }) {
 
           <div className="jr-feature-card">
             <div className="jr-feat-icon emerald"><GraduationCap size={26} /></div>
-            <h3>Nguồn Học Liệu Đại Học FPT, BK, KHTN</h3>
-            <p>Tổng hợp slide bài giảng, ngân hàng câu hỏi và case study thực chiến từ các trường đại học hàng đầu để sinh viên làm dự án.</p>
+            <h3>Nguồn Học Liệu Chuẩn Đại Học FPT & Coursera</h3>
+            <p>Tổng hợp giáo trình, đề án môn học FPT (SWP391, PRN231, EXE301...) và chứng chỉ chuyên nghiệp Coursera (Google, Meta, AWS) để sinh viên xây dựng dự án thực chiến.</p>
           </div>
 
           <div className="jr-feature-card">
@@ -3134,12 +4005,17 @@ function HomePage({ go }) {
         </div>
       </section>
 
+      {/* Founders Section (Ngay tren Sinh vien noi ve chung toi) */}
+      <section className="content-page" style={{ paddingBottom: 0 }}>
+        <FoundersSection />
+      </section>
+
       {/* Student Testimonials / Reviews */}
       <section className="content-page">
         <div className="jr-section-title-wrap">
           <span className="jr-sub-pill">Sinh viên nói gì về chúng tôi</span>
           <h2 className="jr-section-title">Review Từ Các Bạn Sinh Viên Đã Sử Dụng</h2>
-          <p className="jr-section-desc">Hơn 250+ sinh viên từ ĐH FPT, Bách Khoa, KHTN đã xây dựng Portfolio chuyên nghiệp và nhận được offer từ doanh nghiệp hàng đầu.</p>
+          <p className="jr-section-desc">Hơn 250+ sinh viên Đại học FPT và người học Coursera đã xây dựng Portfolio chuyên nghiệp và nhận được offer từ doanh nghiệp hàng đầu.</p>
         </div>
 
         <div className="jr-testimonials-grid">
@@ -3166,7 +4042,7 @@ function HomePage({ go }) {
               <div className="jr-testimonial-avatar">NM</div>
               <div>
                 <strong>Nguyễn Minh</strong>
-                <span>Backend Engineer · ĐH Bách Khoa HN</span>
+                <span>Backend Engineer · ĐH FPT Hà Nội</span>
               </div>
             </div>
           </article>
@@ -3180,7 +4056,7 @@ function HomePage({ go }) {
               <div className="jr-testimonial-avatar">LT</div>
               <div>
                 <strong>Lê Thảo</strong>
-                <span>Data Analyst Intern · ĐH KHTN HCM</span>
+                <span>Data Analyst Intern · ĐH FPT Cần Thơ</span>
               </div>
             </div>
           </article>
@@ -3208,7 +4084,7 @@ function HomePage({ go }) {
               <div className="jr-testimonial-avatar">VL</div>
               <div>
                 <strong>Vũ Linh</strong>
-                <span>Mobile Developer · ĐH Bách Khoa HCM</span>
+                <span>Mobile Developer · ĐH FPT TP.HCM</span>
               </div>
             </div>
           </article>
@@ -3222,30 +4098,14 @@ function HomePage({ go }) {
               <div className="jr-testimonial-avatar">HA</div>
               <div>
                 <strong>Hoàng Anh</strong>
-                <span>Fullstack Developer · ĐH KHTN HN</span>
+                <span>Fullstack Developer · Coursera & ĐH FPT</span>
               </div>
             </div>
           </article>
         </div>
       </section>
 
-      {/* CTA Bottom Banner */}
-      <section className="content-page">
-        <div className="jr-cta-banner">
-          <h2>Sẵn Sàng Xây Dựng Portfolio Chuẩn Doanh Nghiệp?</h2>
-          <p>Tham gia cùng hơn 250+ sinh viên các trường đại học đã sở hữu Portfolio chuyên nghiệp và tự tin nhận offer tuyển dụng.</p>
-          <div className="jr-hero-actions" style={{ marginBottom: 0 }}>
-            <button className="jr-btn-primary" onClick={() => go('roadmap')}>
-              <Rocket size={18} />
-              <span>Bắt đầu tạo Portfolio ngay</span>
-            </button>
-            <button className="jr-btn-secondary" onClick={() => go('portfolio')}>
-              <UserRound size={18} />
-              <span>Xem mẫu Hồ sơ Portfolio</span>
-            </button>
-          </div>
-        </div>
-      </section>
+      <JobReadyFooter go={go} onOpenUpgrade={onOpenUpgrade} onOpenFooterModal={onOpenFooterModal} />
     </div>
   );
 }
@@ -3566,16 +4426,16 @@ function ChallengeHubPage({ currentMajor, activeTrack, setActiveTrack, visibleCh
         <div className="widget-header">
           <GraduationCap size={20} />
           <div>
-            <h2>Nguồn tài liệu học tập chuẩn các Trường Đại Học</h2>
-            <p>Giáo trình, slide bài giảng & đề án tốt nghiệp tham chiếu từ ĐH Bách Khoa, ĐH FPT, KHTN, UEH, RMIT.</p>
+            <h2>Nguồn tài liệu học tập chuẩn Đại học FPT & Coursera</h2>
+            <p>Giáo trình, slide bài giảng & đề án môn học thực chiến tham chiếu trực tiếp từ Đại học FPT và các chứng chỉ chuyên nghiệp trên Coursera (Google, Meta, AWS).</p>
           </div>
         </div>
         <div className="university-resource-chips">
-          <span className="uni-chip bk"><GraduationCap size={14} /> ĐH Bách Khoa (CO2011)</span>
+          <span className="uni-chip fpt"><GraduationCap size={14} /> ĐH FPT (SWP391)</span>
           <span className="uni-chip fpt"><GraduationCap size={14} /> ĐH FPT (PRN231)</span>
-          <span className="uni-chip khtn"><GraduationCap size={14} /> ĐH KHTN (SE402)</span>
-          <span className="uni-chip ueh"><GraduationCap size={14} /> UEH (MKT301)</span>
-          <span className="uni-chip rmit"><GraduationCap size={14} /> RMIT (DES204)</span>
+          <span className="uni-chip coursera"><Award size={14} /> Coursera (Google Professional)</span>
+          <span className="uni-chip coursera"><Award size={14} /> Coursera (Meta Developer)</span>
+          <span className="uni-chip aws"><BookOpen size={14} /> AWS Academy Cloud</span>
         </div>
       </div>
 
@@ -4261,7 +5121,7 @@ function PortfolioPage({ pathRoles, currentMajor, go, demoUser, apiStatus, submi
           <span className="mono-label" style={{ color: '#38bdf8' }}>Hồ Sơ Năng Lực Sinh Viên · Portfolio Workspace</span>
           <h1 style={{ margin: '4px 0 2px', fontSize: '22px', fontWeight: 800 }}>Hồ Sơ Portfolio Của {profileName}</h1>
           <p style={{ margin: 0, fontSize: '13px', color: 'var(--jr-text-sub)' }}>
-            Lộ trình: <b>{careerGoal}</b> · Trường: <b>{demoUser?.school || 'Đại học FPT / Bách Khoa / KHTN'}</b> · {portfolioProjectDetails.length} Dự án đã xác thực
+            Lộ trình: <b>{careerGoal}</b> · Trường: <b>{demoUser?.school || 'Đại học FPT'}</b> · {portfolioProjectDetails.length} Dự án đã xác thực
           </p>
         </div>
         <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
