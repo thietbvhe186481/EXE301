@@ -1,20 +1,29 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import {
+  AlertCircle,
+  ArrowRight,
+  Award,
   BadgeCheck,
+  BarChart2,
   Blocks,
   BookOpen,
   BriefcaseBusiness,
   Check,
+  CheckCircle2,
+  ChevronRight,
   ChevronsUp,
   CircleDollarSign,
   Clock,
   Compass,
   CreditCard,
   Crown,
+  Download,
   Edit3,
+  FileText,
   FileUp,
   Filter,
+  Flame,
   Github,
   GraduationCap,
   LayoutDashboard,
@@ -22,10 +31,14 @@ import {
   LockKeyhole,
   LogOut,
   MessageSquareText,
+  Mic,
+  MicOff,
   Moon,
   MoveDown,
   MoveUp,
+  Play,
   Plus,
+  RefreshCw,
   Rocket,
   Save,
   Search,
@@ -37,8 +50,10 @@ import {
   Trash2,
   Trophy,
   UserRound,
+  Users,
   WandSparkles,
-  X
+  X,
+  Zap
 } from 'lucide-react';
 import './styles.css';
 
@@ -1018,7 +1033,7 @@ function matchMentorForChallenge(challenge, mentors = []) {
 }
 
 function App() {
-  const [page, setPage] = useState('auth');
+  const [page, setPage] = useState('home');
   const [authMode, setAuthMode] = useState('login');
   const [theme, setTheme] = useState(() => {
     try {
@@ -1333,13 +1348,13 @@ function App() {
   useEffect(() => {
     const activeRole = currentUser?.type ?? currentUser?.user?.role;
     const rolePages = {
-      student: ['roadmap', 'trends', 'hub', 'join', 'submit', 'feedback', 'portfolio', 'submissionHistory', 'premium'],
-      mentor: ['mentor', 'roadmap', 'trends'],
-      admin: ['admin', 'roadmap', 'trends']
+      student: ['home', 'cv-gate', 'interview', 'learning', 'pricing', 'about', 'roadmap', 'trends', 'hub', 'join', 'submit', 'feedback', 'portfolio', 'submissionHistory', 'premium'],
+      mentor: ['mentor', 'home', 'cv-gate', 'interview', 'learning', 'pricing', 'about', 'roadmap', 'trends'],
+      admin: ['admin', 'home', 'cv-gate', 'interview', 'learning', 'pricing', 'about', 'roadmap', 'trends']
     };
-    const publicPages = ['auth', 'roadmap', 'trends', 'about'];
+    const publicPages = ['home', 'cv-gate', 'interview', 'learning', 'pricing', 'about', 'roadmap', 'trends', 'auth'];
     if (!currentUser && !publicPages.includes(page)) {
-      setPage('auth');
+      setPage('home');
       return;
     }
     if (currentUser && page === 'auth') {
@@ -1347,7 +1362,7 @@ function App() {
       return;
     }
     if (currentUser && !rolePages[activeRole]?.includes(page)) {
-      setPage(activeRole === 'student' ? 'roadmap' : activeRole);
+      setPage(activeRole === 'student' ? 'home' : activeRole);
     }
   }, [currentUser, page]);
 
@@ -1639,9 +1654,10 @@ function App() {
 
   return (
     <div className={`app-shell page-${page}`} data-theme={theme}>
-      <Header page={page} go={go} currentUser={currentUser} theme={theme} setTheme={setTheme} logout={logout} />
+      <Header page={page} go={go} currentUser={currentUser} theme={theme} setTheme={setTheme} logout={logout} loginAs={loginAs} />
       <main>
         {flowNotice && <div className="flow-notice status-banner warning"><ShieldCheck size={17} /> {flowNotice}</div>}
+        {page === 'home' && <HomePage go={go} />}
         {page === 'auth' && (
           <AuthPage
             authMode={authMode}
@@ -1654,6 +1670,7 @@ function App() {
             go={go}
           />
         )}
+        {page === 'learning' && <LearningPage go={go} />}
         {page === 'roadmap' && (
           <CareerMapPage
             majors={catalog}
@@ -1704,7 +1721,7 @@ function App() {
         {page === 'feedback' && <MentorFeedbackPage go={go} challenge={selectedChallenge} submissions={submissionList} feedbackList={feedbackList} challenges={challengeList} userId={userId} mentors={appData.mentors ?? []} setSelectedChallengeId={setSelectedChallengeId} createFeedback={() => createFeedback(selectedChallenge.id, userId)} />}
         {page === 'portfolio' && <PortfolioPage pathRoles={pathRoles} currentMajor={currentMajor} go={go} demoUser={demoUser} apiStatus={apiStatus} submissions={submissionList} challenges={challengeList} updatePortfolio={updatePortfolio} updateStudentProfile={updateStudentProfile} isPremium={isPremium} autoOpenPublicPortfolio={autoOpenPublicPortfolio} onPublicPortfolioOpened={() => setAutoOpenPublicPortfolio(false)} />}
         {page === 'submissionHistory' && <SubmissionHistoryPage demoUser={demoUser} submissions={submissionList} challenges={challengeList} feedbackList={feedbackList} setSelectedChallengeId={setSelectedChallengeId} go={go} />}
-        {page === 'premium' && <PremiumPage plans={premiumPlans} activeSubscription={activeSubscription} upgradePlan={upgradePlan} go={go} />}
+        {(page === 'premium' || page === 'pricing') && <PremiumPage plans={premiumPlans} activeSubscription={activeSubscription} upgradePlan={upgradePlan} go={go} />}
         {page === 'about' && <AboutPage go={go} />}
         {page === 'mentor' && <MentorPage apiStatus={apiStatus} data={managementData} currentUser={currentUser} refreshData={refreshData} createFeedback={createFeedback} updateSubmissionFromMentor={updateSubmissionFromMentor} setNotice={setAdminNotice} notice={adminNotice} />}
         {page === 'admin' && <AdminPage apiStatus={apiStatus} data={managementData} notice={adminNotice} currentUser={currentUser} refreshData={refreshData} setAdminNotice={setAdminNotice} createFeedback={createFeedback} />}
@@ -1713,7 +1730,7 @@ function App() {
   );
 }
 
-function Header({ page, go, currentUser, theme, setTheme, logout }) {
+function Header({ page, go, currentUser, theme, setTheme, logout, loginAs }) {
   const [openNavGroup, setOpenNavGroup] = useState(null);
   const [accountOpen, setAccountOpen] = useState(false);
   const currentRole = currentUser?.type ?? currentUser?.user?.role;
@@ -1725,42 +1742,50 @@ function Header({ page, go, currentUser, theme, setTheme, logout }) {
         ? flow.filter((item) => item.id === 'admin')
         : flow.filter((item) => item.id === 'auth');
   const publicFlow = [
-    { id: 'intro', label: 'Gi\u1edbi thi\u1ec7u', icon: Sparkles, target: 'auth', matches: ['auth'] },
-    { id: 'roadmap-preview', label: 'B\u1ea3n \u0111\u1ed3 ngh\u1ec1', icon: Compass, target: 'roadmap' },
-    { id: 'trends-preview', label: 'Xu h\u01b0\u1edbng', icon: Sparkles, target: 'trends' },
-    { id: 'about', label: 'About us', icon: BookOpen, target: 'about' }
+    { id: 'intro', label: 'Trang chủ', icon: Compass, target: 'home' },
+    { id: 'cv-gate-preview', label: 'Thẩm định CV', icon: FileUp, target: 'cv-gate' },
+    { id: 'interview-preview', label: 'Phỏng vấn AI', icon: MessageSquareText, target: 'interview' },
+    { id: 'roadmap-preview', label: 'Bản đồ nghề', icon: LayoutDashboard, target: 'roadmap' },
+    { id: 'learning-preview', label: 'Học liệu ĐH', icon: GraduationCap, target: 'learning' },
+    { id: 'pricing-preview', label: 'Bảng giá', icon: Crown, target: 'pricing' },
+    { id: 'about', label: 'Về chúng tôi', icon: BookOpen, target: 'about' }
   ];
   const navItems = currentUser ? roleFlow : publicFlow;
   const byId = (id) => navItems.find((item) => item.id === id);
   const navGroups = currentRole === 'student'
     ? [
-        { id: 'cv-gate-nav', label: 'Phân Tích CV (CV Gate)', icon: FileUp, target: 'cv-gate' },
-        { id: 'interview-nav', label: 'Phỏng Vấn AI & Mentor', icon: MessageSquareText, target: 'interview' },
-        { id: 'roadmap', label: 'Bản đồ nghề', icon: Compass, target: 'roadmap' },
-        { id: 'trends', label: 'Xu hướng', icon: Sparkles, target: 'trends' },
-        { id: 'practice', label: 'Luyện tập', icon: LayoutDashboard, items: ['hub', 'join', 'submit', 'feedback'].map(byId).filter(Boolean) },
-        { id: 'premium-direct', label: 'Premium', icon: Crown, target: 'premium' }
+        { id: 'home-nav', label: 'Trang chủ', icon: Compass, target: 'home' },
+        { id: 'cv-gate-nav', label: 'Thẩm định CV', icon: FileUp, target: 'cv-gate' },
+        { id: 'interview-nav', label: 'Phỏng Vấn AI', icon: MessageSquareText, target: 'interview' },
+        { id: 'roadmap', label: 'Bản đồ nghề', icon: LayoutDashboard, target: 'roadmap' },
+        { id: 'practice', label: 'Thử thách', icon: Rocket, items: ['hub', 'join', 'submit', 'feedback'].map(byId).filter(Boolean) },
+        { id: 'learning-nav', label: 'Học liệu ĐH', icon: GraduationCap, target: 'learning' },
+        { id: 'premium-direct', label: 'Gói & Bảng giá', icon: Crown, target: 'pricing' }
       ]
     : currentRole === 'mentor'
       ? [
           { id: 'mentor-workspace', label: 'Mentor Workspace', icon: GraduationCap, target: 'mentor', matches: ['mentor'] },
-          { id: 'cv-gate-workspace', label: 'Phân tích CV', icon: FileUp, target: 'cv-gate' },
+          { id: 'cv-gate-workspace', label: 'Thẩm định CV', icon: FileUp, target: 'cv-gate' },
           { id: 'interview-workspace', label: 'Phỏng vấn AI', icon: MessageSquareText, target: 'interview' },
-          { id: 'trends-workspace', label: 'Xu hướng thị trường', icon: Sparkles, target: 'trends', matches: ['trends'] }
+          { id: 'learning-workspace', label: 'Học liệu ĐH', icon: GraduationCap, target: 'learning' },
+          { id: 'home-workspace', label: 'Trang chủ', icon: Compass, target: 'home' }
         ]
       : currentRole === 'admin'
         ? [
             { id: 'admin-workspace', label: 'Admin Workspace', icon: ShieldCheck, target: 'admin', matches: ['admin'] },
-            { id: 'cv-gate-workspace', label: 'Phân tích CV', icon: FileUp, target: 'cv-gate' },
+            { id: 'cv-gate-workspace', label: 'Thẩm định CV', icon: FileUp, target: 'cv-gate' },
             { id: 'interview-workspace', label: 'Phỏng vấn AI', icon: MessageSquareText, target: 'interview' },
-            { id: 'trends-workspace', label: 'Xu hướng thị trường', icon: Sparkles, target: 'trends', matches: ['trends'] }
+            { id: 'learning-workspace', label: 'Học liệu ĐH', icon: GraduationCap, target: 'learning' },
+            { id: 'home-workspace', label: 'Trang chủ', icon: Compass, target: 'home' }
           ]
         : [
-            { id: 'cv-gate-public', label: 'Phân Tích CV', icon: FileUp, target: 'cv-gate' },
-            { id: 'interview-public', label: 'Phỏng Vấn AI & Mentor', icon: MessageSquareText, target: 'interview' },
-            { id: 'roadmap-preview', label: 'Bản đồ nghề', icon: Compass, target: 'roadmap' },
-            { id: 'trends-preview', label: 'Xu hướng', icon: Sparkles, target: 'trends' },
-            { id: 'about', label: 'About us & Reviews', icon: BookOpen, target: 'about' }
+            { id: 'home-public', label: 'Trang chủ', icon: Compass, target: 'home' },
+            { id: 'cv-gate-public', label: 'Thẩm định CV', icon: FileUp, target: 'cv-gate' },
+            { id: 'interview-public', label: 'Luyện phỏng vấn AI', icon: MessageSquareText, target: 'interview' },
+            { id: 'roadmap-preview', label: 'Bản đồ nghề', icon: LayoutDashboard, target: 'roadmap' },
+            { id: 'learning-public', label: 'Học liệu ĐH', icon: GraduationCap, target: 'learning' },
+            { id: 'pricing-public', label: 'Bảng giá', icon: Crown, target: 'pricing' },
+            { id: 'about', label: 'Về chúng tôi', icon: BookOpen, target: 'about' }
           ];
   const isNavItemActive = (item) => page === item.id || item.target === page || item.matches?.includes(page);
   const isGroupActive = (group) => group.items?.some(isNavItemActive) || isNavItemActive(group);
@@ -1769,13 +1794,15 @@ function Header({ page, go, currentUser, theme, setTheme, logout }) {
     setOpenNavGroup(null);
     setAccountOpen(false);
   };
-  const homePage = currentRole === 'student' ? 'roadmap' : currentRole ?? 'auth';
   const roleLabel = currentUser ? `${(currentRole ?? 'student').toUpperCase()} · ${currentUser.user?.name ?? currentUser.user?.email}` : 'Guest';
   return (
     <header className="topbar">
-      <button className="brand" onClick={() => go(homePage)} aria-label="Ch?n chuy?n ng?nh h?p">
-        <span className="brand-mark"><ChevronsUp size={20} /></span>
-        <span>Portfolio</span>
+      <button className="brand" onClick={() => go('home')} aria-label="JobReady Trang chủ">
+        <span className="jr-brand-logo">
+          <Rocket size={22} color="#3b82f6" />
+          <span>JobReady</span>
+          <span className="jr-brand-badge">AI CAREER</span>
+        </span>
       </button>
       <nav className="flow-nav role-nav" aria-label="Điều hướng theo vai trò">
         {navGroups.map((group) => {
@@ -1817,6 +1844,13 @@ function Header({ page, go, currentUser, theme, setTheme, logout }) {
         })}
       </nav>
       <div className="topbar-actions">
+      {!currentUser && (
+        <div className="quick-demo-roles" style={{ display: 'flex', gap: '6px', marginRight: '6px' }}>
+          <button type="button" className="ghost-action compact" onClick={() => loginAs('student')} title="Đăng nhập tài khoản Sinh viên FPT">🎓 SV FPT</button>
+          <button type="button" className="ghost-action compact" onClick={() => loginAs('mentor')} title="Đăng nhập tài khoản Mentor Doanh nghiệp">👨‍🏫 Mentor</button>
+          <button type="button" className="ghost-action compact" onClick={() => loginAs('admin')} title="Đăng nhập tài khoản Admin">🛡️ Admin</button>
+        </div>
+      )}
       <button className={`role-chip account-trigger ${!currentUser ? 'guest-hidden' : ''}`} type="button" onClick={() => setAccountOpen((open) => !open)}>
         <UserRound size={15} />
         <span>{roleLabel}</span>
@@ -2795,147 +2829,615 @@ function AboutPage({ go }) {
   );
 }
 
+function HomePage({ go }) {
+  return (
+    <div className="jr-home-wrapper">
+      {/* Hero Section */}
+      <section className="jr-hero">
+        <div className="jr-hero-badge">
+          <span className="jr-badge-pulse" />
+          <span>HỆ THỐNG JOBREADY · NÂNG CAO KỸ NĂNG PHỎNG VẤN CÙNG AI</span>
+        </div>
+
+        <h1 className="jr-hero-title">
+          Bứt Phá Năng Lực Phỏng Vấn, <br />
+          <span className="jr-gradient-text">Chinh Phục Mọi Nhà Tuyển Dụng</span> Với AI
+        </h1>
+
+        <p className="jr-hero-subtitle">
+          Nền tảng hướng nghiệp & luyện phỏng vấn thích ứng chuẩn quốc tế: Thẩm định CV chuẩn ATS trong 30 giây, 
+          mô phỏng phỏng vấn giọng nói/văn bản thực chiến, nhận xét chi tiết theo khung STAR và kết nối mạng lưới Mentor 1:1 từ các tập đoàn công nghệ.
+        </p>
+
+        <div className="jr-hero-actions">
+          <button className="jr-btn-primary" onClick={() => go('cv-gate')}>
+            <FileUp size={18} />
+            <span>Thẩm định CV ngay (Miễn phí)</span>
+            <ArrowRight size={16} />
+          </button>
+          <button className="jr-btn-secondary" onClick={() => go('interview')}>
+            <Mic size={18} color="#38bdf8" />
+            <span>Luyện phỏng vấn AI ngay</span>
+          </button>
+          <button className="ghost-action" onClick={() => go('roadmap')}>
+            <Compass size={18} />
+            <span>Khám phá Bản đồ nghề</span>
+          </button>
+        </div>
+
+        {/* Live Stats */}
+        <div className="jr-stats-grid">
+          <div className="jr-stat-card">
+            <span className="jr-stat-num">250+</span>
+            <span className="jr-stat-label">Sinh viên ĐH tham gia (KPI 200-300)</span>
+          </div>
+          <div className="jr-stat-card">
+            <span className="jr-stat-num">95%</span>
+            <span className="jr-stat-label">Tỷ lệ tự tin vượt qua vòng phỏng vấn</span>
+          </div>
+          <div className="jr-stat-card">
+            <span className="jr-stat-num">30s</span>
+            <span className="jr-stat-label">Thời gian phân tích ATS & gợi ý từ khóa</span>
+          </div>
+          <div className="jr-stat-card">
+            <span className="jr-stat-num">50+</span>
+            <span className="jr-stat-label">Mentor chuyên gia (FPT, VNG, Viettel)</span>
+          </div>
+        </div>
+      </section>
+
+      {/* 4-Step Workflow Section */}
+      <section className="content-page">
+        <div className="jr-section-title-wrap">
+          <span className="jr-sub-pill">Quy trình 4 bước chuẩn JobReady</span>
+          <h2 className="jr-section-title">Hành Trình Bứt Phá Từ Sinh Viên Đến Nhận Offer</h2>
+          <p className="jr-section-desc">
+            Thiết kế bám sát thực tế tuyển dụng tại các doanh nghiệp hàng đầu giúp bạn tự tin trong từng giai đoạn.
+          </p>
+        </div>
+
+        <div className="jr-process-grid">
+          <div className="jr-process-card">
+            <div className="jr-step-badge">1</div>
+            <h3>Thẩm Định & Tối Ưu CV</h3>
+            <p>Hệ thống AI quét định dạng ATS, chấm điểm tổng quan và phát hiện từ khóa công nghệ còn thiếu theo vị trí ứng tuyển.</p>
+            <button className="jr-step-link-btn" onClick={() => go('cv-gate')}>
+              Quét CV ngay <ArrowRight size={13} />
+            </button>
+          </div>
+
+          <div className="jr-process-card">
+            <div className="jr-step-badge">2</div>
+            <h3>Luyện Phỏng Vấn AI</h3>
+            <p>Mô phỏng phỏng vấn bằng Mic hoặc gõ phím. AI thích ứng hỏi sâu theo CV và Job Description mục tiêu của bạn.</p>
+            <button className="jr-step-link-btn" onClick={() => go('interview')}>
+              Vào phòng phỏng vấn <ArrowRight size={13} />
+            </button>
+          </div>
+
+          <div className="jr-process-card">
+            <div className="jr-step-badge">3</div>
+            <h3>Chấm Điểm & Gợi Ý STAR</h3>
+            <p>Nhận ngay phản hồi tức thì: Điểm số, phân tích theo cấu trúc STAR và câu trả lời mẫu điểm 10 từ chuyên gia.</p>
+            <button className="jr-step-link-btn" onClick={() => go('interview')}>
+              Xem báo cáo mẫu <ArrowRight size={13} />
+            </button>
+          </div>
+
+          <div className="jr-process-card">
+            <div className="jr-step-badge">4</div>
+            <h3>Đồng Hành Cùng Mentor 1:1</h3>
+            <p>Đặt lịch phỏng vấn thử hoặc review CV cùng Mentor thật. Hệ thống đánh giá 2 chiều minh bạch, quỹ thưởng phạt rõ ràng.</p>
+            <button className="jr-step-link-btn" onClick={() => go('learning')}>
+              Kho học liệu & Mentor <ArrowRight size={13} />
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* Feature Showcase Grid */}
+      <section className="content-page">
+        <div className="jr-section-title-wrap">
+          <span className="jr-sub-pill">Tính năng nổi bật</span>
+          <h2 className="jr-section-title">Công Nghệ AI Tiên Tiến Cho Tuyển Dụng</h2>
+          <p className="jr-section-desc">Tích hợp mô hình AI thông minh giúp bạn rèn luyện phản xạ và chuẩn hóa hồ sơ chuyên nghiệp.</p>
+        </div>
+
+        <div className="jr-features-grid">
+          <div className="jr-feature-card">
+            <div className="jr-feat-icon blue"><FileUp size={26} /></div>
+            <h3>Phân Tích CV Trong 30 Giây</h3>
+            <p>Tải lên file PDF hoặc dán nội dung. AI kiểm tra độ tương thích với hệ thống ATS, chỉ ra lỗi định dạng và từ khóa cần bổ sung ngay.</p>
+          </div>
+
+          <div className="jr-feature-card">
+            <div className="jr-feat-icon gold"><Mic size={26} /></div>
+            <h3>AI Phỏng Vấn Thích Ứng</h3>
+            <p>Hỗ trợ tương tác trực tiếp bằng giọng nói (Microphone) hoặc văn bản. AI đặt câu hỏi tình huống biến đổi theo câu trả lời của ứng viên.</p>
+          </div>
+
+          <div className="jr-feature-card">
+            <div className="jr-feat-icon emerald"><Award size={26} /></div>
+            <h3>Khung Đánh Giá STAR Chuẩn Hóa</h3>
+            <p>Chấm điểm theo 4 thành tố: Tình huống (S), Nhiệm vụ (T), Hành động (A), Kết quả (R) kèm câu trả lời mẫu xuất sắc để học hỏi.</p>
+          </div>
+
+          <div className="jr-feature-card">
+            <div className="jr-feat-icon emerald"><GraduationCap size={26} /></div>
+            <h3>Nguồn Tài Liệu Từ Các Trường ĐH</h3>
+            <p>Hợp tác nội dung với sinh viên & giảng viên các trường ĐH FPT, Bách Khoa, KHTN... mang đến bộ đề thi & case study thực chiến.</p>
+          </div>
+
+          <div className="jr-feature-card">
+            <div className="jr-feat-icon blue"><Users size={26} /></div>
+            <h3>Phân Luồng Mentor AI & Thật</h3>
+            <p>Luyện tập tự do 24/7 với AI hoàn toàn miễn phí. Khi cần kinh nghiệm thực tế, dễ dàng đặt lịch 1-on-1 với Senior Mentor doanh nghiệp.</p>
+          </div>
+
+          <div className="jr-feature-card">
+            <div className="jr-feat-icon gold"><ShieldCheck size={26} /></div>
+            <h3>Sàng Lọc & Thưởng Phạt Minh Bạch</h3>
+            <p>Học viên đánh giá chất lượng buổi mentoring. Hệ thống tự động cảnh báo/loại bỏ mentor bị đánh giá thấp và thưởng quỹ cho mentor xuất sắc.</p>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Bottom Banner */}
+      <section className="content-page">
+        <div className="jr-cta-banner">
+          <h2>Sẵn Sàng Chinh Phục Công Việc Mơ Ước?</h2>
+          <p>Tham gia cùng hơn 250+ sinh viên các trường đại học đã tự tin vượt qua các vòng phỏng vấn tuyển dụng cùng JobReady.</p>
+          <div className="jr-hero-actions" style={{ marginBottom: 0 }}>
+            <button className="jr-btn-primary" onClick={() => go('cv-gate')}>
+              <FileUp size={18} />
+              <span>Thẩm định CV ngay</span>
+            </button>
+            <button className="jr-btn-secondary" onClick={() => go('interview')}>
+              <Mic size={18} />
+              <span>Vào phòng phỏng vấn AI</span>
+            </button>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function LearningPage({ go }) {
+  const [selectedUni, setSelectedUni] = useState('Tất cả');
+  const [downloadNotice, setDownloadNotice] = useState('');
+  const [previewItem, setPreviewItem] = useState(null);
+
+  const resources = [
+    {
+      id: 'res-fpt-1',
+      title: 'Bộ 100 Câu Hỏi Phỏng Vấn Frontend & ReactJS Chuyên Sâu',
+      uni: 'Đại học FPT',
+      cat: 'Bộ đề phỏng vấn',
+      downloads: 1240,
+      rating: 4.9,
+      format: 'PDF · 45 trang',
+      desc: 'Tổng hợp từ các buổi phỏng vấn OJT & On-the-job training tại FPT Software, FPT Telecom, VNG.'
+    },
+    {
+      id: 'res-bk-1',
+      title: 'Slide Bài Giảng Kiến Trúc Microservices & Distributed System',
+      uni: 'Đại học Bách Khoa',
+      cat: 'Slide bài giảng',
+      downloads: 980,
+      rating: 5.0,
+      format: 'PDF / Slides · 68 trang',
+      desc: 'Giáo trình thiết kế hệ thống chịu tải cao, API Gateway, Docker Container, Message Queue Kafka.'
+    },
+    {
+      id: 'res-khtn-1',
+      title: 'Ngân Hàng 50 Case Study Phỏng Vấn System Design & Database Tuning',
+      uni: 'Đại học KHTN',
+      cat: 'Case study doanh nghiệp',
+      downloads: 850,
+      rating: 4.8,
+      format: 'PDF · 38 trang',
+      desc: 'Phân tích các bài toán thiết kế hệ thống thực tế: URL Shortener, Chat Realtime, Rate Limiting.'
+    },
+    {
+      id: 'res-fpt-2',
+      title: 'Bộ Template CV Chuẩn ATS Quốc Tế Vượt Qua Vòng Quét Tuyển Dụng',
+      uni: 'Đại học FPT',
+      cat: 'Template CV chuẩn ATS',
+      downloads: 2450,
+      rating: 5.0,
+      format: 'DOCX / PDF · 5 mẫu',
+      desc: 'Mẫu CV cấu trúc 1 cột chuẩn ATS được các nhà tuyển dụng tại Shopee, Momo, FPT Software khuyên dùng.'
+    },
+    {
+      id: 'res-bk-2',
+      title: 'Bộ Câu Hỏi Phỏng Vấn Tình Huống Behavioral & Khung STAR Chuẩn',
+      uni: 'Đại học Bách Khoa',
+      cat: 'Bộ đề phỏng vấn',
+      downloads: 1530,
+      rating: 4.9,
+      format: 'PDF · 30 trang',
+      desc: 'Hướng dẫn cách trả lời các câu hỏi hành vi, xử lý xung đột trong team và thương lượng lương thưởng.'
+    },
+    {
+      id: 'res-khtn-2',
+      title: 'Tài Liệu Ôn Tập Thuật Toán & Cấu Trúc Dữ Liệu Thi Tuyển Dụng',
+      uni: 'Đại học KHTN',
+      cat: 'Bộ đề phỏng vấn',
+      downloads: 1120,
+      rating: 4.9,
+      format: 'PDF · 80 trang',
+      desc: 'Trọng tâm LeetCode Medium/Easy, Dynamic Programming, Graph, Tree thường gặp trong vòng Tech Test.'
+    }
+  ];
+
+  const filtered = resources.filter((item) => {
+    return selectedUni === 'Tất cả' || item.uni === selectedUni;
+  });
+
+  const handleDownload = (item) => {
+    setDownloadNotice(`Đang tải xuống "${item.title}" (${item.format})...`);
+    setTimeout(() => {
+      setDownloadNotice(`✅ Đã tải xuống thành công tài liệu "${item.title}"!`);
+      setTimeout(() => setDownloadNotice(''), 3000);
+    }, 800);
+  };
+
+  return (
+    <section className="content-page">
+      <div className="section-heading inline">
+        <div>
+          <p className="mono-label">University Learning Hub</p>
+          <h1>Học Liệu & Đề Thi Phỏng Vấn Từ Các Trường Đại Học</h1>
+          <p>Kho học liệu liên kết từ ĐH FPT, Bách Khoa, KHTN... giúp sinh viên chuẩn bị kiến thức kỹ thuật và tình huống phỏng vấn vững chắc.</p>
+        </div>
+      </div>
+
+      {downloadNotice && <div className="status-banner info mb-3">{downloadNotice}</div>}
+
+      <div className="filter-bar mb-4" style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+        <span style={{ fontSize: '13px', fontWeight: 600, alignSelf: 'center', marginRight: '6px' }}>Trường ĐH:</span>
+        {['Tất cả', 'Đại học FPT', 'Đại học Bách Khoa', 'Đại học KHTN'].map((u) => (
+          <button
+            key={u}
+            type="button"
+            className={`ghost-action compact ${selectedUni === u ? 'active' : ''}`}
+            onClick={() => setSelectedUni(u)}
+          >
+            {u}
+          </button>
+        ))}
+      </div>
+
+      <div className="learning-resources-grid">
+        {filtered.map((item) => (
+          <article className="resource-card" key={item.id}>
+            <span className="resource-uni-badge">{item.uni}</span>
+            <h3 style={{ fontSize: '16px', fontWeight: 700, margin: '0 0 10px', color: 'var(--jr-text-main)' }}>{item.title}</h3>
+            <p style={{ fontSize: '13px', color: 'var(--jr-text-sub)', flexGrow: 1, margin: '0 0 14px', lineHeight: 1.5 }}>{item.desc}</p>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '12px', color: 'var(--jr-text-sub)', borderTop: '1px solid var(--jr-card-border)', paddingTop: '12px', marginBottom: '14px' }}>
+              <span>📥 {item.downloads} lượt tải</span>
+              <span>⭐ {item.rating} / 5.0</span>
+              <span className="chip-tag">{item.format}</span>
+            </div>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <button className="ghost-action compact" style={{ flex: 1 }} onClick={() => setPreviewItem(item)}>
+                👁️ Xem trước
+              </button>
+              <button className="primary-action compact" style={{ flex: 1 }} onClick={() => handleDownload(item)}>
+                <Download size={14} /> Tải về
+              </button>
+            </div>
+          </article>
+        ))}
+      </div>
+
+      {previewItem && (
+        <div className="modal-backdrop" onClick={() => setPreviewItem(null)}>
+          <div className="modal-card" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '640px' }}>
+            <div className="modal-header">
+              <h3>{previewItem.title}</h3>
+              <button className="icon-btn" onClick={() => setPreviewItem(null)}><X size={18} /></button>
+            </div>
+            <div className="modal-body">
+              <span className="resource-uni-badge mb-2">{previewItem.uni} · {previewItem.cat}</span>
+              <p style={{ margin: '14px 0', lineHeight: 1.6 }}>{previewItem.desc}</p>
+              <div style={{ background: 'rgba(255,255,255,0.05)', padding: '16px', borderRadius: '12px', margin: '16px 0' }}>
+                <h4 style={{ margin: '0 0 8px', fontSize: '14px' }}>📄 Nội dung tóm tắt:</h4>
+                <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '13px', color: 'var(--jr-text-sub)' }}>
+                  <li>Chương 1: Khái niệm cốt lõi & Những câu hỏi thường xuyên xuất hiện ở vòng 1</li>
+                  <li>Chương 2: Xử lý các câu hỏi bẫy (Tricky questions) của Nhà tuyển dụng</li>
+                  <li>Chương 3: Hướng dẫn trả lời theo cấu trúc STAR chi tiết từng bước</li>
+                  <li>Chương 4: Bộ tiêu chí đánh giá của Tech Lead & Senior Mentor</li>
+                </ul>
+              </div>
+            </div>
+            <div className="modal-footer" style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+              <button className="ghost-action" onClick={() => setPreviewItem(null)}>Đóng</button>
+              <button className="primary-action" onClick={() => { handleDownload(previewItem); setPreviewItem(null); }}>
+                <Download size={16} /> Tải toàn bộ tài liệu ({previewItem.format})
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </section>
+  );
+}
+
 function CvGatePage({ go, onUnlockInterview }) {
   const [cvText, setCvText] = useState('');
   const [targetRole, setTargetRole] = useState('Frontend Developer');
+  const [targetUni, setTargetUni] = useState('Đại học FPT');
+  const [targetLevel, setTargetLevel] = useState('Junior');
   const [analyzing, setAnalyzing] = useState(false);
   const [cvResult, setCvResult] = useState(null);
   const [uploadedFileName, setUploadedFileName] = useState('');
+  const [isDragOver, setIsDragOver] = useState(false);
+
+  const sampleCVs = {
+    'Frontend Developer': `Họ và tên: Trần Hoàng Nam\nEmail: hoangnam.dev@fpt.edu.vn | Điện thoại: 0987654321\nTrường: Đại học FPT (GPA: 3.45/4.0 - Chuyên ngành Kỹ thuật Phần mềm)\nVị trí mong muốn: Frontend Developer (ReactJS / TypeScript)\n\nKINH NGHIỆM & DỰ ÁN:\n1. Dự án E-commerce Web App (Thành viên chính)\n- Công nghệ: ReactJS, TypeScript, Redux Toolkit, TailwindCSS, REST API, Vite, Jest.\n- Xây dựng giao diện responsive, tích hợp giỏ hàng và thanh toán trực tuyến.\n- Tối ưu hiệu năng Lighthouse từ 65 lên 92 điểm nhờ Lazy loading và Memoization.\n\n2. Dự án Quản lý Tuyển dụng Nội bộ (Đồ án tốt nghiệp tại ĐH FPT)\n- Phát triển module ATS lọc hồ sơ và chat realtime bằng Socket.IO.\n- Viết Unit Test với Jest đạt 80% code coverage.\n\nKỸ NĂNG CHUYÊN MÔN:\n- Ngôn ngữ: JavaScript (ES6+), TypeScript, HTML5, CSS3, SCSS\n- Frameworks/Libs: ReactJS, Next.js, Redux Toolkit, React Query\n- Công cụ: Git, Docker, Postman, Figma, CI/CD GitHub Actions`,
+    'Backend Developer': `Họ và tên: Lê Tuấn Anh\nEmail: anh.letuan@hcmut.edu.vn | Điện thoại: 0912345678\nTrường: Đại học Bách Khoa TP.HCM (GPA: 3.3/4.0)\nVị trí mong muốn: Backend Developer (Node.js / Express / MongoDB)\n\nKINH NGHIỆM & DỰ ÁN:\n1. Hệ thống Backend Xử lý Đơn hàng E-commerce\n- Công nghệ: Node.js, Express, MongoDB, Redis, Docker, JWT Authentication.\n- Thiết kế kiến trúc RESTful API phục vụ 10,000+ request/phút, giảm 40% latency nhờ cache Redis.\n- Triển khai phân quyền RBAC và mã hóa mật khẩu an toàn.\n\n2. Hệ thống Notification & Message Queue\n- Sử dụng RabbitMQ để xử lý bất đồng bộ gửi email và push notification.\n\nKỸ NĂNG CHUYÊN MÔN:\n- Backend: Node.js, Express, Go, RESTful API, GraphQL\n- Database: MongoDB, PostgreSQL, Redis, MySQL\n- DevOps/Tools: Docker, Git, CI/CD, Linux, Postman`,
+    'AI / Data Engineer': `Họ và tên: Đặng Minh Triết\nEmail: triet.dang@hcmus.edu.vn | Điện thoại: 0903334444\nTrường: Đại học Khoa học Tự nhiên TP.HCM (GPA: 3.6/4.0)\nVị trí mong muốn: AI / Data Engineer (Python / Machine Learning)\n\nKINH NGHIỆM & DỰ ÁN:\n1. Mô hình Phân loại Hồ sơ Tuyển dụng & Matching JD\n- Sử dụng Python, PyTorch, Transformers (BERT), Sentence-BERT để tính toán vector similarity.\n- Độ chính xác F1-score đạt 89% trên tập dữ liệu 5,000 hồ sơ.\n\n2. Xây dựng Pipeline ETL Dữ liệu Tài chính\n- Sử dụng Apache Spark, Pandas, SQL và PostgreSQL để làm sạch dữ liệu lớn.\n\nKỸ NĂNG CHUYÊN MÔN:\n- Ngôn ngữ: Python, SQL, C++\n- Frameworks: PyTorch, Scikit-learn, TensorFlow, Pandas, NumPy, FastAPI\n- Công cụ: Git, Docker, Jupyter, MLflow`
+  };
+
+  const applySampleCV = (role) => {
+    setTargetRole(role);
+    setCvText(sampleCVs[role] || sampleCVs['Frontend Developer']);
+    setUploadedFileName(`Sample_${role.replace(/\s+/g, '_')}_CV.pdf`);
+  };
 
   const handleFileUpload = (e) => {
     const file = e.target.files?.[0];
     if (file) {
       setUploadedFileName(file.name);
-      setCvText(`Họ và tên: Nguyễn Văn A\nEmail: nguyenvana@gmail.com\nVị trí ứng tuyển: ${targetRole}\nKinh nghiệm: 1.5 năm phát triển web ứng dụng ReactJS, HTML5, CSS3, JavaScript ES6+, RESTful API.\nHọc vấn: Cử nhân Công nghệ Thông tin - ĐH Bách Khoa HCM (GPA 3.4/4.0).\nDự án: Dashboard Quản lý công việc (React, Redux Toolkit, TailwindCSS), Ecommerce API Backend (Node.js, Express, MongoDB).\nKỹ năng khác: Git, Docker, Agile/Scrum, Figma, Web Performance Optimization.`);
+      if (file.type === 'text/plain' || file.name.endsWith('.txt')) {
+        const reader = new FileReader();
+        reader.onload = (event) => setCvText(event.target.result);
+        reader.readAsText(file);
+      } else {
+        // Simulated ATS text extraction for PDF/Word
+        setCvText(`[Đã trích xuất văn bản từ ${file.name} - Kích thước ${(file.size / 1024).toFixed(1)} KB]\n\nHọ và tên: Ứng viên ${targetUni}\nVị trí: ${targetRole}\nHọc vấn: ${targetUni} (GPA: 3.4/4.0)\nKinh nghiệm: 1+ năm phát triển ứng dụng công nghệ, tham gia dự án thực tế.\nKỹ năng: React, Node.js, TypeScript, REST API, Git, Docker, Agile/Scrum, HTML5, CSS3.\nDự án: Xây dựng hệ thống web responsive và tối ưu trải nghiệm người dùng.`);
+      }
     }
   };
 
   const handleAnalyze = () => {
     if (!cvText.trim()) return;
     setAnalyzing(true);
+
     setTimeout(() => {
       const text = cvText.toLowerCase();
-      const lengthScore = Math.min(25, Math.floor(cvText.length / 15));
-      const hasExp = text.includes('kinh nghiệm') || text.includes('dự án') || text.includes('project') ? 24 : 12;
-      const hasTech = text.includes('react') || text.includes('node') || text.includes('api') || text.includes('git') || text.includes('javascript') ? 25 : 15;
-      const hasEdu = text.includes('đại học') || text.includes('cử nhân') || text.includes('gpa') || text.includes('bách khoa') || text.includes('fpt') ? 23 : 14;
 
-      const totalScore = Math.min(98, lengthScore + hasExp + hasTech + hasEdu);
+      // Role-specific keyword dictionaries
+      const roleKeywords = {
+        'Frontend Developer': ['react', 'typescript', 'javascript', 'html', 'css', 'redux', 'api', 'git', 'vite', 'tailwind', 'jest', 'responsive'],
+        'Backend Developer': ['node', 'express', 'mongodb', 'sql', 'database', 'docker', 'redis', 'api', 'jwt', 'rest', 'git', 'microservices'],
+        'AI / Data Engineer': ['python', 'pytorch', 'machine learning', 'sql', 'pandas', 'nlp', 'data', 'spark', 'fastapi', 'git', 'docker', 'model']
+      };
+
+      const expectedKeywords = roleKeywords[targetRole] || ['git', 'api', 'project', 'agile', 'database', 'teamwork', 'communication'];
+      const foundKeywords = expectedKeywords.filter((kw) => text.includes(kw));
+      const missingKeywords = expectedKeywords.filter((kw) => !text.includes(kw));
+
+      const keywordScore = Math.min(25, Math.round((foundKeywords.length / expectedKeywords.length) * 25));
+      const hasMetrics = text.includes('%') || text.includes('kpi') || text.includes('tối ưu') || text.includes('latency') || text.includes('gpa');
+      const metricsScore = hasMetrics ? 23 : 14;
+      const lengthScore = Math.min(25, Math.floor(cvText.length / 40) + 12);
+      const uniScore = text.includes('đại học') || text.includes('fpt') || text.includes('bách khoa') || text.includes('khtn') ? 25 : 18;
+
+      const totalScore = Math.min(96, Math.max(55, Math.round((keywordScore + metricsScore + lengthScore + uniScore) / 4 * 3.8)));
       const isQualified = totalScore >= 60;
 
       const result = {
         totalScore,
         isQualified,
         targetRole,
+        targetUni,
+        targetLevel,
+        foundKeywords,
+        missingKeywords,
         breakdown: {
-          structure: Math.min(25, Math.round(totalScore * 0.26)),
-          content: Math.min(25, Math.round(totalScore * 0.25)),
-          relevance: Math.min(25, Math.round(totalScore * 0.24)),
-          keywords: Math.min(25, Math.round(totalScore * 0.25))
+          techStack: Math.min(100, Math.round((keywordScore / 25) * 100)),
+          atsFormat: Math.min(100, Math.round((lengthScore / 25) * 100)),
+          impactMetrics: Math.min(100, Math.round((metricsScore / 25) * 100)),
+          education: Math.min(100, Math.round((uniScore / 25) * 100))
         },
         strengths: [
-          'Bố cục CV rõ ràng, trình bày theo thứ tự kinh nghiệm - học vấn - dự án.',
-          `Từ khóa công nghệ phù hợp tốt với tiêu chuẩn vị trí ${targetRole}.`,
-          'Có ghi rõ thông tin trường đại học & thành tích học tập nổi bật.'
+          `Định dạng bố cục rõ ràng, ATS đọc và trích xuất thông tin thuận lợi.`,
+          `Tìm thấy ${foundKeywords.length}/${expectedKeywords.length} từ khóa chuyên môn cốt lõi của vị trí ${targetRole}.`,
+          `Nêu rõ thông tin học vấn từ ${targetUni}, tạo sự tin cậy cao với nhà tuyển dụng.`
         ],
-        improvements: [
-          'Nên đưa thêm các con số kết quả đo lường (KPI, % tối ưu tốc độ, lượt user sử dụng).',
-          'Đính kèm link dự án live demo hoặc GitHub repository để kiểm chứng thực tế.',
-          'Bổ sung phần chứng chỉ chuyên môn hoặc các hoạt động ngoại khóa/hackathon.'
+        improvements: missingKeywords.length > 0 ? [
+          `Nên bổ sung các từ khóa công nghệ còn thiếu: ${missingKeywords.slice(0, 4).join(', ')}.`,
+          `Cần thêm các con số định lượng kết quả (% cải thiện tốc độ, số lượng người dùng thực tế, doanh thu).`,
+          `Đính kèm đường dẫn GitHub hoặc link sản phẩm demo trực tiếp để chứng minh năng lực thực tế.`
+        ] : [
+          `Bổ sung thêm chứng chỉ chuyên ngành quốc tế (AWS, Google Cloud, Microsoft).`,
+          `Nêu bật vai trò lãnh đạo hoặc làm việc nhóm theo mô hình Agile/Scrum.`
         ]
       };
+
       setCvResult(result);
       setAnalyzing(false);
-    }, 1200);
+    }, 1100);
   };
 
   return (
-    <section className="content-page cv-gate-page">
+    <section className="content-page cv-gate-container">
       <div className="section-heading inline">
         <div>
-          <p className="mono-label">CV Gate System - JobReady Standard</p>
-          <h1>Phân Tích & Chấm Điểm CV Bằng AI</h1>
-          <p>Tải lên CV (PDF) hoặc dán nội dung CV để AI phân tích cấu trúc, nội dung và từ khóa. Đạt từ <b>60/100 điểm</b> để mở khóa Phỏng Vấn AI & Đặt Lịch Mentor!</p>
+          <p className="mono-label">CV Gate · Tiêu Chuẩn Thẩm Định ATS JobReady</p>
+          <h1>Thẩm Định & Chấm Điểm CV Bằng AI Trong 30 Giây</h1>
+          <p>Tải lên file CV hoặc dán nội dung để hệ thống kiểm tra độ tương thích ATS, phát hiện từ khóa còn thiếu và mở khóa phòng phỏng vấn.</p>
         </div>
       </div>
 
       <div className="cv-gate-grid">
         <article className="cv-input-card">
-          <h3>1. Chọn vị trí mục tiêu & Tải lên CV</h3>
-          <div className="form-group mb-3">
-            <label>Vị trí ứng tuyển mục tiêu:</label>
-            <select value={targetRole} onChange={(e) => setTargetRole(e.target.value)}>
-              <option value="Frontend Developer">Frontend Developer (ReactJS/Vite)</option>
-              <option value="Backend Developer">Backend Developer (Node.js/Go/Java)</option>
-              <option value="Fullstack Developer">Fullstack Developer (Next.js/Node)</option>
-              <option value="AI / Data Engineer">AI / Data Engineer (Python/LLM)</option>
-              <option value="Product Manager">Product Manager (PM / PO)</option>
-              <option value="Business Analyst">Business Analyst (BA)</option>
-              <option value="Marketing Specialist">Performance / SEO Marketing</option>
-              <option value="UI/UX Designer">UI/UX Product Designer</option>
-            </select>
+          <h3 style={{ fontSize: '17px', fontWeight: 700, marginBottom: '14px' }}>1. Thiết lập vị trí ứng tuyển & Tải lên hồ sơ</h3>
+          
+          <div className="form-grid-2 mb-3">
+            <div className="form-group">
+              <label>Vị trí ứng tuyển mục tiêu:</label>
+              <select value={targetRole} onChange={(e) => setTargetRole(e.target.value)}>
+                <option value="Frontend Developer">Frontend Developer (React / TS)</option>
+                <option value="Backend Developer">Backend Developer (Node / Go / DB)</option>
+                <option value="AI / Data Engineer">AI / Data Engineer (Python / ML)</option>
+              </select>
+            </div>
+
+            <div className="form-group">
+              <label>Trường Đại học đào tạo:</label>
+              <select value={targetUni} onChange={(e) => setTargetUni(e.target.value)}>
+                <option value="Đại học FPT">Đại học FPT</option>
+                <option value="Đại học Bách Khoa">Đại học Bách Khoa TP.HCM / HN</option>
+                <option value="Đại học KHTN">Đại học Khoa học Tự nhiên</option>
+                <option value="Trường ĐH khác">Trường Đại học khác</option>
+              </select>
+            </div>
           </div>
 
-          <div className="upload-dropzone">
-            <FileUp size={36} className="text-violet" />
-            <p><b>Kéo thả file CV (PDF dưới 5MB) vào đây</b> hoặc chọn file từ máy tính</p>
-            <input type="file" accept=".pdf,.doc,.docx" onChange={handleFileUpload} />
-            {uploadedFileName && <span className="file-chip">📄 {uploadedFileName}</span>}
+          <div style={{ display: 'flex', gap: '8px', marginBottom: '14px', flexWrap: 'wrap' }}>
+            <span style={{ fontSize: '12px', color: 'var(--jr-text-sub)', alignSelf: 'center' }}>Thử nhanh với mẫu:</span>
+            <button type="button" className="ghost-action compact" onClick={() => applySampleCV('Frontend Developer')}>Mẫu CV Frontend FPT</button>
+            <button type="button" className="ghost-action compact" onClick={() => applySampleCV('Backend Developer')}>Mẫu CV Backend Bách Khoa</button>
+            <button type="button" className="ghost-action compact" onClick={() => applySampleCV('AI / Data Engineer')}>Mẫu CV AI KHTN</button>
           </div>
 
-          <div className="or-divider">— hoặc dán nội dung CV / Link LinkedIn / GitHub —</div>
+          <div
+            className={`cv-upload-zone ${isDragOver ? 'dragover' : ''}`}
+            onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }}
+            onDragLeave={() => setIsDragOver(false)}
+            onDrop={(e) => {
+              e.preventDefault();
+              setIsDragOver(false);
+              const file = e.dataTransfer.files?.[0];
+              if (file) {
+                setUploadedFileName(file.name);
+                setCvText(`[File ${file.name}] Họ và tên: Ứng viên ${targetUni}\nVị trí: ${targetRole}\nKỹ năng: React, Node.js, TypeScript, REST API, Git, Docker, Jest.`);
+              }
+            }}
+          >
+            <div className="cv-upload-icon"><FileUp size={28} /></div>
+            <p style={{ margin: '0 0 6px', fontWeight: 600, color: 'var(--jr-text-main)' }}>
+              Kéo thả file CV (PDF, DOCX, TXT) vào đây hoặc click để chọn file
+            </p>
+            <span style={{ fontSize: '12px', color: 'var(--jr-text-sub)' }}>Hỗ trợ định dạng PDF, DOCX, TXT dưới 10MB</span>
+            <input
+              type="file"
+              accept=".pdf,.doc,.docx,.txt"
+              onChange={handleFileUpload}
+              style={{ display: 'none' }}
+              id="cv-file-input"
+            />
+            <div style={{ marginTop: '12px' }}>
+              <label htmlFor="cv-file-input" className="jr-btn-secondary" style={{ padding: '8px 18px', fontSize: '13px' }}>
+                Chọn file từ máy tính
+              </label>
+            </div>
+            {uploadedFileName && (
+              <div style={{ marginTop: '10px', fontSize: '13px', color: '#38bdf8', fontWeight: 600 }}>
+                📄 {uploadedFileName} (Đã nạp thành công)
+              </div>
+            )}
+          </div>
+
+          <div className="or-divider">— hoặc dán văn bản CV trực tiếp —</div>
 
           <textarea
             rows={7}
             value={cvText}
             onChange={(e) => setCvText(e.target.value)}
-            placeholder="Dán toàn bộ nội dung CV của bạn vào đây (Họ tên, Kinh nghiệm, Dự án, Kỹ năng, Học vấn...)..."
+            placeholder="Dán toàn bộ nội dung CV của bạn vào đây (Họ tên, Vị trí, Học vấn, Kinh nghiệm dự án, Kỹ năng công nghệ, Thành tựu...)..."
+            style={{ width: '100%', borderRadius: '12px', padding: '14px', background: 'rgba(0,0,0,0.2)', border: '1px solid var(--jr-card-border)', color: 'inherit' }}
           />
 
           <button
-            className="primary-action wide mt-3"
+            className="jr-btn-primary wide mt-3"
+            style={{ width: '100%', justifyContent: 'center' }}
             onClick={handleAnalyze}
             disabled={analyzing || !cvText.trim()}
           >
-            {analyzing ? '⏳ Đang phân tích CV...' : '✨ Phân Tích & Chấm Điểm CV Ngay'}
+            {analyzing ? (
+              <>
+                <RefreshCw size={18} className="spin" />
+                <span>AI đang phân tích từ khóa & ATS...</span>
+              </>
+            ) : (
+              <>
+                <Sparkles size={18} />
+                <span>Thẩm Định & Chấm Điểm CV Chuẩn ATS Ngay</span>
+              </>
+            )}
           </button>
         </article>
 
         {cvResult && (
           <article className="cv-result-card animate-in">
-            <div className="cv-score-header">
-              <div className="score-badge-circle">
-                <strong>{cvResult.totalScore}</strong>
-                <span>/ 100 điểm</span>
+            <div className="cv-score-gauge-card">
+              <div className="gauge-circle" style={{ borderColor: cvResult.totalScore >= 70 ? '#10b981' : '#f59e0b' }}>
+                <span className="score-val" style={{ color: cvResult.totalScore >= 70 ? '#10b981' : '#f59e0b' }}>{cvResult.totalScore}</span>
+                <span className="score-max">/ 100 ĐIỂM</span>
               </div>
               <div>
                 <span className={`status-badge-pill ${cvResult.isQualified ? 'pass' : 'fail'}`}>
-                  {cvResult.isQualified ? '🎉 ĐẠT CHUẨN CV GATE' : '⚠️ CHƯA ĐẠT CHUẨN (Cần >= 60)'}
+                  {cvResult.isQualified ? '🎉 ĐẠT CHUẨN ATS (ĐỦ ĐIỀU KIỆN PHỎNG VẤN)' : '⚠️ CẦN BỔ SUNG TỪ KHÓA (>= 60 ĐIỂM)'}
                 </span>
-                <h3>{cvResult.isQualified ? 'Chúc mừng! CV của bạn đủ điều kiện luyện phỏng vấn.' : 'Bạn cần cải thiện CV trước khi bắt đầu phỏng vấn.'}</h3>
-                <p>Vị trí phân tích: <b>{cvResult.targetRole}</b></p>
+                <h3 style={{ margin: '8px 0 4px', fontSize: '18px' }}>
+                  {cvResult.isQualified ? 'Hồ sơ đạt tiêu chuẩn tuyển dụng!' : 'Hồ sơ chưa tối ưu chuẩn ATS!'}
+                </h3>
+                <p style={{ margin: 0, fontSize: '13px', color: 'var(--jr-text-sub)' }}>
+                  Vị trí đánh giá: <b>{cvResult.targetRole}</b> · Đối chiếu tiêu chuẩn tuyển dụng 2026
+                </p>
               </div>
             </div>
 
-            <div className="score-breakdown-grid">
+            {/* 4 Pillars */}
+            <div className="score-breakdown-grid mb-3">
               <div className="breakdown-item">
-                <span>Cấu trúc & Bố cục</span>
-                <strong>{cvResult.breakdown.structure} / 25</strong>
+                <span>Chuyên Môn & Kỹ Thuật</span>
+                <strong>{cvResult.breakdown.techStack}%</strong>
               </div>
               <div className="breakdown-item">
-                <span>Nội dung & Điểm nhấn</span>
-                <strong>{cvResult.breakdown.content} / 25</strong>
+                <span>Định Dạng Chuẩn ATS</span>
+                <strong>{cvResult.breakdown.atsFormat}%</strong>
               </div>
               <div className="breakdown-item">
-                <span>Độ phù hợp vị trí</span>
-                <strong>{cvResult.breakdown.relevance} / 25</strong>
+                <span>Số Liệu Đo Lường (Impact)</span>
+                <strong>{cvResult.breakdown.impactMetrics}%</strong>
               </div>
               <div className="breakdown-item">
-                <span>Từ khóa ngành</span>
-                <strong>{cvResult.breakdown.keywords} / 25</strong>
+                <span>Học Vấn & Trường ĐH</span>
+                <strong>{cvResult.breakdown.education}%</strong>
               </div>
             </div>
 
+            {/* Found vs Missing Keywords */}
+            <div className="cv-keywords-grid">
+              <div className="keywords-card">
+                <h4 style={{ color: '#34d399' }}><CheckCircle2 size={16} /> Từ khóa tìm thấy ({cvResult.foundKeywords.length})</h4>
+                <div className="keyword-chips">
+                  {cvResult.foundKeywords.map((kw, i) => (
+                    <span key={i} className="chip-tag found">{kw}</span>
+                  ))}
+                </div>
+              </div>
+              <div className="keywords-card">
+                <h4 style={{ color: '#f87171' }}><AlertCircle size={16} /> Từ khóa nên bổ sung ({cvResult.missingKeywords.length})</h4>
+                <div className="keyword-chips">
+                  {cvResult.missingKeywords.length > 0 ? (
+                    cvResult.missingKeywords.map((kw, i) => (
+                      <span key={i} className="chip-tag missing">+{kw}</span>
+                    ))
+                  ) : (
+                    <span style={{ fontSize: '12px', color: 'var(--jr-text-sub)' }}>Đầy đủ từ khóa trọng tâm!</span>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Detailed feedback */}
             <div className="cv-analysis-details">
               <div className="details-box strengths">
                 <h4><Check size={16} /> Điểm mạnh nổi bật</h4>
@@ -2944,27 +3446,26 @@ function CvGatePage({ go, onUnlockInterview }) {
                 </ul>
               </div>
               <div className="details-box improvements">
-                <h4><Sparkles size={16} /> Gợi ý cải thiện quan trọng</h4>
+                <h4><Sparkles size={16} /> Khuyến nghị cải thiện quan trọng</h4>
                 <ul>
                   {cvResult.improvements.map((item, idx) => <li key={idx}>{item}</li>)}
                 </ul>
               </div>
             </div>
 
-            {cvResult.isQualified ? (
+            {cvResult.isQualified && (
               <button
-                className="primary-action wide highlight-btn mt-3"
+                className="jr-btn-primary wide mt-4"
+                style={{ width: '100%', justifyContent: 'center', padding: '16px 24px', fontSize: '16px' }}
                 onClick={() => {
                   if (onUnlockInterview) onUnlockInterview(cvResult);
                   go('interview');
                 }}
               >
-                🎙️ Bắt Đầu Luyện Phỏng Vấn AI Với CV Này <Rocket size={18} />
+                <Mic size={20} />
+                <span>Mở Khóa & Bắt Đầu Phỏng Vấn AI Với CV Này Ngay</span>
+                <ArrowRight size={18} />
               </button>
-            ) : (
-              <div className="warning-banner-box">
-                <p>⚠️ Điểm CV phải đạt tối thiểu <b>60/100</b> để mở khóa tính năng Phỏng vấn AI & Đặt lịch Mentor. Hãy sửa đổi theo các gợi ý bên trên và phân tích lại!</p>
-              </div>
             )}
           </article>
         )}
@@ -2984,27 +3485,125 @@ function InterviewPracticePage({ go, cvResult, mentors }) {
   const [answers, setAnswers] = useState({});
   const [currentAnswer, setCurrentAnswer] = useState('');
   const [hint, setHint] = useState('');
+  const [isRecording, setIsRecording] = useState(false);
+  const [speechNotice, setSpeechNotice] = useState('');
+  const [aiEval, setAiEval] = useState(null);
+  const [evaluating, setEvaluating] = useState(false);
   const [report, setReport] = useState(null);
 
   const questionBank = {
     'Frontend Developer': [
-      { id: 1, type: 'Technical', question: 'Giải thích sự khác biệt giữa State và Props trong ReactJS. Khi nào bạn sử dụng Context API hoặc Redux để quản lý state toàn cục?' },
-      { id: 2, type: 'Technical', question: 'Bạn áp dụng các kỹ thuật nào (Lazy loading, Code splitting, Memo, Virtualization) để tối ưu trang web React có hàng nghìn phần tử?' },
-      { id: 3, type: 'Behavioral', question: 'Mô tả một tình huống bạn tranh luận với Designer hoặc Backend Developer về giao diện/API và cách bạn tìm ra tiếng nói chung?' }
+      {
+        id: 1,
+        type: 'Technical',
+        question: 'Giải thích sự khác biệt giữa State và Props trong ReactJS. Khi nào bạn sử dụng Context API hoặc Redux Toolkit để quản lý state toàn cục?',
+        sampleAnswer: 'Props là dữ liệu truyền từ component cha xuống con (read-only), còn State là dữ liệu nội bộ mà component tự quản lý. Tôi dùng State cục bộ cho form/toggle, và dùng Redux Toolkit cho dữ liệu chia sẻ toàn ứng dụng như Authentication state và Giỏ hàng để tránh hiện tượng prop drilling và tối ưu re-render.'
+      },
+      {
+        id: 2,
+        type: 'Technical',
+        question: 'Bạn áp dụng các kỹ thuật nào (Lazy loading, Code splitting, useMemo, React.memo, Virtualization) để tối ưu trang web React có hàng nghìn phần tử?',
+        sampleAnswer: 'Tôi sử dụng React.lazy kết hợp Suspense để code-splitting theo router, thư viện react-window để render danh sách dài 10,000 item chỉ trong viewport. Ngoài ra dùng useMemo cho các hàm tính toán nặng và React.memo để ngăn chặn re-render không cần thiết.'
+      },
+      {
+        id: 3,
+        type: 'Behavioral',
+        question: 'Mô tả một tình huống bạn tranh luận với Designer hoặc Backend Developer về giao diện/API và cách bạn tìm ra giải pháp tối ưu theo chuẩn STAR?',
+        sampleAnswer: 'Tình huống (S): Designer yêu cầu animation 3D phức tạp gây giật khung hình trên mobile. Nhiệm vụ (T): Giữ trải nghiệm mượt mà 60fps mà không phá vỡ thiết kế. Hành động (A): Tôi đo đạc FPS bằng Chrome DevTools, họp cùng Designer đề xuất giải pháp CSS transform kết hợp Lottie animation nhẹ hơn 80%. Kết quả (R): Trang load nhanh gấp 3 lần và được Designer đồng thuận.'
+      }
     ],
     'Backend Developer': [
-      { id: 1, type: 'Technical', question: 'Phân biệt RESTful API và GraphQL. Cách bạn triển khai xác thực JWT và xử lý Refresh Token an toàn?' },
-      { id: 2, type: 'Technical', question: 'Tránh lỗi N+1 Query trong ORM như thế nào? Cách bạn đánh chỉ mục (Index) database để tăng tốc truy vấn MySQL/MongoDB?' },
-      { id: 3, type: 'Behavioral', question: 'Kể lại một sự cố Production nghẽn mạng hoặc tràn RAM và các bước bạn truy vết log & khắc phục?' }
+      {
+        id: 1,
+        type: 'Technical',
+        question: 'Phân biệt RESTful API và GraphQL. Cách bạn triển khai xác thực JWT (Access Token & Refresh Token) an toàn trong Node.js?',
+        sampleAnswer: 'REST tổ chức theo endpoints tài nguyên, trong khi GraphQL cho phép client chỉ định chính xác các field cần lấy để tránh over-fetching. Khi triển khai JWT, tôi lưu Access Token trong Memory/Header với thời hạn 15 phút, và lưu Refresh Token trong HttpOnly Secure Cookie với thời hạn 7 ngày kèm cơ chế Token Rotation trong Redis.'
+      },
+      {
+        id: 2,
+        type: 'Technical',
+        question: 'Tránh lỗi N+1 Query trong ORM như thế nào? Cách bạn đánh chỉ mục (Index) database để tăng tốc truy vấn MongoDB/PostgreSQL?',
+        sampleAnswer: 'Tôi tránh N+1 Query bằng cách sử dụng Eager Loading (populate/include hoặc join thay vì lặp qua từng bản ghi). Về indexing, tôi đánh Composite Index trên các trường thường xuyên xuất hiện trong WHERE và ORDER BY, đồng thời dùng EXPLAIN ANALYZE để đo thời gian quét index.'
+      },
+      {
+        id: 3,
+        type: 'Behavioral',
+        question: 'Kể lại một sự cố Production nghẽn mạng hoặc tràn RAM và các bước bạn truy vết log & khắc phục sự cố?',
+        sampleAnswer: 'Tình huống (S): Server Node.js bị restart liên tục do Memory Leak vào giờ cao điểm. Nhiệm vụ (T): Xác định nguyên nhân và đưa hệ thống hoạt động ổn định trong 30 phút. Hành động (A): Tôi kiểm tra log Grafana/Kibana, phát hiện hàm xử lý file PDF đọc toàn bộ file vào Buffer thay vì dùng Stream. Tôi sửa lại dùng Streams pipe trực tiếp ra S3. Kết quả (R): RAM giảm từ 95% về 25% và không còn tình trạng crash server.'
+      }
     ],
-    'Fullstack Developer': [
-      { id: 1, type: 'Technical', question: 'Vẽ mô hình kiến trúc Client-Server từ khi trình duyệt gửi Request đến khi Server render dữ liệu và trả về cho người dùng.' },
-      { id: 2, type: 'Technical', question: 'Khi nào nên sử dụng Server-Side Rendering (SSR) so với Client-Side Rendering (CSR) trong Next.js?' },
-      { id: 3, type: 'Behavioral', question: 'Bạn sắp xếp thứ tự ưu tiên các tính năng như thế nào khi khách hàng yêu cầu bàn giao sản phẩm gấp trong 3 ngày?' }
+    'AI / Data Engineer': [
+      {
+        id: 1,
+        type: 'Technical',
+        question: 'Giải thích hiện tượng Overfitting trong Machine Learning. Bạn sử dụng các phương pháp nào (Regularization, Dropout, Cross-validation, Early stopping) để khắc phục?',
+        sampleAnswer: 'Overfitting xảy ra khi mô hình học quá kỹ nhiễu của tập Train và không tổng quát hóa tốt trên tập Test. Tôi áp dụng L2 Regularization, Dropout rate 0.2 - 0.5 trong mạng nơ-ron, K-Fold Cross Validation và Early Stopping theo dõi validation loss.'
+      },
+      {
+        id: 2,
+        type: 'Technical',
+        question: 'Quy trình xây dựng Pipeline xử lý dữ liệu lớn (ETL) từ thu thập, làm sạch đến nạp vào Data Warehouse được bạn thiết kế ra sao?',
+        sampleAnswer: 'Tôi sử dụng Apache Kafka để ingest streaming data, Apache Spark để xử lý batch và deduplicate dữ liệu lỗi, sau đó nạp vào PostgreSQL/ClickHouse với schema star schema và lập lịch bằng Airflow.'
+      },
+      {
+        id: 3,
+        type: 'Behavioral',
+        question: 'Bạn xử lý như thế nào khi dữ liệu khách hàng cung cấp bị thiếu sót nghiêm trọng hoặc gán nhãn sai lệch?',
+        sampleAnswer: 'Tôi thống kê tỷ lệ missing values, phân tích xem có ngẫu nhiên hay không. Dùng KNN Imputation hoặc Median cho dữ liệu số, gán nhãn Unspecified cho dữ liệu phân loại, và tổ chức buổi làm việc với Domain Expert để chuẩn hóa lại quy tắc gán nhãn.'
+      }
     ]
   };
 
   const questions = questionBank[position] || questionBank['Frontend Developer'];
+
+  const toggleSpeechRecognition = () => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      setSpeechNotice('Trình duyệt của bạn chưa hỗ trợ Web Speech API trực tiếp. Bạn có thể nhập câu trả lời vào ô văn bản bên dưới!');
+      return;
+    }
+
+    if (isRecording) {
+      if (window._currentRecognition) {
+        window._currentRecognition.stop();
+      }
+      setIsRecording(false);
+      setSpeechNotice('');
+    } else {
+      try {
+        const recognition = new SpeechRecognition();
+        recognition.lang = 'vi-VN';
+        recognition.continuous = true;
+        recognition.interimResults = true;
+
+        recognition.onresult = (event) => {
+          let text = '';
+          for (let i = event.resultIndex; i < event.results.length; i++) {
+            text += event.results[i][0].transcript;
+          }
+          if (text) {
+            setCurrentAnswer((prev) => (prev ? prev + ' ' : '') + text);
+          }
+        };
+
+        recognition.onerror = () => {
+          setIsRecording(false);
+        };
+
+        recognition.onend = () => {
+          setIsRecording(false);
+        };
+
+        window._currentRecognition = recognition;
+        recognition.start();
+        setIsRecording(true);
+        setSpeechNotice('🎙️ Đang lắng nghe giọng nói của bạn bằng Tiếng Việt... Hãy tự tin nói!');
+      } catch {
+        setSpeechNotice('Không thể kích hoạt microphone. Vui lòng cấp quyền micro cho trình duyệt!');
+        setIsRecording(false);
+      }
+    }
+  };
 
   const startInterview = () => {
     setStep('room');
@@ -3012,15 +3611,51 @@ function InterviewPracticePage({ go, cvResult, mentors }) {
     setAnswers({});
     setCurrentAnswer('');
     setHint('');
+    setAiEval(null);
+    if (isRecording && window._currentRecognition) {
+      window._currentRecognition.stop();
+      setIsRecording(false);
+    }
   };
 
   const showAiHint = () => {
     const q = questions[currentIdx];
     if (q.type === 'Technical') {
-      setHint('💡 Gợi ý AI: Hãy nêu rõ bản chất khái niệm, đưa ra ví dụ minh họa bằng dòng lệnh/code mẫu và so sánh ưu/nhược điểm.');
+      setHint('💡 Gợi ý AI: Hãy nêu rõ bản chất khái niệm cốt lõi, đưa ra ví dụ bằng dòng lệnh/code minh họa và phân tích ưu/nhược điểm.');
     } else {
-      setHint('💡 Gợi ý AI: Sử dụng cấu trúc STAR (Situation: Tình huống -> Task: Nhiệm vụ -> Action: Hành động của bạn -> Result: Kết quả đo lường).');
+      setHint('💡 Gợi ý AI: Trả lời theo cấu trúc STAR (S - Situation: Tình huống -> T - Task: Nhiệm vụ -> A - Action: Hành động công nghệ -> R - Result: Kết quả đo lường).');
     }
+  };
+
+  const handleEvaluateAnswer = () => {
+    if (!currentAnswer.trim()) return;
+    setEvaluating(true);
+
+    setTimeout(() => {
+      const len = currentAnswer.length;
+      const text = currentAnswer.toLowerCase();
+      const hasSTAR = text.includes('tình huống') || text.includes('kết quả') || text.includes('giải pháp') || text.includes('dự án') || text.includes('tối ưu');
+      const score = Math.min(95, Math.max(68, Math.floor(len / 10) + (hasSTAR ? 35 : 20)));
+
+      setAiEval({
+        score,
+        star: {
+          situation: 'Bối cảnh dự án được mô tả rõ ràng, đúng trọng tâm câu hỏi.',
+          task: 'Xác định chính xác trách nhiệm và thách thức cần giải quyết.',
+          action: 'Các giải pháp kỹ thuật và bước thực thi mạch lạc, tự tin.',
+          result: hasSTAR ? 'Có con số và kết quả đo lường cụ thể.' : 'Nên bổ sung thêm % đo lường hiệu năng hoặc số liệu cụ thể.'
+        },
+        strengths: [
+          'Tư duy logic tốt, ngôn ngữ diễn đạt gãy gọn chuẩn thuật ngữ chuyên ngành.',
+          'Nêu đúng bản chất vấn đề và giải pháp thực thi khả thi.'
+        ],
+        improvements: [
+          'Có thể nhấn mạnh thêm các trade-off (rủi ro và điểm đánh đổi) khi chọn giải pháp này.'
+        ],
+        sample: questions[currentIdx].sampleAnswer
+      });
+      setEvaluating(false);
+    }, 900);
   };
 
   const handleNext = () => {
@@ -3028,25 +3663,43 @@ function InterviewPracticePage({ go, cvResult, mentors }) {
     setAnswers(updatedAnswers);
     setCurrentAnswer('');
     setHint('');
+    setAiEval(null);
+    if (isRecording && window._currentRecognition) {
+      window._currentRecognition.stop();
+      setIsRecording(false);
+    }
 
     if (currentIdx < questions.length - 1) {
       setCurrentIdx(currentIdx + 1);
     } else {
-      setReport({
-        overallScore: 88,
+      const overall = 88;
+      const sessionReport = {
+        overallScore: overall,
         technicalScore: 90,
-        communicationScore: 85,
+        communicationScore: 86,
+        starScore: 88,
         problemSolvingScore: 88,
+        position,
+        level,
+        date: new Date().toLocaleDateString('vi-VN'),
         strengths: [
-          'Nắm vững bản chất cốt lõi của công nghệ và đưa ra cấu trúc trả lời mạch lạc.',
-          'Giải thích rõ ràng các ví dụ thực tế và giải pháp tối ưu.',
-          'Thái độ tự tin, tư duy logic phản biện cao.'
+          'Nắm vững bản chất cốt lõi của công nghệ và cấu trúc trả lời mạch lạc.',
+          'Giải thích rõ ràng các ví dụ thực tế và giải pháp tối ưu theo chuẩn STAR.',
+          'Thái độ tự tin, tư duy logic phản biện sắc bén.'
         ],
         improvements: [
-          'Cần bổ sung thêm ví dụ đo lường cụ thể (thời gian phản hồi API, chỉ số Lighthouse score).',
-          'Nêu rõ các trade-off (rủi ro / điểm đánh đổi) khi lựa chọn công nghệ.'
+          'Cần bổ sung thêm ví dụ đo lường cụ thể (thời gian phản hồi API, chỉ số Lighthouse).',
+          'Nêu rõ các phương án dự phòng khi hệ thống gặp tải cao bất ngờ.'
         ]
-      });
+      };
+      setReport(sessionReport);
+      try {
+        const history = JSON.parse(localStorage.getItem('jr_interview_history') || '[]');
+        history.unshift(sessionReport);
+        localStorage.setItem('jr_interview_history', JSON.stringify(history.slice(0, 10)));
+      } catch {
+        // ignore storage errors
+      }
       setStep('report');
     }
   };
@@ -3057,7 +3710,7 @@ function InterviewPracticePage({ go, cvResult, mentors }) {
         <div>
           <p className="mono-label">Interactive AI & Mentor Room</p>
           <h1>Luyện Tập Phỏng Vấn Thích Ứng (AI & Mentor Thật)</h1>
-          <p>Mô phỏng phỏng vấn thực tế theo từng vị trí & level. Nhận phản hồi tức thì từ AI hoặc đặt lịch mock interview 1-on-1 với Mentor chuyên gia!</p>
+          <p>Mô phỏng phỏng vấn thực tế với công nghệ nhận diện giọng nói tiếng Việt. Nhận phản hồi tức thì từ AI hoặc đặt lịch mock interview 1-on-1 với Mentor chuyên gia!</p>
         </div>
       </div>
 
@@ -3068,12 +3721,9 @@ function InterviewPracticePage({ go, cvResult, mentors }) {
             <div className="form-group">
               <label>Vị trí phỏng vấn:</label>
               <select value={position} onChange={(e) => setPosition(e.target.value)}>
-                <option value="Frontend Developer">Frontend Developer</option>
-                <option value="Backend Developer">Backend Developer</option>
-                <option value="Fullstack Developer">Fullstack Developer</option>
-                <option value="AI / Data Engineer">AI / Data Engineer</option>
-                <option value="Product Manager">Product Manager</option>
-                <option value="Business Analyst">Business Analyst</option>
+                <option value="Frontend Developer">Frontend Developer (React / TS)</option>
+                <option value="Backend Developer">Backend Developer (Node.js / Express / DB)</option>
+                <option value="AI / Data Engineer">AI / Data Engineer (Python / ML)</option>
               </select>
             </div>
 
@@ -3090,9 +3740,9 @@ function InterviewPracticePage({ go, cvResult, mentors }) {
             <div className="form-group">
               <label>Dạng câu hỏi:</label>
               <select value={mode} onChange={(e) => setMode(e.target.value)}>
-                <option value="technical">Kỹ thuật chuyên sâu (Technical)</option>
-                <option value="behavioral">Tình huống & Hành vi (Behavioral)</option>
-                <option value="mixed">Hỗn hợp (Technical + Behavioral)</option>
+                <option value="mixed">Hỗn hợp (Technical + Khung STAR Behavioral)</option>
+                <option value="technical">Kỹ thuật chuyên sâu (Technical Deep-dive)</option>
+                <option value="behavioral">Tình huống & Hành vi (Behavioral STAR)</option>
               </select>
             </div>
 
@@ -3106,59 +3756,148 @@ function InterviewPracticePage({ go, cvResult, mentors }) {
           </div>
 
           <div className="setup-actions mt-4">
-            <button className="primary-action wide highlight-btn" onClick={startInterview}>
-              🎙️ Bắt Đầu Phỏng Vấn Ngay <Rocket size={18} />
+            <button className="jr-btn-primary wide" style={{ width: '100%', justifyContent: 'center' }} onClick={startInterview}>
+              <Mic size={18} />
+              <span>Bắt Đầu Vào Phòng Phỏng Vấn Ngay</span>
+              <ArrowRight size={18} />
             </button>
           </div>
         </article>
       )}
 
       {step === 'room' && (
-        <article className="interview-room-card animate-in">
-          <div className="room-header">
-            <span className="question-counter">Câu hỏi {currentIdx + 1} / {questions.length}</span>
-            <span className="question-type-badge">{questions[currentIdx].type}</span>
-            <span className="timer-chip">⏱️ 01:30</span>
-          </div>
-
-          <div className="question-box">
-            <h3>{questions[currentIdx].question}</h3>
-          </div>
-
-          {hint && <div className="ai-hint-box">{hint}</div>}
-
-          <div className="answer-input-area mt-3">
-            <div className="input-toolbar">
-              <button className="ghost-action compact" onClick={showAiHint}>💡 Xem gợi ý từ AI</button>
+        <article className="interview-room-box animate-in">
+          <div className="interviewer-header">
+            <div className="interviewer-avatar">
+              <Mic size={24} />
             </div>
-            <textarea
-              rows={6}
-              value={currentAnswer}
-              onChange={(e) => setCurrentAnswer(e.target.value)}
-              placeholder="Nhập câu trả lời của bạn tại đây (hoặc bật mic để nói)..."
-            />
+            <div style={{ flexGrow: 1 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                <span style={{ fontWeight: 800, fontSize: '16px', color: 'var(--jr-text-main)' }}>AI Senior Tech Interviewer</span>
+                <span className="chip-tag found" style={{ fontSize: '10px' }}>LIVE SESSION</span>
+              </div>
+              <p style={{ margin: 0, fontSize: '13px', color: 'var(--jr-text-sub)' }}>
+                Vị trí: <b>{position}</b> ({level}) · Câu hỏi {currentIdx + 1} / {questions.length} ({questions[currentIdx].type})
+              </p>
+            </div>
           </div>
 
-          <div className="room-footer-actions mt-3">
-            <button className="ghost-action" onClick={() => setStep('setup')}>Thoát phòng</button>
-            <button className="primary-action" onClick={handleNext}>
-              {currentIdx < questions.length - 1 ? 'Câu hỏi tiếp theo ➔' : 'Hoàn thành & Xem kết quả 🏆'}
+          <div className="question-box" style={{ background: 'rgba(37, 99, 235, 0.08)', border: '1px solid rgba(37, 99, 235, 0.25)', borderRadius: '16px', padding: '20px', marginBottom: '20px' }}>
+            <h3 style={{ margin: 0, fontSize: '17px', lineHeight: 1.5, color: 'var(--jr-text-main)' }}>
+              {questions[currentIdx].question}
+            </h3>
+          </div>
+
+          {hint && <div className="ai-hint-box mb-3">{hint}</div>}
+          {speechNotice && <div className="status-banner info mb-3">{speechNotice}</div>}
+
+          <div className="mic-action-bar">
+            <button
+              type="button"
+              className={`btn-mic-record ${isRecording ? 'recording' : ''}`}
+              onClick={toggleSpeechRecognition}
+            >
+              {isRecording ? <MicOff size={16} /> : <Mic size={16} />}
+              <span>{isRecording ? 'Dừng nói (Đang ghi âm)' : 'Bật Micro để nói (Tiếng Việt)'}</span>
+            </button>
+
+            {isRecording && (
+              <div className="audio-wave-visualizer">
+                <span className="audio-bar" />
+                <span className="audio-bar" />
+                <span className="audio-bar" />
+                <span className="audio-bar" />
+                <span className="audio-bar" />
+              </div>
+            )}
+
+            <button type="button" className="ghost-action compact" onClick={showAiHint} style={{ marginLeft: 'auto' }}>
+              💡 Xem gợi ý AI
+            </button>
+          </div>
+
+          <textarea
+            rows={6}
+            value={currentAnswer}
+            onChange={(e) => setCurrentAnswer(e.target.value)}
+            placeholder="Bạn có thể bấm 'Bật Micro để nói' hoặc nhập câu trả lời của bạn tại đây (Áp dụng khung STAR: Tình huống -> Nhiệm vụ -> Hành động -> Kết quả)..."
+            style={{ width: '100%', borderRadius: '14px', padding: '14px', background: 'rgba(0,0,0,0.25)', border: '1px solid var(--jr-card-border)', color: 'inherit', fontSize: '14px', lineHeight: 1.5 }}
+          />
+
+          <div style={{ display: 'flex', gap: '10px', marginTop: '14px' }}>
+            <button
+              type="button"
+              className="jr-btn-secondary"
+              onClick={handleEvaluateAnswer}
+              disabled={evaluating || !currentAnswer.trim()}
+              style={{ fontSize: '13px', padding: '10px 18px' }}
+            >
+              {evaluating ? '⏳ AI đang chấm điểm...' : '✨ Chấm điểm câu này trước'}
+            </button>
+          </div>
+
+          {aiEval && (
+            <div className="ai-star-feedback-card animate-in">
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+                <h4 style={{ margin: 0, fontSize: '15px', color: '#38bdf8' }}>
+                  🎯 Đánh Giá AI Câu Trả Lời: <b>{aiEval.score} / 100 điểm</b>
+                </h4>
+                <span className="chip-tag found">STAR Framework</span>
+              </div>
+
+              <div className="star-grid">
+                <div className="star-cell">
+                  <strong>S - Tình huống</strong>
+                  <p>{aiEval.star.situation}</p>
+                </div>
+                <div className="star-cell">
+                  <strong>T - Nhiệm vụ</strong>
+                  <p>{aiEval.star.task}</p>
+                </div>
+                <div className="star-cell">
+                  <strong>A - Hành động</strong>
+                  <p>{aiEval.star.action}</p>
+                </div>
+                <div className="star-cell">
+                  <strong>R - Kết quả</strong>
+                  <p>{aiEval.star.result}</p>
+                </div>
+              </div>
+
+              <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: '12px', padding: '14px', marginTop: '12px' }}>
+                <strong style={{ fontSize: '13px', color: '#f59e0b', display: 'block', marginBottom: '6px' }}>
+                  🌟 Câu trả lời mẫu xuất sắc (Tham khảo điểm 10):
+                </strong>
+                <p style={{ margin: 0, fontSize: '13px', color: 'var(--jr-text-main)', lineHeight: 1.5 }}>
+                  {aiEval.sample}
+                </p>
+              </div>
+            </div>
+          )}
+
+          <div className="room-footer-actions mt-4" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <button className="ghost-action" onClick={() => setStep('setup')}>
+              Thoát phòng
+            </button>
+            <button className="jr-btn-primary" onClick={handleNext} disabled={!currentAnswer.trim() && !aiEval}>
+              <span>{currentIdx < questions.length - 1 ? 'Chuyển sang câu hỏi tiếp theo' : 'Hoàn thành buổi phỏng vấn & Xem báo cáo'}</span>
+              <ArrowRight size={16} />
             </button>
           </div>
         </article>
       )}
 
       {step === 'report' && report && (
-        <article className="interview-report-card animate-in">
+        <article className="interview-report-card animate-in" style={{ maxWidth: '960px', margin: '0 auto' }}>
           <div className="report-header">
-            <div className="overall-score-circle">
-              <strong>{report.overallScore}</strong>
+            <div className="overall-score-circle" style={{ borderColor: '#10b981' }}>
+              <strong style={{ color: '#10b981' }}>{report.overallScore}</strong>
               <span>/ 100 điểm</span>
             </div>
             <div>
               <span className="pass-status">🎉 ĐẠT KẾT QUẢ PHỎNG VẤN XUẤT SẮC</span>
-              <h2>Báo Cáo Đánh Giá Năng Lực Phỏng Vấn</h2>
-              <p>Vị trí: <b>{position}</b> ({level})</p>
+              <h2>Báo Cáo Đánh Giá Năng Lực Toàn Diện</h2>
+              <p>Vị trí: <b>{report.position}</b> ({report.level}) · Thực hiện ngày: {report.date}</p>
             </div>
           </div>
 
@@ -3166,6 +3905,10 @@ function InterviewPracticePage({ go, cvResult, mentors }) {
             <div className="comp-item">
               <span>Kiến thức Kỹ thuật</span>
               <strong>{report.technicalScore}%</strong>
+            </div>
+            <div className="comp-item">
+              <span>Cấu trúc STAR</span>
+              <strong>{report.starScore}%</strong>
             </div>
             <div className="comp-item">
               <span>Kỹ năng Giao tiếp</span>
@@ -3192,12 +3935,15 @@ function InterviewPracticePage({ go, cvResult, mentors }) {
             </div>
           </div>
 
-          <div className="report-footer-actions">
+          <div className="report-footer-actions" style={{ display: 'flex', gap: '14px', flexWrap: 'wrap', marginTop: '24px' }}>
             <button className="ghost-action" onClick={() => setStep('setup')}>
-              🔄 Thực hành lại vị trí khác
+              🔄 Luyện tập lại vị trí khác
             </button>
-            <button className="primary-action" onClick={() => go('mentor')}>
-              👨‍🏫 Đặt lịch 1-on-1 với Mentor Thật để nhận feedback chi tiết
+            <button className="jr-btn-secondary" onClick={() => go('learning')}>
+              📚 Ôn tập tài liệu ĐH
+            </button>
+            <button className="jr-btn-primary" onClick={() => go('mentor')}>
+              👨‍🏫 Đặt lịch Mock Interview 1-on-1 với Senior Mentor
             </button>
           </div>
         </article>
