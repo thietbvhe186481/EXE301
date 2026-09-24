@@ -1743,11 +1743,13 @@ function Header({ page, go, currentUser, theme, setTheme, logout, loginAs }) {
         : flow.filter((item) => item.id === 'auth');
   const publicFlow = [
     { id: 'intro', label: 'Trang chủ', icon: Compass, target: 'home' },
-    { id: 'cv-gate-preview', label: 'Thẩm định CV', icon: FileUp, target: 'cv-gate' },
-    { id: 'interview-preview', label: 'Phỏng vấn AI', icon: MessageSquareText, target: 'interview' },
     { id: 'roadmap-preview', label: 'Bản đồ nghề', icon: LayoutDashboard, target: 'roadmap' },
+    { id: 'hub-preview', label: 'Thử thách dự án', icon: Rocket, target: 'hub' },
+    { id: 'portfolio-preview', label: 'Hồ sơ Portfolio', icon: UserRound, target: 'portfolio' },
+    { id: 'cv-gate-preview', label: 'Thẩm định CV & ATS', icon: FileUp, target: 'cv-gate' },
+    { id: 'interview-preview', label: 'Phỏng vấn AI', icon: MessageSquareText, target: 'interview' },
     { id: 'learning-preview', label: 'Học liệu ĐH', icon: GraduationCap, target: 'learning' },
-    { id: 'pricing-preview', label: 'Bảng giá', icon: Crown, target: 'pricing' },
+    { id: 'pricing-preview', label: 'Gói Premium', icon: Crown, target: 'pricing' },
     { id: 'about', label: 'Về chúng tôi', icon: BookOpen, target: 'about' }
   ];
   const navItems = currentUser ? roleFlow : publicFlow;
@@ -1755,16 +1757,18 @@ function Header({ page, go, currentUser, theme, setTheme, logout, loginAs }) {
   const navGroups = currentRole === 'student'
     ? [
         { id: 'home-nav', label: 'Trang chủ', icon: Compass, target: 'home' },
+        { id: 'roadmap', label: 'Bản đồ nghề', icon: LayoutDashboard, target: 'roadmap' },
+        { id: 'practice', label: 'Thử thách dự án', icon: Rocket, items: ['hub', 'join', 'submit', 'feedback'].map(byId).filter(Boolean) },
+        { id: 'portfolio-nav', label: 'Hồ sơ Portfolio', icon: UserRound, target: 'portfolio' },
         { id: 'cv-gate-nav', label: 'Thẩm định CV', icon: FileUp, target: 'cv-gate' },
         { id: 'interview-nav', label: 'Phỏng Vấn AI', icon: MessageSquareText, target: 'interview' },
-        { id: 'roadmap', label: 'Bản đồ nghề', icon: LayoutDashboard, target: 'roadmap' },
-        { id: 'practice', label: 'Thử thách', icon: Rocket, items: ['hub', 'join', 'submit', 'feedback'].map(byId).filter(Boolean) },
         { id: 'learning-nav', label: 'Học liệu ĐH', icon: GraduationCap, target: 'learning' },
-        { id: 'premium-direct', label: 'Gói & Bảng giá', icon: Crown, target: 'pricing' }
+        { id: 'premium-direct', label: 'Gói Premium', icon: Crown, target: 'pricing' }
       ]
     : currentRole === 'mentor'
       ? [
           { id: 'mentor-workspace', label: 'Mentor Workspace', icon: GraduationCap, target: 'mentor', matches: ['mentor'] },
+          { id: 'portfolio-workspace', label: 'Duyệt Portfolio', icon: UserRound, target: 'portfolio' },
           { id: 'cv-gate-workspace', label: 'Thẩm định CV', icon: FileUp, target: 'cv-gate' },
           { id: 'interview-workspace', label: 'Phỏng vấn AI', icon: MessageSquareText, target: 'interview' },
           { id: 'learning-workspace', label: 'Học liệu ĐH', icon: GraduationCap, target: 'learning' },
@@ -1773,6 +1777,7 @@ function Header({ page, go, currentUser, theme, setTheme, logout, loginAs }) {
       : currentRole === 'admin'
         ? [
             { id: 'admin-workspace', label: 'Admin Workspace', icon: ShieldCheck, target: 'admin', matches: ['admin'] },
+            { id: 'portfolio-workspace', label: 'Quản lý Portfolio', icon: UserRound, target: 'portfolio' },
             { id: 'cv-gate-workspace', label: 'Thẩm định CV', icon: FileUp, target: 'cv-gate' },
             { id: 'interview-workspace', label: 'Phỏng vấn AI', icon: MessageSquareText, target: 'interview' },
             { id: 'learning-workspace', label: 'Học liệu ĐH', icon: GraduationCap, target: 'learning' },
@@ -1780,11 +1785,13 @@ function Header({ page, go, currentUser, theme, setTheme, logout, loginAs }) {
           ]
         : [
             { id: 'home-public', label: 'Trang chủ', icon: Compass, target: 'home' },
-            { id: 'cv-gate-public', label: 'Thẩm định CV', icon: FileUp, target: 'cv-gate' },
-            { id: 'interview-public', label: 'Luyện phỏng vấn AI', icon: MessageSquareText, target: 'interview' },
             { id: 'roadmap-preview', label: 'Bản đồ nghề', icon: LayoutDashboard, target: 'roadmap' },
+            { id: 'hub-preview', label: 'Thử thách dự án', icon: Rocket, target: 'hub' },
+            { id: 'portfolio-public', label: 'Hồ sơ Portfolio', icon: UserRound, target: 'portfolio' },
+            { id: 'cv-gate-public', label: 'Thẩm định CV & ATS', icon: FileUp, target: 'cv-gate' },
+            { id: 'interview-public', label: 'Luyện phỏng vấn AI', icon: MessageSquareText, target: 'interview' },
             { id: 'learning-public', label: 'Học liệu ĐH', icon: GraduationCap, target: 'learning' },
-            { id: 'pricing-public', label: 'Bảng giá', icon: Crown, target: 'pricing' },
+            { id: 'pricing-public', label: 'Gói Premium', icon: Crown, target: 'pricing' },
             { id: 'about', label: 'Về chúng tôi', icon: BookOpen, target: 'about' }
           ];
   const isNavItemActive = (item) => page === item.id || item.target === page || item.matches?.includes(page);
@@ -1797,11 +1804,11 @@ function Header({ page, go, currentUser, theme, setTheme, logout, loginAs }) {
   const roleLabel = currentUser ? `${(currentRole ?? 'student').toUpperCase()} · ${currentUser.user?.name ?? currentUser.user?.email}` : 'Guest';
   return (
     <header className="topbar">
-      <button className="brand" onClick={() => go('home')} aria-label="JobReady Trang chủ">
+      <button className="brand" onClick={() => go('home')} aria-label="Portfolio Trang chủ">
         <span className="jr-brand-logo">
           <Rocket size={22} color="#3b82f6" />
-          <span>JobReady</span>
-          <span className="jr-brand-badge">AI CAREER</span>
+          <span>Portfolio</span>
+          <span className="jr-brand-badge">CAREER BUILDER</span>
         </span>
       </button>
       <nav className="flow-nav role-nav" aria-label="Điều hướng theo vai trò">
@@ -2836,32 +2843,33 @@ function HomePage({ go }) {
       <section className="jr-hero">
         <div className="jr-hero-badge">
           <span className="jr-badge-pulse" />
-          <span>HỆ THỐNG JOBREADY · NÂNG CAO KỸ NĂNG PHỎNG VẤN CÙNG AI</span>
+          <span>HỆ THỐNG XÂY DỰNG PORTFOLIO NGHỀ NGHIỆP · SINH VIÊN ĐẠI HỌC FPT, BÁCH KHOA, KHTN</span>
         </div>
 
         <h1 className="jr-hero-title">
-          Bứt Phá Năng Lực Phỏng Vấn, <br />
-          <span className="jr-gradient-text">Chinh Phục Mọi Nhà Tuyển Dụng</span> Với AI
+          Xây Dựng Portfolio Chuẩn Doanh Nghiệp, <br />
+          <span className="jr-gradient-text">Chinh Phục Mọi Nhà Tuyển Dụng</span>
         </h1>
 
         <p className="jr-hero-subtitle">
-          Nền tảng hướng nghiệp & luyện phỏng vấn thích ứng chuẩn quốc tế: Thẩm định CV chuẩn ATS trong 30 giây, 
-          mô phỏng phỏng vấn giọng nói/văn bản thực chiến, nhận xét chi tiết theo khung STAR và kết nối mạng lưới Mentor 1:1 từ các tập đoàn công nghệ.
+          Nền tảng hướng nghiệp thực chiến dành cho sinh viên đại học: Định hình lộ trình nghề nghiệp (Roadmap), 
+          thực hiện các dự án thực tế chuẩn doanh nghiệp (Challenge Hub), nhận đánh giá 2 chiều từ AI & Mentor chuyên gia, 
+          và tự động tạo trang Portfolio cá nhân chuyên nghiệp để gửi nhà tuyển dụng.
         </p>
 
         <div className="jr-hero-actions">
-          <button className="jr-btn-primary" onClick={() => go('cv-gate')}>
-            <FileUp size={18} />
-            <span>Thẩm định CV ngay (Miễn phí)</span>
+          <button className="jr-btn-primary" onClick={() => go('roadmap')}>
+            <Rocket size={18} />
+            <span>Bắt đầu tạo Portfolio ngay</span>
             <ArrowRight size={16} />
           </button>
-          <button className="jr-btn-secondary" onClick={() => go('interview')}>
-            <Mic size={18} color="#38bdf8" />
-            <span>Luyện phỏng vấn AI ngay</span>
+          <button className="jr-btn-secondary" onClick={() => go('portfolio')}>
+            <UserRound size={18} color="#38bdf8" />
+            <span>Xem mẫu Portfolio cá nhân</span>
           </button>
-          <button className="ghost-action" onClick={() => go('roadmap')}>
-            <Compass size={18} />
-            <span>Khám phá Bản đồ nghề</span>
+          <button className="ghost-action" onClick={() => go('hub')}>
+            <LayoutDashboard size={18} />
+            <span>Khám phá Thử thách dự án</span>
           </button>
         </div>
 
@@ -2869,15 +2877,15 @@ function HomePage({ go }) {
         <div className="jr-stats-grid">
           <div className="jr-stat-card">
             <span className="jr-stat-num">250+</span>
-            <span className="jr-stat-label">Sinh viên ĐH tham gia (KPI 200-300)</span>
+            <span className="jr-stat-label">Sinh viên ĐH đã tạo Portfolio (KPI 200-300)</span>
           </div>
           <div className="jr-stat-card">
             <span className="jr-stat-num">95%</span>
-            <span className="jr-stat-label">Tỷ lệ tự tin vượt qua vòng phỏng vấn</span>
+            <span className="jr-stat-label">Portfolio đạt chuẩn tuyển dụng doanh nghiệp</span>
           </div>
           <div className="jr-stat-card">
-            <span className="jr-stat-num">30s</span>
-            <span className="jr-stat-label">Thời gian phân tích ATS & gợi ý từ khóa</span>
+            <span className="jr-stat-num">100+</span>
+            <span className="jr-stat-label">Dự án & Thử thách thực tế đưa vào hồ sơ</span>
           </div>
           <div className="jr-stat-card">
             <span className="jr-stat-num">50+</span>
@@ -2886,50 +2894,50 @@ function HomePage({ go }) {
         </div>
       </section>
 
-      {/* 4-Step Workflow Section */}
+      {/* 4-Step Portfolio Building Process */}
       <section className="content-page">
         <div className="jr-section-title-wrap">
-          <span className="jr-sub-pill">Quy trình 4 bước chuẩn JobReady</span>
-          <h2 className="jr-section-title">Hành Trình Bứt Phá Từ Sinh Viên Đến Nhận Offer</h2>
+          <span className="jr-sub-pill">Quy trình 4 bước tạo Portfolio hoàn chỉnh</span>
+          <h2 className="jr-section-title">Hành Trình Xây Dựng Hồ Sơ Năng Lực Chuẩn Ngành</h2>
           <p className="jr-section-desc">
-            Thiết kế bám sát thực tế tuyển dụng tại các doanh nghiệp hàng đầu giúp bạn tự tin trong từng giai đoạn.
+            Từ việc chọn lộ trình đến hoàn thành dự án có minh chứng thực tế và nhận chứng thực từ Mentor cấp cao.
           </p>
         </div>
 
         <div className="jr-process-grid">
           <div className="jr-process-card">
             <div className="jr-step-badge">1</div>
-            <h3>Thẩm Định & Tối Ưu CV</h3>
-            <p>Hệ thống AI quét định dạng ATS, chấm điểm tổng quan và phát hiện từ khóa công nghệ còn thiếu theo vị trí ứng tuyển.</p>
-            <button className="jr-step-link-btn" onClick={() => go('cv-gate')}>
-              Quét CV ngay <ArrowRight size={13} />
+            <h3>1. Định Hình Lộ Trình Nghề Nghiệp</h3>
+            <p>Chọn chuyên ngành (Frontend, Backend, AI...) và thiết lập cột mốc phát triển kỹ năng từ Foundation đến Senior.</p>
+            <button className="jr-step-link-btn" onClick={() => go('roadmap')}>
+              Thiết lập lộ trình <ArrowRight size={13} />
             </button>
           </div>
 
           <div className="jr-process-card">
             <div className="jr-step-badge">2</div>
-            <h3>Luyện Phỏng Vấn AI</h3>
-            <p>Mô phỏng phỏng vấn bằng Mic hoặc gõ phím. AI thích ứng hỏi sâu theo CV và Job Description mục tiêu của bạn.</p>
-            <button className="jr-step-link-btn" onClick={() => go('interview')}>
-              Vào phòng phỏng vấn <ArrowRight size={13} />
+            <h3>2. Thực Hiện Thử Thách Dự Án</h3>
+            <p>Làm các challenge kỹ thuật thực tế từ nguồn đề thi của trường ĐH và doanh nghiệp để tích lũy sản phẩm vào Portfolio.</p>
+            <button className="jr-step-link-btn" onClick={() => go('hub')}>
+              Khám phá Thử thách <ArrowRight size={13} />
             </button>
           </div>
 
           <div className="jr-process-card">
             <div className="jr-step-badge">3</div>
-            <h3>Chấm Điểm & Gợi Ý STAR</h3>
-            <p>Nhận ngay phản hồi tức thì: Điểm số, phân tích theo cấu trúc STAR và câu trả lời mẫu điểm 10 từ chuyên gia.</p>
-            <button className="jr-step-link-btn" onClick={() => go('interview')}>
-              Xem báo cáo mẫu <ArrowRight size={13} />
+            <h3>3. Mentor & AI Đánh Giá 2 Chiều</h3>
+            <p>Nộp mã nguồn GitHub/Demo, nhận điểm AI tức thì và Mentor doanh nghiệp review chuyên sâu theo khung chuẩn STAR.</p>
+            <button className="jr-step-link-btn" onClick={() => go('hub')}>
+              Nộp bài & Nhận review <ArrowRight size={13} />
             </button>
           </div>
 
           <div className="jr-process-card">
             <div className="jr-step-badge">4</div>
-            <h3>Đồng Hành Cùng Mentor 1:1</h3>
-            <p>Đặt lịch phỏng vấn thử hoặc review CV cùng Mentor thật. Hệ thống đánh giá 2 chiều minh bạch, quỹ thưởng phạt rõ ràng.</p>
-            <button className="jr-step-link-btn" onClick={() => go('learning')}>
-              Kho học liệu & Mentor <ArrowRight size={13} />
+            <h3>4. Xuất Bản Trang Portfolio Cá Nhân</h3>
+            <p>Tự động tạo trang Public Portfolio công khai có link riêng, xuất CV PDF chuyên nghiệp, thẩm định ATS và sẵn sàng ứng tuyển.</p>
+            <button className="jr-step-link-btn" onClick={() => go('portfolio')}>
+              Xem trang Portfolio <ArrowRight size={13} />
             </button>
           </div>
         </div>
@@ -2938,46 +2946,46 @@ function HomePage({ go }) {
       {/* Feature Showcase Grid */}
       <section className="content-page">
         <div className="jr-section-title-wrap">
-          <span className="jr-sub-pill">Tính năng nổi bật</span>
-          <h2 className="jr-section-title">Công Nghệ AI Tiên Tiến Cho Tuyển Dụng</h2>
-          <p className="jr-section-desc">Tích hợp mô hình AI thông minh giúp bạn rèn luyện phản xạ và chuẩn hóa hồ sơ chuyên nghiệp.</p>
+          <span className="jr-sub-pill">Tính năng nền tảng</span>
+          <h2 className="jr-section-title">Hệ Sinh Thái Hỗ Trợ Xây Dựng Portfolio Toàn Diện</h2>
+          <p className="jr-section-desc">Kết hợp giữa bài tập thực tế, đánh giá chuyên gia và công nghệ AI để chuẩn hóa hồ sơ ứng tuyển.</p>
         </div>
 
         <div className="jr-features-grid">
           <div className="jr-feature-card">
-            <div className="jr-feat-icon blue"><FileUp size={26} /></div>
-            <h3>Phân Tích CV Trong 30 Giây</h3>
-            <p>Tải lên file PDF hoặc dán nội dung. AI kiểm tra độ tương thích với hệ thống ATS, chỉ ra lỗi định dạng và từ khóa cần bổ sung ngay.</p>
+            <div className="jr-feat-icon blue"><Compass size={26} /></div>
+            <h3>Bản Đồ Nghề Nghiệp Tương Tác</h3>
+            <p>Khám phá cây kỹ năng, vai trò công việc và các cấp độ chuyên môn. Tự do tùy biến lộ trình nghề nghiệp phù hợp với định hướng cá nhân.</p>
           </div>
 
           <div className="jr-feature-card">
-            <div className="jr-feat-icon gold"><Mic size={26} /></div>
-            <h3>AI Phỏng Vấn Thích Ứng</h3>
-            <p>Hỗ trợ tương tác trực tiếp bằng giọng nói (Microphone) hoặc văn bản. AI đặt câu hỏi tình huống biến đổi theo câu trả lời của ứng viên.</p>
+            <div className="jr-feat-icon gold"><Rocket size={26} /></div>
+            <h3>Trung Tâm Thử Thách Dự Án (Hub)</h3>
+            <p>Kho bài tập thực tế từ cơ bản đến nâng cao. Mỗi thử thách hoàn thành sẽ trở thành một case study chất lượng trong Portfolio của bạn.</p>
           </div>
 
           <div className="jr-feature-card">
-            <div className="jr-feat-icon emerald"><Award size={26} /></div>
-            <h3>Khung Đánh Giá STAR Chuẩn Hóa</h3>
-            <p>Chấm điểm theo 4 thành tố: Tình huống (S), Nhiệm vụ (T), Hành động (A), Kết quả (R) kèm câu trả lời mẫu xuất sắc để học hỏi.</p>
+            <div className="jr-feat-icon emerald"><UserRound size={26} /></div>
+            <h3>Trang Portfolio Cá Nhân Công Khai</h3>
+            <p>Trang Portfolio sinh viên có URL riêng, hiển thị đầy đủ dự án đã làm, kỹ năng đã được xác thực, đánh giá từ mentor và nút xuất CV PDF.</p>
           </div>
 
           <div className="jr-feature-card">
             <div className="jr-feat-icon emerald"><GraduationCap size={26} /></div>
-            <h3>Nguồn Tài Liệu Từ Các Trường ĐH</h3>
-            <p>Hợp tác nội dung với sinh viên & giảng viên các trường ĐH FPT, Bách Khoa, KHTN... mang đến bộ đề thi & case study thực chiến.</p>
+            <h3>Nguồn Học Liệu Đại Học FPT, BK, KHTN</h3>
+            <p>Tổng hợp slide bài giảng, ngân hàng câu hỏi và case study thực chiến từ các trường đại học hàng đầu để sinh viên làm dự án.</p>
           </div>
 
           <div className="jr-feature-card">
-            <div className="jr-feat-icon blue"><Users size={26} /></div>
-            <h3>Phân Luồng Mentor AI & Thật</h3>
-            <p>Luyện tập tự do 24/7 với AI hoàn toàn miễn phí. Khi cần kinh nghiệm thực tế, dễ dàng đặt lịch 1-on-1 với Senior Mentor doanh nghiệp.</p>
+            <div className="jr-feat-icon blue"><FileUp size={26} /></div>
+            <h3>Thẩm Định CV & Portfolio Chuẩn ATS</h3>
+            <p>Quét độ tương thích hồ sơ với JD tuyển dụng trong 30 giây. Phát hiện từ khóa thiếu sót và tối ưu điểm số trước khi nộp cho nhà tuyển dụng.</p>
           </div>
 
           <div className="jr-feature-card">
             <div className="jr-feat-icon gold"><ShieldCheck size={26} /></div>
-            <h3>Sàng Lọc & Thưởng Phạt Minh Bạch</h3>
-            <p>Học viên đánh giá chất lượng buổi mentoring. Hệ thống tự động cảnh báo/loại bỏ mentor bị đánh giá thấp và thưởng quỹ cho mentor xuất sắc.</p>
+            <h3>Phân Luồng Mentor & Quỹ Thưởng Phạt</h3>
+            <p>AI chấm điểm sơ cấp 0đ, Senior Mentor review 1:1 chuyên sâu. Đánh giá 2 chiều minh bạch, lọc mentor tiêu cực và thưởng mentor xuất sắc.</p>
           </div>
         </div>
       </section>
@@ -2985,16 +2993,16 @@ function HomePage({ go }) {
       {/* CTA Bottom Banner */}
       <section className="content-page">
         <div className="jr-cta-banner">
-          <h2>Sẵn Sàng Chinh Phục Công Việc Mơ Ước?</h2>
-          <p>Tham gia cùng hơn 250+ sinh viên các trường đại học đã tự tin vượt qua các vòng phỏng vấn tuyển dụng cùng JobReady.</p>
+          <h2>Sẵn Sàng Xây Dựng Portfolio Chuẩn Doanh Nghiệp?</h2>
+          <p>Tham gia cùng hơn 250+ sinh viên các trường đại học đã sở hữu Portfolio chuyên nghiệp và tự tin nhận offer tuyển dụng.</p>
           <div className="jr-hero-actions" style={{ marginBottom: 0 }}>
-            <button className="jr-btn-primary" onClick={() => go('cv-gate')}>
-              <FileUp size={18} />
-              <span>Thẩm định CV ngay</span>
+            <button className="jr-btn-primary" onClick={() => go('roadmap')}>
+              <Rocket size={18} />
+              <span>Bắt đầu tạo Portfolio ngay</span>
             </button>
-            <button className="jr-btn-secondary" onClick={() => go('interview')}>
-              <Mic size={18} />
-              <span>Vào phòng phỏng vấn AI</span>
+            <button className="jr-btn-secondary" onClick={() => go('portfolio')}>
+              <UserRound size={18} />
+              <span>Xem mẫu Hồ sơ Portfolio</span>
             </button>
           </div>
         </div>
@@ -4672,6 +4680,30 @@ function PortfolioPage({ pathRoles, currentMajor, go, demoUser, apiStatus, submi
   }, [demoUser?.school, demoUser?.academicMajor, demoUser?.academicYear, demoUser?.portfolio?.links?.[0], currentMajor.title]);
   return (
     <section className="content-page portfolio-page">
+      <div className="portfolio-action-hub-banner" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--jr-card)', border: '1px solid var(--jr-card-border)', borderRadius: '18px', padding: '18px 24px', marginBottom: '20px', flexWrap: 'wrap', gap: '14px' }}>
+        <div>
+          <span className="mono-label" style={{ color: '#38bdf8' }}>Hồ Sơ Năng Lực Sinh Viên · Portfolio Workspace</span>
+          <h1 style={{ margin: '4px 0 2px', fontSize: '22px', fontWeight: 800 }}>Hồ Sơ Portfolio Của {profileName}</h1>
+          <p style={{ margin: 0, fontSize: '13px', color: 'var(--jr-text-sub)' }}>
+            Lộ trình: <b>{careerGoal}</b> · Trường: <b>{demoUser?.school || 'Đại học FPT / Bách Khoa / KHTN'}</b> · {portfolioProjectDetails.length} Dự án đã xác thực
+          </p>
+        </div>
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+          <button type="button" className="ghost-action compact" onClick={() => setShowPublicPreview((v) => !v)}>
+            <LinkIcon size={14} /> {showPublicPreview ? 'Ẩn Public Preview' : 'Trang công khai'}
+          </button>
+          <button type="button" className="ghost-action compact" onClick={() => go('hub')}>
+            <Rocket size={14} /> Thêm dự án mới
+          </button>
+          <button type="button" className="ghost-action compact" onClick={() => go('cv-gate')}>
+            <FileUp size={14} /> Thẩm định ATS
+          </button>
+          <button type="button" className="jr-btn-primary compact" style={{ padding: '8px 16px', fontSize: '13px' }} onClick={() => go('interview')}>
+            <Mic size={14} /> Luyện phỏng vấn bảo vệ dự án
+          </button>
+        </div>
+      </div>
+
       {showPublicPreview && (
         <section className="public-portfolio-preview">
           <div className="public-preview-hero">
