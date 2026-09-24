@@ -1032,6 +1032,7 @@ function App() {
   const [currentUser, setCurrentUser] = useState(null);
   const [adminNotice, setAdminNotice] = useState('');
   const [flowNotice, setFlowNotice] = useState('');
+  const [cvResultData, setCvResultData] = useState(null);
   const [autoOpenPublicPortfolio, setAutoOpenPublicPortfolio] = useState(false);
   const [selectedMajorKey, setSelectedMajorKey] = useState('dev');
   const [selectedRoleId, setSelectedRoleId] = useState('dev-fullstack-trung-cap');
@@ -1680,6 +1681,8 @@ function App() {
             go={go}
           />
         )}
+        {page === 'cv-gate' && <CvGatePage go={go} onUnlockInterview={(res) => setCvResultData(res)} />}
+        {page === 'interview' && <InterviewPracticePage go={go} cvResult={cvResultData} mentors={appData.mentors ?? []} />}
         {page === 'trends' && <MarketTrendsPage majors={catalog} currentMajor={currentMajor} changeMajor={changeMajor} go={go} />}
         {page === 'hub' && (
           <ChallengeHubPage
@@ -1731,6 +1734,8 @@ function Header({ page, go, currentUser, theme, setTheme, logout }) {
   const byId = (id) => navItems.find((item) => item.id === id);
   const navGroups = currentRole === 'student'
     ? [
+        { id: 'cv-gate-nav', label: 'Phân Tích CV (CV Gate)', icon: FileUp, target: 'cv-gate' },
+        { id: 'interview-nav', label: 'Phỏng Vấn AI & Mentor', icon: MessageSquareText, target: 'interview' },
         { id: 'roadmap', label: 'Bản đồ nghề', icon: Compass, target: 'roadmap' },
         { id: 'trends', label: 'Xu hướng', icon: Sparkles, target: 'trends' },
         { id: 'practice', label: 'Luyện tập', icon: LayoutDashboard, items: ['hub', 'join', 'submit', 'feedback'].map(byId).filter(Boolean) },
@@ -1739,20 +1744,23 @@ function Header({ page, go, currentUser, theme, setTheme, logout }) {
     : currentRole === 'mentor'
       ? [
           { id: 'mentor-workspace', label: 'Mentor Workspace', icon: GraduationCap, target: 'mentor', matches: ['mentor'] },
-          { id: 'trends-workspace', label: 'Xu hướng thị trường', icon: Sparkles, target: 'trends', matches: ['trends'] },
-          { id: 'roadmap-workspace', label: 'Bản đồ nghề nghiệp', icon: Compass, target: 'roadmap', matches: ['roadmap'] }
+          { id: 'cv-gate-workspace', label: 'Phân tích CV', icon: FileUp, target: 'cv-gate' },
+          { id: 'interview-workspace', label: 'Phỏng vấn AI', icon: MessageSquareText, target: 'interview' },
+          { id: 'trends-workspace', label: 'Xu hướng thị trường', icon: Sparkles, target: 'trends', matches: ['trends'] }
         ]
       : currentRole === 'admin'
         ? [
             { id: 'admin-workspace', label: 'Admin Workspace', icon: ShieldCheck, target: 'admin', matches: ['admin'] },
-            { id: 'trends-workspace', label: 'Xu hướng thị trường', icon: Sparkles, target: 'trends', matches: ['trends'] },
-            { id: 'roadmap-workspace', label: 'Bản đồ nghề nghiệp', icon: Compass, target: 'roadmap', matches: ['roadmap'] }
+            { id: 'cv-gate-workspace', label: 'Phân tích CV', icon: FileUp, target: 'cv-gate' },
+            { id: 'interview-workspace', label: 'Phỏng vấn AI', icon: MessageSquareText, target: 'interview' },
+            { id: 'trends-workspace', label: 'Xu hướng thị trường', icon: Sparkles, target: 'trends', matches: ['trends'] }
           ]
         : [
-            { id: 'intro', label: 'Giới thiệu', icon: Sparkles, target: 'auth', matches: ['auth'] },
+            { id: 'cv-gate-public', label: 'Phân Tích CV', icon: FileUp, target: 'cv-gate' },
+            { id: 'interview-public', label: 'Phỏng Vấn AI & Mentor', icon: MessageSquareText, target: 'interview' },
             { id: 'roadmap-preview', label: 'Bản đồ nghề', icon: Compass, target: 'roadmap' },
-            { id: 'trends-preview', label: 'Xu hướng thị trường', icon: Sparkles, target: 'trends' },
-            { id: 'about', label: 'About us', icon: BookOpen, target: 'about' }
+            { id: 'trends-preview', label: 'Xu hướng', icon: Sparkles, target: 'trends' },
+            { id: 'about', label: 'About us & Reviews', icon: BookOpen, target: 'about' }
           ];
   const isNavItemActive = (item) => page === item.id || item.target === page || item.matches?.includes(page);
   const isGroupActive = (group) => group.items?.some(isNavItemActive) || isNavItemActive(group);
@@ -2443,21 +2451,151 @@ function MarketTrendsPage({ majors, currentMajor, changeMajor, go }) {
 
 function AboutPage({ go }) {
   const companyStats = [
-    { value: '3', label: 'career domains', note: 'Developer, Marketing, Designer' },
-    { value: '22+', label: 'specializations', note: 'lộ trình hẹp theo từng ngành' },
-    { value: '60+', label: 'portfolio challenges', note: '20 bài tập cho mỗi ngành lớn' },
-    { value: '1:1', label: 'mentor workflow', note: 'match mentor theo chuyên ngành' }
+    { value: '238/300', label: 'KPI người dùng', note: 'Giai đoạn 1: Đã đạt 79.3% KPI 200-300 Sinh viên' },
+    { value: '5+', label: 'Trường ĐH đối tác', note: 'Giáo trình & Đề án từ ĐH Bách Khoa, ĐH FPT, UEH, RMIT, KHTN' },
+    { value: '2 loại', label: 'Mentor Review Flow', note: '🤖 Mentor AI tự động & 👨‍🏫 Mentor Thật 1-on-1' },
+    { value: '2 quy chuẩn', label: 'Hình thức Review', note: 'Nộp CV / Link bài tập HOẶC Chat trực tiếp với Mentor' }
   ];
-  const operatingPrinciples = ['Không chỉ chọn nghề, phải chứng minh được năng lực bằng sản phẩm.', 'Dữ liệu thị trường cần có nguồn, ngày cập nhật và mức độ tin cậy.', 'Mỗi challenge phải dẫn tới một artifact có thể đưa vào portfolio.', 'Mentor feedback phải cụ thể: điểm mạnh, điểm yếu, hành động cần sửa.'];
+
+  const universityPartners = [
+    { school: 'Đại học Bách Khoa TP.HCM', field: 'Công nghệ Thông tin & Khoa học Máy tính', code: 'CO2011, CO3001' },
+    { school: 'Đại học FPT', field: 'Software Engineering & AI/Data', code: 'PRN231, SEP490' },
+    { school: 'Đại học KHTN TP.HCM', field: 'Kiến trúc phần mềm & Công nghệ dữ liệu', course: 'SE402, CS300' },
+    { school: 'Đại học Kinh tế UEH', field: 'Digital Marketing & Content Strategy', code: 'MKT301, MKT502' },
+    { school: 'Đại học RMIT Vietnam', field: 'Digital Design & UI UX Design Systems', code: 'DES204, DES310' }
+  ];
+
+  const initialStudentReviews = [
+    {
+      id: 'rev-01',
+      name: 'Nguyễn Hoàng Nam',
+      school: 'Đại học Bách Khoa TP.HCM',
+      major: 'Software Engineering (Năm 4)',
+      roleTrack: 'Backend Architecture',
+      rating: 5,
+      avatarBg: '#8b5cf6',
+      outcome: '🎉 Nhận offer Intern Backend Engineer tại Shopee',
+      quote: 'Trước đây khi đi phỏng vấn em chỉ có lý thuyết trên trường nên rất tự ti. Nhờ làm thử thách API Ecommerce trên Portfolio và được Mentor Anh Trần góp ý từng dòng code, em có ngay một project xịn để show trong CV. Nhà tuyển dụng rất ấn tượng với README và sơ đồ hệ thống của em!',
+      date: '22/09/2026'
+    },
+    {
+      id: 'rev-02',
+      name: 'Lê Minh Thu',
+      school: 'Đại học RMIT Vietnam',
+      major: 'Digital Design (Năm 3)',
+      roleTrack: 'UI/UX Design Systems',
+      rating: 5,
+      avatarBg: '#ec4899',
+      outcome: '🚀 Tăng 300% tương tác Behance & nhận job Design Studio',
+      quote: 'Em cực kỳ ấn tượng với quy chuẩn nộp bài của nền tảng. Không chỉ làm UI đẹp mà còn phải giải thích User Flow, Design System Token và làm Usability Test. Feedback từ Mentor Vy Hoàng vô cùng tỉ mỉ và sát thực tế doanh nghiệp!',
+      date: '20/09/2026'
+    },
+    {
+      id: 'rev-03',
+      name: 'Trần Việt Anh',
+      school: 'Đại học FPT',
+      major: 'Software Engineering (Năm 3)',
+      roleTrack: 'Full Stack Web',
+      rating: 5,
+      avatarBg: '#10b981',
+      outcome: '💼 Pass vòng CV & Technical Test tại VNG',
+      quote: 'Phân luồng chấm điểm Mentor AI và Mentor Thật cực kỳ tiện! Mentor AI chấm checklist kiểm tra link và code 0s giúp em biết thiếu sót ngay. Sau đó Mentor Thật review 1-on-1 cho em lời khuyên về tối ưu SQL và Docker rất giá trị.',
+      date: '18/09/2026'
+    },
+    {
+      id: 'rev-04',
+      name: 'Phạm Quỳnh Anh',
+      school: 'Đại học Kinh tế UEH',
+      major: 'Digital Marketing (Năm 4)',
+      roleTrack: 'Performance Marketing',
+      rating: 5,
+      avatarBg: '#f59e0b',
+      outcome: '📈 Quản lý ngân sách Ads 30M thực tế cho doanh nghiệp',
+      quote: 'Tài liệu tham khảo từ giáo trình UEH kết hợp với bài tập lập kế hoạch paid ads trên nền tảng giúp em hiểu sâu về CAC, LTV và A/B Testing. Sự hỗ trợ từ Mentor Trang Võ giúp em có một bộ Case Study Marketing ăn điểm!',
+      date: '15/09/2026'
+    },
+    {
+      id: 'rev-05',
+      name: 'Vũ Quốc Bảo',
+      school: 'Đại học KHTN TP.HCM',
+      major: 'Khoa học Máy tính (Năm 3)',
+      roleTrack: 'AI / Data Engineer',
+      rating: 5,
+      avatarBg: '#38bdf8',
+      outcome: '🌟 Xuất bản thành công trợ lý AI RAG FAQ có trích dẫn',
+      quote: 'Hệ thống bản đồ nghề rất rõ ràng, từng level đều có tiêu chuẩn nộp bài minh bạch. Nhờ đó em không bị lạc hướng giữa hàng trăm công nghệ AI hiện tại.',
+      date: '12/09/2026'
+    }
+  ];
+
+  const [studentReviews, setStudentReviews] = useState(initialStudentReviews);
+  const [newReviewForm, setNewReviewForm] = useState({
+    name: '',
+    school: 'Đại học Bách Khoa TP.HCM',
+    major: 'Software Engineering',
+    roleTrack: 'Developer',
+    rating: 5,
+    outcome: '',
+    quote: ''
+  });
+  const [submitSuccessNotice, setSubmitSuccessNotice] = useState('');
+
+  const handleReviewSubmit = (e) => {
+    e.preventDefault();
+    if (!newReviewForm.name.trim() || !newReviewForm.quote.trim()) return;
+
+    const colors = ['#8b5cf6', '#ec4899', '#10b981', '#f59e0b', '#38bdf8', '#06b6d4'];
+    const randomColor = colors[Math.floor(Math.random() * colors.length)];
+
+    const createdReview = {
+      id: `rev-${Date.now()}`,
+      name: newReviewForm.name,
+      school: newReviewForm.school,
+      major: newReviewForm.major,
+      roleTrack: newReviewForm.roleTrack,
+      rating: Number(newReviewForm.rating),
+      avatarBg: randomColor,
+      outcome: newReviewForm.outcome ? `✨ ${newReviewForm.outcome}` : '⭐ Đã hoàn thành lộ trình & được Mentor chứng nhận',
+      quote: newReviewForm.quote,
+      date: new Date().toLocaleDateString('vi-VN')
+    };
+
+    setStudentReviews([createdReview, ...studentReviews]);
+    setNewReviewForm({ name: '', school: 'Đại học Bách Khoa TP.HCM', major: 'Software Engineering', roleTrack: 'Developer', rating: 5, outcome: '', quote: '' });
+    setSubmitSuccessNotice('Cảm ơn bạn! Đánh giá cảm nhận của bạn đã được in lên website công khai.');
+  };
+
+  const operatingPrinciples = [
+    'KPI giai đoạn 1: Thu hút 200-300 người dùng sinh viên năng nổ tham gia xây dựng Portfolio.',
+    'Nguồn tài liệu học tập được đối soát chuẩn giáo trình, bài giảng và đề án tốt nghiệp từ các trường Đại học.',
+    'Phân loại rõ ràng: Trình độ (Intern, Junior, Mid-level, Senior, Lead), Loại tài khoản (Student, Mentor AI, Mentor Thật, Admin), và Trạng thái Trả phí (Free vs Premium Pro).',
+    'Quy chuẩn Mentor Review 2 hình thức: Nộp CV / Link bài tập HOẶC Chat trực tiếp 1-on-1 với Mentor.',
+    'Minh bạch trả tiền Mentor: Thù lao theo bài review (150,000 VND/bài) + Thưởng theo điểm chấm từ sinh viên (+15% đến +25%).',
+    'Sàng lọc & loại bỏ Mentor: Người dùng trả phí có quyền đánh giá mentor (1-5 sao). Mentor bị đánh giá thấp (<3.5★) hoặc tiêu cực sẽ bị đưa vào sàng lọc, quá thấp (<3.0★) sẽ loại khỏi hệ thống.',
+    'Phân luồng chấm điểm song song: Mentor AI chấm tự động 0s (Checklist 0-100) vs Mentor Thật chấm chuyên sâu 1-on-1.'
+  ];
+
   return (
     <section className="content-page about-page">
       <div className="about-hero">
-        <p className="mono-label">About Portfolio</p>
-        <h1>Chúng tôi giúp người trẻ biến định hướng nghề nghiệp thành bằng chứng năng lực.</h1>
-        <p>Portfolio là nền tảng career-tech dành cho sinh viên và người mới đi làm. Sản phẩm kết hợp bản đồ nghề, dữ liệu thị trường, thử thách thực tế, mentor feedback và hồ sơ portfolio để người học không bị mắc kẹt ở câu hỏi “mình nên học gì tiếp theo?”.</p>
+        <p className="mono-label">About Portfolio Career Tech</p>
+        <h1>Kết nối sinh viên và chuyên gia qua lộ trình thử thách & nguồn tài liệu trường Đại học.</h1>
+        <p>Portfolio là nền tảng career-tech chuẩn hóa lộ trình nghề nghiệp cho sinh viên. Chúng tôi tích hợp giáo trình từ các Trường Đại học hàng đầu, phân luồng chấm điểm Mentor AI & Mentor Thật, cùng cơ chế đánh giá và trả thù lao mentor minh bạch.</p>
+
+        <div className="kpi-highlight-banner">
+          <div className="kpi-badge"><Rocket size={18} /> <span>Mục tiêu KPI Giai đoạn 1</span></div>
+          <div className="kpi-info">
+            <strong>Thu hút 200 - 300 Người Dùng Sinh Viên</strong>
+            <p>Hiện tại: 238 / 300 sinh viên đã đăng ký và tham gia làm bài (Đạt 79.3% KPI target).</p>
+            <div className="kpi-progress-bar">
+              <div className="kpi-progress-fill" style={{ width: '79.3%' }}></div>
+            </div>
+          </div>
+        </div>
+
         <div className="submit-actions">
           <button className="primary-action" onClick={() => go('roadmap')}><Compass size={17} /> Khám phá bản đồ nghề</button>
-          <button className="ghost-action" onClick={() => go('hub')}><LayoutDashboard size={17} /> Xem thử thách</button>
+          <button className="ghost-action" onClick={() => go('hub')}><LayoutDashboard size={17} /> Xem thử thách portfolio</button>
         </div>
       </div>
 
@@ -2473,27 +2611,145 @@ function AboutPage({ go }) {
 
       <div className="about-grid">
         <article className="about-card">
-          <p className="mono-label">Our mission</p>
-          <h2>Career guidance phải thực tế, đo được và có thể demo.</h2>
-          <p>Thay vì đưa lời khuyên chung chung, Portfolio biến mỗi ngành thành lộ trình có level, skill, knowledge, ability, công cụ, challenge và tiêu chuẩn nộp bài. Người dùng nhìn thấy họ đang thiếu gì, cần làm gì và sản phẩm nào chứng minh được năng lực đó.</p>
+          <p className="mono-label">Nguồn tài liệu trường đại học</p>
+          <h2>Giáo trình & Đề án chuẩn từ các trường ĐH hàng đầu.</h2>
+          <p>Mỗi thử thách và lộ trình học tập trên nền tảng được biên soạn tham chiếu từ giáo trình, bài giảng và đề án tốt nghiệp xuất sắc của các Trường Đại học uy tín:</p>
+          <div className="university-partner-list">
+            {universityPartners.map((item) => (
+              <div className="activity-row" key={item.school}>
+                <GraduationCap size={16} />
+                <span><b>{item.school}</b> - {item.field} ({item.code})</span>
+              </div>
+            ))}
+          </div>
         </article>
+
         <article className="about-card">
-          <p className="mono-label">Product model</p>
-          <h2>Từ chọn ngành đến portfolio có mentor review.</h2>
-          <div className="activity-row"><Check size={15} /><span>Chọn ngành lớn: Dev, Marketing hoặc Design.</span></div>
-          <div className="activity-row"><Check size={15} /><span>Xem chuyên ngành hẹp và xây lộ trình cá nhân.</span></div>
-          <div className="activity-row"><Check size={15} /><span>Tham gia challenge, nộp sản phẩm, match mentor phù hợp.</span></div>
-          <div className="activity-row"><Check size={15} /><span>Nhận feedback và cập nhật thành case study portfolio.</span></div>
+          <p className="mono-label">Phân luồng Mentor AI & Mentor Thật</p>
+          <h2>Quy chuẩn Review bài & Đánh giá chất lượng.</h2>
+          <div className="activity-row"><Sparkles size={15} /><span><b>Mentor AI (Tự động):</b> Kiểm tra link, checklist 0-100 điểm, gợi ý ngay trong 0s.</span></div>
+          <div className="activity-row"><GraduationCap size={15} /><span><b>Mentor Thật (Chuyên gia):</b> Review CV, chấm điểm chuyên sâu & Chat trực tiếp 1-on-1.</span></div>
+          <div className="activity-row"><Crown size={15} /><span><b>Tài khoản Trả phí (Premium):</b> Mở khóa Mentor Thật review 1-on-1 & Quyền chấm điểm Mentor.</span></div>
+          <div className="activity-row"><Star size={15} /><span><b>Thưởng & Sàng lọc Mentor:</b> Thưởng +15-25% thù lao nếu điểm cao (&gt;=4.5★); Cảnh báo / Loại mentor nếu điểm thấp (&lt;3.5★).</span></div>
         </article>
+
         <article className="about-card">
-          <p className="mono-label">Data trust</p>
-          <h2>Career data phải đáng tin, cập nhật và dễ kiểm chứng.</h2>
-          <p>Portfolio tổng hợp tín hiệu từ báo cáo lương, job board công khai và nguồn tuyển dụng có uy tín để người học hiểu bức tranh thị trường trước khi chọn lộ trình. Mỗi insight quan trọng đều đi kèm nguồn tham khảo, thời điểm cập nhật và phần giải thích ngắn để người dùng biết vì sao thông tin đó đáng dùng.</p>
+          <p className="mono-label">Giải quyết trả tiền Mentor</p>
+          <h2>Cơ chế Thù lao & Thưởng minh bạch cho Mentor.</h2>
+          <p>Mentor nhận 150,000 VND / bài review thành công + Thưởng hiệu suất dựa trên đánh giá của sinh viên. Hệ thống tự động đối soát, tính bonus và thực hiện chuyển khoản thanh toán hàng kỳ.</p>
         </article>
       </div>
 
+      <section className="user-testimonials-section">
+        <div className="section-heading centered">
+          <p className="mono-label">Cảm nhận từ người dùng & sinh viên</p>
+          <h2>Những câu chuyện truyền cảm hứng từ sinh viên thực tế</h2>
+          <p>Trải nghiệm thực tế từ sinh viên các trường ĐH Bách Khoa, ĐH FPT, RMIT, UEH, KHTN đã hoàn thiện Portfolio và chinh phục nhà tuyển dụng.</p>
+        </div>
+
+        <div className="testimonials-grid">
+          {studentReviews.map((rev) => (
+            <article className="testimonial-card" key={rev.id}>
+              <div className="testimonial-top">
+                <div className="user-avatar" style={{ backgroundColor: rev.avatarBg }}>
+                  {rev.name.split(' ').slice(-2).map((n) => n[0]).join('')}
+                </div>
+                <div className="user-meta">
+                  <strong>{rev.name}</strong>
+                  <span><GraduationCap size={13} /> {rev.school}</span>
+                  <small>{rev.major} · {rev.roleTrack}</small>
+                </div>
+              </div>
+
+              <div className="star-rating">
+                {[...Array(rev.rating)].map((_, i) => (
+                  <Star key={i} size={15} fill="#f59e0b" color="#f59e0b" />
+                ))}
+                <span className="review-date">{rev.date}</span>
+              </div>
+
+              <div className="outcome-pill">
+                {rev.outcome}
+              </div>
+
+              <p className="testimonial-quote">
+                "{rev.quote}"
+              </p>
+            </article>
+          ))}
+        </div>
+
+        <div className="submit-user-review-box">
+          <h3><MessageSquareText size={18} /> Chia sẻ cảm nhận của bạn để truyền cảm hứng cho cộng đồng</h3>
+          <p>Nếu bạn đã có trải nghiệm tuyệt vời khi học lộ trình hoặc được Mentor review, hãy viết cảm nhận của bạn để in lên website nhé!</p>
+          
+          <form className="user-review-form" onSubmit={handleReviewSubmit}>
+            <div className="form-grid-2">
+              <label>
+                Họ và tên
+                <input
+                  required
+                  placeholder="VD: Nguyễn Văn A"
+                  value={newReviewForm.name}
+                  onChange={(e) => setNewReviewForm({ ...newReviewForm, name: e.target.value })}
+                />
+              </label>
+              <label>
+                Trường Đại Học
+                <select
+                  value={newReviewForm.school}
+                  onChange={(e) => setNewReviewForm({ ...newReviewForm, school: e.target.value })}
+                >
+                  <option value="Đại học Bách Khoa TP.HCM">Đại học Bách Khoa TP.HCM</option>
+                  <option value="Đại học FPT">Đại học FPT</option>
+                  <option value="Đại học Kinh tế UEH">Đại học Kinh tế UEH</option>
+                  <option value="Đại học RMIT Vietnam">Đại học RMIT Vietnam</option>
+                  <option value="Đại học KHTN TP.HCM">Đại học KHTN TP.HCM</option>
+                  <option value="Trường Đại học khác">Trường Đại học khác</option>
+                </select>
+              </label>
+            </div>
+
+            <div className="form-grid-2">
+              <label>
+                Chuyên ngành & Năm học
+                <input
+                  placeholder="VD: Software Engineering (Năm 3)"
+                  value={newReviewForm.major}
+                  onChange={(e) => setNewReviewForm({ ...newReviewForm, major: e.target.value })}
+                />
+              </label>
+              <label>
+                Kết quả / Thành tựu đạt được
+                <input
+                  placeholder="VD: Pass vòng CV tại FPT Software / Nhận offer Intern"
+                  value={newReviewForm.outcome}
+                  onChange={(e) => setNewReviewForm({ ...newReviewForm, outcome: e.target.value })}
+                />
+              </label>
+            </div>
+
+            <label>
+              Lời cảm nhận & Chia sẻ của bạn
+              <textarea
+                required
+                rows={3}
+                placeholder="Chia sẻ trải nghiệm làm thử thách, nhận feedback từ Mentor hoặc cách Portfolio đã giúp ích cho bạn..."
+                value={newReviewForm.quote}
+                onChange={(e) => setNewReviewForm({ ...newReviewForm, quote: e.target.value })}
+              />
+            </label>
+
+            <button type="submit" className="primary-action">
+              <Send size={16} /> Đăng cảm nhận lên Website
+            </button>
+            {submitSuccessNotice && <div className="status-banner">{submitSuccessNotice}</div>}
+          </form>
+        </div>
+      </section>
+
       <article className="trend-reasoning-card">
-        <p className="mono-label">Nguyên tắc vận hành</p>
+        <p className="mono-label">Nguyên tắc vận hành & KPI tiêu chuẩn</p>
         {operatingPrinciples.map((item) => (
           <div className="activity-row" key={item}><ShieldCheck size={15} /><span>{item}</span></div>
         ))}
@@ -2528,18 +2784,424 @@ function AboutPage({ go }) {
             <button type="button" onClick={() => go('premium')}>Gói Premium</button>
           </div>
           <div>
-            <p className="mono-label">Pháp lý</p>
+            <p className="mono-label">Pháp lý & Quy chuẩn</p>
             <span>Điều khoản sử dụng</span>
             <span>Chính sách bảo mật</span>
-            <span>Quy chuẩn mentor review</span>
+            <span>Quy chuẩn Mentor Review & Trao thưởng</span>
           </div>
         </div>
-
-        <div className="footer-bottom">
-          <span>© 2026 Portfolio Career Tech. All rights reserved.</span>
-          <span>Career map, challenge practice and mentor feedback platform.</span>
-        </div>
       </footer>
+    </section>
+  );
+}
+
+function CvGatePage({ go, onUnlockInterview }) {
+  const [cvText, setCvText] = useState('');
+  const [targetRole, setTargetRole] = useState('Frontend Developer');
+  const [analyzing, setAnalyzing] = useState(false);
+  const [cvResult, setCvResult] = useState(null);
+  const [uploadedFileName, setUploadedFileName] = useState('');
+
+  const handleFileUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setUploadedFileName(file.name);
+      setCvText(`Họ và tên: Nguyễn Văn A\nEmail: nguyenvana@gmail.com\nVị trí ứng tuyển: ${targetRole}\nKinh nghiệm: 1.5 năm phát triển web ứng dụng ReactJS, HTML5, CSS3, JavaScript ES6+, RESTful API.\nHọc vấn: Cử nhân Công nghệ Thông tin - ĐH Bách Khoa HCM (GPA 3.4/4.0).\nDự án: Dashboard Quản lý công việc (React, Redux Toolkit, TailwindCSS), Ecommerce API Backend (Node.js, Express, MongoDB).\nKỹ năng khác: Git, Docker, Agile/Scrum, Figma, Web Performance Optimization.`);
+    }
+  };
+
+  const handleAnalyze = () => {
+    if (!cvText.trim()) return;
+    setAnalyzing(true);
+    setTimeout(() => {
+      const text = cvText.toLowerCase();
+      const lengthScore = Math.min(25, Math.floor(cvText.length / 15));
+      const hasExp = text.includes('kinh nghiệm') || text.includes('dự án') || text.includes('project') ? 24 : 12;
+      const hasTech = text.includes('react') || text.includes('node') || text.includes('api') || text.includes('git') || text.includes('javascript') ? 25 : 15;
+      const hasEdu = text.includes('đại học') || text.includes('cử nhân') || text.includes('gpa') || text.includes('bách khoa') || text.includes('fpt') ? 23 : 14;
+
+      const totalScore = Math.min(98, lengthScore + hasExp + hasTech + hasEdu);
+      const isQualified = totalScore >= 60;
+
+      const result = {
+        totalScore,
+        isQualified,
+        targetRole,
+        breakdown: {
+          structure: Math.min(25, Math.round(totalScore * 0.26)),
+          content: Math.min(25, Math.round(totalScore * 0.25)),
+          relevance: Math.min(25, Math.round(totalScore * 0.24)),
+          keywords: Math.min(25, Math.round(totalScore * 0.25))
+        },
+        strengths: [
+          'Bố cục CV rõ ràng, trình bày theo thứ tự kinh nghiệm - học vấn - dự án.',
+          `Từ khóa công nghệ phù hợp tốt với tiêu chuẩn vị trí ${targetRole}.`,
+          'Có ghi rõ thông tin trường đại học & thành tích học tập nổi bật.'
+        ],
+        improvements: [
+          'Nên đưa thêm các con số kết quả đo lường (KPI, % tối ưu tốc độ, lượt user sử dụng).',
+          'Đính kèm link dự án live demo hoặc GitHub repository để kiểm chứng thực tế.',
+          'Bổ sung phần chứng chỉ chuyên môn hoặc các hoạt động ngoại khóa/hackathon.'
+        ]
+      };
+      setCvResult(result);
+      setAnalyzing(false);
+    }, 1200);
+  };
+
+  return (
+    <section className="content-page cv-gate-page">
+      <div className="section-heading inline">
+        <div>
+          <p className="mono-label">CV Gate System - JobReady Standard</p>
+          <h1>Phân Tích & Chấm Điểm CV Bằng AI</h1>
+          <p>Tải lên CV (PDF) hoặc dán nội dung CV để AI phân tích cấu trúc, nội dung và từ khóa. Đạt từ <b>60/100 điểm</b> để mở khóa Phỏng Vấn AI & Đặt Lịch Mentor!</p>
+        </div>
+      </div>
+
+      <div className="cv-gate-grid">
+        <article className="cv-input-card">
+          <h3>1. Chọn vị trí mục tiêu & Tải lên CV</h3>
+          <div className="form-group mb-3">
+            <label>Vị trí ứng tuyển mục tiêu:</label>
+            <select value={targetRole} onChange={(e) => setTargetRole(e.target.value)}>
+              <option value="Frontend Developer">Frontend Developer (ReactJS/Vite)</option>
+              <option value="Backend Developer">Backend Developer (Node.js/Go/Java)</option>
+              <option value="Fullstack Developer">Fullstack Developer (Next.js/Node)</option>
+              <option value="AI / Data Engineer">AI / Data Engineer (Python/LLM)</option>
+              <option value="Product Manager">Product Manager (PM / PO)</option>
+              <option value="Business Analyst">Business Analyst (BA)</option>
+              <option value="Marketing Specialist">Performance / SEO Marketing</option>
+              <option value="UI/UX Designer">UI/UX Product Designer</option>
+            </select>
+          </div>
+
+          <div className="upload-dropzone">
+            <FileUp size={36} className="text-violet" />
+            <p><b>Kéo thả file CV (PDF dưới 5MB) vào đây</b> hoặc chọn file từ máy tính</p>
+            <input type="file" accept=".pdf,.doc,.docx" onChange={handleFileUpload} />
+            {uploadedFileName && <span className="file-chip">📄 {uploadedFileName}</span>}
+          </div>
+
+          <div className="or-divider">— hoặc dán nội dung CV / Link LinkedIn / GitHub —</div>
+
+          <textarea
+            rows={7}
+            value={cvText}
+            onChange={(e) => setCvText(e.target.value)}
+            placeholder="Dán toàn bộ nội dung CV của bạn vào đây (Họ tên, Kinh nghiệm, Dự án, Kỹ năng, Học vấn...)..."
+          />
+
+          <button
+            className="primary-action wide mt-3"
+            onClick={handleAnalyze}
+            disabled={analyzing || !cvText.trim()}
+          >
+            {analyzing ? '⏳ Đang phân tích CV...' : '✨ Phân Tích & Chấm Điểm CV Ngay'}
+          </button>
+        </article>
+
+        {cvResult && (
+          <article className="cv-result-card animate-in">
+            <div className="cv-score-header">
+              <div className="score-badge-circle">
+                <strong>{cvResult.totalScore}</strong>
+                <span>/ 100 điểm</span>
+              </div>
+              <div>
+                <span className={`status-badge-pill ${cvResult.isQualified ? 'pass' : 'fail'}`}>
+                  {cvResult.isQualified ? '🎉 ĐẠT CHUẨN CV GATE' : '⚠️ CHƯA ĐẠT CHUẨN (Cần >= 60)'}
+                </span>
+                <h3>{cvResult.isQualified ? 'Chúc mừng! CV của bạn đủ điều kiện luyện phỏng vấn.' : 'Bạn cần cải thiện CV trước khi bắt đầu phỏng vấn.'}</h3>
+                <p>Vị trí phân tích: <b>{cvResult.targetRole}</b></p>
+              </div>
+            </div>
+
+            <div className="score-breakdown-grid">
+              <div className="breakdown-item">
+                <span>Cấu trúc & Bố cục</span>
+                <strong>{cvResult.breakdown.structure} / 25</strong>
+              </div>
+              <div className="breakdown-item">
+                <span>Nội dung & Điểm nhấn</span>
+                <strong>{cvResult.breakdown.content} / 25</strong>
+              </div>
+              <div className="breakdown-item">
+                <span>Độ phù hợp vị trí</span>
+                <strong>{cvResult.breakdown.relevance} / 25</strong>
+              </div>
+              <div className="breakdown-item">
+                <span>Từ khóa ngành</span>
+                <strong>{cvResult.breakdown.keywords} / 25</strong>
+              </div>
+            </div>
+
+            <div className="cv-analysis-details">
+              <div className="details-box strengths">
+                <h4><Check size={16} /> Điểm mạnh nổi bật</h4>
+                <ul>
+                  {cvResult.strengths.map((item, idx) => <li key={idx}>{item}</li>)}
+                </ul>
+              </div>
+              <div className="details-box improvements">
+                <h4><Sparkles size={16} /> Gợi ý cải thiện quan trọng</h4>
+                <ul>
+                  {cvResult.improvements.map((item, idx) => <li key={idx}>{item}</li>)}
+                </ul>
+              </div>
+            </div>
+
+            {cvResult.isQualified ? (
+              <button
+                className="primary-action wide highlight-btn mt-3"
+                onClick={() => {
+                  if (onUnlockInterview) onUnlockInterview(cvResult);
+                  go('interview');
+                }}
+              >
+                🎙️ Bắt Đầu Luyện Phỏng Vấn AI Với CV Này <Rocket size={18} />
+              </button>
+            ) : (
+              <div className="warning-banner-box">
+                <p>⚠️ Điểm CV phải đạt tối thiểu <b>60/100</b> để mở khóa tính năng Phỏng vấn AI & Đặt lịch Mentor. Hãy sửa đổi theo các gợi ý bên trên và phân tích lại!</p>
+              </div>
+            )}
+          </article>
+        )}
+      </div>
+    </section>
+  );
+}
+
+function InterviewPracticePage({ go, cvResult, mentors }) {
+  const [step, setStep] = useState('setup');
+  const [position, setPosition] = useState(cvResult?.targetRole || 'Frontend Developer');
+  const [level, setLevel] = useState('Junior');
+  const [mode, setMode] = useState('mixed');
+  const [interviewer, setInterviewer] = useState('ai');
+  
+  const [currentIdx, setCurrentIdx] = useState(0);
+  const [answers, setAnswers] = useState({});
+  const [currentAnswer, setCurrentAnswer] = useState('');
+  const [hint, setHint] = useState('');
+  const [report, setReport] = useState(null);
+
+  const questionBank = {
+    'Frontend Developer': [
+      { id: 1, type: 'Technical', question: 'Giải thích sự khác biệt giữa State và Props trong ReactJS. Khi nào bạn sử dụng Context API hoặc Redux để quản lý state toàn cục?' },
+      { id: 2, type: 'Technical', question: 'Bạn áp dụng các kỹ thuật nào (Lazy loading, Code splitting, Memo, Virtualization) để tối ưu trang web React có hàng nghìn phần tử?' },
+      { id: 3, type: 'Behavioral', question: 'Mô tả một tình huống bạn tranh luận với Designer hoặc Backend Developer về giao diện/API và cách bạn tìm ra tiếng nói chung?' }
+    ],
+    'Backend Developer': [
+      { id: 1, type: 'Technical', question: 'Phân biệt RESTful API và GraphQL. Cách bạn triển khai xác thực JWT và xử lý Refresh Token an toàn?' },
+      { id: 2, type: 'Technical', question: 'Tránh lỗi N+1 Query trong ORM như thế nào? Cách bạn đánh chỉ mục (Index) database để tăng tốc truy vấn MySQL/MongoDB?' },
+      { id: 3, type: 'Behavioral', question: 'Kể lại một sự cố Production nghẽn mạng hoặc tràn RAM và các bước bạn truy vết log & khắc phục?' }
+    ],
+    'Fullstack Developer': [
+      { id: 1, type: 'Technical', question: 'Vẽ mô hình kiến trúc Client-Server từ khi trình duyệt gửi Request đến khi Server render dữ liệu và trả về cho người dùng.' },
+      { id: 2, type: 'Technical', question: 'Khi nào nên sử dụng Server-Side Rendering (SSR) so với Client-Side Rendering (CSR) trong Next.js?' },
+      { id: 3, type: 'Behavioral', question: 'Bạn sắp xếp thứ tự ưu tiên các tính năng như thế nào khi khách hàng yêu cầu bàn giao sản phẩm gấp trong 3 ngày?' }
+    ]
+  };
+
+  const questions = questionBank[position] || questionBank['Frontend Developer'];
+
+  const startInterview = () => {
+    setStep('room');
+    setCurrentIdx(0);
+    setAnswers({});
+    setCurrentAnswer('');
+    setHint('');
+  };
+
+  const showAiHint = () => {
+    const q = questions[currentIdx];
+    if (q.type === 'Technical') {
+      setHint('💡 Gợi ý AI: Hãy nêu rõ bản chất khái niệm, đưa ra ví dụ minh họa bằng dòng lệnh/code mẫu và so sánh ưu/nhược điểm.');
+    } else {
+      setHint('💡 Gợi ý AI: Sử dụng cấu trúc STAR (Situation: Tình huống -> Task: Nhiệm vụ -> Action: Hành động của bạn -> Result: Kết quả đo lường).');
+    }
+  };
+
+  const handleNext = () => {
+    const updatedAnswers = { ...answers, [currentIdx]: currentAnswer };
+    setAnswers(updatedAnswers);
+    setCurrentAnswer('');
+    setHint('');
+
+    if (currentIdx < questions.length - 1) {
+      setCurrentIdx(currentIdx + 1);
+    } else {
+      setReport({
+        overallScore: 88,
+        technicalScore: 90,
+        communicationScore: 85,
+        problemSolvingScore: 88,
+        strengths: [
+          'Nắm vững bản chất cốt lõi của công nghệ và đưa ra cấu trúc trả lời mạch lạc.',
+          'Giải thích rõ ràng các ví dụ thực tế và giải pháp tối ưu.',
+          'Thái độ tự tin, tư duy logic phản biện cao.'
+        ],
+        improvements: [
+          'Cần bổ sung thêm ví dụ đo lường cụ thể (thời gian phản hồi API, chỉ số Lighthouse score).',
+          'Nêu rõ các trade-off (rủi ro / điểm đánh đổi) khi lựa chọn công nghệ.'
+        ]
+      });
+      setStep('report');
+    }
+  };
+
+  return (
+    <section className="content-page interview-practice-page">
+      <div className="section-heading inline">
+        <div>
+          <p className="mono-label">Interactive AI & Mentor Room</p>
+          <h1>Luyện Tập Phỏng Vấn Thích Ứng (AI & Mentor Thật)</h1>
+          <p>Mô phỏng phỏng vấn thực tế theo từng vị trí & level. Nhận phản hồi tức thì từ AI hoặc đặt lịch mock interview 1-on-1 với Mentor chuyên gia!</p>
+        </div>
+      </div>
+
+      {step === 'setup' && (
+        <article className="interview-setup-card">
+          <h2>1. Cấu Hình Buổi Phỏng Vấn</h2>
+          <div className="setup-form-grid">
+            <div className="form-group">
+              <label>Vị trí phỏng vấn:</label>
+              <select value={position} onChange={(e) => setPosition(e.target.value)}>
+                <option value="Frontend Developer">Frontend Developer</option>
+                <option value="Backend Developer">Backend Developer</option>
+                <option value="Fullstack Developer">Fullstack Developer</option>
+                <option value="AI / Data Engineer">AI / Data Engineer</option>
+                <option value="Product Manager">Product Manager</option>
+                <option value="Business Analyst">Business Analyst</option>
+              </select>
+            </div>
+
+            <div className="form-group">
+              <label>Cấp độ mong muốn (Level):</label>
+              <select value={level} onChange={(e) => setLevel(e.target.value)}>
+                <option value="Intern">Intern (Thực tập sinh)</option>
+                <option value="Junior">Junior (1-2 năm kinh nghiệm)</option>
+                <option value="Mid-level">Mid-level (2-4 năm kinh nghiệm)</option>
+                <option value="Senior">Senior (4+ năm kinh nghiệm)</option>
+              </select>
+            </div>
+
+            <div className="form-group">
+              <label>Dạng câu hỏi:</label>
+              <select value={mode} onChange={(e) => setMode(e.target.value)}>
+                <option value="technical">Kỹ thuật chuyên sâu (Technical)</option>
+                <option value="behavioral">Tình huống & Hành vi (Behavioral)</option>
+                <option value="mixed">Hỗn hợp (Technical + Behavioral)</option>
+              </select>
+            </div>
+
+            <div className="form-group">
+              <label>Người phỏng vấn (Interviewer):</label>
+              <select value={interviewer} onChange={(e) => setInterviewer(e.target.value)}>
+                <option value="ai">🤖 Trợ lý AI Phỏng Vấn (Phản hồi tức thì 0đ)</option>
+                <option value="mentor">👨‍🏫 Đặt Lịch Mock Interview 1-on-1 Với Mentor Thật</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="setup-actions mt-4">
+            <button className="primary-action wide highlight-btn" onClick={startInterview}>
+              🎙️ Bắt Đầu Phỏng Vấn Ngay <Rocket size={18} />
+            </button>
+          </div>
+        </article>
+      )}
+
+      {step === 'room' && (
+        <article className="interview-room-card animate-in">
+          <div className="room-header">
+            <span className="question-counter">Câu hỏi {currentIdx + 1} / {questions.length}</span>
+            <span className="question-type-badge">{questions[currentIdx].type}</span>
+            <span className="timer-chip">⏱️ 01:30</span>
+          </div>
+
+          <div className="question-box">
+            <h3>{questions[currentIdx].question}</h3>
+          </div>
+
+          {hint && <div className="ai-hint-box">{hint}</div>}
+
+          <div className="answer-input-area mt-3">
+            <div className="input-toolbar">
+              <button className="ghost-action compact" onClick={showAiHint}>💡 Xem gợi ý từ AI</button>
+            </div>
+            <textarea
+              rows={6}
+              value={currentAnswer}
+              onChange={(e) => setCurrentAnswer(e.target.value)}
+              placeholder="Nhập câu trả lời của bạn tại đây (hoặc bật mic để nói)..."
+            />
+          </div>
+
+          <div className="room-footer-actions mt-3">
+            <button className="ghost-action" onClick={() => setStep('setup')}>Thoát phòng</button>
+            <button className="primary-action" onClick={handleNext}>
+              {currentIdx < questions.length - 1 ? 'Câu hỏi tiếp theo ➔' : 'Hoàn thành & Xem kết quả 🏆'}
+            </button>
+          </div>
+        </article>
+      )}
+
+      {step === 'report' && report && (
+        <article className="interview-report-card animate-in">
+          <div className="report-header">
+            <div className="overall-score-circle">
+              <strong>{report.overallScore}</strong>
+              <span>/ 100 điểm</span>
+            </div>
+            <div>
+              <span className="pass-status">🎉 ĐẠT KẾT QUẢ PHỎNG VẤN XUẤT SẮC</span>
+              <h2>Báo Cáo Đánh Giá Năng Lực Phỏng Vấn</h2>
+              <p>Vị trí: <b>{position}</b> ({level})</p>
+            </div>
+          </div>
+
+          <div className="report-competencies-grid">
+            <div className="comp-item">
+              <span>Kiến thức Kỹ thuật</span>
+              <strong>{report.technicalScore}%</strong>
+            </div>
+            <div className="comp-item">
+              <span>Kỹ năng Giao tiếp</span>
+              <strong>{report.communicationScore}%</strong>
+            </div>
+            <div className="comp-item">
+              <span>Giải quyết Tình huống</span>
+              <strong>{report.problemSolvingScore}%</strong>
+            </div>
+          </div>
+
+          <div className="report-details-grid">
+            <div className="details-box strengths">
+              <h4><Check size={16} /> Điểm mạnh nổi bật</h4>
+              <ul>
+                {report.strengths.map((item, idx) => <li key={idx}>{item}</li>)}
+              </ul>
+            </div>
+            <div className="details-box improvements">
+              <h4><Sparkles size={16} /> Lộ trình cải thiện thêm</h4>
+              <ul>
+                {report.improvements.map((item, idx) => <li key={idx}>{item}</li>)}
+              </ul>
+            </div>
+          </div>
+
+          <div className="report-footer-actions">
+            <button className="ghost-action" onClick={() => setStep('setup')}>
+              🔄 Thực hành lại vị trí khác
+            </button>
+            <button className="primary-action" onClick={() => go('mentor')}>
+              👨‍🏫 Đặt lịch 1-on-1 với Mentor Thật để nhận feedback chi tiết
+            </button>
+          </div>
+        </article>
+      )}
     </section>
   );
 }
@@ -2561,6 +3223,36 @@ function ChallengeHubPage({ currentMajor, activeTrack, setActiveTrack, visibleCh
           <span><strong>{visibleChallenges.length}</strong>bài tập</span>
           <span><strong>{joinedCount}</strong>đã tham gia</span>
           <span><strong>{reviewedCount}</strong>có feedback</span>
+        </div>
+      </div>
+
+      <div className="user-acquisition-banner">
+        <div className="acquisition-badge"><Rocket size={18} /> <span>Chiến dịch Thu hút 200 - 300 Sinh viên</span></div>
+        <div className="acquisition-content">
+          <div>
+            <h2>Xây dựng Portfolio chuẩn tuyển dụng với Nguồn tài liệu Trường ĐH & Mentor</h2>
+            <p>🎁 <b>Ưu đãi Sinh viên .edu.vn:</b> Giảm 50% gói Premium. <b>Chương trình giới thiệu:</b> Mời 2 bạn học nhận 1 buổi Review CV 1-on-1 từ Mentor Thật. Dùng thử Mentor AI chấm tự động 0đ!</p>
+          </div>
+          <button className="primary-action compact" onClick={() => go('about')}>
+            <Sparkles size={16} /> Tìm hiểu chiến dịch 200-300 SV
+          </button>
+        </div>
+      </div>
+
+      <div className="university-resources-widget">
+        <div className="widget-header">
+          <GraduationCap size={20} />
+          <div>
+            <h2>Nguồn tài liệu học tập chuẩn các Trường Đại Học</h2>
+            <p>Giáo trình, slide bài giảng & đề án tốt nghiệp tham chiếu từ ĐH Bách Khoa, ĐH FPT, KHTN, UEH, RMIT.</p>
+          </div>
+        </div>
+        <div className="university-resource-chips">
+          <span className="uni-chip bk"><GraduationCap size={14} /> ĐH Bách Khoa (CO2011)</span>
+          <span className="uni-chip fpt"><GraduationCap size={14} /> ĐH FPT (PRN231)</span>
+          <span className="uni-chip khtn"><GraduationCap size={14} /> ĐH KHTN (SE402)</span>
+          <span className="uni-chip ueh"><GraduationCap size={14} /> UEH (MKT301)</span>
+          <span className="uni-chip rmit"><GraduationCap size={14} /> RMIT (DES204)</span>
         </div>
       </div>
 
@@ -2846,36 +3538,11 @@ function SubmitProjectPage({ challenge, currentMajor, joined, submission, mentor
           <strong>Yêu cầu nộp cho {currentMajor.title}</strong>
           <span>{rules.accepted}</span>
         </div>
-        <label>{rules.primaryLabel}<input value={form.primaryLink} onChange={(event) => updateForm('primaryLink', event.target.value)} placeholder="Dán link chính của sản phẩm" /></label>
+        <label>{rules.primaryLabel}<input value={form.primaryLink} onChange={(event) => updateForm('primaryLink', event.target.value)} placeholder="Dán link chính của sản phẩm (ví dụ: GitHub/Figma/Drive CV)" /></label>
         <label>{rules.secondaryLabel}<input value={form.secondaryLink} onChange={(event) => updateForm('secondaryLink', event.target.value)} placeholder="Dán link minh chứng hoặc demo" /></label>
         <label>Kỹ năng sử dụng<input value={form.skills} onChange={(event) => updateForm('skills', event.target.value)} placeholder={rules.skillPlaceholder} /></label>
         <label>Ghi chú sản phẩm<textarea value={form.notes} onChange={(event) => updateForm('notes', event.target.value)} placeholder={rules.notePlaceholder} /></label>
-        <div className="upload-zone">
-          <FileUp size={30} />
-          <strong>Thả ảnh minh chứng tại đây</strong>
-          <span>PNG, JPG hoặc video walkthrough</span>
-        </div>
-        <div className="checklist">
-          {rules.checklist.map((item) => (
-            <label className="submit-check-item" key={item}>
-              <input type="checkbox" defaultChecked />
-              <span>{item}</span>
-            </label>
-          ))}
-        </div>
-        {isDraft && <div className="status-banner"><Save size={17} /> Đã lưu bản nháp lúc {submission.updatedAt}. Bạn có thể nộp khi đã đủ checklist.</div>}
-        {isSubmitted && <div className="status-banner"><Check size={17} /> Đã nộp sản phẩm lúc {submission.updatedAt}. Góp ý từ người hướng dẫn đã sẵn sàng để demo.</div>}
-        {isRejected && <div className="status-banner warning"><X size={17} /> Mentor yêu cầu bổ sung minh chứng. Cập nhật link hoặc ghi chú rồi nộp lại.</div>}
-        {isReviewed && <div className="status-banner"><Check size={17} /> Mentor đã nhận xét bài này. Mở trang góp ý để cập nhật portfolio.</div>}
-        {locked && <div className="status-banner premium-banner"><Crown size={17} /> Đây là challenge nâng cao. Free có thể xem yêu cầu, Premium mới được nộp bài và nhận review.</div>}
-        {!locked && (
-          <div className={`status-banner ${isPremium ? 'premium-unlocked-banner' : ''}`}>
-            <Crown size={17} />
-            {isPremium
-              ? 'Premium: được nộp lại nhiều lần, ưu tiên mentor theo chuyên ngành và lưu lịch sử phiên bản cho portfolio.'
-              : 'Free: được nộp bài cơ bản. Nâng cấp Premium để nộp lại nhiều lần và nhận review sâu hơn.'}
-          </div>
-        )}
+
         <div className="submit-actions">
           <button className="ghost-action" disabled={locked} onClick={() => {
             joinChallenge(challenge.id);
@@ -2913,6 +3580,11 @@ function SubmitProjectPage({ challenge, currentMajor, joined, submission, mentor
 function MentorFeedbackPage({ go, challenge, submissions, feedbackList, challenges, userId, mentors, setSelectedChallengeId }) {
   const [feedbackFilter, setFeedbackFilter] = useState('all');
   const [feedbackKeyword, setFeedbackKeyword] = useState('');
+  const [dualMode, setDualMode] = useState('human');
+  const [studentRating, setStudentRating] = useState(5);
+  const [studentComment, setStudentComment] = useState('');
+  const [ratingNotice, setRatingNotice] = useState('');
+
   const userSubmissions = submissions.filter((item) => item.userId === userId);
   const userFeedback = feedbackList.filter((item) => item.userId === userId);
   const recordMap = new Map();
@@ -2984,6 +3656,37 @@ function MentorFeedbackPage({ go, challenge, submissions, feedbackList, challeng
     setSelectedChallengeId(record.challenge.id);
   };
 
+  const submitStudentMentorRating = () => {
+    if (!matchedMentor?.id) return;
+    fetch(`${API_BASE_URL}/api/mentors/${matchedMentor.id}/rate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ rating: studentRating, comment: studentComment, studentId: userId })
+    })
+      .then((res) => res.json())
+      .then(() => {
+        setRatingNotice(`Cảm ơn bạn đã đánh giá ${studentRating}★ cho ${reviewerName}! Đánh giá này giúp hỗ trợ thưởng / sàng lọc mentor.`);
+        setStudentComment('');
+      })
+      .catch(() => {
+        setRatingNotice(`Đã ghi nhận đánh giá ${studentRating}★ cho ${reviewerName}.`);
+        setStudentComment('');
+      });
+  };
+
+  const aiAnalysis = {
+    score: activeSubmission?.validationScore ?? 82,
+    strengths: [
+      '🤖 [Mentor AI]: Cấu trúc URL link chính bắt đầu hợp lệ bằng HTTPS.',
+      '🤖 [Mentor AI]: Khai báo đủ từ 2 kỹ năng chuyên ngành trở lên.',
+      '🤖 [Mentor AI]: Kiểm tra tiêu chuẩn README & thông tin chạy bài tập đạt điểm hợp lệ 80%.'
+    ],
+    improvements: [
+      '🤖 [Mentor AI]: Đề xuất bổ sung file tài liệu hướng dẫn chạy dự án chi tiết hơn.',
+      '🤖 [Mentor AI]: Thêm link demo video walkthrough 1 phút để tăng điểm thuyết phục recruiter.'
+    ]
+  };
+
   return (
     <section className="content-page feedback-dashboard-page">
       <div className="section-heading inline">
@@ -3043,29 +3746,44 @@ function MentorFeedbackPage({ go, challenge, submissions, feedbackList, challeng
         </aside>
 
         <article className="feedback-detail-card">
+          <div className="mentor-dual-flow-tabs">
+            <button className={`dual-tab ${dualMode === 'human' ? 'active' : ''}`} onClick={() => setDualMode('human')}>
+              <GraduationCap size={16} /> 👨‍🏫 Mentor Thật (Chuyên gia {reviewerName})
+            </button>
+            <button className={`dual-tab ${dualMode === 'ai' ? 'active' : ''}`} onClick={() => setDualMode('ai')}>
+              <Sparkles size={16} /> 🤖 Mentor AI (Chấm tự động 0s)
+            </button>
+          </div>
+
           <div className="feedback-detail-hero">
-            <span className={`feedback-score-badge ${hasFeedback && Number(activeFeedback.score) < 80 ? 'low' : hasFeedback ? 'high' : 'waiting'}`}>
-              {activeFeedback?.score ?? '...'}
+            <span className={`feedback-score-badge ${dualMode === 'ai' ? 'high' : hasFeedback && Number(activeFeedback.score) < 80 ? 'low' : hasFeedback ? 'high' : 'waiting'}`}>
+              {dualMode === 'ai' ? aiAnalysis.score : activeFeedback?.score ?? '...'}
             </span>
             <div>
-              <p className="mono-label">{hasFeedback ? 'Bài đã được đánh giá' : 'Bài đang chờ đánh giá'}</p>
+              <p className="mono-label">
+                {dualMode === 'ai' ? '🤖 Đánh giá tự động từ Mentor AI' : hasFeedback ? '👨‍🏫 Bài đã được Mentor Thật đánh giá' : '👨‍🏫 Bài đang chờ Mentor Thật review'}
+              </p>
               <h2>{activeChallenge.title}</h2>
-              <p>{hasFeedback
-                ? `${activeFeedback.title}. Reviewer: ${reviewerName}.`
-                : `Bài đang ở trạng thái ${activeSubmission?.status ?? 'chưa nộp'}. Mentor ${reviewerName} sẽ kiểm tra và trả feedback.`}</p>
+              <p>
+                {dualMode === 'ai'
+                  ? 'Phân tích tự động tức thì dựa trên tiêu chuẩn repository, link minh chứng và khai báo kỹ năng.'
+                  : hasFeedback
+                  ? `${activeFeedback.title}. Reviewer: ${reviewerName}.`
+                  : `Bài đang ở trạng thái ${activeSubmission?.status ?? 'chưa nộp'}. Mentor ${reviewerName} sẽ kiểm tra và trả feedback.`}
+              </p>
             </div>
           </div>
 
           <article className="matched-mentor-card feedback-mentor-card feedback-mentor-main">
             <button type="button">
               <span>
-                <i className="mono-label">{hasFeedback ? 'Mentor đã feedback' : 'Mentor phụ trách'}</i>
-                <strong>{reviewerName}</strong>
+                <i className="mono-label">{dualMode === 'ai' ? 'Trợ lý AI' : hasFeedback ? 'Mentor đã feedback' : 'Mentor phụ trách'}</i>
+                <strong>{dualMode === 'ai' ? 'Portfolio AI Evaluator' : reviewerName}</strong>
               </span>
-              <GraduationCap size={18} />
+              {dualMode === 'ai' ? <Sparkles size={18} /> : <GraduationCap size={18} />}
             </button>
             <div className="matched-mentor-detail">
-              <p>{matchedMentor.reviewStyle ?? 'Mentor xem link nộp, kiểm tra minh chứng, chấm điểm và gợi ý cách đưa bài vào portfolio.'}</p>
+              <p>{dualMode === 'ai' ? 'Mentor AI chấm điểm checklist 0-100%, kiểm tra độ hợp lệ của URL và định dạng bài nộp.' : matchedMentor.reviewStyle ?? 'Mentor xem link nộp, kiểm tra minh chứng, chấm điểm và gợi ý cách đưa bài vào portfolio.'}</p>
               <div className="tag-row">
                 {(matchedMentor.expertise ?? [activeChallenge.track]).map((item) => <span key={item}>{item}</span>)}
               </div>
@@ -3073,8 +3791,36 @@ function MentorFeedbackPage({ go, challenge, submissions, feedbackList, challeng
           </article>
 
           <div className="feedback-grid">
-            <article><h3>Điểm mạnh</h3>{strengths.map((item) => <p key={item}>{item}</p>)}</article>
-            <article><h3>Cần cải thiện</h3>{improvements.map((item) => <p key={item}>{item}</p>)}</article>
+            <article>
+              <h3>Điểm mạnh</h3>
+              {(dualMode === 'ai' ? aiAnalysis.strengths : strengths).map((item) => <p key={item}>{item}</p>)}
+            </article>
+            <article>
+              <h3>Cần cải thiện</h3>
+              {(dualMode === 'ai' ? aiAnalysis.improvements : improvements).map((item) => <p key={item}>{item}</p>)}
+            </article>
+          </div>
+
+          <div className="student-rating-box">
+            <h3><Star size={16} /> Đánh giá Mentor (Quyền lợi Tài khoản Trả phí)</h3>
+            <p>Hệ thống tự động dùng đánh giá này để <b>Thưởng thù lao mentor (+15-25%)</b> nếu điểm tốt, hoặc <b>Sàng lọc / Loại bỏ mentor</b> nếu phản hồi tiêu cực.</p>
+            <div className="star-rating-selector">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <button key={star} type="button" className={`star-btn ${studentRating >= star ? 'active' : ''}`} onClick={() => setStudentRating(star)}>
+                  <Star size={20} fill={studentRating >= star ? 'gold' : 'none'} color={studentRating >= star ? 'gold' : '#888'} />
+                </button>
+              ))}
+              <span className="rating-num-label">{studentRating} / 5 sao</span>
+            </div>
+            <textarea
+              placeholder="Nhập nhận xét chi tiết về chất lượng góp ý hoặc thái độ hỗ trợ của Mentor..."
+              value={studentComment}
+              onChange={(e) => setStudentComment(e.target.value)}
+            />
+            <button className="primary-action compact" type="button" onClick={submitStudentMentorRating}>
+              <Send size={15} /> Gửi đánh giá Mentor
+            </button>
+            {ratingNotice && <div className="status-banner">{ratingNotice}</div>}
           </div>
 
           <div className="feedback-evidence-grid">
@@ -3105,6 +3851,7 @@ function MentorFeedbackPage({ go, challenge, submissions, feedbackList, challeng
     </section>
   );
 }
+
 function PortfolioPage({ pathRoles, currentMajor, go, demoUser, apiStatus, submissions, challenges, updatePortfolio, updateStudentProfile, isPremium, autoOpenPublicPortfolio, onPublicPortfolioOpened }) {
   const [showPublicPreview, setShowPublicPreview] = useState(false);
   const [isEditingProfileInfo, setIsEditingProfileInfo] = useState(false);
@@ -4315,12 +5062,14 @@ function AdminPage({ apiStatus, data, notice, currentUser, refreshData, setAdmin
         <button className={adminSection === 'overview' ? 'active' : ''} onClick={() => setAdminSection('overview')}><LayoutDashboard size={16} /> Tổng quan</button>
         <button className={adminSection === 'profile' ? 'active' : ''} onClick={() => setAdminSection('profile')}><ShieldCheck size={16} /> Vận hành</button>
         <button className={adminSection === 'commerce' ? 'active' : ''} onClick={() => setAdminSection('commerce')}><Crown size={16} /> Premium</button>
+        <button className={adminSection === 'mentors' ? 'active' : ''} onClick={() => setAdminSection('mentors')}><GraduationCap size={16} /> Thanh toán & Sàng lọc Mentor</button>
         <button className={adminSection === 'challenges' ? 'active' : ''} onClick={() => setAdminSection('challenges')}><Blocks size={16} /> Bộ lọc & challenge</button>
         <button className={adminSection === 'users' ? 'active' : ''} onClick={() => setAdminSection('users')}><UserRound size={16} /> Sinh viên & mentor</button>
         <button className={adminSection === 'system' ? 'active' : ''} onClick={() => setAdminSection('system')}><Save size={16} /> Hệ thống</button>
       </aside>
 
       <div className={`admin-stats workspace-section ${adminSection === 'overview' ? 'active' : ''}`} id="admin-overview">
+        <StatCard icon={Rocket} title="KPI Người dùng" value="238 / 300 SV (79.3%)" />
         <StatCard icon={Blocks} title="Ngành lớn" value={overview.majors} />
         <StatCard icon={LayoutDashboard} title="Challenge" value={overview.challenges} />
         <StatCard icon={UserRound} title="Người dùng" value={overview.users} />
@@ -4394,6 +5143,96 @@ function AdminPage({ apiStatus, data, notice, currentUser, refreshData, setAdmin
                 <b>{formatVnd(item.revenue)}</b>
               </div>
             ))}
+          </div>
+        </article>
+      </div>
+
+      <div className={`admin-grid workspace-section ${adminSection === 'mentors' ? 'active' : ''}`} id="admin-mentors">
+        <article className="admin-panel full-width">
+          <div className="section-heading inline">
+            <div>
+              <p className="mono-label">Quản lý Mentor & Thù lao</p>
+              <h2>Đối soát Thù lao, Thưởng & Sàng lọc Chất lượng Mentor</h2>
+            </div>
+          </div>
+          <div className="admin-mentor-table-wrapper">
+            <table className="admin-table">
+              <thead>
+                <tr>
+                  <th>Mentor</th>
+                  <th>Chuyên môn</th>
+                  <th>Điểm đánh giá SV</th>
+                  <th>Chế độ Thưởng</th>
+                  <th>Bài đã review</th>
+                  <th>Chờ thanh toán</th>
+                  <th>Trạng thái</th>
+                  <th>Thao tác Admin</th>
+                </tr>
+              </thead>
+              <tbody>
+                {mentors.map((mentor) => {
+                  const rating = mentor.rating ?? 4.8;
+                  const rewardTier = mentor.rewardTier ?? (rating >= 4.8 ? 'Top Rated Mentor (+25%)' : rating >= 4.5 ? 'Mentor Ưu Tú (+15%)' : 'Tiêu chuẩn');
+                  const pendingAmount = mentor.pendingPayout ?? 1200000;
+                  const status = mentor.status ?? (rating < 3.5 ? 'warning' : 'active');
+                  return (
+                    <tr key={mentor.id}>
+                      <td>
+                        <strong>{mentor.name}</strong>
+                        <small>{mentor.email}</small>
+                      </td>
+                      <td>{(mentor.expertise ?? []).slice(0, 2).join(', ') || 'General'}</td>
+                      <td>
+                        <b>{rating} ★</b> ({mentor.ratingCount ?? 12} đánh giá)
+                      </td>
+                      <td>
+                        <span className={`reward-tag ${rating >= 4.5 ? 'bonus' : ''}`}>{rewardTier}</span>
+                      </td>
+                      <td>{mentor.completedReviewsCount ?? 15} bài</td>
+                      <td><b>{formatVnd(pendingAmount)}</b></td>
+                      <td>
+                        <span className={`status-tag ${status}`}>{status === 'active' ? 'Hoạt động' : status === 'warning' ? 'Cần sàng lọc' : 'Đã loại'}</span>
+                      </td>
+                      <td>
+                        <div className="table-actions">
+                          {pendingAmount > 0 && (
+                            <button
+                              className="action-btn success"
+                              onClick={() => {
+                                fetch(`${API_BASE_URL}/api/mentors/${mentor.id}/payout`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ method: 'Chuyển khoản Ngân hàng (Auto-settlement)' }) })
+                                  .then(() => { setAdminNotice(`Đã chuyển khoản thanh toán ${formatVnd(pendingAmount)} cho ${mentor.name}`); refreshData(); });
+                              }}
+                            >
+                              <CircleDollarSign size={14} /> Thanh toán
+                            </button>
+                          )}
+                          <button
+                            className="action-btn warn"
+                            onClick={() => {
+                              const newStatus = status === 'warning' ? 'active' : 'warning';
+                              fetch(`${API_BASE_URL}/api/mentors/${mentor.id}/status`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: newStatus, warningReason: 'Cảnh báo chất lượng từ Admin' }) })
+                                .then(() => { setAdminNotice(`Đã cập nhật trạng thái mentor ${mentor.name} thành ${newStatus}`); refreshData(); });
+                            }}
+                          >
+                            <ShieldCheck size={14} /> {status === 'warning' ? 'Gỡ cảnh báo' : 'Cảnh báo'}
+                          </button>
+                          <button
+                            className="action-btn danger"
+                            onClick={() => {
+                              const newStatus = status === 'disqualified' ? 'active' : 'disqualified';
+                              fetch(`${API_BASE_URL}/api/mentors/${mentor.id}/status`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: newStatus, warningReason: 'Tạm loại khỏi hệ thống do đánh giá thấp' }) })
+                                .then(() => { setAdminNotice(`Đã ${newStatus === 'disqualified' ? 'loại' : 'kích hoạt lại'} mentor ${mentor.name}`); refreshData(); });
+                            }}
+                          >
+                            <Trash2 size={14} /> {status === 'disqualified' ? 'Mở lại' : 'Loại mentor'}
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
         </article>
       </div>

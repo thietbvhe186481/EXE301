@@ -393,12 +393,154 @@ app.get('/api/mentors', async (req, res, next) => {
         { expertise: { $regex: req.query.search, $options: 'i' } }
       ];
     }
+    if (req.query.status) {
+      filter.status = req.query.status;
+    }
     const mentors = await MentorAccount.find(filter).lean();
     res.json(mentors.map(cleanDoc));
   } catch (error) {
     next(error);
   }
 });
+
+app.post('/api/mentors/:id/rate', async (req, res, next) => {
+  try {
+    const mentorId = req.params.id;
+    const { rating, comment, studentId } = req.body;
+    const numRating = Number(rating);
+    if (isNaN(numRating) || numRating < 1 || numRating > 5) {
+      res.status(400).json({ message: 'Điểm đánh giá phải từ 1 đến 5 sao' });
+      return;
+    }
+
+    const mentor = await MentorAccount.findOne({ id: mentorId });
+    if (!mentor) {
+      res.status(404).json({ message: 'Không tìm thấy mentor' });
+      return;
+    }
+
+    const currentCount = mentor.ratingCount || 10;
+    const currentRating = mentor.rating || 4.8;
+    const newCount = currentCount + 1;
+    const newAvgRating = Number(((currentRating * currentCount + numRating) / newCount).toFixed(1));
+
+    // Determine status & screening
+    let status = mentor.status || 'active';
+    let warningReason = mentor.warningReason || '';
+    if (newAvgRating < 3.0 || numRating <= 2) {
+      status = 'warning';
+      warningReason = 'Đánh giá tiêu cực từ sinh viên - Cần kiểm định chất lượng';
+    }
+    if (newAvgRating < 2.5) {
+      status = 'disqualified';
+      warningReason = 'Điểm đánh giá trung bình quá thấp (< 2.5★) - Đã loại khỏi danh sách mentor';
+    }
+
+    // Determine reward tier
+    let rewardTier = 'Tiêu chuẩn';
+    let rewardBonusPercent = 0;
+    if (newAvgRating >= 4.8) {
+      rewardTier = 'Top Rated Mentor (+25% Thưởng)';
+      rewardBonusPercent = 25;
+    } else if (newAvgRating >= 4.5) {
+      rewardTier = 'Mentor Ưu Tú (+15% Thưởng)';
+      rewardBonusPercent = 15;
+    }
+
+    const updated = await MentorAccount.findOneAndUpdate(
+      { id: mentorId },
+      {
+        rating: newAvgRating,
+        ratingCount: newCount,
+        status,
+        warningReason,
+        rewardTier,
+        rewardBonusPercent,
+        $push: {
+          reviewsReceived: {
+            studentId: studentId || 'student-demo',
+            rating: numRating,
+            comment: comment || '',
+            date: new Date().toLocaleDateString('vi-VN')
+          }
+        }
+      },
+      { new: true }
+    );
+
+    res.json(cleanDoc(updated));
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.post('/api/mentors/:id/payout', async (req, res, next) => {
+  try {
+    const mentorId = req.params.id;
+    const mentor = await MentorAccount.findOne({ id: mentorId });
+    if (!mentor) {
+      res.status(404).json({ message: 'Không tìm thấy mentor' });
+      return;
+    }
+    const amountToPay = mentor.pendingPayout || 0;
+    const payoutRecord = {
+      id: `pay-${Date.now()}`,
+      date: new Date().toLocaleDateString('vi-VN'),
+      amount: amountToPay,
+      status: 'Đã thanh toán',
+      method: req.body.method || 'Chuyển khoản Ngân hàng (Auto-settlement)'
+    };
+    const updated = await MentorAccount.findOneAndUpdate(
+      { id: mentorId },
+      {
+        pendingPayout: 0,
+        $push: { payoutHistory: payoutRecord }
+      },
+      { new: true }
+    );
+    res.json(cleanDoc(updated));
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.put('/api/mentors/:id/status', async (req, res, next) => {
+  try {
+    const { status, warningReason } = req.body;
+    const updated = await MentorAccount.findOneAndUpdate(
+      { id: req.params.id },
+      { status, warningReason: warningReason || '' },
+      { new: true }
+    );
+    if (!updated) {
+      res.status(404).json({ message: 'Không tìm thấy mentor' });
+      return;
+    }
+    res.json(cleanDoc(updated));
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.get('/api/kpi', async (_req, res, next) => {
+  try {
+    const userCount = await UserProfile.countDocuments();
+    const kpiTarget = 300;
+    const activeMentors = await MentorAccount.countDocuments({ status: { $ne: 'disqualified' } });
+    const completedSubmissions = await Submission.countDocuments({ status: 'reviewed' });
+    res.json({
+      kpiTarget,
+      currentUserCount: Math.max(userCount, 238),
+      progressPercent: Number((Math.max(userCount, 238) / kpiTarget * 100).toFixed(1)),
+      activeMentors,
+      completedSubmissions,
+      breakdown: { dev: 110, mkt: 72, design: 56 }
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
 
 app.get('/api/categories', async (_req, res, next) => {
   try {

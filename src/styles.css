@@ -9853,3 +9853,407 @@ body:has(.feedback-dashboard-page) main {
     justify-self: start;
   }
 }
+
+/* ==========================================================================
+   New Project Features Styling: KPI, University Sources, Dual Mentor, Rating
+   ========================================================================== */
+
+.user-acquisition-banner {
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.12), rgba(16, 185, 129, 0.12));
+  border: 1px solid rgba(139, 92, 246, 0.25);
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 24px;
+}
+
+.acquisition-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #8b5cf6;
+  color: #fff;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.acquisition-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.acquisition-content h2 {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.acquisition-content p {
+  font-size: 14px;
+  opacity: 0.9;
+  line-height: 1.5;
+}
+
+.university-resources-widget {
+  background: var(--card-bg, #ffffff);
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 24px;
+}
+
+.widget-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.widget-header h2 {
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.widget-header p {
+  font-size: 13px;
+  color: var(--text-muted, #64748b);
+}
+
+.university-resource-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.uni-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  background: rgba(56, 189, 248, 0.12);
+  color: #0284c7;
+  border: 1px solid rgba(56, 189, 248, 0.3);
+}
+
+.uni-chip.bk { background: rgba(139, 92, 246, 0.12); color: #7c3aed; border-color: rgba(139, 92, 246, 0.3); }
+.uni-chip.fpt { background: rgba(245, 158, 11, 0.12); color: #d97706; border-color: rgba(245, 158, 11, 0.3); }
+.uni-chip.khtn { background: rgba(16, 185, 129, 0.12); color: #059669; border-color: rgba(16, 185, 129, 0.3); }
+.uni-chip.ueh { background: rgba(236, 72, 153, 0.12); color: #db2777; border-color: rgba(236, 72, 153, 0.3); }
+
+.kpi-highlight-banner {
+  background: rgba(139, 92, 246, 0.08);
+  border-left: 4px solid #8b5cf6;
+  padding: 16px 20px;
+  border-radius: 12px;
+  margin: 18px 0;
+}
+
+.kpi-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #8b5cf6;
+  font-weight: 700;
+  font-size: 13px;
+  margin-bottom: 6px;
+}
+
+.kpi-info strong {
+  font-size: 16px;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.kpi-progress-bar {
+  height: 8px;
+  background: rgba(139, 92, 246, 0.2);
+  border-radius: 999px;
+  overflow: hidden;
+  margin-top: 10px;
+}
+
+.kpi-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #8b5cf6, #10b981);
+  border-radius: 999px;
+}
+
+.mentor-dual-flow-tabs {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.dual-tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 14px;
+  border: 1px solid var(--border-color, #cbd5e1);
+  background: var(--card-bg, #f8fafc);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.dual-tab.active {
+  background: #8b5cf6;
+  color: #ffffff;
+  border-color: #8b5cf6;
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.25);
+}
+
+.student-rating-box {
+  background: rgba(245, 158, 11, 0.06);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  border-radius: 14px;
+  padding: 20px;
+  margin: 20px 0;
+}
+
+.student-rating-box h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  color: #d97706;
+  margin-bottom: 6px;
+}
+
+.student-rating-box p {
+  font-size: 13px;
+  color: var(--text-muted, #475569);
+  margin-bottom: 12px;
+}
+
+.star-rating-selector {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.star-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px;
+  transition: transform 0.15s ease;
+}
+
+.star-btn:hover {
+  transform: scale(1.2);
+}
+
+.rating-num-label {
+  font-weight: 700;
+  font-size: 14px;
+  color: #d97706;
+  margin-left: 8px;
+}
+
+.student-rating-box textarea {
+  width: 100%;
+  min-height: 80px;
+  border-radius: 10px;
+  padding: 10px;
+  border: 1px solid var(--border-color, #cbd5e1);
+  margin-bottom: 12px;
+  font-size: 14px;
+  font-family: inherit;
+}
+
+.admin-mentor-table-wrapper {
+  overflow-x: auto;
+  margin-top: 16px;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.admin-table th, .admin-table td {
+  padding: 12px 14px;
+  text-align: left;
+  border-bottom: 1px solid var(--border-color, #e2e8f0);
+}
+
+.admin-table th {
+  background: var(--bg-muted, #f1f5f9);
+  font-weight: 700;
+}
+
+.reward-tag {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  background: rgba(148, 163, 184, 0.15);
+  color: #475569;
+}
+
+.reward-tag.bonus {
+  background: rgba(245, 158, 11, 0.15);
+  color: #d97706;
+}
+
+.status-tag.active { color: #059669; font-weight: 700; }
+.status-tag.warning { color: #d97706; font-weight: 700; }
+.status-tag.disqualified { color: #dc2626; font-weight: 700; }
+
+.table-actions {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+}
+
+.action-btn.success { background: #10b981; color: #fff; }
+.action-btn.warn { background: #f59e0b; color: #fff; }
+.action-btn.danger { background: #ef4444; color: #fff; }
+
+/* Testimonials & User Review Submission Styles */
+.user-testimonials-section {
+  margin-top: 32px;
+  padding: 28px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+}
+
+.user-testimonials-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 18px;
+  margin-top: 20px;
+}
+
+.testimonial-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 14px;
+  backdrop-filter: blur(10px);
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.testimonial-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(139, 92, 246, 0.4);
+}
+
+.testimonial-header {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.user-avatar {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #8b5cf6;
+}
+
+.user-details h4 {
+  font-size: 15px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.user-details p {
+  font-size: 12px;
+  color: var(--muted, #94a3b8);
+  margin: 2px 0 0 0;
+}
+
+.rating-stars-row {
+  display: flex;
+  gap: 2px;
+  margin-top: 4px;
+}
+
+.outcome-badge {
+  display: inline-block;
+  align-self: flex-start;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(59, 130, 246, 0.15));
+  color: #34d399;
+  border: 1px solid rgba(52, 211, 153, 0.3);
+}
+
+.testimonial-quote {
+  font-size: 13.5px;
+  line-height: 1.6;
+  font-style: italic;
+  color: #e2e8f0;
+  margin: 0;
+}
+
+.user-review-form-card {
+  margin-top: 28px;
+  padding: 24px;
+  background: rgba(139, 92, 246, 0.05);
+  border: 1px dashed rgba(139, 92, 246, 0.3);
+  border-radius: 16px;
+}
+
+.form-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.rating-selector-stars {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 8px 0;
+}
+
+.star-choice-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px;
+  transition: transform 0.15s ease;
+}
+
+.star-choice-btn:hover {
+  transform: scale(1.25);
+}
+
+

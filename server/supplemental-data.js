@@ -339,18 +339,54 @@ export function augmentSeedData(seed) {
     }
   ]);
 
-  mentorAccounts.forEach((mentor) => {
+  mentorAccounts.forEach((mentor, index) => {
     const computedStudents = userProfiles
       .filter((student) => student.joinedChallengeIds?.some((challengeId) => challengeById(challenges, challengeId)?.mentor === mentor.name))
       .slice(0, 8)
       .map((student) => student.id);
     mentor.activeStudents = computedStudents.length ? computedStudents : (mentor.activeStudents ?? []);
+
+    // Mentor payout, rating & screening mechanics
+    mentor.rating = mentor.rating ?? (4.9 - (index % 4) * 0.4);
+    mentor.ratingCount = mentor.ratingCount ?? (15 + index * 8);
+    mentor.status = mentor.status ?? (mentor.rating >= 3.5 ? 'active' : 'warning');
+
+    // Reward calculations
+    if (mentor.rating >= 4.8) {
+      mentor.rewardTier = 'Top Rated Mentor (+25% Thưởng)';
+      mentor.rewardBonusPercent = 25;
+    } else if (mentor.rating >= 4.5) {
+      mentor.rewardTier = 'Mentor Ưu Tú (+15% Thưởng)';
+      mentor.rewardBonusPercent = 15;
+    } else {
+      mentor.rewardTier = 'Tiêu chuẩn';
+      mentor.rewardBonusPercent = 0;
+    }
+
+    mentor.reviewFeePerItem = 150000;
+    mentor.completedReviewsCount = mentor.completedReviewsCount ?? (12 + index * 5);
+    mentor.totalEarnings = (mentor.completedReviewsCount * mentor.reviewFeePerItem) * (1 + mentor.rewardBonusPercent / 100);
+    mentor.pendingPayout = 600000 + (index * 300000);
+    mentor.payoutHistory = mentor.payoutHistory ?? [
+      { id: `pay-${mentor.id}-01`, date: '15/09/2026', amount: 1500000, status: 'Đã thanh toán', method: 'Chuyển khoản Ngân hàng' },
+      { id: `pay-${mentor.id}-02`, date: '01/09/2026', amount: 1800000, status: 'Đã thanh toán', method: 'Chuyển khoản Ngân hàng' }
+    ];
   });
 
+  const universityResources = [
+    { id: 'res-bk-co2011', majorKey: 'dev', track: 'Backend', title: 'Giáo trình Cấu trúc dữ liệu & Giải thuật', schoolSource: 'Đại học Bách Khoa TP.HCM', courseCode: 'CO2011', type: 'Giáo trình chính quy', url: 'https://portfolio.demo/resources/bk/co2011', difficulty: 'Junior' },
+    { id: 'res-fpt-prn231', majorKey: 'dev', track: 'Full Stack', title: 'Slide & Bài lab Lập trình Web Fullstack (Node/React)', schoolSource: 'Đại học FPT', courseCode: 'PRN231', type: 'Slide & Lab bài tập', url: 'https://portfolio.demo/resources/fpt/prn231', difficulty: 'Mid-level' },
+    { id: 'res-khtn-se402', majorKey: 'dev', track: 'Software Architecture', title: 'Đề án Kiến trúc phần mềm & System Design', schoolSource: 'Đại học KHTN TP.HCM', courseCode: 'SE402', type: 'Đề án xuất sắc', url: 'https://portfolio.demo/resources/khtn/se402', difficulty: 'Senior' },
+    { id: 'res-ueh-mkt301', majorKey: 'mkt', track: 'Content', title: 'Bộ Case Study Digital Marketing & Content Strategy', schoolSource: 'Đại học Kinh tế UEH', courseCode: 'MKT301', type: 'Giáo trình & Case study', url: 'https://portfolio.demo/resources/ueh/mkt301', difficulty: 'Junior' },
+    { id: 'res-rmit-des204', majorKey: 'design', track: 'UI Design', title: 'Tài liệu chuẩn Design System & UI UX Guidelines', schoolSource: 'Đại học RMIT Vietnam', courseCode: 'DES204', type: 'Syllabus & Standard Kit', url: 'https://portfolio.demo/resources/rmit/des204', difficulty: 'Mid-level' }
+  ];
+
+  pushUniqueById(resources, universityResources);
+
   pushUniqueById(resources, majors.flatMap((major) => major.columns.flatMap((column) => ([
-    { id: `res-${major.key}-${column.key}-starter`, majorKey: major.key, track: column.title, title: `${column.title} starter toolkit`, type: 'Toolkit', url: `https://portfolio.demo/resources/${major.key}/${column.key}/starter`, difficulty: 'Junior' },
-    { id: `res-${major.key}-${column.key}-case-study`, majorKey: major.key, track: column.title, title: `${column.title} case study template`, type: 'Template', url: `https://portfolio.demo/resources/${major.key}/${column.key}/case-study`, difficulty: 'Mid-level' },
-    { id: `res-${major.key}-${column.key}-rubric`, majorKey: major.key, track: column.title, title: `${column.title} mentor review rubric`, type: 'Rubric', url: `https://portfolio.demo/resources/${major.key}/${column.key}/rubric`, difficulty: 'Senior' }
+    { id: `res-${major.key}-${column.key}-starter`, majorKey: major.key, track: column.title, title: `${column.title} starter toolkit`, schoolSource: 'Tổng hợp tài liệu Trường Đại học', courseCode: 'UNI-101', type: 'Toolkit', url: `https://portfolio.demo/resources/${major.key}/${column.key}/starter`, difficulty: 'Junior' },
+    { id: `res-${major.key}-${column.key}-case-study`, majorKey: major.key, track: column.title, title: `${column.title} case study template`, schoolSource: 'Đề án Sinh viên Xuất sắc', courseCode: 'UNI-202', type: 'Template', url: `https://portfolio.demo/resources/${major.key}/${column.key}/case-study`, difficulty: 'Mid-level' },
+    { id: `res-${major.key}-${column.key}-rubric`, majorKey: major.key, track: column.title, title: `${column.title} mentor review rubric`, schoolSource: 'Quy chuẩn Mentor Trường & Doanh nghiệp', courseCode: 'UNI-303', type: 'Rubric', url: `https://portfolio.demo/resources/${major.key}/${column.key}/rubric`, difficulty: 'Senior' }
   ]))));
 
   pushUniqueById(categories, majors.flatMap((major) => major.columns.map((column) => ({
@@ -376,3 +412,4 @@ export function augmentSeedData(seed) {
     { id: 'noti-admin-dataset', userId: 'admin-demo', role: 'admin', title: `${challenges.length} challenges, ${userProfiles.length} students, ${submissions.length} submissions seeded for demo`, unread: true, createdAt: '08:00' }
   ]);
 }
+
