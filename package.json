@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "test:auth": "node --test server/auth.test.js",
     "dev": "vite --config vite.config.js --host 127.0.0.1",
     "server": "node server/index.js",
     "seed": "node server/seed.js",

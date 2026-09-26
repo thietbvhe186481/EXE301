@@ -15,9 +15,8 @@ import {
   UserRound
 } from 'lucide-react';
 
-export function Header({ page, go, currentUser, logout, loginAs, onOpenQrPayment }) {
+export function Header({ page, go, currentUser, logout, onOpenQrPayment }) {
   const [accountOpen, setAccountOpen] = useState(false);
-  const [demoMenuOpen, setDemoMenuOpen] = useState(false);
   const currentRole = currentUser?.type ?? currentUser?.user?.role;
   const userPlan = currentUser?.user?.subscription?.planName || 'Free';
   const isVipOrPro = userPlan.toLowerCase().includes('pro') || userPlan.toLowerCase().includes('vip') || userPlan.toLowerCase().includes('premium');
@@ -98,33 +97,6 @@ export function Header({ page, go, currentUser, logout, loginAs, onOpenQrPayment
             <UserRound size={15} /> <span>Đăng nhập</span>
           </button>
         )}
-
-        <div className="account-menu">
-          <button className="ghost-action compact" type="button" onClick={() => setDemoMenuOpen((open) => !open)}>
-            <span>Đổi vai trò</span>
-            <MoveDown size={12} />
-          </button>
-          {demoMenuOpen && (
-            <div className="nav-dropdown demo-dropdown" onClick={(e) => e.stopPropagation()}>
-              <div className="dropdown-section-title">Chọn tài khoản kiểm thử</div>
-              <button type="button" className="nav-dropdown-item" onClick={() => { setDemoMenuOpen(false); loginAs('student-dev'); }}>
-                <span className="role-dot student" /> <span>Student Dev (SE)</span>
-              </button>
-              <button type="button" className="nav-dropdown-item" onClick={() => { setDemoMenuOpen(false); loginAs('student-design'); }}>
-                <span className="role-dot student" /> <span>Student Design (GD)</span>
-              </button>
-              <button type="button" className="nav-dropdown-item" onClick={() => { setDemoMenuOpen(false); loginAs('student-mkt'); }}>
-                <span className="role-dot student" /> <span>Student Mkt (MKT)</span>
-              </button>
-              <button type="button" className="nav-dropdown-item" onClick={() => { setDemoMenuOpen(false); loginAs('mentor'); }}>
-                <span className="role-dot mentor" /> <span>Mentor (Reviewer)</span>
-              </button>
-              <button type="button" className="nav-dropdown-item" onClick={() => { setDemoMenuOpen(false); loginAs('admin'); }}>
-                <span className="role-dot admin" /> <span>Admin (Quản trị)</span>
-              </button>
-            </div>
-          )}
-        </div>
 
         {currentUser && (
           <div className="account-menu">

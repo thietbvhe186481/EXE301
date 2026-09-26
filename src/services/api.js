@@ -8,13 +8,22 @@ export async function fetchWithAuth(url, options = {}) {
       ...options.headers
     }
   };
-  const response = await fetch(`${API_BASE_URL}${url}`, {
-    ...defaultOptions,
-    ...options
-  });
+  let response;
+  try {
+    response = await fetch(`${API_BASE_URL}${url}`, {
+      ...defaultOptions,
+      signal: AbortSignal.timeout(15000),
+      ...options
+    });
+  } catch {
+    throw new Error('Không thể kết nối máy chủ. Vui lòng thử lại sau.');
+  }
   if (!response.ok) {
     const errorBody = await response.json().catch(() => ({}));
-    throw new Error(errorBody.message || `Request failed with status ${response.status}`);
+    const error = new Error(errorBody.message || 'Không thể xử lý yêu cầu. Vui lòng thử lại.');
+    error.fieldErrors = errorBody.fieldErrors || {};
+    error.status = response.status;
+    throw error;
   }
   return response.json();
 }

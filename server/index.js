@@ -3,7 +3,7 @@ import bcrypt from 'bcryptjs';
 import cors from 'cors';
 import express from 'express';
 import session from 'express-session';
-import { z } from 'zod';
+import { createAuthRouter } from './auth.js';
 import { connectDb } from './config/db.js';
 import { AdminAccount, Category, Challenge, Major, MentorAccount, MentorFeedback, Notification, Resource, Submission, SubmissionRule, UserProfile, StudentReview, SubscriptionOrder, ContactInquiry, Founder, PremiumPlan, MarketData } from './models.js';
 
@@ -24,47 +24,10 @@ app.use(session({
   }
 }));
 
-const loginSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(1),
-  rememberMe: z.boolean().optional()
-});
-
-const registerSchema = z.object({
-  name: z.string().min(2),
-  email: z.string().email(),
-  password: z.string().min(6),
-  selectedMajorKey: z.enum(['dev', 'mkt', 'design']).default('dev')
-});
-
 function cleanDoc(doc) {
   if (!doc) return doc;
   const { _id, __v, password, passwordHash, ...rest } = doc.toObject ? doc.toObject() : doc;
   return rest;
-}
-
-async function findAccount(email) {
-  if (typeof email !== 'string' || !email.includes('@')) return null;
-  const normalizedEmail = email.trim().toLowerCase();
-  const [admin, mentor, student] = await Promise.all([
-    AdminAccount.findOne({ email: normalizedEmail }).lean(),
-    MentorAccount.findOne({ email: normalizedEmail }).lean(),
-    UserProfile.findOne({ email: normalizedEmail }).lean()
-  ]);
-  if (admin) return { type: 'admin', account: admin, model: AdminAccount };
-  if (mentor) return { type: 'mentor', account: mentor, model: MentorAccount };
-  if (student) return { type: 'student', account: student, model: UserProfile };
-
-  const db = AdminAccount.db;
-  const [rawAdmin, rawMentor, rawStudent] = await Promise.all([
-    db.collection('adminaccounts').findOne({ email: normalizedEmail }),
-    db.collection('mentoraccounts').findOne({ email: normalizedEmail }),
-    db.collection('userprofiles').findOne({ email: normalizedEmail })
-  ]);
-  if (rawAdmin) return { type: 'admin', account: rawAdmin, model: AdminAccount };
-  if (rawMentor) return { type: 'mentor', account: rawMentor, model: MentorAccount };
-  if (rawStudent) return { type: 'student', account: rawStudent, model: UserProfile };
-  return null;
 }
 
 function normalizeRules(rows) {
@@ -214,106 +177,7 @@ app.get('/api/bootstrap', async (_req, res, next) => {
   }
 });
 
-app.post('/api/auth/login', async (req, res, next) => {
-  try {
-    const { email, password, rememberMe } = loginSchema.parse(req.body);
-    const found = await findAccount(email);
-    if (!found || !(await bcrypt.compare(password, found.account.passwordHash || ''))) {
-      res.status(401).json({ message: 'Email hoặc mật khẩu không đúng' });
-      return;
-    }
-    if (rememberMe) {
-      req.session.cookie.maxAge = 1000 * 60 * 60 * 24 * 14;
-    }
-    req.session.user = { id: found.account.id, email: found.account.email, role: found.type };
-    res.json({ type: found.type, user: cleanDoc(found.account) });
-  } catch (error) {
-    next(error);
-  }
-});
-
-app.post('/api/auth/register', async (req, res, next) => {
-  try {
-    const payload = registerSchema.parse(req.body);
-    const exists = await findAccount(payload.email);
-    if (exists) {
-      res.status(409).json({ message: 'Email đã tồn tại' });
-      return;
-    }
-    const user = await UserProfile.create({
-      id: `student-${Date.now()}`,
-      name: payload.name,
-      email: payload.email,
-      passwordHash: await bcrypt.hash(payload.password, 10),
-      role: 'student',
-      selectedMajorKey: payload.selectedMajorKey,
-      careerGoal: 'Junior Portfolio Builder',
-      path: [],
-      joinedChallengeIds: [],
-      stats: { completedChallenges: 0, mentorRating: 0, portfolioProjects: 0, verifiedSkills: 0 },
-      portfolio: { headline: '', bio: '', publishedProjects: [], links: [] },
-      badges: ['Tài khoản mới']
-    });
-    req.session.user = { id: user.id, email: user.email, role: 'student' };
-    res.status(201).json({ type: 'student', user: cleanDoc(user) });
-  } catch (error) {
-    next(error);
-  }
-});
-
-app.get('/api/auth/me', async (req, res, next) => {
-  try {
-    if (!req.session.user) {
-      res.status(401).json({ message: 'Chưa đăng nhập' });
-      return;
-    }
-    const found = await findAccount(req.session.user.email);
-    if (!found) {
-      res.status(401).json({ message: 'Phiên đăng nhập không hợp lệ' });
-      return;
-    }
-    res.json({ type: found.type, user: cleanDoc(found.account) });
-  } catch (error) {
-    next(error);
-  }
-});
-
-app.post('/api/auth/logout', (req, res) => {
-  req.session.destroy(() => {
-    res.clearCookie('portfolio.sid');
-    res.json({ ok: true });
-  });
-});
-
-app.post('/api/auth/change-password', async (req, res, next) => {
-  try {
-    if (!req.session.user) {
-      res.status(401).json({ message: 'Chưa đăng nhập' });
-      return;
-    }
-    const schema = z.object({ currentPassword: z.string().min(1), newPassword: z.string().min(6) });
-    const payload = schema.parse(req.body);
-    const found = await findAccount(req.session.user.email);
-    if (!found || !(await bcrypt.compare(payload.currentPassword, found.account.passwordHash || ''))) {
-      res.status(400).json({ message: 'Mật khẩu hiện tại không đúng' });
-      return;
-    }
-    await found.model.updateOne({ id: found.account.id }, { passwordHash: await bcrypt.hash(payload.newPassword, 10) });
-    res.json({ ok: true });
-  } catch (error) {
-    next(error);
-  }
-});
-
-app.post('/api/auth/forgot-password', async (req, res, next) => {
-  try {
-    const email = z.string().email().parse(req.body.email);
-    const found = await findAccount(email);
-    res.json({ ok: true, message: found ? 'Đã tạo yêu cầu reset mật khẩu demo' : 'Nếu email tồn tại, hệ thống sẽ gửi hướng dẫn reset' });
-  } catch (error) {
-    next(error);
-  }
-});
+app.use('/api/auth', createAuthRouter({ UserProfile, MentorAccount, AdminAccount }));
 
 app.get('/api/majors', async (_req, res, next) => {
   try {

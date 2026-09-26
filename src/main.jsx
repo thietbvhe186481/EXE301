@@ -63,6 +63,7 @@ import { FooterDetailModal, getFooterModalContent } from './components/FooterDet
 import { VipUpgradeModal } from './components/VipUpgradeModal';
 import { apiService } from './services/api';
 import { Header } from './components/Header';
+import { AuthPage } from './pages/AuthPage';
 import { HomePage } from './pages/HomePage';
 import { AboutPage } from './pages/AboutPage';
 import { MarketTrendsPage } from './pages/MarketTrendsPage';
@@ -1193,6 +1194,7 @@ function App() {
   const [remoteData, setRemoteData] = useState(null);
   const [apiStatus, setApiStatus] = useState('local');
   const [currentUser, setCurrentUser] = useState(null);
+  const [sessionChecked, setSessionChecked] = useState(false);
   const [adminNotice, setAdminNotice] = useState('');
   const [flowNotice, setFlowNotice] = useState('');
   const [cvResultData, setCvResultData] = useState(null);
@@ -1449,78 +1451,31 @@ function App() {
         .catch(() => undefined);
     }
   };
-  const loginAs = (type, customPayload = null) => {
-    const userPool = appData?.users?.length ? appData.users : demoUsers;
-    const selectedDemoUser = userPool.find((user) => user.selectedMajorKey === selectedMajorKey) ?? appData?.demoUser ?? userPool[0];
-    const buildStudentForSelectedMajor = (baseUser = selectedDemoUser) => {
-      const loginMajor = catalog.find((item) => item.key === selectedMajorKey) ?? catalog[0];
-      const loginPath = baseUser.selectedMajorKey === selectedMajorKey && baseUser.path?.length
-        ? baseUser.path
-        : loginMajor.columns.slice(0, 3).map((column, index) => column.roles[Math.min(index + 1, levels.length - 1)].id);
-      return {
-        user: { ...baseUser, role: 'student', selectedMajorKey, path: loginPath },
-        path: loginPath
-      };
-    };
-    const payload = customPayload ?? (type === 'admin'
-      ? { email: 'admin@portfolio.vn', password: 'admin123' }
-      : type === 'mentor'
-        ? { email: 'mentor@portfolio.vn', password: 'mentor123' }
-        : { email: selectedDemoUser.email, password: '123456' });
-
-    fetch(`${API_BASE_URL}/api/auth/login`, {
-      method: 'POST',
-      credentials: 'include',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    })
-      .then((response) => response.ok ? response.json() : Promise.reject(new Error('login failed')))
-      .then((data) => {
-        const normalizedData = {
-          ...data,
-          type: data.type ?? data.user?.role ?? type,
-          user: { ...data.user, role: data.user?.role ?? data.type ?? type }
-        };
-        setCurrentUser(normalizedData);
-        if (normalizedData.type === 'admin') {
-          setAdminNotice('Đã đăng nhập admin demo');
-          setPage('admin');
-          return;
-        }
-        if (normalizedData.type === 'mentor') {
-          setAdminNotice('Đã đăng nhập mentor demo');
-          setPage('mentor');
-          return;
-        }
-        const { user: studentUser, path: loginPath } = buildStudentForSelectedMajor(normalizedData.user);
-        setCurrentUser({ type: 'student', user: studentUser });
-        setSelectedMajorKey(selectedMajorKey);
-        setPath(loginPath);
-        setJoinedChallengeIds(normalizedData.user.joinedChallengeIds ?? []);
-        if (apiStatus === 'mongo') {
-          fetch(`${API_BASE_URL}/api/users/${normalizedData.user.id}/path`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ path: loginPath, selectedMajorKey, careerGoal: loginPath[loginPath.length - 1] })
-          }).catch(() => undefined);
-        }
-        setPage('roadmap');
-      })
-      .catch(() => {
-        const fallback = type === 'admin'
-          ? { type: 'admin', user: (appData?.admins?.length ? appData.admins : demoAdmins)[0] }
-          : type === 'mentor'
-            ? { type: 'mentor', user: (appData?.mentors?.length ? appData.mentors : demoMentors)[0] }
-            : { type: 'student', user: buildStudentForSelectedMajor().user };
-        setCurrentUser(fallback);
-        if (type === 'student') {
-          const { path: loginPath } = buildStudentForSelectedMajor(fallback.user);
-          setSelectedMajorKey(selectedMajorKey);
-          setPath(loginPath);
-        }
-        setPage(type === 'admin' ? 'admin' : type === 'mentor' ? 'mentor' : 'roadmap');
-      });
+  const applyAuthenticatedUser = (data, navigate = true) => {
+    const type = data.type;
+    const user = { ...data.user, role: type };
+    setCurrentUser({ type, user });
+    setJoinedChallengeIds(user.joinedChallengeIds ?? []);
+    setSubmissionStatus({});
+    setSavedPathName('');
+    if (type === 'student') {
+      const majorKey = user.selectedMajorKey ?? user.majorKey ?? 'dev';
+      const major = catalog.find(item => item.key === majorKey) ?? catalog[0];
+      setSelectedMajorKey(majorKey);
+      setSelectedRoleId(major.columns[0].roles[0].id);
+      setPath(user.path ?? []);
+      setActiveTrack('Tất cả');
+      setSelectedChallengeId(challengeList.find(item => item.majorKey === majorKey)?.id ?? '');
+    }
+    if (navigate) setPage(type === 'student' ? 'roadmap' : type);
   };
+  useEffect(() => {
+    let cancelled = false;
+    apiService.getMe().then(data => {
+      if (!cancelled) applyAuthenticatedUser(data, false);
+    }).catch(() => {}).finally(() => { if (!cancelled) setSessionChecked(true); });
+    return () => { cancelled = true; };
+  }, []);
 
   useEffect(() => {
     const activeRole = currentUser?.type ?? currentUser?.user?.role;
@@ -1816,16 +1771,20 @@ function App() {
       return next;
     });
   };
-  const logout = () => {
-    fetch(`${API_BASE_URL}/api/auth/logout`, {
-      method: 'POST',
-      credentials: 'include'
-    }).catch(() => undefined);
+  const logout = async () => {
+    try {
+      await apiService.logout();
+    } catch (error) {
+      setFlowNotice(error.message);
+      return;
+    }
     setCurrentUser(null);
     setAdminNotice('');
     setJoinedChallengeIds([]);
     setSubmissionStatus({});
     setSavedPathName('');
+    setAuthMode('login');
+    setFlowNotice('');
     setPage('auth');
   };
 
@@ -1836,7 +1795,6 @@ function App() {
         go={go}
         currentUser={currentUser}
         logout={logout}
-        loginAs={loginAs}
         onOpenQrPayment={() => setIsVipModalOpen(true)}
       />
       <VipUpgradeModal
@@ -1863,6 +1821,7 @@ function App() {
         }}
       />
       <main>
+        {page === 'auth' && !sessionChecked && <p className="status-banner" role="status">Đang kiểm tra phiên đăng nhập…</p>}
         {flowNotice && <div className="flow-notice status-banner warning"><ShieldCheck size={17} /> {flowNotice}</div>}
         {page === 'home' && (
           <HomePage
@@ -1871,17 +1830,13 @@ function App() {
             onOpenFooterModal={(key) => setFooterModalData(getFooterModalContent(key))}
           />
         )}
-        {page === 'auth' && (
+        {page === 'auth' && sessionChecked && (
           <AuthPage
             authMode={authMode}
             setAuthMode={setAuthMode}
-            majors={catalog}
-            selectedMajorKey={selectedMajorKey}
-            changeMajor={changeMajor}
-            submissionRulesData={rulesByMajor}
-            loginAs={loginAs}
+            onAuthenticated={(data) => { applyAuthenticatedUser(data); loadBootstrap(); }}
+            onOpenPolicy={(key) => setFooterModalData(getFooterModalContent(key))}
             go={go}
-            users={appData.users ?? []}
           />
         )}
         {page === 'learning' && <LearningPage go={go} />}
@@ -1968,140 +1923,6 @@ function App() {
         {page === 'admin' && <AdminPage apiStatus={apiStatus} data={managementData} notice={adminNotice} currentUser={currentUser} refreshData={refreshData} setAdminNotice={setAdminNotice} createFeedback={createFeedback} />}
       </main>
     </div>
-  );
-}
-
-function AuthPage({ authMode, setAuthMode, majors, selectedMajorKey, changeMajor, submissionRulesData, loginAs, go, users = [] }) {
-  const selectedMajor = majors.find((item) => item.key === selectedMajorKey) ?? majors[0];
-  const isSignup = authMode === 'signup';
-  const userPool = users?.length ? users : demoUsers;
-  const selectedDemoStudent = userPool.find((user) => user.selectedMajorKey === selectedMajorKey) ?? userPool[0];
-  const selectedDemoCredentials = {
-    email: selectedDemoStudent.email,
-    password: '123456'
-  };
-  const [credentials, setCredentials] = useState({
-    email: selectedDemoCredentials.email,
-    password: selectedDemoCredentials.password
-  });
-  const [signupType, setSignupType] = useState('student');
-  const [signupForm, setSignupForm] = useState({
-    name: 'Người dùng mới',
-    goal: 'Xây portfolio xin thực tập',
-    school: 'FPT University',
-    academicMajor: 'Software Engineering',
-    academicYear: 'Năm 3',
-    studentSkills: 'HTML, CSS, JavaScript, React',
-    mentorTitle: 'Senior Mentor',
-    mentorCompany: 'Tech Company',
-    mentorExpertise: 'Backend, Full Stack, Career Review',
-    mentorExperience: '5',
-    mentorProof: 'LinkedIn, chứng chỉ hoặc portfolio đã review'
-  });
-  const updateCredentials = (key, value) => setCredentials((current) => ({ ...current, [key]: value }));
-  const updateSignupForm = (key, value) => setSignupForm((current) => ({ ...current, [key]: value }));
-  useEffect(() => {
-    if (!isSignup) setCredentials(selectedDemoCredentials);
-  }, [selectedMajorKey, authMode]);
-  const submitLogin = () => {
-    if (!credentials.email || !credentials.password) return;
-    loginAs('student', credentials);
-  };
-  const submitSignup = () => {
-    loginAs(signupType === 'mentor' ? 'mentor' : 'student');
-  };
-  return (
-    <section className="auth-page page-grid">
-      <div className="auth-visual">
-        <div className="auth-story">
-          <p className="mono-label auth-kicker">Portfolio studio</p>
-          <h1>{'Bi\u1ebfn k\u1ef9 n\u0103ng h\u00f4m nay th\u00e0nh c\u01a1 h\u1ed9i ng\u00e0y mai.'}</h1>
-          <div className="auth-signal-strip">
-            <span>{'Kh\u00e1m ph\u00e1 path'}</span>
-            <span>{'B\u1eaft tay l\u00e0m'}</span>
-            <span>{'Mentor g\u00f3p \u00fd'}</span>
-            <span>{'N\u00e2ng c\u1ea5p h\u1ed3 s\u01a1'}</span>
-          </div>
-          <div className="hero-stats">
-            <Stat value="3" label={'ng\u00e0nh l\u1edbn'} />
-            <Stat value="22" label="specializations" />
-            <Stat value="60+" label={'b\u00e0i t\u1eadp m\u1eabu'} />
-          </div>
-        </div>
-      </div>
-      <div className="auth-panel">
-        <div className="auth-title">
-          <h2>{authMode === 'login' ? 'Đăng nhập Portfolio' : 'Tạo tài khoản Portfolio'}</h2>
-        </div>
-        <div className="segmented">
-          <button className={authMode === 'login' ? 'active' : ''} onClick={() => setAuthMode('login')}>Đăng nhập</button>
-          <button className={authMode === 'signup' ? 'active' : ''} onClick={() => setAuthMode('signup')}>Đăng ký</button>
-        </div>
-        {isSignup && (
-          <div className="signup-type-switch">
-            <button className={signupType === 'student' ? 'active' : ''} onClick={() => setSignupType('student')}>
-              <UserRound size={16} />
-              Student
-            </button>
-            <button className={signupType === 'mentor' ? 'active' : ''} onClick={() => setSignupType('mentor')}>
-              <GraduationCap size={16} />
-              Mentor
-            </button>
-          </div>
-        )}
-        <div className="auth-fields">
-          <label>Email<input type="email" value={credentials.email} onChange={(event) => updateCredentials('email', event.target.value)} placeholder="ban@example.com" /></label>
-          <label>Mật khẩu<input type="password" value={credentials.password} onChange={(event) => updateCredentials('password', event.target.value)} placeholder="Nhập mật khẩu" /></label>
-          {isSignup && <label>Họ tên<input value={signupForm.name} onChange={(event) => updateSignupForm('name', event.target.value)} placeholder="Tên hiển thị" /></label>}
-        </div>
-        {!isSignup && <div className="auth-helper forgot-password-row">
-          <button type="button" className="forgot-password-link">Quên mật khẩu?</button>
-          <button
-            type="button"
-            className="demo-account-chip"
-            onClick={() => setCredentials(selectedDemoCredentials)}
-            title={`Dùng tài khoản học sinh mẫu ngành ${selectedMajor.title}`}
-          >
-            Demo {selectedMajor.short}: {selectedDemoCredentials.email} / {selectedDemoCredentials.password}
-          </button>
-        </div>}
-        {(!isSignup || signupType === 'student' || signupType === 'mentor') && <div className="major-picker">
-          {majors.map((major) => (
-            <button
-              key={major.key}
-              className={`major-card ${selectedMajorKey === major.key ? 'active' : ''}`}
-              style={{ '--accent': major.accent }}
-              onClick={() => changeMajor(major.key)}
-              >
-                <span>{major.short}</span>
-                <strong>{major.title}</strong>
-              </button>
-            ))}
-        </div>}
-        {(!isSignup || signupType === 'student' || signupType === 'mentor') && <div className="selected-major-note" style={{ '--accent': selectedMajor.accent }}>
-          <strong>{selectedMajor.title}</strong>
-          <span>{signupType === 'mentor' && isSignup ? 'Mentor sẽ bổ sung hồ sơ chuyên môn sau khi được duyệt.' : `${selectedMajor.columns.length} specializations · ${submissionRulesData[selectedMajor.key].accepted}`}</span>
-        </div>}
-        {isSignup && (
-          <button className="primary-action" onClick={submitSignup}>
-            <LockKeyhole size={18} />
-            {`Tạo tài khoản ${signupType === 'mentor' ? 'Mentor' : 'Student'} demo`}
-          </button>
-        )}
-        {!isSignup && <button className="ghost-action" onClick={() => loginAs('student', selectedDemoCredentials)}>
-          <Rocket size={18} />
-          Student demo {selectedMajor.short}: {selectedDemoStudent.name}
-        </button>}
-        {!isSignup && <button className="ghost-action" onClick={() => loginAs('admin')}>
-          <ShieldCheck size={18} />
-          Đăng nhập Admin demo
-        </button>}
-        {!isSignup && <button className="ghost-action" onClick={() => loginAs('mentor')}>
-          <GraduationCap size={18} />
-          Đăng nhập Mentor demo
-        </button>}
-      </div>
-    </section>
   );
 }
 
