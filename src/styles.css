@@ -10434,3 +10434,7 @@ body:has(.feedback-dashboard-page) main {
   .learning-filters { order: 3; flex-basis: 100%; }
   .learning-provider { justify-content: space-between; }
 }
+
+/* Keep the shared header attached to the viewport while the document scrolls. */
+body:has(.app-shell) { overflow: visible !important; }
+.hub-topbar { position: sticky !important; top: 0 !important; z-index: 300 !important; }

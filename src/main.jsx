@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { lazy, Suspense, useEffect, useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import {
   AlertCircle,
@@ -65,7 +65,7 @@ import { VipUpgradeModal } from './components/VipUpgradeModal';
 import { apiService } from './services/api';
 import { Header } from './components/Header';
 import { AuthPage } from './pages/AuthPage';
-import ReviewWorkspace from './pages/ReviewWorkspace';
+const ReviewWorkspace = lazy(() => import('./pages/ReviewWorkspace'));
 import { HomePage } from './pages/HomePage';
 import { CHALLENGES, LEVEL_LABELS, RESOURCES } from '../shared/catalog.js';
 import { AboutPage } from './pages/AboutPage';
@@ -1392,7 +1392,11 @@ function App() {
   const selectedColumn = careerColumns.find((column) => column.title === selectedRole.track) ?? careerColumns[0];
   const pathRoles = path.map((roleId) => allRoles.find((roleItem) => roleItem.id === roleId)).filter(Boolean);
 
-  const go = (id) => { setFlowNotice(''); setPage(id); };
+  const go = (id) => {
+    setFlowNotice('');
+    setPage(id);
+    window.scrollTo(0, 0);
+  };
   const changeMajor = (majorKey) => {
     const nextMajor = catalog.find((item) => item.key === majorKey) ?? catalog[0];
     const nextRole = nextMajor.columns[0].roles[2];
@@ -1460,7 +1464,10 @@ function App() {
       setActiveTrack('Tất cả');
       setSelectedChallengeId(challengeList.find(item => item.majorKey === majorKey)?.id ?? '');
     }
-    if (navigate) setPage(type === 'student' ? 'roadmap' : type);
+    if (navigate) {
+      setPage(type === 'student' ? 'roadmap' : type);
+      window.scrollTo(0, 0);
+    }
   };
   useEffect(() => {
     let cancelled = false;
@@ -1833,7 +1840,8 @@ function App() {
             go={go}
           />
         )}
-        {['hub', 'join', 'submit', 'feedback', 'submissionHistory', 'mentor', 'learning'].includes(page) && <ReviewWorkspace key={currentUser?.user?.id ?? 'guest'} currentUser={currentUser} go={go} initialTab={page === 'learning' ? 'resources' : ['feedback', 'submissionHistory'].includes(page) ? 'submissions' : page === 'mentor' ? 'queue' : 'catalog'} initialChallengeId={['join', 'submit'].includes(page) ? selectedChallengeId : undefined} />}
+        {['hub', 'join', 'submit', 'feedback', 'submissionHistory', 'mentor'].includes(page) && <Suspense fallback={<p className="status-banner" role="status">Đang mở không gian thực hành…</p>}><ReviewWorkspace key={currentUser?.user?.id ?? 'guest'} currentUser={currentUser} go={go} initialTab={['feedback', 'submissionHistory'].includes(page) ? 'submissions' : page === 'mentor' ? 'queue' : 'catalog'} initialChallengeId={['join', 'submit'].includes(page) ? selectedChallengeId : undefined} /></Suspense>}
+        {page === 'learning' && <LearningPage go={go} />}
         {page === 'roadmap' && (
           <CareerMapPage
             majors={catalog}
@@ -1894,7 +1902,7 @@ function App() {
             onOpenFooterModal={(key) => setFooterModalData(getFooterModalContent(key))}
           />
         )}
-        {page === 'admin' && <ReviewWorkspace currentUser={currentUser} go={go} initialTab='applications' />}
+        {page === 'admin' && <Suspense fallback={<p className="status-banner" role="status">Đang mở bảng quản trị…</p>}><ReviewWorkspace currentUser={currentUser} go={go} initialTab='applications' /></Suspense>}
         {page === 'admin' && <AdminPage apiStatus={apiStatus} data={managementData} notice={adminNotice} currentUser={currentUser} refreshData={refreshData} setAdminNotice={setAdminNotice} createFeedback={createFeedback} />}
       </main>
     </div>
