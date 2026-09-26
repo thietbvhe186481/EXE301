@@ -4247,7 +4247,7 @@ function AdminPage({ apiStatus, data, notice, currentUser, refreshData, setAdmin
   const mentors = data?.mentors ?? [];
   const notifications = data?.notifications ?? [];
   const adminProfile = data?.admins?.find((item) => item.id === currentUser?.user?.id) ?? currentUser?.user ?? {};
-  const premiumSubscriptions = data?.premiumSubscriptions?.length ? data.premiumSubscriptions : demoPremiumSubscriptions;
+  const premiumSubscriptions = apiStatus === 'mongo' ? (data?.premiumSubscriptions ?? []) : demoPremiumSubscriptions;
   const premiumRevenue = premiumSubscriptions.reduce((sum, item) => sum + Number(item.revenue || 0), 0);
   const activePremiumCount = premiumSubscriptions.filter((item) => item.status === 'active').length;
   const overview = {

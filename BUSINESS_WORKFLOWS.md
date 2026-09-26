@@ -33,6 +33,8 @@ Phân biệt bốn sổ, không dùng một cờ `paid` để biểu diễn toà
 
 Màn quản trị phải phân biệt “đã nhập reference” với “đã chuyển tiền”. Phiên bản hiện tại chỉ đánh dấu đã thanh toán khi admin nhập chuỗi reference; chưa tích hợp ngân hàng, webhook hay sổ cái. Vì vậy đây là đối soát thủ công mẫu, không dùng làm chứng từ kế toán.
 
+Luồng khiếu nại trong ứng dụng: sinh viên/mentor mở ticket theo bài hoặc loại vấn đề, xem lịch sử của mình; admin nhận xử lý, ghi kết luận có lý do và đóng ticket. Hạn mức là 5 ticket/người/ngày. Đây là đầu mối hỗ trợ có trạng thái cơ bản, chưa có chat hai chiều, file đính kèm, SLA, phân công nhân sự hay thời gian kháng nghị.
+
 ### Đánh giá chất lượng và riêng tư
 
 Chỉ người sở hữu bài có khoản trả phí được đánh giá một lần. Đánh giá được mở đến mốc quyết toán; đánh giá thấp tạo ticket kiểm tra, không tự động xóa mentor khỏi hệ thống chỉ từ một lượt vote. Dùng ngưỡng tối thiểu mẫu, rolling average, quyền giải trình, admin duyệt đình chỉ và quy trình kháng nghị. Thưởng sao chỉ xác định sau hết cửa sổ điều chỉnh để tránh khuyến khích xin điểm.

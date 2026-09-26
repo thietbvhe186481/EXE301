@@ -29,5 +29,15 @@ const profile = new Schema({
     reason: String, submittedAt: Date, reviewedAt: Date
   }
 }, { timestamps: true, strict: true });
+const complaint = new Schema({
+  id: { type: String, required: true, unique: true },
+  reporterId: { type: String, required: true, index: true }, reporterRole: { type: String, enum: ['student', 'mentor'], required: true },
+  reporterName: String, kind: { type: String, enum: ['review', 'payout', 'account', 'other'], required: true },
+  submissionId: { type: String, default: '', index: true }, description: { type: String, required: true },
+  status: { type: String, enum: ['open', 'in_review', 'resolved', 'rejected'], default: 'open', index: true },
+  resolution: String, resolvedBy: String, resolvedAt: Date
+}, { timestamps: true, strict: true });
+complaint.index({ reporterId: 1, createdAt: -1 });
 export const ReviewSubmission = mongoose.models.ReviewSubmission || mongoose.model('ReviewSubmission', submission);
 export const ReviewerProfile = mongoose.models.ReviewerProfile || mongoose.model('ReviewerProfile', profile);
+export const Complaint = mongoose.models.WorkflowComplaint || mongoose.model('WorkflowComplaint', complaint);

@@ -36,7 +36,7 @@ export const earningsFor = jobs => jobs.reduce((total, item) => {
   return total;
 }, { base: 0, bonus: 0, total: 0, pending: 0, paid: 0, count: 0 });
 
-export function createWorkflowRouter({ UserProfile, MentorAccount, AdminAccount, ReviewSubmission, ReviewerProfile, SubscriptionOrder, PremiumPlan }) {
+export function createWorkflowRouter({ UserProfile, MentorAccount, AdminAccount, ReviewSubmission, ReviewerProfile, Complaint, SubscriptionOrder, PremiumPlan }) {
   const router = Router();
   const run = handler => async (req, res, next) => { try { await handler(req, res); } catch (error) { next(error); } };
   const fail = (status, message) => { const error = new Error(message); error.status = status; throw error; };
@@ -63,11 +63,12 @@ export function createWorkflowRouter({ UserProfile, MentorAccount, AdminAccount,
   router.get('/state', run(async (req, res) => {
     const { id, role } = req.session.user;
     const filter = role === 'admin' ? {} : role === 'mentor' ? { mentorId: id } : { userId: id };
-    const [mentors, submissions, profile, orders, profiles] = await Promise.all([
+    const [mentors, submissions, profile, orders, profiles, complaints] = await Promise.all([
       loadMentors(), ReviewSubmission.find(filter).sort({ updatedAt: -1 }).lean(),
       role === 'mentor' ? ReviewerProfile.findOne({ mentorId: id }).lean() : null,
-      role === 'admin' ? SubscriptionOrder.find({ status: 'pending' }).lean() : role === 'student' ? SubscriptionOrder.find({ userId: id }).lean() : [],
-      role === 'admin' ? ReviewerProfile.find({}).lean() : []
+      role === 'admin' ? SubscriptionOrder.find({}).sort({ createdAt: -1 }).lean() : role === 'student' ? SubscriptionOrder.find({ userId: id }).sort({ createdAt: -1 }).lean() : [],
+      role === 'admin' ? ReviewerProfile.find({}).lean() : [],
+      Complaint ? Complaint.find(role === 'admin' ? {} : { reporterId: id }).sort({ updatedAt: -1 }).lean() : []
     ]);
     const mentor = mentors.find(item => item.id === id);
     const approved = mentor?.eligible;
@@ -75,8 +76,32 @@ export function createWorkflowRouter({ UserProfile, MentorAccount, AdminAccount,
     res.json({ catalog: CHALLENGES, resources: RESOURCES, mentors, submissions, aiEnabled: aiConfigured(),
       profile, paid: role === 'student' && hasPaidAccess(req.account), orders,
       applications: profiles.map(item => ({ ...item, name: mentors.find(mentor => mentor.id === item.mentorId)?.name || item.mentorId })),
-      earnings: earningsFor(submissions),
+      earnings: earningsFor(submissions), complaints,
       talents: talents.map(item => ({ id: item.id, studentName: item.studentName, challengeId: item.challengeId, score: item.review.score, links: item.links, notes: item.notes })) });
+  }));
+
+  router.post('/complaints', run(async (req, res) => {
+    if (!Complaint || !['student', 'mentor'].includes(req.session.user.role)) fail(403, 'Chức năng khiếu nại không khả dụng cho tài khoản này.');
+    const payload = z.object({ kind: z.enum(['review', 'payout', 'account', 'other']), submissionId: z.string().max(120).default(''), description: z.string().trim().min(30).max(3000) }).parse(req.body);
+    const reporter = req.session.user;
+    if (payload.submissionId) {
+      const owned = reporter.role === 'student'
+        ? await ReviewSubmission.findOne({ id: payload.submissionId, userId: reporter.id }).lean()
+        : await ReviewSubmission.findOne({ id: payload.submissionId, mentorId: reporter.id }).lean();
+      if (!owned) fail(404, 'Không tìm thấy bài liên quan thuộc tài khoản của bạn.');
+    }
+    const recent = await Complaint.countDocuments({ reporterId: reporter.id, createdAt: { $gte: new Date(Date.now() - 86400000) } });
+    if (recent >= 5) fail(429, 'Bạn đã gửi đủ số yêu cầu hỗ trợ hôm nay. Hãy chờ admin phản hồi.');
+    const ticket = await Complaint.create({ id: randomUUID(), reporterId: reporter.id, reporterRole: reporter.role, reporterName: req.account.name, ...payload, status: 'open' });
+    res.status(201).json({ complaint: ticket });
+  }));
+  router.patch('/admin/complaints/:id', run(async (req, res) => {
+    requireRole(req, 'admin');
+    if (!Complaint) fail(503, 'Kho khiếu nại chưa được cấu hình.');
+    const payload = z.object({ status: z.enum(['in_review', 'resolved', 'rejected']), resolution: z.string().trim().min(20).max(3000) }).parse(req.body);
+    const ticket = await Complaint.findOneAndUpdate({ id: req.params.id, status: { $in: ['open', 'in_review'] } }, { $set: { status: payload.status, resolution: payload.resolution, resolvedBy: req.account.id, ...(payload.status === 'resolved' || payload.status === 'rejected' ? { resolvedAt: new Date() } : {}) } }, { new: true });
+    if (!ticket) fail(409, 'Yêu cầu đã được xử lý hoặc không còn tồn tại.');
+    res.json({ complaint: ticket });
   }));
 
   const saveSubmission = run(async (req, res) => {

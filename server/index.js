@@ -5,7 +5,7 @@ import express from 'express';
 import session from 'express-session';
 import { createAuthRouter } from './auth.js';
 import { createWorkflowRouter } from './workflow.js';
-import { ReviewSubmission, ReviewerProfile } from './workflow-models.js';
+import { ReviewSubmission, ReviewerProfile, Complaint } from './workflow-models.js';
 import { connectDb } from './config/db.js';
 import { AdminAccount, Category, Challenge, Major, MentorAccount, MentorFeedback, Notification, Resource, Submission, SubmissionRule, UserProfile, StudentReview, SubscriptionOrder, ContactInquiry, Founder, PremiumPlan, MarketData } from './models.js';
 
@@ -30,7 +30,7 @@ app.use(session({
 }));
 
 app.use('/api/auth', createAuthRouter({ UserProfile, MentorAccount, AdminAccount }));
-app.use('/api/workflow', createWorkflowRouter({ UserProfile, MentorAccount, AdminAccount, ReviewSubmission, ReviewerProfile, SubscriptionOrder, PremiumPlan }));
+app.use('/api/workflow', createWorkflowRouter({ UserProfile, MentorAccount, AdminAccount, ReviewSubmission, ReviewerProfile, Complaint, SubscriptionOrder, PremiumPlan }));
 
 // Legacy administrative routes must not bypass the new paid-review workflow.
 app.use('/api', (req, res, next) => {
@@ -200,6 +200,7 @@ app.get('/api/bootstrap', async (req, res, next) => {
       reviews,
       founders,
       subscriptionOrders: isAdmin ? subscriptionOrders : subscriptionOrders.filter(item => item.userId === ownId),
+      premiumSubscriptions: isAdmin ? subscriptionOrders.filter(item => item.status === 'completed').map(item => ({ id: item.orderId, orderId: item.orderId, userId: item.userId, planId: item.planId, planName: item.planName, revenue: item.price, expiresAt: item.expiresAt, status: item.expiresAt && new Date(item.expiresAt) > new Date() ? 'active' : 'expired' })) : [],
       premiumPlans,
       marketData,
       kpi
