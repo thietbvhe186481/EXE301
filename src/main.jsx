@@ -64,7 +64,9 @@ import { VipUpgradeModal } from './components/VipUpgradeModal';
 import { apiService } from './services/api';
 import { Header } from './components/Header';
 import { AuthPage } from './pages/AuthPage';
-import { HomePage } from './pages/HomePage';
+import ReviewWorkspace from './pages/ReviewWorkspace';
+import ReviewLanding from './pages/ReviewLanding';
+import { CHALLENGES, LEVEL_LABELS } from '../shared/catalog.js';
 import { AboutPage } from './pages/AboutPage';
 import { MarketTrendsPage } from './pages/MarketTrendsPage';
 
@@ -1190,6 +1192,7 @@ function App() {
   const [footerModalData, setFooterModalData] = useState(null);
   const [page, setPage] = useState('home');
   const [authMode, setAuthMode] = useState('login');
+  const [signupRole, setSignupRole] = useState('student');
   const theme = 'light';
   const [remoteData, setRemoteData] = useState(null);
   const [apiStatus, setApiStatus] = useState('local');
@@ -1232,7 +1235,7 @@ function App() {
   const loadBootstrap = () => {
     const controller = new AbortController();
 
-    fetch(`${API_BASE_URL}/api/bootstrap`, { signal: controller.signal })
+    fetch(`${API_BASE_URL}/api/bootstrap`, { signal: controller.signal, credentials: 'include' })
       .then((response) => {
         if (!response.ok) throw new Error('API bootstrap failed');
         return response.json();
@@ -1293,13 +1296,7 @@ function App() {
     return sources.length ? sources : trustedMarketSources;
   }, [appData?.marketData]);
 
-  const remoteChallenges = appData?.challenges?.length ? appData.challenges : [];
-  const challengeList = remoteChallenges.length
-    ? [
-        ...remoteChallenges,
-        ...challenges.filter((challenge) => !remoteChallenges.some((remoteChallenge) => remoteChallenge.id === challenge.id))
-      ]
-    : challenges;
+  const challengeList = CHALLENGES.map(item => ({ ...item, difficulty: LEVEL_LABELS[item.level], xp: 100, track: { dev: 'Frontend', mkt: 'Content', design: 'UX Design' }[item.majorKey], tags: [LEVEL_LABELS[item.level]], mentor: '', due: String(item.estimatedHours) }));
   const managementData = { ...appData, challenges: challengeList };
   const rulesByMajor = appData?.submissionRules && Object.keys(appData.submissionRules).length ? appData.submissionRules : submissionRules;
   const demoUser = currentRole === 'student' ? currentUser.user : appData?.demoUser;
@@ -1385,22 +1382,7 @@ function App() {
   const selectedColumn = careerColumns.find((column) => column.title === selectedRole.track) ?? careerColumns[0];
   const pathRoles = path.map((roleId) => allRoles.find((roleItem) => roleItem.id === roleId)).filter(Boolean);
 
-  const go = (id) => {
-    if (id === 'submit' && currentRole === 'student') {
-      if (!selectedChallenge?.id) {
-        setFlowNotice('Bạn nên chọn một thử thách trước khi nộp bài.');
-        setPage('hub');
-        return;
-      }
-      if (!joinedChallengeIds.includes(selectedChallenge.id)) {
-        setFlowNotice('Bạn cần tham gia thử thách trước, sau đó hệ thống mới mở form nộp bài.');
-        setPage('join');
-        return;
-      }
-    }
-    setFlowNotice('');
-    setPage(id);
-  };
+  const go = (id) => { setFlowNotice(''); setPage(id); };
   const changeMajor = (majorKey) => {
     const nextMajor = catalog.find((item) => item.key === majorKey) ?? catalog[0];
     const nextRole = nextMajor.columns[0].roles[2];
@@ -1437,6 +1419,7 @@ function App() {
     if (apiStatus === 'mongo') {
       fetch(`${API_BASE_URL}/api/users/${userId}/path`, {
         method: 'PUT',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           path,
@@ -1484,7 +1467,7 @@ function App() {
       mentor: ['mentor', 'home', 'learning', 'pricing', 'about', 'roadmap', 'trends'],
       admin: ['admin', 'home', 'learning', 'pricing', 'about', 'roadmap', 'trends']
     };
-    const publicPages = ['home', 'learning', 'pricing', 'about', 'roadmap', 'trends', 'hub', 'portfolio', 'auth'];
+    const publicPages = ['home', 'learning', 'pricing', 'about', 'roadmap', 'trends', 'hub', 'portfolio', 'auth', 'premium'];
     if (!currentUser && !publicPages.includes(page)) {
       setPage('home');
       return;
@@ -1503,6 +1486,7 @@ function App() {
     if (apiStatus === 'mongo') {
       fetch(`${API_BASE_URL}/api/users/${userId}/joined-challenges`, {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ challengeId })
       }).catch(() => undefined);
@@ -1533,6 +1517,7 @@ function App() {
 
     return fetch(`${API_BASE_URL}/api/submissions`, {
       method: 'POST',
+      credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         userId: optimisticSubmission.userId,
@@ -1577,6 +1562,7 @@ function App() {
     if (apiStatus !== 'mongo') return;
     fetch(`${API_BASE_URL}/api/users/${userId}/portfolio`, {
       method: 'PUT',
+      credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         portfolio,
@@ -1632,6 +1618,7 @@ function App() {
     const activeId = demoUser?.id ?? userId;
     return fetch(`${API_BASE_URL}/api/users/${activeId}`, {
       method: 'PUT',
+      credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(mergeUser(demoUser ?? {}))
     })
@@ -1726,6 +1713,7 @@ function App() {
     }
     return fetch(`${API_BASE_URL}/api/feedback`, {
       method: 'POST',
+      credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         ...fallbackFeedback,
@@ -1756,6 +1744,7 @@ function App() {
     if (apiStatus === 'mongo') {
       fetch(`${API_BASE_URL}/api/submissions`, {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       }).catch(() => undefined);
@@ -1823,23 +1812,18 @@ function App() {
       <main>
         {page === 'auth' && !sessionChecked && <p className="status-banner" role="status">Đang kiểm tra phiên đăng nhập…</p>}
         {flowNotice && <div className="flow-notice status-banner warning"><ShieldCheck size={17} /> {flowNotice}</div>}
-        {page === 'home' && (
-          <HomePage
-            go={go}
-            onOpenUpgrade={() => setIsVipModalOpen(true)}
-            onOpenFooterModal={(key) => setFooterModalData(getFooterModalContent(key))}
-          />
-        )}
+        {page === 'home' && <ReviewLanding go={go} onSignup={(role = 'student') => { setSignupRole(role); setAuthMode('signup'); setPage('auth'); }} onSelectChallenge={(id) => { setSelectedChallengeId(id); setPage('join'); }} onOpenPolicy={(key) => setFooterModalData(getFooterModalContent(key))} />}
         {page === 'auth' && sessionChecked && (
           <AuthPage
             authMode={authMode}
+            initialRole={signupRole}
             setAuthMode={setAuthMode}
             onAuthenticated={(data) => { applyAuthenticatedUser(data); loadBootstrap(); }}
             onOpenPolicy={(key) => setFooterModalData(getFooterModalContent(key))}
             go={go}
           />
         )}
-        {page === 'learning' && <LearningPage go={go} />}
+        {['hub', 'join', 'submit', 'feedback', 'submissionHistory', 'mentor', 'learning'].includes(page) && <ReviewWorkspace key={currentUser?.user?.id ?? 'guest'} currentUser={currentUser} go={go} initialTab={page === 'learning' ? 'resources' : ['feedback', 'submissionHistory'].includes(page) ? 'submissions' : page === 'mentor' ? 'queue' : 'catalog'} initialChallengeId={['join', 'submit'].includes(page) ? selectedChallengeId : undefined} />}
         {page === 'roadmap' && (
           <CareerMapPage
             majors={catalog}
@@ -1880,26 +1864,7 @@ function App() {
             getMarketUpdatedLabel={getMarketUpdatedLabel}
           />
         )}
-        {page === 'hub' && (
-          <ChallengeHubPage
-            currentMajor={currentMajor}
-            activeTrack={activeTrack}
-            setActiveTrack={setActiveTrack}
-            visibleChallenges={visibleChallenges}
-            setSelectedChallengeId={setSelectedChallengeId}
-            joinedChallengeIds={joinedChallengeIds}
-            submissionStatus={submissionStatus}
-            joinChallenge={joinChallenge}
-            isPremium={isPremium}
-            mentors={appData.mentors ?? []}
-            go={go}
-          />
-        )}
-        {page === 'join' && <JoinChallengePage challenge={selectedChallenge} currentMajor={currentMajor} joined={joinedChallengeIds.includes(selectedChallenge.id)} submission={submissionStatus[selectedChallenge.id]} joinChallenge={joinChallenge} isPremium={isPremium} go={go} />}
-        {page === 'submit' && <SubmitProjectPage challenge={selectedChallenge} currentMajor={currentMajor} joined={joinedChallengeIds.includes(selectedChallenge.id)} submission={submissionStatus[selectedChallenge.id]} mentors={appData.mentors ?? []} joinChallenge={joinChallenge} saveDraft={saveDraft} submitChallenge={submitChallenge} submissionRulesData={rulesByMajor} isPremium={isPremium} go={go} />}
-        {page === 'feedback' && <MentorFeedbackPage go={go} challenge={selectedChallenge} submissions={submissionList} feedbackList={feedbackList} challenges={challengeList} userId={userId} mentors={appData.mentors ?? []} setSelectedChallengeId={setSelectedChallengeId} createFeedback={() => createFeedback(selectedChallenge.id, userId)} />}
         {page === 'portfolio' && <PortfolioPage pathRoles={pathRoles} currentMajor={currentMajor} go={go} demoUser={demoUser} apiStatus={apiStatus} submissions={submissionList} challenges={challengeList} updatePortfolio={updatePortfolio} updateStudentProfile={updateStudentProfile} isPremium={isPremium} autoOpenPublicPortfolio={autoOpenPublicPortfolio} onPublicPortfolioOpened={() => setAutoOpenPublicPortfolio(false)} />}
-        {page === 'submissionHistory' && <SubmissionHistoryPage demoUser={demoUser} submissions={submissionList} challenges={challengeList} feedbackList={feedbackList} setSelectedChallengeId={setSelectedChallengeId} go={go} />}
         {(page === 'premium' || page === 'pricing') && (
           <PremiumPage
             plans={activePremiumPlans}
@@ -1919,7 +1884,7 @@ function App() {
             onOpenFooterModal={(key) => setFooterModalData(getFooterModalContent(key))}
           />
         )}
-        {page === 'mentor' && <MentorPage apiStatus={apiStatus} data={managementData} currentUser={currentUser} refreshData={refreshData} createFeedback={createFeedback} updateSubmissionFromMentor={updateSubmissionFromMentor} setNotice={setAdminNotice} notice={adminNotice} />}
+        {page === 'admin' && <ReviewWorkspace currentUser={currentUser} go={go} initialTab='applications' />}
         {page === 'admin' && <AdminPage apiStatus={apiStatus} data={managementData} notice={adminNotice} currentUser={currentUser} refreshData={refreshData} setAdminNotice={setAdminNotice} createFeedback={createFeedback} />}
       </main>
     </div>
@@ -2993,6 +2958,7 @@ function MentorFeedbackPage({ go, challenge, submissions, feedbackList, challeng
     if (!matchedMentor?.id) return;
     fetch(`${API_BASE_URL}/api/mentors/${matchedMentor.id}/rate`, {
       method: 'POST',
+      credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ rating: studentRating, comment: studentComment, studentId: userId })
     })
@@ -3210,9 +3176,9 @@ function PortfolioPage({ pathRoles, currentMajor, go, demoUser, apiStatus, submi
     setIsEditingProfileInfo(false);
   };
   const monthlyReport = [
-    { label: 'Challenge đã tham gia', value: Math.max(userSubmissions.length, 3) },
-    { label: 'Feedback mentor', value: Math.max(reviewedSubmissions, 2) },
-    { label: 'Kỹ năng mới', value: Math.max(Math.round((stats.verifiedSkills ?? 0) / 3), 6) }
+    { label: 'Challenge đã tham gia', value: userSubmissions.length },
+    { label: 'Feedback mentor', value: reviewedSubmissions },
+    { label: 'Kỹ năng mới', value: Math.round((stats.verifiedSkills ?? 0) / 3) }
   ];
   const premiumBadges = [
     `${currentMajor.short} Skill Verified`,
@@ -3221,15 +3187,11 @@ function PortfolioPage({ pathRoles, currentMajor, go, demoUser, apiStatus, submi
     'Career Path Certified'
   ];
   const certificateCode = `PF-${currentMajor.short.toUpperCase()}-${String(demoUser?.id ?? 'demo').slice(-4).toUpperCase()}-2026`;
-  const portfolioProjectDetails = (userSubmissions.length ? userSubmissions : [
-    { challengeId: 'dev-dashboard', status: 'reviewed', updatedAt: '15:10' },
-    { challengeId: 'dev-api', status: 'submitted', updatedAt: '09:30' },
-    { challengeId: 'dev-mobile', status: 'reviewed', updatedAt: '17:10' }
-  ]).slice(0, 4).map((submission, index) => {
+  const portfolioProjectDetails = userSubmissions.slice(0, 4).map((submission, index) => {
     const challenge = challenges.find((item) => item.id === submission.challengeId)
       ?? challenges.find((item) => item.majorKey === currentMajor.key)
       ?? { title: challengeName(submission.challengeId), track: currentMajor.columns[0]?.title ?? currentMajor.title, summary: 'Bài tập portfolio theo ngành đã chọn.', tags: currentMajor.columns.slice(0, 3).map((item) => item.title), xp: 420 };
-    const score = [92, 88, 86, 84][index] ?? 82;
+    const score = submission.review?.score ?? 'Chưa chấm';
     return {
       id: `${submission.challengeId}-${index}`,
       title: challenge.title,
@@ -4392,6 +4354,7 @@ function AdminPage({ apiStatus, data, notice, currentUser, refreshData, setAdmin
     const url = editingId ? `${API_BASE_URL}/api/challenges/${editingId}` : `${API_BASE_URL}/api/challenges`;
     fetch(url, {
       method,
+      credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ ...form, id })
     })
@@ -4429,7 +4392,7 @@ function AdminPage({ apiStatus, data, notice, currentUser, refreshData, setAdmin
       setAdminNotice('Cần đăng nhập admin demo để xóa dữ liệu');
       return;
     }
-    fetch(`${API_BASE_URL}/api/challenges/${id}`, { method: 'DELETE' })
+    fetch(`${API_BASE_URL}/api/challenges/${id}`, { method: 'DELETE', credentials: 'include' })
       .then((response) => response.ok ? response.json() : Promise.reject(new Error('delete failed')))
       .then(() => {
         setAdminNotice('Đã xóa challenge và submission liên quan');
@@ -4444,6 +4407,7 @@ function AdminPage({ apiStatus, data, notice, currentUser, refreshData, setAdmin
     }
     fetch(`${API_BASE_URL}/api/users/${id}`, {
       method: 'PUT',
+      credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(updates)
     })

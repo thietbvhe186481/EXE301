@@ -25,7 +25,13 @@ jobs:
           cache: npm
 
       - run: npm ci
+      - run: npm run test:auth && npm run test:workflow
       - run: npm run build
+        env:
+          VITE_API_URL: ${{ vars.VITE_API_URL }}
+          VITE_PAYMENT_BANK: ${{ vars.VITE_PAYMENT_BANK }}
+          VITE_PAYMENT_ACCOUNT: ${{ vars.VITE_PAYMENT_ACCOUNT }}
+          VITE_PAYMENT_ACCOUNT_NAME: ${{ vars.VITE_PAYMENT_ACCOUNT_NAME }}
 
       - uses: actions/upload-pages-artifact@v3
         with:

@@ -14,9 +14,9 @@ function Field({ name, label, errors, hint, children }) {
   </div>;
 }
 
-export function AuthPage({ authMode = 'login', setAuthMode, onAuthenticated, onOpenPolicy, go }) {
+export function AuthPage({ authMode = 'login', initialRole = 'student', setAuthMode, onAuthenticated, onOpenPolicy, go }) {
   const signup = authMode === 'signup';
-  const [values, setValues] = useState(initialValues);
+  const [values, setValues] = useState({ ...initialValues, role: initialRole === 'mentor' ? 'mentor' : 'student' });
   const [step, setStep] = useState(1);
   const [errors, setErrors] = useState({});
   const [message, setMessage] = useState('');

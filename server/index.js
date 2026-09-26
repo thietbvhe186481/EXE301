@@ -4,14 +4,18 @@ import cors from 'cors';
 import express from 'express';
 import session from 'express-session';
 import { createAuthRouter } from './auth.js';
+import { createWorkflowRouter } from './workflow.js';
+import { ReviewSubmission, ReviewerProfile } from './workflow-models.js';
 import { connectDb } from './config/db.js';
 import { AdminAccount, Category, Challenge, Major, MentorAccount, MentorFeedback, Notification, Resource, Submission, SubmissionRule, UserProfile, StudentReview, SubscriptionOrder, ContactInquiry, Founder, PremiumPlan, MarketData } from './models.js';
 
 const app = express();
 const port = process.env.PORT || 4000;
+if (process.env.NODE_ENV === 'production' && !process.env.SESSION_SECRET) throw new Error('SESSION_SECRET is required in production');
+if (process.env.TRUST_PROXY === '1') app.set('trust proxy', 1);
 
 app.use(cors({ origin: process.env.CLIENT_ORIGIN || 'http://127.0.0.1:5173', credentials: true }));
-app.use(express.json());
+app.use(express.json({ limit: '64kb' }));
 app.use(session({
   name: 'portfolio.sid',
   secret: process.env.SESSION_SECRET || 'portfolio-demo-session-secret',
@@ -19,10 +23,34 @@ app.use(session({
   saveUninitialized: false,
   cookie: {
     httpOnly: true,
-    sameSite: 'lax',
+    sameSite: process.env.COOKIE_CROSS_SITE === '1' ? 'none' : 'lax',
+    secure: process.env.NODE_ENV === 'production' || process.env.COOKIE_CROSS_SITE === '1',
     maxAge: 1000 * 60 * 60 * 8
   }
 }));
+
+app.use('/api/auth', createAuthRouter({ UserProfile, MentorAccount, AdminAccount }));
+app.use('/api/workflow', createWorkflowRouter({ UserProfile, MentorAccount, AdminAccount, ReviewSubmission, ReviewerProfile, SubscriptionOrder, PremiumPlan }));
+
+// Legacy administrative routes must not bypass the new paid-review workflow.
+app.use('/api', (req, res, next) => {
+  const publicReads = ['/health', '/bootstrap', '/majors', '/challenges', '/resources', '/reviews', '/founders', '/premium-plans', '/market-data', '/kpi', '/categories'];
+  if (req.method === 'GET' && (publicReads.includes(req.path) || /^\/challenges\/[^/]+$/.test(req.path))) return next();
+  if (req.method === 'POST' && req.path === '/inquiries') return next();
+  if (!req.session.user) return res.status(401).json({ message: 'Vui lòng đăng nhập.' });
+  if (req.path === '/subscriptions/upgrade' || /^\/mentors\/[^/]+\/(rate|payout)$/.test(req.path)) return res.status(410).json({ message: 'Vui lòng sử dụng luồng review và thanh toán mới.' });
+  if (req.session.user.role === 'admin') return next();
+  if (req.method === 'POST' && req.path === '/reviews') return next();
+  const ownUser = /^\/users\/([^/]+)(?:\/(path|portfolio|joined-challenges))?$/.exec(req.path);
+  if (ownUser && ownUser[1] === req.session.user.id && req.session.user.role === 'student') {
+    if (req.method === 'PUT' && !ownUser[2]) {
+      const allowed = ['name', 'school', 'academicMajor', 'academicYear', 'phone', 'bio', 'portfolio'];
+      req.body = Object.fromEntries(Object.entries(req.body).filter(([key]) => allowed.includes(key)));
+    }
+    if (req.method === 'GET' || req.method === 'PUT' || (req.method === 'POST' && ownUser[2] === 'joined-challenges')) return next();
+  }
+  return res.status(403).json({ message: 'Chức năng này dành cho quản trị viên hoặc cần sử dụng luồng review mới.' });
+});
 
 function cleanDoc(doc) {
   if (!doc) return doc;
@@ -101,7 +129,7 @@ app.get('/api/health', async (_req, res) => {
   res.json({ ok: true, service: 'portfolio-api', time: new Date().toISOString() });
 });
 
-app.get('/api/bootstrap', async (_req, res, next) => {
+app.get('/api/bootstrap', async (req, res, next) => {
   try {
     const [
       majors,
@@ -139,35 +167,39 @@ app.get('/api/bootstrap', async (_req, res, next) => {
       MarketData.find({}).sort({ order: 1 }).lean()
     ]);
 
-    const cleanSubmissions = dedupeBy(submissions, (item) => `${item.userId}:${item.challengeId}`);
-    const cleanFeedback = dedupeBy(feedback, (item) => `${item.userId}:${item.challengeId}`);
+    const workflowItems = await ReviewSubmission.find(req.session.user?.role === 'admin' ? {} : { userId: req.session.user?.id || '__guest__' }).lean();
+    const cleanSubmissions = dedupeBy([...workflowItems.map(item => ({ ...item, status: item.status === 'completed' && item.mode === 'human' ? 'reviewed' : item.status, primaryLink: item.links?.[0] || '', secondaryLink: item.links?.[1] || '' })), ...submissions], (item) => `${item.userId}:${item.challengeId}`);
+    const cleanFeedback = dedupeBy([...workflowItems.filter(item => item.status === 'completed' && item.mode === 'human').map(item => ({ id: item.id, userId: item.userId, challengeId: item.challengeId, score: item.review.score, strengths: [item.review.strengths], improvements: [item.review.improvements], title: item.review.comment, reviewer: item.review.mentorName, reviewedAt: item.reviewedAt })), ...feedback], (item) => `${item.userId}:${item.challengeId}`);
 
     const userCount = profiles.length;
     const kpi = {
       kpiTarget: 300,
-      currentUserCount: Math.max(userCount, 250),
+      currentUserCount: userCount,
       activeMentors: mentors.filter(m => m.status !== 'disqualified').length,
       completedSubmissions: submissions.filter(s => s.status === 'reviewed').length,
       totalChallenges: challenges.length,
       ratingAvg: 4.8
     };
 
+    const isAdmin = req.session.user?.role === 'admin';
+    const ownId = req.session.user?.id;
+    const visibleProfiles = isAdmin ? profiles : profiles.filter(item => item.id === ownId);
     res.json({
       majors,
       challenges,
       submissionRules: normalizeRules(rules),
-      demoUser: profiles[0] ? cleanDoc(profiles[0]) : null,
-      users: profiles.map(cleanDoc),
-      admins: admins.map(cleanDoc),
-      mentors: mentors.map(cleanDoc),
-      mentorFeedback: cleanFeedback,
-      submissions: cleanSubmissions,
+      demoUser: visibleProfiles[0] ? cleanDoc(visibleProfiles[0]) : null,
+      users: visibleProfiles.map(cleanDoc),
+      admins: isAdmin ? admins.map(cleanDoc) : [],
+      mentors: mentors.map(item => isAdmin ? cleanDoc(item) : { id: item.id, name: item.name, title: item.title, expertise: item.expertise, majorKey: item.majorKey, status: item.status }),
+      mentorFeedback: isAdmin ? cleanFeedback : cleanFeedback.filter(item => item.userId === ownId),
+      submissions: isAdmin ? cleanSubmissions : cleanSubmissions.filter(item => item.userId === ownId),
       categories,
       resources,
-      notifications,
+      notifications: notifications.filter(item => item.userId === ownId),
       reviews,
       founders,
-      subscriptionOrders,
+      subscriptionOrders: isAdmin ? subscriptionOrders : subscriptionOrders.filter(item => item.userId === ownId),
       premiumPlans,
       marketData,
       kpi
@@ -176,8 +208,6 @@ app.get('/api/bootstrap', async (_req, res, next) => {
     next(error);
   }
 });
-
-app.use('/api/auth', createAuthRouter({ UserProfile, MentorAccount, AdminAccount }));
 
 app.get('/api/majors', async (_req, res, next) => {
   try {
@@ -432,8 +462,8 @@ app.get('/api/kpi', async (_req, res, next) => {
     const completedSubmissions = await Submission.countDocuments({ status: 'reviewed' });
     res.json({
       kpiTarget,
-      currentUserCount: Math.max(userCount, 238),
-      progressPercent: Number((Math.max(userCount, 238) / kpiTarget * 100).toFixed(1)),
+      currentUserCount: userCount,
+      progressPercent: Number((userCount / kpiTarget * 100).toFixed(1)),
       activeMentors,
       completedSubmissions,
       breakdown: { dev: 110, mkt: 72, design: 56 }

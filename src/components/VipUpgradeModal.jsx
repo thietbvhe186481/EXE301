@@ -7,6 +7,7 @@ export function VipUpgradeModal({ isOpen, onClose, plans, initialPlan, currentUs
   const [selectedPlan, setSelectedPlan] = useState(initialPlan || plans?.[1] || plans?.[0]);
   const [copyNotice, setCopyNotice] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
+  const [paymentError, setPaymentError] = useState('');
 
   useEffect(() => {
     if (initialPlan) {
@@ -31,7 +32,11 @@ export function VipUpgradeModal({ isOpen, onClose, plans, initialPlan, currentUs
   const planCode = (selectedPlan?.id || 'PRO').replace('premium-', '').toUpperCase();
   const transferContent = `EXE301 ${planCode} ${studentMssv}`;
   const qrPrice = selectedPlan?.price || 199000;
-  const qrUrl = `https://img.vietqr.io/image/MB-0348888888-compact2.png?amount=${qrPrice}&addInfo=${encodeURIComponent(transferContent)}&accountName=EXE301%20FPT%20PORTFOLIO`;
+  const bank = import.meta.env.VITE_PAYMENT_BANK || '';
+  const account = import.meta.env.VITE_PAYMENT_ACCOUNT || '';
+  const accountName = import.meta.env.VITE_PAYMENT_ACCOUNT_NAME || '';
+  const paymentConfigured = Boolean(bank && account && accountName);
+  const qrUrl = paymentConfigured ? `https://img.vietqr.io/image/${encodeURIComponent(bank)}-${encodeURIComponent(account)}-compact2.png?amount=${qrPrice}&addInfo=${encodeURIComponent(transferContent)}&accountName=${encodeURIComponent(accountName)}` : '';
 
   const copyToClipboard = (text, label) => {
     navigator.clipboard.writeText(text);
@@ -40,7 +45,9 @@ export function VipUpgradeModal({ isOpen, onClose, plans, initialPlan, currentUs
   };
 
   const handleConfirmPaid = async () => {
+    if (isProcessing || !paymentConfigured) return;
     setIsProcessing(true);
+    setPaymentError('');
     try {
       // Save order and upgrade subscription in MongoDB
       await apiService.upgradeSubscription({
@@ -52,12 +59,11 @@ export function VipUpgradeModal({ isOpen, onClose, plans, initialPlan, currentUs
         paymentMethod: 'VietQR MB Bank',
         transactionCode: transferContent
       });
+      setStep('success');
     } catch (err) {
-      console.warn('Subscription upgrade error, fallback to client:', err);
+      setPaymentError(err.message || 'Không thể gửi yêu cầu. Vui lòng thử lại.');
     }
     setIsProcessing(false);
-    setStep('success');
-    onPaymentSuccess?.(selectedPlan);
   };
 
   return (
@@ -73,7 +79,7 @@ export function VipUpgradeModal({ isOpen, onClose, plans, initialPlan, currentUs
             <h2 style={{ fontSize: '22px', fontWeight: 900, margin: 0, color: 'var(--jr-text-main, #0f172a)' }}>
               {step === 'select_plan' && 'Chọn Gói Đồng Hành Chuẩn Tuyển Dụng'}
               {step === 'payment' && `Thanh toán VietQR - ${selectedPlan?.name}`}
-              {step === 'success' && '🎉 Nâng Cấp VIP Thành Công!'}
+              {step === 'success' && 'Đã gửi yêu cầu xác nhận thanh toán'}
             </h2>
           </div>
           <button type="button" onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748b', padding: '6px' }}>
@@ -81,6 +87,7 @@ export function VipUpgradeModal({ isOpen, onClose, plans, initialPlan, currentUs
           </button>
         </div>
 
+        {paymentError && <p role="alert" style={{ color: '#b91c1c' }}>{paymentError}</p>}
         {/* STEP 1: CHỌN 1 TRONG 3 GÓI */}
         {step === 'select_plan' && (
           <div>
@@ -184,7 +191,7 @@ export function VipUpgradeModal({ isOpen, onClose, plans, initialPlan, currentUs
             <div style={{ display: 'grid', gridTemplateColumns: '260px 1fr', gap: '24px', alignItems: 'center' }}>
               <div style={{ textAlign: 'center' }}>
                 <div className="vietqr-image-wrapper" style={{ margin: 0 }}>
-                  <img src={qrUrl} alt="Mã VietQR Chuyển Khoản" />
+                  {paymentConfigured ? <img src={qrUrl} alt="Mã VietQR Chuyển Khoản" /> : <p>Thanh toán chưa được cấu hình. Vui lòng liên hệ portfolio.exe@gmail.com để được hỗ trợ.</p>}
                 </div>
                 <span style={{ display: 'block', fontSize: '12px', color: '#64748b', marginTop: '8px' }}>
                   Mở App Ngân hàng hoặc MoMo để quét mã
@@ -196,15 +203,15 @@ export function VipUpgradeModal({ isOpen, onClose, plans, initialPlan, currentUs
                   <tbody>
                     <tr>
                       <td>Ngân hàng thụ hưởng</td>
-                      <td><b>MB Bank (Ngân hàng Quân Đội)</b></td>
+                      <td><b>{bank || 'Chưa cấu hình'}</b></td>
                     </tr>
                     <tr>
                       <td>Số tài khoản</td>
                       <td>
-                        <span style={{ fontFamily: 'monospace', fontWeight: 800, fontSize: '15px' }}>0348888888</span>
+                        <span style={{ fontFamily: 'monospace', fontWeight: 800, fontSize: '15px' }}>{account || 'Chưa cấu hình'}</span>
                         <button
                           type="button"
-                          onClick={() => copyToClipboard('0348888888', 'STK')}
+                          onClick={() => copyToClipboard(account, 'STK')}
                           style={{ marginLeft: '8px', background: 'none', border: 'none', color: '#0284c7', cursor: 'pointer', fontSize: '12px', textDecoration: 'underline' }}
                         >
                           Sao chép
@@ -213,7 +220,7 @@ export function VipUpgradeModal({ isOpen, onClose, plans, initialPlan, currentUs
                     </tr>
                     <tr>
                       <td>Chủ tài khoản</td>
-                      <td><b>EXE301 FPT PORTFOLIO</b></td>
+                      <td><b>{accountName || 'Chưa cấu hình'}</b></td>
                     </tr>
                     <tr>
                       <td>Gói cước</td>
@@ -256,7 +263,7 @@ export function VipUpgradeModal({ isOpen, onClose, plans, initialPlan, currentUs
                   <button
                     type="button"
                     className="primary-action"
-                    disabled={isProcessing}
+                    disabled={isProcessing || !paymentConfigured}
                     style={{ flex: 1, background: 'linear-gradient(135deg, #10b981, #059669)', border: 'none', color: '#fff', fontWeight: 800 }}
                     onClick={handleConfirmPaid}
                   >
@@ -275,10 +282,10 @@ export function VipUpgradeModal({ isOpen, onClose, plans, initialPlan, currentUs
               <CheckCircle2 size={36} />
             </div>
             <h3 style={{ fontSize: '22px', fontWeight: 900, margin: '0 0 10px', color: '#16a34a' }}>
-              Chúc mừng bạn đã kích hoạt thành công {selectedPlan?.name}!
+              Yêu cầu nâng cấp đang chờ đối soát
             </h3>
             <p style={{ color: 'var(--jr-text-sub, #64748b)', fontSize: '14.5px', maxWidth: '480px', margin: '0 auto 24px', lineHeight: 1.5 }}>
-              Dữ liệu giao dịch đã được lưu vào hệ thống MongoDB. Tài khoản của bạn đã được nâng cấp: Mở khóa quyền nộp bài nhận Mentor Review 1-on-1, đặt lịch chat trực tiếp và chứng thực Portfolio công khai.
+              Gói {selectedPlan?.name} chỉ được kích hoạt sau khi quản trị viên xác nhận giao dịch thực tế. Bạn có thể xem trạng thái đơn trong khu vực bài nộp và tải lại trang sau khi được xác nhận.
             </p>
             <button
               type="button"
@@ -286,7 +293,7 @@ export function VipUpgradeModal({ isOpen, onClose, plans, initialPlan, currentUs
               onClick={onClose}
               style={{ margin: '0 auto' }}
             >
-              Bắt đầu trải nghiệm ngay
+              Đóng và chờ xác nhận
             </button>
           </div>
         )}

@@ -66,7 +66,7 @@ export const apiService = {
 
   // VIP Upgrade Orders (MongoDB)
   async upgradeSubscription(orderData) {
-    return fetchWithAuth('/api/subscriptions/upgrade', {
+    return fetchWithAuth('/api/workflow/orders', {
       method: 'POST',
       body: JSON.stringify(orderData)
     });

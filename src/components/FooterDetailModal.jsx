@@ -98,7 +98,7 @@ export function getFooterModalContent(key) {
             <li>Vận hành gói dịch vụ, hỗ trợ người dùng, xử lý phản ánh và cải thiện chất lượng trải nghiệm.</li>
             <li>Phát hiện, xử lý hành vi vi phạm và thực hiện nghĩa vụ theo pháp luật.</li>
           </ul>
-          <p>Phiên bản hiện tại không có chức năng gửi OTP email, phỏng vấn AI hoặc tự động chuyển hồ sơ cho nhà tuyển dụng. Việc gửi bài không được coi là sự đồng ý cho huấn luyện mô hình AI hay quảng cáo. Nếu bổ sung mục đích xử lý mới cần sự đồng ý, chúng tôi sẽ thông báo và xin xác nhận riêng trước khi thực hiện.</p>
+          <p>Phiên bản hiện tại không có chức năng gửi OTP email, phỏng vấn AI hoặc tự động chuyển hồ sơ cho nhà tuyển dụng. Việc gửi bài không được coi là sự đồng ý cho huấn luyện mô hình AI hay quảng cáo. Khi bạn chủ động bật gợi ý AI, mô tả và kỹ năng được gửi tới OpenAI để tạo gợi ý; hệ thống không gửi danh tính hoặc liên kết bài nộp trong yêu cầu này. Tin nhắn review được lưu để mentor và sinh viên trao đổi. Hồ sơ nổi bật chỉ chia sẻ với mentor đã duyệt khi bạn bật quyền chia sẻ và có thể thu hồi. Nếu bổ sung mục đích xử lý mới cần sự đồng ý, chúng tôi sẽ thông báo và xin xác nhận riêng trước khi thực hiện.</p>
           <h4 style={{ margin: '18px 0 6px', fontSize: '14.5px' }}>3. Bảo vệ và lưu giữ thông tin</h4>
           <p>Mật khẩu được lưu dưới dạng băm, không lưu nguyên văn; cookie phiên đăng nhập được cấu hình HttpOnly để hạn chế truy cập từ mã JavaScript trong trang. Không có hệ thống nào có thể bảo đảm an toàn tuyệt đối. Bạn cần bảo vệ tài khoản, đăng xuất trên thiết bị dùng chung và không chia sẻ thông tin nhạy cảm trong bài nộp hoặc link công khai.</p>
           <p>Dữ liệu được lưu giữ trong thời gian cần thiết để cung cấp dịch vụ, xử lý yêu cầu và thực hiện nghĩa vụ pháp lý. Khi có yêu cầu xóa hợp lệ, chúng tôi xem xét xóa hoặc ẩn danh dữ liệu phù hợp; dữ liệu cần giữ để thực hiện nghĩa vụ pháp lý hoặc giải quyết tranh chấp sẽ được thông báo về lý do và phạm vi lưu giữ.</p>
@@ -115,39 +115,14 @@ export function getFooterModalContent(key) {
   }
 
   if (key === 'mentor-rubric') {
-    return {
-      category: 'Nghiệp vụ cốt lõi',
-      title: 'Quy Chuẩn Mentor Review & Cơ Chế Đánh Giá 2 Chiều',
-      subtitle: 'Quy trình thẩm định công bằng, phân luồng AI & Mentor thật, sàng lọc mentor tiêu cực và quỹ thưởng',
-      body: (
-        <div style={{ fontSize: '13.5px', lineHeight: 1.6 }}>
-          <div className="footer-rubric-box">
-            <h4><Crown size={17} /> 1. Hai Hình Thức Review Tiêu Chuẩn</h4>
-            <ul style={{ margin: 0, paddingLeft: '18px', lineHeight: 1.6 }}>
-              <li><b>Hình thức 1 - Nộp link bài nộp / CV (Review Async):</b> Sinh viên gửi link GitHub, demo web, link Figma hoặc CV PDF. Mentor chấm điểm chi tiết theo rubric STAR, ghi chú cụ thể lỗi logic và trả kết quả trong 24-48h.</li>
-              <li><b>Hình thức 2 - Đặt lịch Chat trực tiếp 1-on-1:</b> Dành cho tài khoản VIP. Sinh viên trao đổi trực tiếp với Mentor qua Google Meet hoặc phòng chat 45 phút để được giải đáp thắc mắc, sửa lỗi kiến trúc và phỏng vấn thử.</li>
-            </ul>
-          </div>
-
-          <div style={{ background: 'rgba(2, 132, 199, 0.08)', border: '1px solid rgba(2, 132, 199, 0.3)', borderRadius: '14px', padding: '14px 16px', margin: '14px 0' }}>
-            <h4 style={{ margin: '0 0 6px', color: '#0284c7' }}><Flame size={16} /> 2. Phân Luồng Chấm Điểm AI & Mentor Thật</h4>
-            <p style={{ margin: 0, fontSize: '13px' }}>
-              • <b>Mentor AI (0đ Miễn phí):</b> Tự động quét kiểm tra cấu trúc link, tính hợp lệ của repo, phân tích từ khóa CV ATS và chấm điểm sơ bộ trong 5 giây.<br />
-              • <b>Senior Mentor Thật (Gói VIP):</b> Chuyên gia giàu kinh nghiệm từ FPT Software, Viettel, VNG thẩm định kiến trúc code, khả năng mở rộng hệ thống và tính thực tế doanh nghiệp.
-            </p>
-          </div>
-
-          <div style={{ background: 'rgba(220, 38, 38, 0.08)', border: '1px solid rgba(220, 38, 38, 0.3)', borderRadius: '14px', padding: '14px 16px', margin: '14px 0' }}>
-            <h4 style={{ margin: '0 0 6px', color: '#dc2626' }}><ShieldCheck size={16} /> 3. Đánh Giá 2 Chiều & Sàng Lọc Mentor Tiêu Cực</h4>
-            <p style={{ margin: 0, fontSize: '13px' }}>
-              • <b>Sinh viên chấm điểm Mentor:</b> Sau mỗi lượt review, sinh viên đánh giá sao (1-5 sao) và nhận xét chất lượng góp ý.<br />
-              • <b>Cơ chế sàng lọc nghiêm ngặt:</b> Mentor nhận đánh giá tiêu cực (điểm trung bình dưới 3.5 sao) sẽ bị hệ thống tạm ngưng phân công bài nộp và đưa vào diện loại trừ nếu không cải thiện.<br />
-              • <b>Chính sách Thưởng thù lao:</b> Mentor có điểm đánh giá xuất sắc (từ 4.5 đến 5.0 sao) được nhận thêm thưởng bonus 15% – 25% thù lao theo từng kỳ review.
-            </p>
-          </div>
-        </div>
-      )
-    };
+    return { category: 'Hướng dẫn', title: 'Quy chuẩn review và thù lao mentor', subtitle: 'Minh bạch tiêu chí, hàng đợi và đánh giá', body: <div>
+      <p>Sinh viên nộp tối đa 3 liên kết dự án hoặc CV, hoặc trao đổi qua chat trong bài nộp. Không tải tệp lên hệ thống. Thời gian phản hồi là ước tính theo hàng đợi, không phải cam kết.</p>
+      <p>Kiểm tra tự động chỉ kiểm tra thông tin đã khai báo, không đọc nội dung liên kết. Gợi ý AI chỉ khả dụng khi máy chủ được cấu hình và sinh viên đồng ý gửi mô tả cùng kỹ năng; không thay thế điểm mentor.</p>
+      <p>Tài khoản trả phí còn hiệu lực được chọn mentor đã duyệt, có đăng ký chấm thử thách. Mentor tự chọn năng lực và sức chứa. Khi quá tải, hệ thống cảnh báo và gợi ý người ít bài hơn; sinh viên vẫn được chọn nếu chấp nhận chậm.</p>
+      <p>Mentor chấm theo rubric riêng của từng bài. Mỗi bài hoàn tất được ghi nhận 5.000đ từ doanh thu nền tảng. Đánh giá 4 sao thưởng 750đ, 5 sao thưởng 1.250đ. Bài yêu cầu sửa chưa phát sinh phí. Admin đối soát chuyển khoản thủ công.</p>
+      <p>Sinh viên được đánh giá một lần. Chi trả được ghi nhận sau đánh giá hoặc sau 7 ngày; đánh giá đóng khi khoản đó đã được đối soát. Đánh giá từ 2 sao trở xuống được cảnh báo. Từ 3 đánh giá có trung bình dưới 3,5 sao cũng cảnh báo; từ 5 đánh giá có trung bình dưới 2,5 sao ngừng nhận bài mới. Admin xem xét và có thể đình chỉ.</p>
+      <p>Hồ sơ nổi bật đạt từ 85 điểm do mentor chấm chỉ xuất hiện khi sinh viên đồng ý; có thể thu hồi sự đồng ý. Việc xuất hiện không đảm bảo được tuyển dụng.</p>
+    </div> };
   }
 
   // Employer & Partner
