@@ -23,6 +23,7 @@
 .pf-auth-roadmap p { font-size: 12px; line-height: 1.65; margin: 0; color: #b7cbd8; }
 .pf-auth-story-footer { display: flex; flex-wrap: wrap; gap: 19px; border-top: 1px solid #385166; padding-top: 23px; color: #c3d4df; font-size: 11px; letter-spacing: .04em; }
 .pf-auth-form-panel { padding: 28px 46px 35px; display: flex; flex-direction: column; background: #fffefa; }
+.pf-auth-server-notice { display:grid; gap:5px; max-width:440px; margin:0 auto 12px; padding:12px 15px; border:1px solid #f0ca85; border-radius:12px; background:#fff7e6; color:#704b11; font-size:13px; line-height:1.55; }
 .pf-auth-mode-nav { display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 9px; color: #61717e; font-size: 12px; }
 .pf-auth-mode-nav button { display: inline-flex; align-items: center; gap: 5px; padding: 3px 0; border: 0; background: none; color: #066a9e; font-weight: 650; }
 .pf-auth-form-wrap { width: 100%; max-width: 440px; margin: auto; padding: 42px 0 12px; }

@@ -1,6 +1,11 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:4000';
+const configuredApiUrl = import.meta.env.VITE_API_URL?.trim();
+const API_BASE_URL = configuredApiUrl || (import.meta.env.DEV ? 'http://127.0.0.1:4000' : '');
+const isApiConfigured = Boolean(API_BASE_URL);
 
 export async function fetchWithAuth(url, options = {}) {
+  if (!API_BASE_URL) {
+    throw new Error('Máy chủ tài khoản chưa được kết nối. Website hiện chỉ có giao diện; quản trị viên cần triển khai API và cấu hình VITE_API_URL.');
+  }
   const defaultOptions = {
     credentials: 'include',
     headers: {
@@ -29,6 +34,7 @@ export async function fetchWithAuth(url, options = {}) {
 }
 
 export const apiService = {
+  isConfigured: isApiConfigured,
   // Auth
   async login(credentials) {
     return fetchWithAuth('/api/auth/login', {

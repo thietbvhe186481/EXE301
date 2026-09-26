@@ -120,6 +120,7 @@ export function AuthPage({ authMode = 'login', initialRole = 'student', setAuthM
     </aside>
 
     <div className="pf-auth-form-panel">
+      {!apiService.isConfigured && <div className="pf-auth-server-notice" role="status"><b>Đăng nhập/đăng ký hiện chưa khả dụng.</b><span>Website chưa được kết nối với máy chủ tài khoản. Vui lòng quay lại sau khi hệ thống được cấu hình.</span></div>}
       <div className="pf-auth-mode-nav"><span>{signup ? 'Đã có tài khoản?' : 'Mới đến Portfolio FPT Hub?'}</span><button type="button" disabled={busy} onClick={switchMode}>{signup ? 'Đăng nhập' : 'Tạo tài khoản'} <ArrowRight size={15} /></button></div>
       <div className="pf-auth-form-wrap">
         <header className="pf-auth-heading">
