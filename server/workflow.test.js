@@ -67,7 +67,7 @@ const payload = (challengeId = CHALLENGES[0].id) => ({ challengeId, mode: 'human
 const review = id => ({ decision: 'complete', scores: Object.fromEntries(CHALLENGES.find(item => item.id === id).rubric.map(item => [item.key, 9])), strengths: 'Có cấu trúc rõ ràng', improvements: 'Bổ sung kiểm thử lỗi', comment: 'Bài làm đáp ứng yêu cầu và có minh chứng phù hợp.' });
 let submissionId;
 test('public catalog has real sources and rubric weights total 100; private state requires authentication', async () => {
-  assert.equal((await request('/catalog')).data.catalog.length, 9);
+  assert.equal((await request('/catalog')).data.catalog.length, 18);
   for (const item of CHALLENGES) { assert.equal(item.rubric.reduce((sum, criterion) => sum + criterion.weight, 0), 100); assert.match(item.source.url, /^https:\/\/www.coursera.org\//); }
   assert.equal((await request('/state')).status, 401);
 });

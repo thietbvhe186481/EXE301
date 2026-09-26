@@ -20,6 +20,7 @@ import {
   Crown,
   Download,
   Edit3,
+  ExternalLink,
   FileText,
   FileUp,
   Filter,
@@ -66,7 +67,7 @@ import { Header } from './components/Header';
 import { AuthPage } from './pages/AuthPage';
 import ReviewWorkspace from './pages/ReviewWorkspace';
 import { HomePage } from './pages/HomePage';
-import { CHALLENGES, LEVEL_LABELS } from '../shared/catalog.js';
+import { CHALLENGES, LEVEL_LABELS, RESOURCES } from '../shared/catalog.js';
 import { AboutPage } from './pages/AboutPage';
 import { MarketTrendsPage } from './pages/MarketTrendsPage';
 import './pages/BrandConsistency.css';
@@ -2220,284 +2221,73 @@ function CareerMapPage({ majors, currentMajor, changeMajor, columns, levels, sel
 /* MarketTrendsPage extracted to src/pages/MarketTrendsPage.jsx */
 
 function LearningPage({ go }) {
-  const [selectedMajor, setSelectedMajor] = useState('Tất cả');
-  const [downloadNotice, setDownloadNotice] = useState('');
-  const [previewItem, setPreviewItem] = useState(null);
-
-  const fptResources = [
-    // Software Engineering (SE)
-    {
-      id: 'fpt-se-swp391',
-      code: 'SWP391',
-      title: 'Đề Án Thực Chiến Phần Mềm SWP391 & Khung Chuẩn OJT FPT',
-      majorKey: 'dev',
-      majorLabel: 'Kỹ thuật Phần mềm (SE)',
-      uni: 'Đại học FPT',
-      cat: 'Giáo trình & Đồ án thực chiến',
-      downloads: 3420,
-      rating: 5.0,
-      format: 'PDF · 52 trang',
-      desc: 'Tài liệu hướng dẫn xây dựng dự án Full Stack, quản trị quy trình Scrum, thiết kế API, viết Unit Test và checklist nghiệm thu OJT tại FPT Software.'
-    },
-    {
-      id: 'fpt-se-prn211',
-      code: 'PRN211',
-      title: 'Giáo Trình .NET Core, C# & Clean Architecture Doanh Nghiệp',
-      majorKey: 'dev',
-      majorLabel: 'Kỹ thuật Phần mềm (SE)',
-      uni: 'Đại học FPT',
-      cat: 'Tài liệu môn học chính quy',
-      downloads: 2180,
-      rating: 4.9,
-      format: 'PDF / Slides · 78 trang',
-      desc: 'Bộ bài giảng chi tiết về Entity Framework Core, Repository Pattern, Dependency Injection, RESTful API và tối ưu hiệu năng cơ sở dữ liệu SQL Server.'
-    },
-    {
-      id: 'fpt-se-prj301',
-      code: 'PRJ301',
-      title: 'Xây Dựng Web App Phân Tầng Với Java Servlet & Spring Boot',
-      majorKey: 'dev',
-      majorLabel: 'Kỹ thuật Phần mềm (SE)',
-      uni: 'Đại học FPT',
-      cat: 'Giáo trình & Code mẫu',
-      downloads: 2890,
-      rating: 4.9,
-      format: 'PDF · 64 trang',
-      desc: 'Mô hình MVC phân tầng, xác thực JWT, bảo mật Spring Security, tích hợp thanh toán VNPAY/MoMo và cấu trúc dự án chuẩn để nộp bài Portfolio.'
-    },
-    {
-      id: 'fpt-se-swe201c',
-      code: 'SWE201c',
-      title: 'Tiêu Chuẩn Thiết Kế Kiến Trúc Phần Mềm C4 Model & Agile',
-      majorKey: 'dev',
-      majorLabel: 'Kỹ thuật Phần mềm (SE)',
-      uni: 'Đại học FPT',
-      cat: 'Tài liệu chuẩn kiến trúc',
-      downloads: 1650,
-      rating: 4.8,
-      format: 'PDF · 40 trang',
-      desc: 'Hướng dẫn vẽ sơ đồ hệ thống 4 cấp độ (Context, Container, Component, Code), phân tích Trade-off và viết tài liệu kiến trúc ADR chuyên nghiệp.'
-    },
-
-    // Digital Marketing (MKT)
-    {
-      id: 'fpt-mkt-mkt304',
-      code: 'MKT304',
-      title: 'Chiến Lược Digital Marketing Đa Kênh & Tối Ưu Paid Ads Funnel',
-      majorKey: 'mkt',
-      majorLabel: 'Digital Marketing (MKT)',
-      uni: 'Đại học FPT',
-      cat: 'Kế hoạch chiến dịch mẫu',
-      downloads: 2750,
-      rating: 5.0,
-      format: 'Slides / Deck · 45 slide',
-      desc: 'Bộ khung lập kế hoạch chiến dịch đa kênh từ Awareness đến Conversion, phân bổ ngân sách Meta/Google Ads và xây dựng bảng đo lường ROAS/CAC.'
-    },
-    {
-      id: 'fpt-mkt-dmm301',
-      code: 'DMM301',
-      title: 'Cẩm Nang Kỹ Thuật SEO Audit, Topic Cluster & On-Page FPT',
-      majorKey: 'mkt',
-      majorLabel: 'Digital Marketing (MKT)',
-      uni: 'Đại học FPT',
-      cat: 'Tài liệu chuyên môn',
-      downloads: 1980,
-      rating: 4.9,
-      format: 'PDF · 56 trang',
-      desc: 'Phương pháp phân tích từ khóa theo Search Intent, cấu trúc website dạng Topic Cluster, audit Core Web Vitals và lập kế hoạch biên tập nội dung 30 ngày.'
-    },
-    {
-      id: 'fpt-mkt-mkt101',
-      code: 'MKT101',
-      title: 'Nguyên Lý Tiếp Thị & Khung Nghiên Cứu Chân Dung Khách Hàng (Persona)',
-      majorKey: 'mkt',
-      majorLabel: 'Digital Marketing (MKT)',
-      uni: 'Đại học FPT',
-      cat: 'Giáo trình nền tảng',
-      downloads: 3120,
-      rating: 4.8,
-      format: 'PDF · 48 trang',
-      desc: 'Lý thuyết tiếp thị hiện đại kết hợp thực hành: xác định phân khúc thị trường, định vị thương hiệu, thấu hiểu Insight và thiết kế thông điệp truyền thông.'
-    },
-    {
-      id: 'fpt-mkt-brd201',
-      code: 'BRD201',
-      title: 'Bộ Khung Chiến Dịch Truyền Thông Tích Hợp (IMC) & Định Vị Thương Hiệu',
-      majorKey: 'mkt',
-      majorLabel: 'Digital Marketing (MKT)',
-      uni: 'Đại học FPT',
-      cat: 'Case study doanh nghiệp',
-      downloads: 1840,
-      rating: 4.9,
-      format: 'Slides · 38 slide',
-      desc: 'Case study phân tích chiến dịch ra mắt sản phẩm của các thương hiệu hàng đầu Việt Nam, mẫu Pitch Deck báo cáo cho Ban giám đốc.'
-    },
-
-    // Digital Art & Design (DG)
-    {
-      id: 'fpt-dg-uxd301',
-      code: 'UXD301',
-      title: 'Quy Trình Thiết Kế Sản Phẩm UI/UX & Nghiên Cứu Người Dùng',
-      majorKey: 'design',
-      majorLabel: 'Thiết kế Mỹ thuật số (DG)',
-      uni: 'Đại học FPT',
-      cat: 'Giáo trình thực hành UI/UX',
-      downloads: 3600,
-      rating: 5.0,
-      format: 'PDF / Figma · 60 trang',
-      desc: 'Quy trình Design Thinking 5 bước: Empathize, Define, Ideate, Prototype, Test. Bao gồm mẫu câu hỏi phỏng vấn UX, user journey map và wireframe luồng chính.'
-    },
-    {
-      id: 'fpt-dg-dsn301',
-      code: 'DSN301',
-      title: 'Cẩm Nang Xây Dựng Design System & Token Component Trên Figma',
-      majorKey: 'design',
-      majorLabel: 'Thiết kế Mỹ thuật số (DG)',
-      uni: 'Đại học FPT',
-      cat: 'Bộ thư viện Figma mẫu',
-      downloads: 2950,
-      rating: 5.0,
-      format: 'Figma File / PDF',
-      desc: 'Hệ thống Color Tokens, Typography Scale, Spacing Grid, Auto Layout 5.0, Variant states và hướng dẫn Handoff cho lập trình viên Frontend.'
-    },
-    {
-      id: 'fpt-dg-gra201',
-      code: 'GRA201',
-      title: 'Nguyên Lý Thị Giác, Bố Cục & Nhận Diện Thương Hiệu Kỹ Thuật Số',
-      majorKey: 'design',
-      majorLabel: 'Thiết kế Mỹ thuật số (DG)',
-      uni: 'Đại học FPT',
-      cat: 'Tài liệu môn học chính quy',
-      downloads: 2150,
-      rating: 4.9,
-      format: 'PDF · 50 trang',
-      desc: 'Lý thuyết màu sắc, nghệ thuật chữ (Digital Typography), visual hierarchy, quy chuẩn thiết kế logo và brand guidelines chuyên nghiệp cho Portfolio.'
-    },
-    {
-      id: 'fpt-dg-anm201',
-      code: 'ANM201',
-      title: 'Nguyên Tắc Chuyển Động Motion Graphics & Micro-interactions',
-      majorKey: 'design',
-      majorLabel: 'Thiết kế Mỹ thuật số (DG)',
-      uni: 'Đại học FPT',
-      cat: 'Tài liệu kỹ thuật số',
-      downloads: 1720,
-      rating: 4.8,
-      format: 'PDF / Video · 35 trang',
-      desc: '12 nguyên lý hoạt họa Disney ứng dụng trong sản phẩm số, thiết kế transition tương tác, xuất file Lottie/JSON tối ưu cho Web và Mobile App.'
-    }
+  const [major, setMajor] = useState('all');
+  const [provider, setProvider] = useState('all');
+  const [query, setQuery] = useState('');
+  const majors = [
+    { id: 'all', label: 'Tất cả lĩnh vực' },
+    { id: 'dev', label: 'Phát triển & dữ liệu' },
+    { id: 'mkt', label: 'Marketing' },
+    { id: 'design', label: 'Thiết kế & UX' }
   ];
-
-  const filtered = fptResources.filter((item) => {
-    return selectedMajor === 'Tất cả' || item.majorLabel.includes(selectedMajor) || item.majorKey === selectedMajor;
+  const resources = RESOURCES.filter(item => {
+    const matchMajor = major === 'all' || item.majorKey === major || item.majorKey === 'all';
+    const matchProvider = provider === 'all' || item.source === provider;
+    const matchQuery = !query.trim() || `${item.title} ${item.note} ${item.source}`.toLowerCase().includes(query.trim().toLowerCase());
+    return matchMajor && matchProvider && matchQuery;
   });
-
-  const handleDownload = (item) => {
-    setDownloadNotice(`Đang tải xuống tài liệu chính quy FPT: "${item.code} - ${item.title}"...`);
-    setTimeout(() => {
-      setDownloadNotice(`✅ Đã tải xuống thành công tài liệu Đại học FPT: "${item.code} - ${item.title}" (${item.format})!`);
-      setTimeout(() => setDownloadNotice(''), 3500);
-    }, 800);
-  };
 
   return (
     <section className="content-page fpt-learning-page">
-      <div className="section-heading inline">
+      <div className="learning-hero">
         <div>
-          <p className="mono-label">FPT University Academic Hub</p>
-          <h1>Học Liệu & Giáo Trình Chính Quy Đại Học FPT</h1>
-          <p>Kho học liệu, đồ án OJT và khung tham chiếu kỹ năng chính quy từ ĐH FPT dành cho sinh viên 3 chuyên ngành SE, MKT và DG để xây dựng Portfolio đạt chuẩn doanh nghiệp.</p>
+          <p className="mono-label">Portfolio FPT Hub · Học liệu</p>
+          <h1>Học từ nguồn tin cậy, luyện tập bằng dự án</h1>
+          <p>Khám phá khóa học công khai từ Coursera và cổng thông tin chính thức của FPT. Bài tập thực hành do Portfolio FPT Hub biên soạn riêng, không sao chép đề thi hay tài liệu nội bộ.</p>
         </div>
-        <div style={{ display: 'flex', gap: '10px' }}>
-          <button className="ghost-action compact" onClick={() => go('roadmap')}>
-            <Compass size={15} /> Bản đồ nghề
-          </button>
-          <button className="primary-action compact" onClick={() => go('hub')}>
-            <Rocket size={15} /> Làm thử thách ngay
-          </button>
+        <button className="primary-action compact" type="button" onClick={() => go('hub')}><Rocket size={15} />Xem thử thách thực hành</button>
+      </div>
+
+      <div className="learning-source-note">
+        <GraduationCap size={20} />
+        <p><strong>Với tài liệu nội bộ FPT:</strong> đăng nhập FAP/CMS bằng tài khoản trường để xem học liệu được cấp quyền. Trang này liên kết đến nguồn gốc, không lưu trữ hay phát tán tài liệu nội bộ.</p>
+      </div>
+
+      <div className="learning-toolbar" aria-label="Lọc học liệu">
+        <label className="learning-search">
+          <Search size={17} aria-hidden="true" />
+          <input value={query} onChange={event => setQuery(event.target.value)} placeholder="Tìm khóa học hoặc chủ đề" aria-label="Tìm khóa học hoặc chủ đề" />
+        </label>
+        <div className="learning-filters" role="group" aria-label="Lĩnh vực">
+          {majors.map(item => <button key={item.id} type="button" className={major === item.id ? 'active' : ''} aria-pressed={major === item.id} onClick={() => setMajor(item.id)}>{item.label}</button>)}
         </div>
+        <label className="learning-provider">
+          <span>Nhà cung cấp</span>
+          <select value={provider} onChange={event => setProvider(event.target.value)}>
+            <option value="all">Tất cả nguồn</option>
+            <option value="Coursera">Coursera</option>
+            <option value="FPT University">FPT University</option>
+          </select>
+        </label>
       </div>
 
-      {downloadNotice && <div className="status-banner info mb-3">{downloadNotice}</div>}
-
-      <div className="filter-bar mb-4" style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
-        <span style={{ fontSize: '13px', fontWeight: 600, marginRight: '6px' }}>Lọc theo chuyên ngành:</span>
-        {[
-          { key: 'Tất cả', label: 'Tất cả chuyên ngành (12 tài liệu)' },
-          { key: 'dev', label: '💻 Kỹ thuật Phần mềm (SE)' },
-          { key: 'mkt', label: '📊 Digital Marketing (MKT)' },
-          { key: 'design', label: '🎨 Thiết kế Mỹ thuật số (DG)' }
-        ].map((m) => (
-          <button
-            key={m.key}
-            type="button"
-            className={`ghost-action compact ${selectedMajor === m.key ? 'active' : ''}`}
-            onClick={() => setSelectedMajor(m.key)}
-          >
-            {m.label}
-          </button>
-        ))}
-      </div>
-
-      <div className="learning-resources-grid">
-        {filtered.map((item) => (
-          <article className="resource-card fpt-resource-card" key={item.id} style={{ display: 'flex', flexDirection: 'column' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px' }}>
-              <span className="resource-uni-badge">{item.uni} · {item.code}</span>
-              <span className="chip-tag">{item.majorLabel.split(' ')[0]}</span>
-            </div>
-            <h3 style={{ fontSize: '16px', fontWeight: 700, margin: '0 0 10px', color: 'var(--jr-text-main)', lineHeight: 1.4 }}>{item.title}</h3>
-            <p style={{ fontSize: '13px', color: 'var(--jr-text-sub)', flexGrow: 1, margin: '0 0 14px', lineHeight: 1.5 }}>{item.desc}</p>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '12px', color: 'var(--jr-text-sub)', borderTop: '1px solid var(--jr-card-border)', paddingTop: '12px', marginBottom: '14px' }}>
-              <span>📥 {item.downloads.toLocaleString()} lượt tải</span>
-              <span>⭐ {item.rating} / 5.0</span>
-              <span className="chip-tag">{item.format}</span>
-            </div>
-            <div style={{ display: 'flex', gap: '8px' }}>
-              <button className="ghost-action compact" style={{ flex: 1 }} onClick={() => setPreviewItem(item)}>
-                👁️ Xem tóm tắt
-              </button>
-              <button className="primary-action compact" style={{ flex: 1 }} onClick={() => handleDownload(item)}>
-                <Download size={14} /> Tải tài liệu
-              </button>
-            </div>
-          </article>
-        ))}
-      </div>
-
-      {previewItem && (
-        <div className="modal-backdrop" onClick={() => setPreviewItem(null)}>
-          <div className="modal-card" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '640px' }}>
-            <div className="modal-header">
-              <h3>[{previewItem.code}] {previewItem.title}</h3>
-              <button className="icon-btn" onClick={() => setPreviewItem(null)}><X size={18} /></button>
-            </div>
-            <div className="modal-body">
-              <span className="resource-uni-badge mb-2">{previewItem.uni} · {previewItem.majorLabel}</span>
-              <p style={{ margin: '14px 0', lineHeight: 1.6 }}>{previewItem.desc}</p>
-              <div style={{ background: 'rgba(255,255,255,0.05)', padding: '16px', borderRadius: '12px', margin: '16px 0' }}>
-                <h4 style={{ margin: '0 0 8px', fontSize: '14px' }}>📄 Nội dung trọng tâm giáo trình:</h4>
-                <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '13px', color: 'var(--jr-text-sub)' }}>
-                  <li>Chương 1: Kiến thức nền tảng và chuẩn đầu ra môn học của Đại học FPT</li>
-                  <li>Chương 2: Hướng dẫn thực hành dự án thực tế và checklist nghiệm thu OJT</li>
-                  <li>Chương 3: Bộ rubric chấm điểm của Giảng viên & Mentor doanh nghiệp</li>
-                  <li>Chương 4: Tiêu chuẩn đóng gói sản phẩm để đưa vào Portfolio cá nhân</li>
-                </ul>
-              </div>
-            </div>
-            <div className="modal-footer" style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
-              <button className="ghost-action" onClick={() => setPreviewItem(null)}>Đóng</button>
-              <button className="primary-action" onClick={() => { handleDownload(previewItem); setPreviewItem(null); }}>
-                <Download size={16} /> Tải toàn bộ tài liệu ({previewItem.format})
-              </button>
-            </div>
+      <p className="learning-result-count">{resources.length} học liệu phù hợp</p>
+      {resources.length ? <div className="learning-resources-grid">
+        {resources.map(item => <article className="resource-card learning-resource-card" key={item.id}>
+          <div className="learning-card-meta">
+            <span className={item.source === 'Coursera' ? 'learning-provider-tag coursera' : 'learning-provider-tag fpt'}>{item.source}</span>
+            <span className="learning-category-tag">{item.majorKey === 'dev' ? 'Công nghệ & dữ liệu' : item.majorKey === 'mkt' ? 'Marketing' : item.majorKey === 'design' ? 'Thiết kế' : 'Tổng hợp'}</span>
           </div>
-        </div>
-      )}
+          <h2>{item.title}</h2>
+          <p>{item.note}</p>
+          <a className="learning-source-link" href={item.url} target="_blank" rel="noopener noreferrer">
+            <span>Mở học liệu gốc</span><ExternalLink size={15} aria-hidden="true" />
+          </a>
+        </article>)}
+      </div> : <div className="empty-state learning-empty-state"><BookOpen size={25} /><h2>Chưa tìm thấy học liệu phù hợp</h2><p>Thử từ khóa khác hoặc chọn lại lĩnh vực và nhà cung cấp.</p><button className="ghost-action compact" type="button" onClick={() => { setQuery(''); setMajor('all'); setProvider('all'); }}>Xóa bộ lọc</button></div>}
     </section>
   );
 }
-
 function ChallengeHubPage({ currentMajor, activeTrack, setActiveTrack, visibleChallenges, setSelectedChallengeId, joinedChallengeIds, submissionStatus, joinChallenge, isPremium, mentors, go }) {
   const tracks = ['Tất cả', ...currentMajor.columns.map((item) => item.title)];
   const premiumChallengeCount = visibleChallenges.filter(isPremiumChallenge).length;
