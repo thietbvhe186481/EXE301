@@ -72,7 +72,8 @@ export function createAuthRouter({ UserProfile, MentorAccount, AdminAccount }) {
           id: `${payload.role}-${randomUUID()}`, name: payload.name, email: payload.email,
           passwordHash: await bcrypt.hash(payload.password, 12), status: 'active',
           majorKey: payload.selectedMajorKey, selectedMajorKey: payload.selectedMajorKey,
-          termsAcceptedAt: new Date(), termsVersion: '2026-09', bio: payload.bio || ''
+          termsAcceptedAt: new Date(), termsVersion: '2026-09-26',
+          privacyAcceptedAt: new Date(), privacyVersion: '2026-09-26', bio: payload.bio || ''
         };
         const account = payload.role === 'mentor'
           ? await MentorAccount.create({ ...common, role: 'mentor', title: payload.title,
