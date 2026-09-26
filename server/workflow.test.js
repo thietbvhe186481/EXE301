@@ -68,7 +68,12 @@ const review = id => ({ decision: 'complete', scores: Object.fromEntries(CHALLEN
 let submissionId;
 test('public catalog has real sources and rubric weights total 100; private state requires authentication', async () => {
   assert.equal((await request('/catalog')).data.catalog.length, 18);
-  for (const item of CHALLENGES) { assert.equal(item.rubric.reduce((sum, criterion) => sum + criterion.weight, 0), 100); assert.match(item.source.url, /^https:\/\/www.coursera.org\//); }
+  for (const item of CHALLENGES) {
+    assert.equal(item.rubric.reduce((sum, criterion) => sum + criterion.weight, 0), 100);
+    assert.match(item.source.url, /^https:\/\/www.coursera.org\//);
+    assert.ok(item.requirements.length >= 2);
+    assert.ok(item.estimatedHours > 0 && item.levelDescription && item.learningOutcome);
+  }
   assert.equal((await request('/state')).status, 401);
 });
 test('free student cannot submit premium challenges or human reviews', async () => {

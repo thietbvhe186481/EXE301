@@ -957,7 +957,7 @@ const marketResearchBriefByMajor = {
 };
 
 function isPremiumChallenge(challenge) {
-  return ['Senior', 'Lead', 'Cao cấp'].includes(challenge?.difficulty) || Number(challenge?.xp ?? 0) >= 700;
+  return challenge?.access === 'premium' || ['Senior', 'Lead', 'Cao cấp', 'Nâng cao'].includes(challenge?.difficulty) || Number(challenge?.xp ?? 0) >= 700;
 }
 
 function getChallengeGuide(challenge, currentMajor) {
@@ -1298,7 +1298,15 @@ function App() {
     return sources.length ? sources : trustedMarketSources;
   }, [appData?.marketData]);
 
-  const challengeList = CHALLENGES.map(item => ({ ...item, difficulty: LEVEL_LABELS[item.level], xp: 100, track: { dev: 'Frontend', mkt: 'Content', design: 'UX Design' }[item.majorKey], tags: [LEVEL_LABELS[item.level]], mentor: '', due: String(item.estimatedHours) }));
+  const challengeList = CHALLENGES.map(item => ({
+    ...item,
+    difficulty: LEVEL_LABELS[item.level],
+    xp: { beginner: 100, intermediate: 180, advanced: 280 }[item.level],
+    track: { dev: 'Frontend', mkt: 'Content', design: 'UX Design' }[item.majorKey],
+    tags: [LEVEL_LABELS[item.level], ...item.rubric.slice(0, 2).map(criterion => criterion.label)],
+    mentor: 'Mentor theo chuyên môn',
+    due: `${item.estimatedHours} giờ`
+  }));
   const managementData = { ...appData, challenges: challengeList };
   const rulesByMajor = appData?.submissionRules && Object.keys(appData.submissionRules).length ? appData.submissionRules : submissionRules;
   const demoUser = currentRole === 'student' ? currentUser.user : appData?.demoUser;
@@ -2441,7 +2449,7 @@ function JoinChallengePage({ challenge, currentMajor, joined, submission, joinCh
         <p className="lead">{challenge.summary}</p>
         <div className="tag-row large">{challenge.tags.map((tag) => <span key={tag}>{tag}</span>)}</div>
         <div className="join-status-grid">
-          <Stat value={challenge.due} label="hạn nộp" />
+          <Stat value={challenge.due} label="thời lượng dự kiến" />
           <Stat value={challenge.xp} label="điểm XP" />
           <Stat value={submission?.status ? statusLabels[submission.status] ?? submission.status : joined ? 'Đã tham gia' : 'Chưa tham gia'} label="trạng thái" />
         </div>
@@ -2485,10 +2493,7 @@ function JoinChallengePage({ challenge, currentMajor, joined, submission, joinCh
         </div>
         <div className="rubric-grid">
           {['Đúng yêu cầu', 'Chất lượng trình bày', 'Minh chứng rõ ràng', 'Khả năng đưa vào portfolio'].map((item, index) => (
-            <article key={item}>
-              <strong>{25 - index * 2}%</strong>
-              <span>{item}</span>
-            </article>
+            <article key={item}><strong>{25 - index * 2}%</strong><span>{item}</span></article>
           ))}
         </div>
       </div>

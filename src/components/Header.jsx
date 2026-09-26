@@ -71,7 +71,7 @@ export function Header({ page, go, currentUser, logout, onOpenQrPayment }) {
   const navigate = target => { setMenuOpen(false); setAccountOpen(false); go(target); };
   const renderLink = item => {
     const Icon = item.icon;
-    return <button key={item.id} type="button" className={`flow-pill ${page === item.id ? 'active' : ''}`} aria-current={page === item.id ? 'page' : undefined} onClick={() => navigate(item.id)}>
+    return <button key={item.id} type="button" className={`flow-pill ${page === item.id ? 'active' : ''}`} aria-label={item.label} aria-current={page === item.id ? 'page' : undefined} onClick={() => navigate(item.id)}>
       <Icon size={16} aria-hidden="true" /><span>{item.label}</span>
     </button>;
   };
@@ -86,7 +86,7 @@ export function Header({ page, go, currentUser, logout, onOpenQrPayment }) {
     <nav className="flow-nav role-nav hub-primary-nav" aria-label="Điều hướng chính">
       {primaryLinks.map(renderLink)}
       {currentLinks.length > 2 && <div className={`hub-menu-wrap ${moreLinks.length === 0 ? 'hub-mobile-menu-only' : ''}`}>
-        <button type="button" className={`flow-pill hub-menu-trigger ${menuOpen ? 'active' : ''}`} aria-expanded={menuOpen} aria-haspopup="menu" onClick={() => setMenuOpen(value => !value)}>
+        <button type="button" className={`flow-pill hub-menu-trigger ${menuOpen ? 'active' : ''}`} aria-label="Danh mục điều hướng" aria-expanded={menuOpen} aria-haspopup="menu" onClick={() => setMenuOpen(value => !value)}>
           <Menu size={16} aria-hidden="true" /><span>Danh mục</span><ChevronDown size={14} aria-hidden="true" />
         </button>
         {menuOpen && <div className="hub-nav-menu" role="menu" aria-label="Các mục khác">

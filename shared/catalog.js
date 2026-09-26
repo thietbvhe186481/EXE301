@@ -6,8 +6,31 @@ const sources = {
   mkt: { name: 'Google Digital Marketing & E-commerce · Coursera', url: 'https://www.coursera.org/professional-certificates/google-digital-marketing-ecommerce' },
   design: { name: 'Google UX Design · Coursera', url: 'https://www.coursera.org/professional-certificates/google-ux-design' }
 };
+const LEVEL_GUIDANCE = {
+  beginner: 'Nền tảng · Làm theo brief từng bước, tập trung đúng yêu cầu và trình bày sản phẩm rõ ràng.',
+  intermediate: 'Trung cấp · Tự lập kế hoạch, xử lý tình huống phát sinh và giải thích lựa chọn của mình.',
+  advanced: 'Nâng cao · Giải quyết bài toán nhiều ràng buộc, chứng minh quyết định bằng dữ liệu và bàn giao như sản phẩm thực tế.'
+};
+const OUTCOMES = {
+  dev: {
+    beginner: 'Một sản phẩm nhỏ chạy được, có mã nguồn, hướng dẫn sử dụng và ảnh minh chứng.',
+    intermediate: 'Một ứng dụng có luồng chính hoàn chỉnh, xử lý trạng thái lỗi và có kiểm thử hoặc demo.',
+    advanced: 'Một giải pháp gần production, có thiết kế kiến trúc, kiểm soát rủi ro và tài liệu bàn giao.'
+  },
+  mkt: {
+    beginner: 'Một bản nghiên cứu hoặc kế hoạch nội dung có đối tượng, thông điệp và nguồn tham khảo rõ ràng.',
+    intermediate: 'Một kế hoạch chiến dịch có kênh, ngân sách, KPI và cách đo kết quả.',
+    advanced: 'Một báo cáo tối ưu dựa trên dữ liệu, có giả thuyết thử nghiệm và nêu giới hạn kết luận.'
+  },
+  design: {
+    beginner: 'Một user flow và bộ wireframe/prototype giải quyết đúng nhu cầu được giao.',
+    intermediate: 'Một prototype có trạng thái tương tác, được kiểm tra và cải tiến theo phản hồi.',
+    advanced: 'Một case study từ nghiên cứu đến giải pháp, có minh chứng kiểm chứng và quyết định thiết kế.'
+  }
+};
 const make = (id, title, majorKey, level, summary, requirements, criteria) => ({
   id, title, majorKey, level, access: level === 'advanced' ? 'premium' : 'free',
+  levelDescription: LEVEL_GUIDANCE[level], learningOutcome: OUTCOMES[majorKey][level],
   summary, requirements, estimatedHours: { beginner: 4, intermediate: 8, advanced: 16 }[level],
   source: { ...sources[majorKey], note: 'Bài thực hành do Portfolio FPT Hub biên soạn theo chủ đề của khóa học; không phải đề thi chính thức hoặc chứng chỉ của đơn vị nguồn.' },
   rubric: criteria.map(([key, label, weight]) => ({ key, label, weight }))

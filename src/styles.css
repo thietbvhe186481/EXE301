@@ -10357,6 +10357,7 @@ body:has(.feedback-dashboard-page) main {
 .hub-brand-name { color: #102d40; font-size: 18px; font-weight: 850; letter-spacing: -.55px; }
 .hub-brand-tag { padding: 3px 8px; border-radius: 999px; background: #dff3ff; color: #0369a1; font-size: 10px; font-weight: 800; letter-spacing: .35px; }
 .hub-primary-nav { gap: 3px !important; padding-inline: 0 !important; }
+.flow-nav.role-nav.hub-primary-nav { overflow: visible !important; }
 .hub-primary-nav .flow-pill { padding-inline: 11px !important; color: #26485c; }
 .hub-primary-nav .flow-pill:hover { background: #eef8fd !important; color: #0369a1 !important; }
 .hub-primary-nav .flow-pill.active { background: #e5f5fd !important; color: #0369a1 !important; box-shadow: inset 0 -2px #0284c7 !important; }
@@ -10364,6 +10365,7 @@ body:has(.feedback-dashboard-page) main {
 .hub-menu-wrap { position: relative; flex: 0 0 auto; }
 .hub-mobile-menu-only { display: none; }
 .hub-menu-trigger { gap: 6px !important; }
+.hub-menu-trigger > span:first-of-type { display: inline !important; }
 .hub-nav-menu, .hub-account-menu { position: absolute; top: calc(100% + 9px); right: 0; z-index: 150; min-width: 242px; padding: 7px; background: #fff; border: 1px solid #d9e7ee; border-radius: 14px; box-shadow: 0 16px 36px rgba(15, 45, 64, .16); }
 .hub-nav-menu-item { width: 100%; display: flex; align-items: center; gap: 10px; padding: 11px 10px; border: 0; border-radius: 9px; background: transparent; color: #24475c; text-align: left; font: inherit; font-size: 13px; font-weight: 650; cursor: pointer; }
 .hub-nav-menu-item:hover, .hub-nav-menu-item:focus-visible { background: #eef8fd; color: #0369a1; outline: none; }
