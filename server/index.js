@@ -14,7 +14,16 @@ const port = process.env.PORT || 4000;
 if (process.env.NODE_ENV === 'production' && !process.env.SESSION_SECRET) throw new Error('SESSION_SECRET is required in production');
 if (process.env.TRUST_PROXY === '1') app.set('trust proxy', 1);
 
-app.use(cors({ origin: process.env.CLIENT_ORIGIN || 'http://127.0.0.1:5173', credentials: true }));
+const allowedClientOrigins = (process.env.CLIENT_ORIGIN || 'http://127.0.0.1:5173')
+  .split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+app.use(cors({
+  origin(origin, callback) {
+    callback(null, !origin || allowedClientOrigins.includes(origin));
+  },
+  credentials: true
+}));
 app.use(express.json({ limit: '64kb' }));
 app.use(session({
   name: 'portfolio.sid',

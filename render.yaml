@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: exe301-portfolio-api
+    runtime: node
+    region: singapore
+    plan: free
+    buildCommand: npm ci
+    startCommand: npm run server
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: CLIENT_ORIGIN
+        value: https://thietbvhe186481.github.io
+      - key: COOKIE_CROSS_SITE
+        value: "1"
+      - key: TRUST_PROXY
+        value: "1"
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: MONGODB_URI
+        sync: false
