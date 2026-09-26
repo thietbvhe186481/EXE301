@@ -12,7 +12,7 @@ export function PortfolioFooter({ go, onOpenUpgrade, onOpenFooterModal }) {
             <span className="gold-text">PORTFOLIO NGHỀ NGHIỆP?</span>
           </h2>
           <p className="jr-cta-desc-v2">
-            Tham gia cùng hơn 250+ sinh viên FPT — hoàn thiện hồ sơ năng lực thực chiến, nhận góp ý từ Mentor và tự tin ứng tuyển doanh nghiệp.
+            Hoàn thiện hồ sơ năng lực qua dự án thực hành, nhận góp ý từ mentor và chuẩn bị cho hành trình ứng tuyển của bạn.
           </p>
           <div className="jr-cta-actions-v2">
             <button className="jr-btn-gold-action" onClick={() => go('roadmap')}>
@@ -40,7 +40,7 @@ export function PortfolioFooter({ go, onOpenUpgrade, onOpenFooterModal }) {
               </span>
             </div>
             <p className="jr-footer-tagline">
-              Hệ thống xây dựng hồ sơ năng lực & định hướng nghề nghiệp sinh viên — Đồng hành cùng Mentor FPT & Doanh nghiệp.
+              Hệ thống xây dựng hồ sơ năng lực & định hướng nghề nghiệp sinh viên — Học qua dự án, đồng hành cùng mentor.
             </p>
             <div className="jr-footer-socials">
               <a href="https://facebook.com" target="_blank" rel="noreferrer" className="jr-social-btn" title="Facebook">
@@ -75,9 +75,9 @@ export function PortfolioFooter({ go, onOpenUpgrade, onOpenFooterModal }) {
             <h4>Sinh Viên</h4>
             <ul className="jr-footer-links-list">
               <li><button type="button" className="jr-footer-link-btn" onClick={() => go('roadmap')}>Bản đồ nghề nghiệp</button></li>
-              <li><button type="button" className="jr-footer-link-btn" onClick={() => go('hub')}>Thử thách dự án FPT & Coursera</button></li>
+              <li><button type="button" className="jr-footer-link-btn" onClick={() => go('hub')}>Thử thách dự án thực hành</button></li>
               <li><button type="button" className="jr-footer-link-btn" onClick={() => go('hub')}>Nộp bài & Nhận review</button></li>
-              <li><button type="button" className="jr-footer-link-btn" onClick={() => go('portfolio')}>Phân tích CV chuẩn ATS</button></li>
+              <li><button type="button" className="jr-footer-link-btn" onClick={() => go('portfolio')}>Hồ sơ năng lực cá nhân</button></li>
               <li><button type="button" className="jr-footer-link-btn highlight" onClick={onOpenUpgrade}>Nâng cấp gói VIP</button></li>
             </ul>
           </div>

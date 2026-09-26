@@ -1,6 +1,6 @@
 .app-shell.page-auth .topbar { grid-template-columns: 1fr auto !important; }
 .app-shell.page-auth .topbar .flow-nav { display: none !important; }
-.app-shell.page-auth main { padding: 0 !important; background: #f6f5f1; }
+.app-shell.page-auth main { padding: 0 !important; background: transparent; }
 .pf-auth { --auth-navy: #142c43; --auth-blue: #0877b5; --auth-line: #dbe3e9; display: grid; grid-template-columns: minmax(330px, .92fr) minmax(440px, 1.08fr); max-width: 1220px; min-height: 760px; margin: 36px auto 56px; background: #fff; border: 1px solid #e1e5e8; border-radius: 18px; overflow: hidden; box-shadow: 0 14px 55px #19344b08; color: #172d42; text-align: left; }
 .pf-auth button, .pf-auth input, .pf-auth select { font: inherit; }
 .pf-auth button { transition: background .15s ease, border-color .15s ease, color .15s ease; }

@@ -65,10 +65,11 @@ import { apiService } from './services/api';
 import { Header } from './components/Header';
 import { AuthPage } from './pages/AuthPage';
 import ReviewWorkspace from './pages/ReviewWorkspace';
-import ReviewLanding from './pages/ReviewLanding';
+import { HomePage } from './pages/HomePage';
 import { CHALLENGES, LEVEL_LABELS } from '../shared/catalog.js';
 import { AboutPage } from './pages/AboutPage';
 import { MarketTrendsPage } from './pages/MarketTrendsPage';
+import './pages/BrandConsistency.css';
 
 
 
@@ -1812,7 +1813,7 @@ function App() {
       <main>
         {page === 'auth' && !sessionChecked && <p className="status-banner" role="status">Đang kiểm tra phiên đăng nhập…</p>}
         {flowNotice && <div className="flow-notice status-banner warning"><ShieldCheck size={17} /> {flowNotice}</div>}
-        {page === 'home' && <ReviewLanding go={go} onSignup={(role = 'student') => { setSignupRole(role); setAuthMode('signup'); setPage('auth'); }} onSelectChallenge={(id) => { setSelectedChallengeId(id); setPage('join'); }} onOpenPolicy={(key) => setFooterModalData(getFooterModalContent(key))} />}
+        {page === 'home' && <HomePage go={(id) => { const role = currentUser?.type ?? currentUser?.user?.role; go(['hub', 'portfolio'].includes(id) && role === 'mentor' ? 'mentor' : ['hub', 'portfolio'].includes(id) && role === 'admin' ? 'admin' : id); }} onOpenUpgrade={() => currentUser ? setIsVipModalOpen(true) : go('premium')} onOpenFooterModal={(key) => setFooterModalData(getFooterModalContent(key))} />}
         {page === 'auth' && sessionChecked && (
           <AuthPage
             authMode={authMode}

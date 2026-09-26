@@ -1,0 +1,94 @@
+/* Shared visual language of the original homepage. These scoped rules also
+   neutralize the legacy global !important text rules for interactive states. */
+.rw-workspace {
+  --rw-ink: var(--text, #0b1f33);
+  --rw-blue: var(--jr-blue, #2563eb);
+  --rw-line: var(--jr-card-border, #e2e8f0);
+  --rw-muted: var(--muted, #40566f);
+  max-width: 1240px;
+  padding: 44px 24px 32px;
+  background: transparent;
+  font-family: Inter, system-ui, sans-serif;
+}
+.rw-workspace h1, .rw-workspace h2, .pf-auth h1, .pf-auth h2 {
+  font-family: 'Plus Jakarta Sans', Inter, sans-serif;
+  font-weight: 800;
+  letter-spacing: -.035em;
+}
+.rw-workspace h1 { font-size: clamp(30px, 3.8vw, 44px); }
+.rw-workspace .rw-eyebrow { color: #92400e !important; }
+.rw-workspace button { min-height: 44px; border-radius: 12px; }
+.rw-workspace .rw-primary, .pf-auth .pf-auth-submit {
+  color: #fff !important;
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  border-color: #2563eb;
+  box-shadow: 0 4px 16px rgb(37 99 235 / 18%);
+}
+.rw-workspace .rw-primary:hover, .pf-auth .pf-auth-submit:hover { background: #1d4ed8; }
+.rw-workspace .rw-steps { padding: 18px 22px; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 16px; }
+.rw-workspace .rw-steps b { border-radius: 8px; background: #dbeafe; color: #1d4ed8 !important; }
+.rw-workspace .rw-tabs { padding: 6px; gap: 8px; background: #fff; border: 1px solid var(--rw-line); border-radius: 14px; }
+.rw-workspace .rw-tabs button { border: 0; border-radius: 10px; }
+.rw-workspace .rw-tabs button.active { background: #2563eb; color: #fff !important; box-shadow: 0 4px 12px rgb(37 99 235 / 20%); }
+.rw-workspace .rw-catalog { border: 0; gap: 20px; }
+.rw-workspace .rw-challenge, .rw-workspace .rw-panel, .rw-workspace .rw-submission {
+  background: var(--jr-card, #fff);
+  border: 1px solid var(--rw-line);
+  border-radius: 18px;
+  box-shadow: 0 8px 24px rgb(14 116 144 / 5%);
+}
+.rw-workspace .rw-challenge { transition: border-color .2s, box-shadow .2s; }
+.rw-workspace .rw-challenge:hover { border-color: #93b8f4; box-shadow: 0 12px 28px rgb(37 99 235 / 9%); }
+.rw-workspace .rw-submit { border-top: 3px solid var(--rw-blue); }
+.rw-workspace .rw-card-meta { flex-wrap: wrap; }
+.rw-workspace .rw-card-foot button { color: #1d4ed8 !important; background: #eff6ff; }
+.rw-workspace .rw-badge { border-radius: 8px; padding: 5px 10px; }
+.rw-workspace .rw-source, .rw-workspace .rw-result { border-radius: 12px; background: #eff6ff; }
+.rw-workspace .rw-source { color: #1d4ed8; }
+.rw-workspace .rw-modes > label { border-radius: 12px; padding: 16px; }
+.rw-workspace .rw-modes > label.selected { background: #eff6ff; box-shadow: 0 0 0 1px var(--rw-blue); }
+.rw-workspace input:not([type=checkbox]):not([type=radio]), .rw-workspace textarea, .rw-workspace select { border-radius: 10px; border-color: #cbd5e1; }
+.rw-workspace .rw-alert, .rw-workspace .rw-message { border-radius: 12px; }
+.rw-workspace .rw-empty { border-radius: 18px; }
+.rw-workspace .rw-metrics { border-radius: 18px; overflow: hidden; }
+.rw-workspace .rw-metrics strong { color: #1d4ed8 !important; }
+.rw-workspace .rw-metrics > div { min-width: 0; }
+.rw-workspace .rw-metrics strong { overflow-wrap: anywhere; }
+.rw-workspace :focus-visible, .pf-auth :focus-visible, .jr-home-wrapper :focus-visible { outline: 3px solid #2563eb; outline-offset: 3px; }
+.app-shell.page-auth main { background: transparent; }
+.pf-auth { --auth-blue: #2563eb; --auth-line: #cbd5e1; max-width: 1200px; border: 1px solid #e2e8f0; border-radius: 20px; box-shadow: 0 18px 48px rgb(14 116 144 / 10%); }
+.pf-auth .pf-auth-story { background: linear-gradient(145deg, #eff6ff, #ecfeff); color: var(--text); border-right: 1px solid #dbeafe; }
+.pf-auth .pf-auth-story h1 { color: #0b1f33 !important; }
+.pf-auth .pf-auth-story h1 em { color: #2563eb; }
+.pf-auth .pf-auth-eyebrow, .pf-auth .pf-auth-kicker { color: #92400e; }
+.pf-auth .pf-auth-eyebrow > span { background: #f59e0b; }
+.pf-auth .pf-auth-home { color: #1d4ed8 !important; min-height: 44px; }
+.pf-auth .pf-auth-story-main > p, .pf-auth .pf-auth-roadmap p { color: #40566f !important; }
+.pf-auth .pf-auth-roadmap-icon { background: #dbeafe; border-color: #bfdbfe; color: #1d4ed8; border-radius: 12px; }
+.pf-auth .pf-auth-roadmap li:not(:last-child)::after { background: #bfdbfe; }
+.pf-auth .pf-auth-step-number { color: #1d4ed8; }
+.pf-auth .pf-auth-story-footer { border-color: #bfdbfe; color: #40566f; }
+.pf-auth .pf-auth-form-panel { background: #fff; }
+.pf-auth .pf-auth-field input, .pf-auth .pf-auth-field select { border-radius: 10px; height: 48px; }
+.pf-auth .pf-auth-submit { border-radius: 12px; }
+.pf-auth .pf-auth-roles button { border-radius: 14px; }
+.pf-auth .pf-auth-roles button.is-selected { background: #eff6ff; border-color: #2563eb; box-shadow: 0 0 0 1px #2563eb; }
+.pf-auth .pf-auth-progress .is-active i { background: #2563eb; border-color: #2563eb; }
+.pf-auth .pf-auth-mode-nav button, .pf-auth .pf-auth-back { min-height: 44px; color: #1d4ed8 !important; }
+.pf-auth .pf-auth-reveal { width: 44px; height: 44px; top: 2px; right: 2px; }
+.pf-auth .pf-auth-field > label, .pf-auth .pf-auth-heading p { font-size: 14px; }
+.pf-auth .pf-auth-hint, .pf-auth .pf-auth-checkbox, .pf-auth .pf-auth-field-error { font-size: 13px; }
+.jr-home-wrapper .jr-btn-primary { color: #fff !important; }
+.jr-home-wrapper .jr-hero-badge, .jr-home-wrapper .jr-stat-num, .jr-home-wrapper .jr-step-badge, .jr-home-wrapper .jr-step-link-btn { color: #1d4ed8 !important; }
+.jr-home-wrapper .jr-sub-pill { color: #92400e; }
+.jr-home-wrapper .jr-step-link-btn { min-height: 44px; }
+.jr-home-wrapper .jr-testimonial-stars { align-items: center; gap: 8px; font-size: 11px; font-weight: 700; color: #92400e; }
+@media (max-width: 850px) { .rw-workspace { padding: 28px 20px; } }
+@media (max-width: 740px) { .pf-auth .pf-auth-story { border-right: 0; border-bottom: 1px solid #dbeafe; } }
+@media (max-width: 520px) {
+  .rw-workspace { padding: 24px 14px; }
+  .rw-workspace .rw-steps { padding: 14px; }
+  .rw-workspace .rw-catalog { gap: 16px; }
+  .rw-workspace input:not([type=checkbox]):not([type=radio]), .rw-workspace textarea, .rw-workspace select { font-size: 16px; }
+}
+@media (prefers-reduced-motion: reduce) { .rw-workspace *, .jr-home-wrapper * { animation: none !important; transition: none !important; } }
