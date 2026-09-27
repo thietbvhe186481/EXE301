@@ -76,7 +76,7 @@ const MentorAccountSchema = new mongoose.Schema({
   badge: { type: String, default: 'Top Rated' },
   rewardPoints: { type: Number, default: 0 },
   bankInfo: {
-    bankName: { type: String, default: 'MB Bank' },
+    bankName: { type: String, default: '' },
     accountNumber: { type: String, default: '' },
     accountHolder: { type: String, default: '' }
   }
@@ -204,21 +204,24 @@ const SubscriptionOrderSchema = new mongoose.Schema({
   planId: { type: String, required: true },
   planName: { type: String, required: true },
   price: { type: Number, required: true },
-  paymentMethod: { type: String, default: 'VietQR MB Bank' },
+  paymentMethod: { type: String, default: 'VietQR · đối soát thủ công' },
   transactionCode: { type: String, required: true },
+  receivingBank: { bankId: String, bankName: String, accountNumber: String, accountHolder: String },
+  reportedPaidAt: { type: Date },
   providerOrderCode: { type: Number, unique: true, sparse: true },
   providerPaymentLinkId: { type: String },
   checkoutUrl: { type: String },
   qrCode: { type: String },
-  status: { type: String, enum: ['pending', 'completed', 'cancelled', 'refunded'], default: 'completed', index: true },
+  status: { type: String, enum: ['pending', 'completed', 'cancelled', 'refunded'], default: 'pending', index: true },
   statusHistory: [{
     status: String,
     changedAt: { type: Date, default: Date.now },
     note: String
   }],
-  activatedAt: { type: Date, default: Date.now },
+  activatedAt: { type: Date },
   expiresAt: { type: Date }
 }, baseSchemaOptions);
+SubscriptionOrderSchema.index({ userId: 1, status: 1 }, { unique: true, partialFilterExpression: { status: 'pending' } });
 
 // 10. Learning Resource & Curriculum
 const ResourceSchema = new mongoose.Schema({

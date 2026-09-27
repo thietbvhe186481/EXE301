@@ -1803,7 +1803,7 @@ function App() {
           setQrModalPlan(null);
         }}
         plans={activePremiumPlans}
-        initialPlan={qrModalPlan || activePremiumPlans[1]}
+        initialPlan={qrModalPlan}
         currentUser={currentUser}
         onPaymentSuccess={(plan) => {
           upgradePlan(plan);

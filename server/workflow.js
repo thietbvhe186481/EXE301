@@ -1,11 +1,11 @@
 import { Router } from 'express';
-import { createHmac, randomInt, randomUUID, timingSafeEqual } from 'node:crypto';
+import { randomUUID } from 'node:crypto';
 import { z } from 'zod';
 import { aiConfigured, generateAiAdvice } from './ai-review.js';
 import { CHALLENGES, RESOURCES, REVIEW_FEE, scoreReview, readinessCheck, ratingBonus, qualityFromRatings } from '../shared/catalog.js';
 import { createPayosLink, payosConfigured, verifyPayosWebhook } from './payos.js';
-import { deliverVerificationEmail } from './auth.js';
 import { MENTOR_AGREEMENT_VERSION } from '../shared/mentorAgreement.js';
+import { DEFAULT_RECEIVING_ACCOUNT } from '../shared/paymentAccount.js';
 
 const url = z.string().trim().max(500).refine(value => {
   try { const parsed = new URL(value); return ['https:', 'http:'].includes(parsed.protocol) && !parsed.username && !parsed.password; } catch { return false; }
@@ -41,6 +41,7 @@ export const earningsFor = jobs => jobs.reduce((total, item) => {
   total[item.reward.paid ? 'paid' : 'pending'] += amount; total.count += 1;
   return total;
 }, { base: 0, bonus: 0, total: 0, pending: 0, paid: 0, count: 0 });
+const studentVisibleSubmission = item => item ? { ...item, ...(item.reward ? { reward: { paid: item.reward.paid === true } } : {}) } : item;
 
 export function nextPremiumExpiry(currentExpiry, now, planId) {
   const durationDays = planId === 'premium-year' ? 365 : planId === 'premium-quarter' ? 90 : 30;
@@ -49,7 +50,7 @@ export function nextPremiumExpiry(currentExpiry, now, planId) {
   return new Date(startTime + durationDays * 86400000);
 }
 
-export function createWorkflowRouter({ UserProfile, MentorAccount, AdminAccount, ReviewSubmission, ReviewerProfile, Complaint, SubscriptionOrder, PremiumPlan, sendPaymentEmail = deliverVerificationEmail }) {
+export function createWorkflowRouter({ UserProfile, MentorAccount, AdminAccount, ReviewSubmission, ReviewerProfile, Complaint, SubscriptionOrder, PremiumPlan }) {
   const router = Router();
   const userOrderQueues = new Map();
   const run = handler => async (req, res, next) => { try { await handler(req, res); } catch (error) { next(error); } };
@@ -66,8 +67,19 @@ export function createWorkflowRouter({ UserProfile, MentorAccount, AdminAccount,
     }
   };
   const fail = (status, message) => { const error = new Error(message); error.status = status; throw error; };
-  const paymentOtpEnabled = () => process.env.EMAIL_VERIFICATION_REQUIRED === '1' || (process.env.NODE_ENV === 'production' && process.env.EMAIL_VERIFICATION_REQUIRED !== '0');
-  const paymentOtpHash = (sessionId, planId, code) => createHmac('sha256', process.env.OTP_SECRET || process.env.SESSION_SECRET || 'local-payment-otp').update(`${sessionId}:${planId}:${code}`).digest('hex');
+  const receivingAccount = () => ({
+    bankId: process.env.PAYMENT_BANK || DEFAULT_RECEIVING_ACCOUNT.bankId,
+    bankName: process.env.PAYMENT_BANK_NAME || DEFAULT_RECEIVING_ACCOUNT.bankName,
+    accountNumber: process.env.PAYMENT_ACCOUNT || DEFAULT_RECEIVING_ACCOUNT.accountNumber,
+    accountHolder: process.env.PAYMENT_ACCOUNT_NAME || DEFAULT_RECEIVING_ACCOUNT.accountHolder
+  });
+  const manualPayment = order => {
+    const bank = order.receivingBank;
+    if (!bank?.bankId || !bank.accountNumber || !bank.accountHolder) return null;
+    const query = new URLSearchParams({ amount: String(order.price), addInfo: order.transactionCode, accountName: bank.accountHolder });
+    return { provider: 'manual-vietqr', receivingBank: bank, amount: order.price, transferContent: order.transactionCode,
+      qrUrl: `https://img.vietqr.io/image/${encodeURIComponent(bank.bankId)}-${encodeURIComponent(bank.accountNumber)}-compact2.png?${query}` };
+  };
   const activateOrder = async (order, reference, actor) => {
     if (!order) fail(404, 'Không tìm thấy đơn thanh toán.');
     if (!['pending', 'completed'].includes(order.status)) fail(409, 'Đơn đã được xử lý.');
@@ -125,21 +137,24 @@ export function createWorkflowRouter({ UserProfile, MentorAccount, AdminAccount,
   router.get('/state', run(async (req, res) => {
     const { id, role } = req.session.user;
     const filter = role === 'admin' ? {} : role === 'mentor' ? { mentorId: id } : { userId: id };
-    const [mentors, submissions, profile, orders, profiles, complaints] = await Promise.all([
+    const [mentors, submissions, profile, orders, profiles, complaints, payoutAccounts] = await Promise.all([
       loadMentors(), ReviewSubmission.find(filter).sort({ updatedAt: -1 }).lean(),
       role === 'mentor' ? ReviewerProfile.findOne({ mentorId: id }).lean() : null,
       role === 'admin' ? SubscriptionOrder.find({}).sort({ createdAt: -1 }).lean() : role === 'student' ? SubscriptionOrder.find({ userId: id }).sort({ createdAt: -1 }).lean() : [],
       role === 'admin' ? ReviewerProfile.find({}).lean() : [],
-      Complaint ? Complaint.find(role === 'admin' ? {} : { reporterId: id }).sort({ updatedAt: -1 }).lean() : []
+      Complaint ? Complaint.find(role === 'admin' ? {} : { reporterId: id }).sort({ updatedAt: -1 }).lean() : [],
+      role === 'admin' ? MentorAccount.find({}).lean() : []
     ]);
     const mentor = mentors.find(item => item.id === id);
     const approved = mentor?.eligible;
     const talents = role === 'mentor' && approved ? await ReviewSubmission.find({ shareTalent: true, status: 'completed', mode: 'human', 'review.score': { $gte: 85 } }).lean() : [];
-    res.json({ catalog: CHALLENGES, resources: RESOURCES, mentors, submissions, aiEnabled: aiConfigured(),
+    res.json({ catalog: CHALLENGES, resources: RESOURCES, mentors, submissions: role === 'student' ? submissions.map(studentVisibleSubmission) : submissions, aiEnabled: aiConfigured(),
       mentorAgreement: role === 'mentor' ? { accepted: req.account.mentorAgreementVersion === MENTOR_AGREEMENT_VERSION && Boolean(req.account.mentorAgreementAcceptedAt), version: MENTOR_AGREEMENT_VERSION, acceptedAt: req.account.mentorAgreementAcceptedAt || null } : null,
       profile, paid: role === 'student' && hasPaidAccess(req.account), orders,
       applications: profiles.map(item => ({ ...item, name: mentors.find(mentor => mentor.id === item.mentorId)?.name || item.mentorId })),
-      earnings: earningsFor(submissions), complaints,
+      earnings: role === 'student' ? {} : earningsFor(submissions), complaints,
+      payoutAccount: role === 'mentor' ? req.account.bankInfo || null : null,
+      payoutAccounts: role === 'admin' ? payoutAccounts.map(item => ({ mentorId: item.id, name: item.name, bankInfo: item.bankInfo || null })) : [],
       talents: talents.map(item => ({ id: item.id, studentName: item.studentName, challengeId: item.challengeId, score: item.review.score, links: item.links, notes: item.notes })) });
   }));
 
@@ -244,16 +259,18 @@ export function createWorkflowRouter({ UserProfile, MentorAccount, AdminAccount,
     const { shareTalent } = z.object({ shareTalent: z.boolean() }).parse(req.body);
     const submission = await ReviewSubmission.findOneAndUpdate({ id: req.params.id, userId: req.account.id }, { $set: { shareTalent } }, { new: true });
     if (!submission) fail(404, 'Không tìm thấy bài của bạn.');
-    res.json({ submission });
+    res.json({ submission: studentVisibleSubmission(submission.toObject ? submission.toObject() : submission) });
   }));
   router.post('/submissions/:id/start', run(async (req, res) => {
     requireRole(req, 'mentor');
+    if (!await ReviewerProfile.findOne({ mentorId: req.account.id, 'application.status': 'approved' }).lean()) fail(403, 'Chỉ mentor đã được Admin duyệt mới có thể nhận và chấm bài.');
     const submission = await ReviewSubmission.findOneAndUpdate({ id: req.params.id, mentorId: req.account.id, mode: 'human', status: 'queued' }, { $set: { status: 'in_review' } }, { new: true });
     if (!submission) fail(409, 'Bài không còn trong hàng chờ của bạn.');
     res.json({ submission });
   }));
   router.post('/submissions/:id/review', run(async (req, res) => {
     requireRole(req, 'mentor');
+    if (!await ReviewerProfile.findOne({ mentorId: req.account.id, 'application.status': 'approved' }).lean()) fail(403, 'Hồ sơ mentor chưa được Admin duyệt; không thể hoàn thành bài hoặc ghi nhận thù lao.');
     const payload = z.object({ decision: z.enum(['complete', 'revise']), scores: z.record(z.string(), z.number().min(0).max(10)).optional(), strengths: z.string().trim().max(3000).default(''), improvements: z.string().trim().max(3000).default(''), comment: z.string().trim().min(20, 'Nhận xét cần ít nhất 20 ký tự.').max(3000) }).parse(req.body);
     const item = await ReviewSubmission.findOne({ id: req.params.id, mentorId: req.account.id, mode: 'human', status: 'in_review' }).lean();
     if (!item) fail(409, 'Bạn cần bắt đầu review bài được phân công trước.');
@@ -297,6 +314,16 @@ export function createWorkflowRouter({ UserProfile, MentorAccount, AdminAccount,
     const profile = await ReviewerProfile.findOneAndUpdate({ mentorId: req.account.id }, { $set: payload, $setOnInsert: { mentorId: req.account.id } }, { new: true, upsert: true, runValidators: true });
     res.json({ profile });
   }));
+  router.put('/mentor/payout-account', run(async (req, res) => {
+    requireRole(req, 'mentor');
+    const bankInfo = z.object({
+      bankName: z.string().trim().min(2).max(100),
+      accountNumber: z.string().trim().regex(/^[0-9]{6,19}$/, 'Số tài khoản cần có 6–19 chữ số.'),
+      accountHolder: z.string().trim().min(3).max(100)
+    }).parse(req.body);
+    await MentorAccount.updateOne({ id: req.account.id, status: 'active' }, { $set: { bankInfo } });
+    res.json({ bankInfo });
+  }));
   router.post('/mentor/application', run(async (req, res) => {
     requireRole(req, 'mentor');
     const payload = z.object({ method: z.enum(['cv', 'chat']), profileUrl: z.string().trim().max(500).default(''), notes: z.string().trim().min(40).max(3000) }).parse(req.body);
@@ -319,54 +346,40 @@ export function createWorkflowRouter({ UserProfile, MentorAccount, AdminAccount,
   }));
   router.post('/admin/payouts/:id', run(async (req, res) => {
     requireRole(req, 'admin');
-    const { reference } = z.object({ reference: z.string().trim().min(5).max(160) }).parse(req.body);
+    const { reference, note } = z.object({ reference: z.string().trim().min(5).max(160), note: z.string().trim().max(500).default(''), confirmed: z.literal(true) }).parse(req.body);
+    const job = await ReviewSubmission.findOne({ id: req.params.id, status: 'completed', mode: 'human', 'reward.paid': false }).lean();
+    if (!job?.paidAtSubmission || !job.mentorId || !(Number(job.reward?.base) > 0)) fail(409, 'Không tìm thấy thù lao hợp lệ chưa chi trả.');
+    const mentorAccount = await MentorAccount.findOne({ id: job.mentorId }).lean();
+    const bank = mentorAccount?.bankInfo;
+    if (!bank?.bankName || !/^[0-9]{6,19}$/.test(bank.accountNumber || '') || !bank.accountHolder) fail(409, 'Mentor chưa cung cấp tài khoản nhận thù lao hợp lệ.');
+    const paidAt = new Date();
+    const amount = Number(job.reward.base) + Number(job.reward.bonus || 0);
     // Seven days allow a student to vote before unrated jobs settle.
-    const submission = await ReviewSubmission.findOneAndUpdate({ id: req.params.id, status: 'completed', mode: 'human', 'reward.paid': false,
+    const submission = await ReviewSubmission.findOneAndUpdate({ id: req.params.id, status: 'completed', mode: 'human', 'reward.paid': false, 'reward.bonus': Number(job.reward.bonus || 0),
       $or: [{ rating: { $exists: true } }, { reviewedAt: { $lte: new Date(Date.now() - 7 * 86400000) } }] }, {
-      $set: { 'reward.paid': true, 'reward.paymentRef': reference, 'reward.paidAt': new Date(), 'reward.paidBy': req.account.id }
+      $set: { 'reward.paid': true, 'reward.paymentRef': reference, 'reward.paidAt': paidAt, 'reward.paidBy': req.account.id,
+        'reward.payoutLog': { amount, base: Number(job.reward.base), bonus: Number(job.reward.bonus || 0), method: 'bank_transfer', reference,
+          bankName: bank.bankName, accountNumber: bank.accountNumber, accountHolder: bank.accountHolder, note, confirmedBy: req.account.id, confirmedAt: paidAt } }
     }, { new: true });
-    if (!submission) fail(409, 'Khoản đã thanh toán hoặc chưa đủ điều kiện quyết toán (có đánh giá hoặc đủ 7 ngày).');
+    if (!submission) fail(409, 'Khoản đã chi trả, vừa thay đổi tiền thưởng hoặc chưa đủ điều kiện đối soát. Hãy tải lại.');
     res.json({ submission });
-  }));
-  router.post('/payments/request-code', run(async (req, res) => {
-    requireRole(req, 'student');
-    const { planId } = z.object({ planId: z.string().max(100) }).parse(req.body);
-    const plan = await PremiumPlan.findOne({ id: planId, status: 'active' }).lean();
-    if (!plan || plan.price <= 0) fail(404, 'Gói không khả dụng.');
-    if (!paymentOtpEnabled()) return res.json({ verificationRequired: false });
-    if (req.account.emailVerified !== true) fail(403, 'Hãy xác thực email tài khoản trước khi thanh toán.');
-    const previous = req.session.paymentOtp;
-    if (previous && Date.now() - previous.sentAt < 60_000) fail(429, 'Hãy chờ 1 phút trước khi gửi mã thanh toán mới.');
-    if (!process.env.RESEND_API_KEY && sendPaymentEmail === deliverVerificationEmail) fail(503, 'Máy chủ chưa cấu hình gửi email xác nhận thanh toán.');
-    const code = String(randomInt(0, 1_000_000)).padStart(6, '0');
-    try { await sendPaymentEmail(req.account.email, code, req.account.name, 'payment'); }
-    catch { fail(503, 'Chưa gửi được mã thanh toán tới email. Hãy thử lại sau.'); }
-    req.session.paymentOtp = { planId, hash: paymentOtpHash(req.sessionID, planId, code), expiresAt: Date.now() + 10 * 60_000, sentAt: Date.now(), attempts: 0 };
-    res.json({ verificationRequired: true, email: req.account.email, message: 'Mã thanh toán có hiệu lực trong 10 phút.' });
   }));
   router.post('/orders', run(async (req, res) => {
     requireRole(req, 'student');
-    const { planId, transactionCode = '', paymentCode } = z.object({ planId: z.string().max(100), transactionCode: z.string().trim().max(160).optional(), paymentCode: z.string().regex(/^\d{6}$/).optional() }).parse(req.body);
-    if (paymentOtpEnabled()) {
-      if (req.account.emailVerified !== true) fail(403, 'Hãy xác thực email trước khi thanh toán gói Premium.');
-      const otp = req.session.paymentOtp;
-      if (!otp || otp.planId !== planId || otp.expiresAt < Date.now()) fail(403, 'Mã thanh toán không có hoặc đã hết hạn. Hãy yêu cầu mã mới.');
-      if (otp.attempts >= 5) fail(429, 'Mã thanh toán bị khóa sau 5 lần nhập sai. Hãy yêu cầu mã mới.');
-      const actual = paymentOtpHash(req.sessionID, planId, paymentCode || '');
-      if (!timingSafeEqual(Buffer.from(actual), Buffer.from(otp.hash))) {
-        otp.attempts += 1;
-        fail(403, 'Mã thanh toán không đúng.');
-      }
-    }
+    const { planId } = z.object({ planId: z.string().max(100) }).parse(req.body);
+    if (process.env.NODE_ENV === 'production' && req.account.emailVerified !== true) fail(403, 'Hãy xác thực email tài khoản trước khi tạo đơn. Không cần mã OTP riêng khi thanh toán.');
     const plan = await PremiumPlan.findOne({ id: planId, status: 'active' }).lean();
     if (!plan || plan.price <= 0) fail(404, 'Gói không khả dụng.');
     const existing = await SubscriptionOrder.findOne({ userId: req.account.id, status: 'pending' }).lean();
     if (existing) {
-      req.session.paymentOtp = null;
-      return res.json({ order: existing, success: true, ...(existing.checkoutUrl ? { payment: { checkoutUrl: existing.checkoutUrl, qrCode: existing.qrCode, provider: 'payOS' } } : {}) });
+      if (existing.planId !== planId) fail(409, `Bạn đang có đơn ${existing.orderId} cho gói ${existing.planName}. Hãy hoàn tất hoặc hủy đơn chưa chuyển khoản trước khi chọn gói khác.`);
+      return res.json({ order: existing, success: true, payment: existing.checkoutUrl
+        ? { checkoutUrl: existing.checkoutUrl, qrCode: existing.qrCode, provider: 'payOS' }
+        : manualPayment(existing) });
     }
     const orderId = `ORD-${randomUUID()}`;
-    if (payosConfigured()) {
+    if (process.env.PAYMENT_PROVIDER === 'payos') {
+      if (!payosConfigured()) fail(503, 'PayOS chưa được cấu hình đầy đủ trên máy chủ.');
       // PayOS orderCode is a 32-bit integer. Millisecond modulo keeps it numeric and
       // a database collision check protects the provider's unique order reference.
       let providerOrderCode = Date.now() % 2_000_000_000;
@@ -374,14 +387,34 @@ export function createWorkflowRouter({ UserProfile, MentorAccount, AdminAccount,
       const description = `JR${String(providerOrderCode).slice(-20)}`;
       const link = await createPayosLink({ orderCode: providerOrderCode, amount: plan.price, description, buyerName: req.account.name, buyerEmail: req.account.email });
       const order = await SubscriptionOrder.create({ orderId, providerOrderCode, userId: req.account.id, planId: plan.id, planName: plan.name, price: plan.price, transactionCode: description, paymentMethod: 'PayOS · VietQR', providerPaymentLinkId: link.paymentLinkId, checkoutUrl: link.checkoutUrl, qrCode: link.qrCode, status: 'pending', activatedAt: null });
-      req.session.paymentOtp = null;
       return res.status(201).json({ order, success: true, payment: { checkoutUrl: link.checkoutUrl, qrCode: link.qrCode, provider: 'payOS' } });
     }
-    if (process.env.NODE_ENV === 'production' && !(process.env.PAYMENT_BANK && process.env.PAYMENT_ACCOUNT && process.env.PAYMENT_ACCOUNT_NAME)) fail(503, 'Thanh toán chưa cấu hình. Quản trị viên cần cài PayOS hoặc thông tin ngân hàng nhận tiền trên máy chủ.');
-    if (transactionCode.length < 5) fail(503, 'Thanh toán tự động chưa cấu hình. Quản trị viên cần cài PayOS; chuyển khoản thủ công cần mã nội dung giao dịch.');
-    const order = await SubscriptionOrder.create({ orderId, userId: req.account.id, planId: plan.id, planName: plan.name, price: plan.price, transactionCode, paymentMethod: 'VietQR — đối soát thủ công', status: 'pending', activatedAt: null });
-    req.session.paymentOtp = null;
-    res.status(201).json({ order, success: true });
+    const bank = receivingAccount();
+    if (!/^[0-9]{6,19}$/.test(bank.accountNumber) || !bank.bankId || !bank.accountHolder) fail(503, 'Tài khoản ngân hàng nhận tiền chưa được cấu hình hợp lệ.');
+    const transactionCode = `PFH${randomUUID().replace(/-/g, '').slice(0, 16).toUpperCase()}`;
+    const order = await SubscriptionOrder.create({ orderId, userId: req.account.id, planId: plan.id, planName: plan.name, price: plan.price, transactionCode, receivingBank: bank, paymentMethod: 'VietQR · đối soát thủ công', status: 'pending', activatedAt: null,
+      statusHistory: [{ status: 'pending', changedAt: new Date(), note: 'Đơn được tạo; chờ chuyển khoản.' }] });
+    res.status(201).json({ order, success: true, payment: manualPayment(order) });
+  }));
+  router.post('/orders/:id/mark-transferred', run(async (req, res) => {
+    requireRole(req, 'student');
+    z.object({ confirmed: z.literal(true) }).parse(req.body);
+    const now = new Date();
+    const order = await SubscriptionOrder.findOneAndUpdate({ orderId: req.params.id, userId: req.account.id, status: 'pending', reportedPaidAt: { $exists: false } },
+      { $set: { reportedPaidAt: now }, $push: { statusHistory: { status: 'reported', changedAt: now, note: 'Sinh viên báo đã chuyển khoản; chờ Admin kiểm tra tiền thực nhận.' } } }, { new: true });
+    if (order) return res.json({ order });
+    const existing = await SubscriptionOrder.findOne({ orderId: req.params.id, userId: req.account.id }).lean();
+    if (existing?.status === 'pending' && existing.reportedPaidAt) return res.json({ order: existing });
+    fail(409, 'Đơn không còn chờ thanh toán hoặc không thuộc tài khoản của bạn.');
+  }));
+  router.post('/orders/:id/cancel', run(async (req, res) => {
+    requireRole(req, 'student');
+    z.object({ confirmNotTransferred: z.literal(true) }).parse(req.body);
+    const now = new Date();
+    const order = await SubscriptionOrder.findOneAndUpdate({ orderId: req.params.id, userId: req.account.id, status: 'pending', reportedPaidAt: { $exists: false } },
+      { $set: { status: 'cancelled' }, $push: { statusHistory: { status: 'cancelled', changedAt: now, note: 'Sinh viên xác nhận chưa chuyển khoản và hủy đơn.' } } }, { new: true });
+    if (!order) fail(409, 'Không thể hủy đơn đã báo chuyển khoản, đã xử lý hoặc không thuộc tài khoản của bạn.');
+    res.json({ order });
   }));
   router.patch('/admin/orders/:id', run(async (req, res) => {
     requireRole(req, 'admin');

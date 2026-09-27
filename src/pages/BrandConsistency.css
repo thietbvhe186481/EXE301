@@ -5,6 +5,7 @@
   --rw-blue: var(--jr-blue, #2563eb);
   --rw-line: var(--jr-card-border, #e2e8f0);
   --rw-muted: var(--muted, #40566f);
+  --pf-action-gradient: linear-gradient(100deg, #06b6d4 0%, #2563eb 100%);
   max-width: 1240px;
   padding: 44px 24px 32px;
   background: transparent;
@@ -20,16 +21,16 @@
 .rw-workspace button { min-height: 44px; border-radius: 12px; }
 .rw-workspace .rw-primary, .pf-auth .pf-auth-submit {
   color: #fff !important;
-  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  background: var(--pf-action-gradient, linear-gradient(100deg, #06b6d4, #2563eb));
   border-color: #2563eb;
-  box-shadow: 0 4px 16px rgb(37 99 235 / 18%);
+  box-shadow: 0 5px 14px rgb(37 99 235 / 16%);
 }
-.rw-workspace .rw-primary:hover, .pf-auth .pf-auth-submit:hover { background: #1d4ed8; }
+.rw-workspace .rw-primary:hover:not(:disabled), .pf-auth .pf-auth-submit:hover:not(:disabled) { background: linear-gradient(100deg, #089dbd, #1d4ed8); box-shadow: 0 7px 18px rgb(37 99 235 / 23%); }
 .rw-workspace .rw-steps { padding: 18px 22px; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 16px; }
 .rw-workspace .rw-steps b { border-radius: 8px; background: #dbeafe; color: #1d4ed8 !important; }
-.rw-workspace .rw-tabs { padding: 6px; gap: 8px; background: #fff; border: 1px solid var(--rw-line); border-radius: 14px; }
-.rw-workspace .rw-tabs button { border: 0; border-radius: 10px; }
-.rw-workspace .rw-tabs button.active { background: #2563eb; color: #fff !important; box-shadow: 0 4px 12px rgb(37 99 235 / 20%); }
+.rw-workspace .rw-tabs { padding: 6px; gap: 4px; background: #fff; border: 1px solid var(--rw-line); border-radius: 16px; }
+.rw-workspace .rw-tabs button { border: 0; border-radius: 11px; }
+.rw-workspace .rw-tabs button.active { background: var(--pf-action-gradient); color: #fff !important; box-shadow: 0 4px 10px rgb(37 99 235 / 18%); }
 .rw-workspace .rw-catalog { border: 0; gap: 20px; }
 .rw-workspace .rw-challenge, .rw-workspace .rw-panel, .rw-workspace .rw-submission {
   background: var(--jr-card, #fff);
@@ -92,3 +93,129 @@
   .rw-workspace input:not([type=checkbox]):not([type=radio]), .rw-workspace textarea, .rw-workspace select { font-size: 16px; }
 }
 @media (prefers-reduced-motion: reduce) { .rw-workspace *, .jr-home-wrapper * { animation: none !important; transition: none !important; } }
+
+/* Workspace tabs sit inside their rail, including the first and last tab. */
+main.rw-workspace nav.rw-tabs {
+  width: max-content;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 6px;
+  gap: 4px;
+  border: 1px solid #d6e2ee;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 2px 10px rgb(15 49 84 / 4%);
+  scrollbar-width: thin;
+}
+main.rw-workspace nav.rw-tabs > button {
+  flex: 0 0 auto;
+  min-height: 44px;
+  padding: 10px 17px;
+  border: 0;
+  border-radius: 11px;
+  background: transparent;
+  color: #334e68;
+  line-height: 1.25;
+  transition: background-color .18s ease, color .18s ease, box-shadow .18s ease;
+}
+main.rw-workspace nav.rw-tabs > button:hover:not(.active) {
+  background: #eef6ff;
+  color: #1553a3;
+}
+main.rw-workspace nav.rw-tabs > button.active {
+  border: 0;
+  border-radius: 11px;
+  background: var(--pf-action-gradient);
+  color: #fff !important;
+  box-shadow: 0 4px 10px rgb(37 99 235 / 18%);
+}
+main.rw-workspace nav.rw-tabs > button:focus-visible {
+  outline: 3px solid #0c668f;
+  outline-offset: -3px;
+}
+
+/* The same compact action language is used in workspace, auth, and home. */
+.rw-workspace .rw-primary:not(:disabled),
+.pf-auth .pf-auth-submit:not(:disabled),
+.jr-home-wrapper .jr-btn-primary:not(:disabled) {
+  background: linear-gradient(100deg, #06b6d4, #2563eb);
+  border-color: #2563eb;
+  color: #fff !important;
+  box-shadow: 0 5px 14px rgb(37 99 235 / 16%);
+  transition: background .18s ease, box-shadow .18s ease, transform .18s ease;
+}
+.rw-workspace .rw-primary:hover:not(:disabled),
+.pf-auth .pf-auth-submit:hover:not(:disabled),
+.jr-home-wrapper .jr-btn-primary:hover:not(:disabled) {
+  background: linear-gradient(100deg, #089dbd, #1d4ed8);
+  box-shadow: 0 7px 18px rgb(37 99 235 / 23%);
+  transform: translateY(-1px);
+}
+.rw-workspace .rw-primary:disabled,
+.pf-auth .pf-auth-submit:disabled,
+.jr-home-wrapper .jr-btn-primary:disabled {
+  background: #d5e0eb;
+  border-color: #d5e0eb;
+  color: #41566f !important;
+  box-shadow: none;
+  opacity: 1;
+  cursor: not-allowed;
+}
+.rw-workspace .rw-secondary {
+  background: #fff;
+  border-color: #b9cee3;
+  color: #1553a3;
+}
+.rw-workspace .rw-secondary:hover:not(:disabled) {
+  background: #eef6ff;
+  border-color: #83b6e8;
+}
+
+/* Small discipline selectors use the same colors at a quieter scale. */
+.career-page .major-switcher,
+.trend-major-switcher {
+  padding: 5px;
+  gap: 4px;
+  border: 1px solid #d6e2ee !important;
+  border-radius: 13px;
+  background: #fff !important;
+  box-shadow: 0 2px 10px rgb(15 49 84 / 4%) !important;
+  backdrop-filter: none;
+}
+.career-page .major-switcher button,
+.trend-major-switcher button {
+  min-height: 40px;
+  min-width: 60px;
+  padding: 8px 14px;
+  border-radius: 9px;
+  background: transparent;
+  color: #334e68;
+  transition: background-color .18s ease, box-shadow .18s ease, color .18s ease;
+}
+.career-page .major-switcher button:hover:not(.active),
+.trend-major-switcher button:hover:not(.active) {
+  background: #eef6ff;
+  color: #1553a3;
+}
+.career-page .major-switcher button.active,
+.trend-major-switcher button.active {
+  background: linear-gradient(100deg, #06b6d4, #2563eb) !important;
+  color: #fff !important;
+  box-shadow: 0 3px 9px rgb(37 99 235 / 18%) !important;
+}
+.career-page .major-switcher button:focus-visible,
+.trend-major-switcher button:focus-visible {
+  outline: 3px solid #0c668f;
+  outline-offset: 2px;
+}
+
+@media (max-width: 520px) {
+  main.rw-workspace nav.rw-tabs { width: 100%; }
+  main.rw-workspace nav.rw-tabs > button { padding-inline: 14px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pf-auth .pf-auth-submit,
+  .career-page .major-switcher button,
+  .trend-major-switcher button { transition: none !important; }
+}

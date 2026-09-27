@@ -49,7 +49,7 @@ const actors = { student: { id: 'student', role: 'student' }, free: { id: 'free'
 before(async () => {
   for (const id of ['student', 'free', 'stranger']) await models.UserProfile.create({ id, name: id, status: 'active', isPremium: id !== 'free', subscriptionExpiresAt: new Date(Date.now() + 86400000) });
   for (const id of ['mentor', 'other']) {
-    await models.MentorAccount.create({ id, name: id, status: 'active', expertise: ['React'], mentorAgreementVersion: MENTOR_AGREEMENT_VERSION, mentorAgreementAcceptedAt: new Date() });
+    await models.MentorAccount.create({ id, name: id, status: 'active', expertise: ['React'], bankInfo: { bankName: 'TPBank', accountNumber: '123456789', accountHolder: 'MENTOR TEST' }, mentorAgreementVersion: MENTOR_AGREEMENT_VERSION, mentorAgreementAcceptedAt: new Date() });
     await models.ReviewerProfile.create({ mentorId: id, capacity: 1, available: true, challengeIds: CHALLENGES.map(item => item.id), application: { status: 'approved' } });
   }
   await models.AdminAccount.create({ id: 'admin', status: 'active' });
@@ -123,14 +123,19 @@ test('only assigned mentor starts review; rubric required; completion credits ex
 });
 test('rating belongs to paid owner, is single-use, bonus and payout are atomic and private', async () => {
   assert.equal((await request(`/submissions/${submissionId}/rating`, 'stranger', { stars: 5 })).status, 409);
-  assert.equal((await request(`/admin/payouts/${submissionId}`, 'admin', { reference: 'BANK-001' })).status, 409);
+  assert.equal((await request(`/admin/payouts/${submissionId}`, 'admin', { reference: 'BANK-001', confirmed: true })).status, 409);
   const results = await Promise.all([request(`/submissions/${submissionId}/rating`, 'student', { stars: 5 }), request(`/submissions/${submissionId}/rating`, 'student', { stars: 4 })]);
   assert.deepEqual(results.map(item => item.status).sort(), [200, 409]);
   const voted = results.find(item => item.status === 200).data.submission;
   assert.equal(voted.reward.bonus, voted.rating.stars === 5 ? 1250 : 750);
-  assert.equal((await request(`/admin/payouts/${submissionId}`, 'mentor', { reference: 'BANK-001' })).status, 403);
-  assert.equal((await request(`/admin/payouts/${submissionId}`, 'admin', { reference: 'BANK-001' })).status, 200);
-  assert.equal((await request(`/admin/payouts/${submissionId}`, 'admin', { reference: 'BANK-002' })).status, 409);
+  assert.equal((await request(`/admin/payouts/${submissionId}`, 'mentor', { reference: 'BANK-001', confirmed: true })).status, 403);
+  const payout = await request(`/admin/payouts/${submissionId}`, 'admin', { reference: 'BANK-001', note: 'Đối soát kỳ thử nghiệm', confirmed: true });
+  assert.equal(payout.status, 200);
+  assert.equal(payout.data.submission.reward.payoutLog.amount, 5000 + voted.reward.bonus);
+  assert.equal(payout.data.submission.reward.payoutLog.accountNumber, '123456789');
+  assert.equal(payout.data.submission.reward.payoutLog.confirmedBy, 'admin');
+  assert.equal((await request(`/admin/payouts/${submissionId}`, 'admin', { reference: 'BANK-002', confirmed: true })).status, 409);
+  assert.equal((await request('/state', 'student')).data.submissions.find(item => item.id === submissionId).reward.payoutLog, undefined);
   assert.equal((await request('/state', 'other')).data.earnings.total, 0);
 });
 test('talent discovery is opt-in and consent withdrawal removes the listing', async () => {
@@ -248,31 +253,41 @@ test('AI provider adapter sends only consented notes/skills and validates struct
   }
 });
 
-test('a payment requires a fresh emailed code for the selected plan', async () => {
+test('manual payment uses a unique VietQR reference and requires bank reconciliation, never a payment OTP', async () => {
   const prior = process.env.EMAIL_VERIFICATION_REQUIRED;
   process.env.EMAIL_VERIFICATION_REQUIRED = '1';
   const testModels = { UserProfile: model(['id']), MentorAccount: model(['id']), AdminAccount: model(['id']), ReviewerProfile: model(['mentorId']), ReviewSubmission: model(['userId', 'challengeId']), SubscriptionOrder: model(['orderId']), PremiumPlan: model(['id']) };
   await testModels.UserProfile.create({ id: 'otp-student', name: 'Student', email: 'student@example.com', role: 'student', status: 'active', emailVerified: true });
   await testModels.PremiumPlan.create({ id: 'premium-month', name: 'Tháng', price: 79000, status: 'active' });
-  let sentCode = '';
   const session = { user: { id: 'otp-student', role: 'student' } };
   const app = express(); app.use(express.json());
-  app.use((req, _res, next) => { req.session = session; req.sessionID = 'payment-test-session'; next(); });
-  app.use('/api/workflow', createWorkflowRouter({ ...testModels, sendPaymentEmail: async (_address, code) => { sentCode = code; } }));
+  app.use((req, _res, next) => { req.session = session; next(); });
+  app.use('/api/workflow', createWorkflowRouter(testModels));
   const listener = app.listen(0, '127.0.0.1'); await new Promise(resolve => listener.once('listening', resolve));
   const url = `http://127.0.0.1:${listener.address().port}/api/workflow`;
   const post = async (path, body) => {
     const response = await fetch(url + path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-    return { status: response.status, data: await response.json() };
+    const raw = await response.text();
+    return { status: response.status, data: raw.startsWith('{') ? JSON.parse(raw) : raw };
   };
   try {
-    assert.equal((await post('/orders', { planId: 'premium-month', transactionCode: 'TEST-TRANSFER' })).status, 403);
-    assert.equal((await post('/payments/request-code', { planId: 'premium-month' })).status, 200);
-    assert.match(sentCode, /^\d{6}$/);
-    assert.equal((await post('/orders', { planId: 'premium-month', transactionCode: 'TEST-TRANSFER', paymentCode: '999999' === sentCode ? '888888' : '999999' })).status, 403);
-    assert.equal((await post('/orders', { planId: 'premium-month', transactionCode: 'TEST-TRANSFER', paymentCode: sentCode })).status, 201);
-    assert.equal(session.paymentOtp, null);
-    assert.equal((await post('/orders', { planId: 'premium-month', transactionCode: 'TEST-TRANSFER', paymentCode: sentCode })).status, 403);
+    const first = await post('/orders', { planId: 'premium-month', price: 1, transactionCode: 'INJECTED' });
+    assert.equal(first.status, 201);
+    assert.equal(first.data.order.price, 79000);
+    assert.equal(first.data.order.receivingBank.accountNumber, '33313052004');
+    assert.equal(first.data.order.receivingBank.accountHolder, 'NGUYEN SY HUY');
+    assert.match(first.data.order.transactionCode, /^PFH[A-F0-9]{16}$/);
+    assert.equal(first.data.payment.provider, 'manual-vietqr');
+    assert.match(first.data.payment.qrUrl, /img\.vietqr\.io/);
+    assert.ok(first.data.payment.qrUrl.includes(first.data.order.transactionCode));
+    assert.equal((await post('/payments/request-code', { planId: 'premium-month' })).status, 404);
+    const again = await post('/orders', { planId: 'premium-month' });
+    assert.equal(again.status, 200);
+    assert.equal(again.data.order.orderId, first.data.order.orderId);
+    const id = first.data.order.orderId;
+    assert.equal((await post(`/orders/${id}/mark-transferred`, { confirmed: true })).status, 200);
+    assert.equal((await post(`/orders/${id}/cancel`, { confirmNotTransferred: true })).status, 409);
+    assert.equal((await testModels.SubscriptionOrder.findOne({ orderId: id }).lean()).status, 'pending');
   } finally {
     await new Promise(resolve => listener.close(resolve));
     if (prior === undefined) delete process.env.EMAIL_VERIFICATION_REQUIRED; else process.env.EMAIL_VERIFICATION_REQUIRED = prior;
@@ -294,4 +309,27 @@ test('existing mentor explicitly accepts a new agreement once before receiving n
   assert.equal(account.mentorAgreementHistory.length, 1);
   assert.equal((await request('/mentor/agreement', 'mentor', { accepted: true })).status, 200);
   assert.equal(account.mentorAgreementHistory.length, 1);
+});
+
+test('unapproved mentor cannot start or finish an assigned review, so no fee is credited', async () => {
+  const id = 'approval-gate-job';
+  await models.ReviewSubmission.create({ id, userId: 'student', mentorId: 'mentor', challengeId: 'approval-gate-challenge', mode: 'human', status: 'queued', paidAtSubmission: true });
+  const profile = models.ReviewerProfile.rows.find(item => item.mentorId === 'mentor');
+  profile.application.status = 'suspended';
+  try {
+    assert.equal((await request(`/submissions/${id}/start`, 'mentor', {})).status, 403);
+    models.ReviewSubmission.rows.find(item => item.id === id).status = 'in_review';
+    assert.equal((await request(`/submissions/${id}/review`, 'mentor', review(CHALLENGES[0].id))).status, 403);
+    assert.equal((await models.ReviewSubmission.findOne({ id }).lean()).reward, undefined);
+  } finally { profile.application.status = 'approved'; }
+});
+
+test('mentor can save a payout account, while a student cannot change it', async () => {
+  const bankInfo = { bankName: 'TPBank', accountNumber: '33313052004', accountHolder: 'NGUYEN SY HUY' };
+  assert.equal((await request('/mentor/payout-account', 'student', bankInfo, 'PUT')).status, 403);
+  assert.equal((await request('/mentor/payout-account', 'mentor', { ...bankInfo, accountNumber: 'invalid' }, 'PUT')).status, 422);
+  assert.equal((await request('/mentor/payout-account', 'mentor', bankInfo, 'PUT')).status, 200);
+  assert.deepEqual((await request('/state', 'mentor')).data.payoutAccount, bankInfo);
+  assert.equal((await request('/state', 'student')).data.payoutAccounts.length, 0);
+  assert.equal((await models.ReviewSubmission.findOne({ id: submissionId }).lean()).reward.payoutLog.accountNumber, '123456789');
 });

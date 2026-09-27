@@ -82,14 +82,17 @@ export const apiService = {
   },
 
   // VIP Upgrade Orders (MongoDB)
-  async requestPaymentCode(data) {
-    return fetchWithAuth('/api/workflow/payments/request-code', { method: 'POST', body: JSON.stringify(data) });
-  },
   async upgradeSubscription(orderData) {
     return fetchWithAuth('/api/workflow/orders', {
       method: 'POST',
       body: JSON.stringify(orderData)
     });
+  },
+  async markPaymentTransferred(orderId) {
+    return fetchWithAuth(`/api/workflow/orders/${encodeURIComponent(orderId)}/mark-transferred`, { method: 'POST', body: JSON.stringify({ confirmed: true }) });
+  },
+  async cancelPaymentOrder(orderId) {
+    return fetchWithAuth(`/api/workflow/orders/${encodeURIComponent(orderId)}/cancel`, { method: 'POST', body: JSON.stringify({ confirmNotTransferred: true }) });
   },
 
   // Contact Inquiries (MongoDB)
