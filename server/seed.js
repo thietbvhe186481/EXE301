@@ -389,7 +389,6 @@ async function seed() {
   await Resource.insertMany(resources);
   await Notification.insertMany(notifications);
   await Founder.insertMany(initialFounders);
-  await StudentReview.insertMany(initialReviews);
   await PremiumPlan.insertMany(initialPremiumPlans);
   await MarketData.insertMany(initialMarketData);
 

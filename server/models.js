@@ -161,7 +161,7 @@ const MentorFeedbackSchema = new mongoose.Schema({
 // 8. Student Review & Mentor Rating
 const StudentReviewSchema = new mongoose.Schema({
   id: { type: String, required: true, unique: true, index: true },
-  studentId: { type: String, default: '' },
+  studentId: { type: String, default: undefined },
   name: { type: String, required: true },
   school: { type: String, default: 'Đại học FPT' },
   major: { type: String, default: 'Software Engineering' },
@@ -173,9 +173,13 @@ const StudentReviewSchema = new mongoose.Schema({
   quote: { type: String, required: true },
   status: { type: String, enum: ['approved', 'pending', 'flagged', 'rejected'], default: 'approved', index: true },
   statusReason: { type: String, default: '' },
+  statusHistory: [{ status: String, changedBy: String, changedAt: { type: Date, default: Date.now }, note: String }],
+  moderatedBy: { type: String, default: '' },
+  moderatedAt: { type: Date },
   avatarBg: { type: String, default: '#10b981' },
   date: { type: String, default: '' }
 }, baseSchemaOptions);
+StudentReviewSchema.index({ studentId: 1 }, { unique: true, partialFilterExpression: { studentId: { $type: 'string', $gt: '' } } });
 
 // 9. Subscription / VIP Upgrade Order
 const SubscriptionOrderSchema = new mongoose.Schema({
@@ -204,6 +208,11 @@ const ResourceSchema = new mongoose.Schema({
   title: { type: String, required: true },
   majorKey: { type: String, default: 'dev' },
   majorLabel: { type: String, default: 'Software Engineering' },
+  source: { type: String, default: '' },
+  track: { type: String, default: '' },
+  type: { type: String, default: '' },
+  note: { type: String, default: '' },
+  difficulty: { type: String, default: '' },
   uni: { type: String, default: 'Đại học FPT' },
   format: { type: String, default: 'PDF + Source Code' },
   desc: { type: String, default: '' },

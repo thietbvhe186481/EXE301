@@ -3,8 +3,13 @@ import bcrypt from 'bcryptjs';
 import cors from 'cors';
 import express from 'express';
 import session from 'express-session';
+import MongoStore from 'connect-mongo';
 import { createAuthRouter } from './auth.js';
+import { createApiAccessMiddleware } from './api-access.js';
 import { createWorkflowRouter } from './workflow.js';
+import { createTestimonialsRouter } from './testimonials.js';
+import { buildMentorMetrics, buildPlatformMetrics } from './metrics.js';
+import { createInquiriesRouter } from './inquiries.js';
 import { ReviewSubmission, ReviewerProfile, Complaint } from './workflow-models.js';
 import { connectDb } from './config/db.js';
 import { AdminAccount, Category, Challenge, Major, MentorAccount, MentorFeedback, Notification, Resource, Submission, SubmissionRule, UserProfile, StudentReview, SubscriptionOrder, ContactInquiry, Founder, PremiumPlan, MarketData } from './models.js';
@@ -12,7 +17,17 @@ import { AdminAccount, Category, Challenge, Major, MentorAccount, MentorFeedback
 const app = express();
 const port = process.env.PORT || 4000;
 if (process.env.NODE_ENV === 'production' && !process.env.SESSION_SECRET) throw new Error('SESSION_SECRET is required in production');
+if (process.env.NODE_ENV === 'production' && !process.env.MONGODB_URI) throw new Error('MONGODB_URI is required in production');
 if (process.env.TRUST_PROXY === '1') app.set('trust proxy', 1);
+const databaseReady = connectDb();
+const sessionStore = process.env.NODE_ENV === 'production'
+  ? MongoStore.create({
+      clientPromise: databaseReady.then(connection => connection.getClient()),
+      collectionName: 'sessions',
+      ttl: 60 * 60 * 8,
+      autoRemove: 'native'
+    })
+  : undefined;
 
 const allowedClientOrigins = (process.env.CLIENT_ORIGIN || 'http://127.0.0.1:5173')
   .split(',')
@@ -26,6 +41,7 @@ app.use(cors({
 }));
 app.use(express.json({ limit: '64kb' }));
 app.use(session({
+  store: sessionStore,
   name: 'portfolio.sid',
   secret: process.env.SESSION_SECRET || 'portfolio-demo-session-secret',
   resave: false,
@@ -38,28 +54,11 @@ app.use(session({
   }
 }));
 
+app.use('/api', createApiAccessMiddleware(allowedClientOrigins));
+app.use('/api/inquiries', createInquiriesRouter({ ContactInquiry }));
 app.use('/api/auth', createAuthRouter({ UserProfile, MentorAccount, AdminAccount }));
 app.use('/api/workflow', createWorkflowRouter({ UserProfile, MentorAccount, AdminAccount, ReviewSubmission, ReviewerProfile, Complaint, SubscriptionOrder, PremiumPlan }));
-
-// Legacy administrative routes must not bypass the new paid-review workflow.
-app.use('/api', (req, res, next) => {
-  const publicReads = ['/health', '/bootstrap', '/majors', '/challenges', '/resources', '/reviews', '/founders', '/premium-plans', '/market-data', '/kpi', '/categories'];
-  if (req.method === 'GET' && (publicReads.includes(req.path) || /^\/challenges\/[^/]+$/.test(req.path))) return next();
-  if (req.method === 'POST' && req.path === '/inquiries') return next();
-  if (!req.session.user) return res.status(401).json({ message: 'Vui lòng đăng nhập.' });
-  if (req.path === '/subscriptions/upgrade' || /^\/mentors\/[^/]+\/(rate|payout)$/.test(req.path)) return res.status(410).json({ message: 'Vui lòng sử dụng luồng review và thanh toán mới.' });
-  if (req.session.user.role === 'admin') return next();
-  if (req.method === 'POST' && req.path === '/reviews') return next();
-  const ownUser = /^\/users\/([^/]+)(?:\/(path|portfolio|joined-challenges))?$/.exec(req.path);
-  if (ownUser && ownUser[1] === req.session.user.id && req.session.user.role === 'student') {
-    if (req.method === 'PUT' && !ownUser[2]) {
-      const allowed = ['name', 'school', 'academicMajor', 'academicYear', 'phone', 'bio', 'portfolio'];
-      req.body = Object.fromEntries(Object.entries(req.body).filter(([key]) => allowed.includes(key)));
-    }
-    if (req.method === 'GET' || req.method === 'PUT' || (req.method === 'POST' && ownUser[2] === 'joined-challenges')) return next();
-  }
-  return res.status(403).json({ message: 'Chức năng này dành cho quản trị viên hoặc cần sử dụng luồng review mới.' });
-});
+app.use('/api/reviews', createTestimonialsRouter({ StudentReview, UserProfile, ReviewSubmission, Submission }));
 
 function cleanDoc(doc) {
   if (!doc) return doc;
@@ -99,6 +98,10 @@ function splitSkills(value) {
     .split(/[,;\n]/)
     .map((item) => item.trim())
     .filter(Boolean);
+}
+
+function escapeRegex(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
 function buildSubmissionChecks(body, challenge) {
@@ -180,14 +183,13 @@ app.get('/api/bootstrap', async (req, res, next) => {
     const cleanSubmissions = dedupeBy([...workflowItems.map(item => ({ ...item, status: item.status === 'completed' && item.mode === 'human' ? 'reviewed' : item.status, primaryLink: item.links?.[0] || '', secondaryLink: item.links?.[1] || '' })), ...submissions], (item) => `${item.userId}:${item.challengeId}`);
     const cleanFeedback = dedupeBy([...workflowItems.filter(item => item.status === 'completed' && item.mode === 'human').map(item => ({ id: item.id, userId: item.userId, challengeId: item.challengeId, score: item.review.score, strengths: [item.review.strengths], improvements: [item.review.improvements], title: item.review.comment, reviewer: item.review.mentorName, reviewedAt: item.reviewedAt })), ...feedback], (item) => `${item.userId}:${item.challengeId}`);
 
-    const userCount = profiles.length;
+    const [reviewerProfiles, allWorkflowSubmissions] = await Promise.all([
+      ReviewerProfile.find({}, { mentorId: 1, available: 1, 'application.status': 1, _id: 0 }).lean(),
+      ReviewSubmission.find({}, { userId: 1, challengeId: 1, status: 1, mode: 1, mentorId: 1, rating: 1, reward: 1, _id: 0 }).lean()
+    ]);
     const kpi = {
-      kpiTarget: 300,
-      currentUserCount: userCount,
-      activeMentors: mentors.filter(m => m.status !== 'disqualified').length,
-      completedSubmissions: submissions.filter(s => s.status === 'reviewed').length,
-      totalChallenges: challenges.length,
-      ratingAvg: 4.8
+      ...buildPlatformMetrics({ students: profiles, mentors, reviewerProfiles, legacySubmissions: submissions, workflowSubmissions: allWorkflowSubmissions }),
+      totalChallenges: challenges.length
     };
 
     const isAdmin = req.session.user?.role === 'admin';
@@ -200,13 +202,15 @@ app.get('/api/bootstrap', async (req, res, next) => {
       demoUser: visibleProfiles[0] ? cleanDoc(visibleProfiles[0]) : null,
       users: visibleProfiles.map(cleanDoc),
       admins: isAdmin ? admins.map(cleanDoc) : [],
-      mentors: mentors.map(item => isAdmin ? cleanDoc(item) : { id: item.id, name: item.name, title: item.title, expertise: item.expertise, majorKey: item.majorKey, status: item.status }),
+      mentors: isAdmin
+        ? buildMentorMetrics(mentors.map(cleanDoc), allWorkflowSubmissions, reviewerProfiles)
+        : mentors.map(item => ({ id: item.id, name: item.name, title: item.title, expertise: item.expertise, majorKey: item.majorKey, status: item.status })),
       mentorFeedback: isAdmin ? cleanFeedback : cleanFeedback.filter(item => item.userId === ownId),
       submissions: isAdmin ? cleanSubmissions : cleanSubmissions.filter(item => item.userId === ownId),
       categories,
       resources,
       notifications: notifications.filter(item => item.userId === ownId),
-      reviews,
+      reviews: isAdmin ? reviews : reviews.filter(review => review.status === 'approved' && review.studentId),
       founders,
       subscriptionOrders: isAdmin ? subscriptionOrders : subscriptionOrders.filter(item => item.userId === ownId),
       premiumSubscriptions: isAdmin ? subscriptionOrders.filter(item => item.status === 'completed').map(item => ({ id: item.orderId, orderId: item.orderId, userId: item.userId, planId: item.planId, planName: item.planName, revenue: item.price, expiresAt: item.expiresAt, status: item.expiresAt && new Date(item.expiresAt) > new Date() ? 'active' : 'expired' })) : [],
@@ -235,11 +239,12 @@ app.get('/api/challenges', async (req, res, next) => {
     if (req.query.majorKey) filter.majorKey = req.query.majorKey;
     if (req.query.track) filter.track = req.query.track;
     if (req.query.difficulty) filter.difficulty = req.query.difficulty;
-    if (req.query.search) {
+    const search = typeof req.query.search === 'string' ? req.query.search.trim().slice(0, 80) : '';
+    if (search) {
       filter.$or = [
-        { title: { $regex: req.query.search, $options: 'i' } },
-        { summary: { $regex: req.query.search, $options: 'i' } },
-        { tags: { $regex: req.query.search, $options: 'i' } }
+        { title: { $regex: escapeRegex(search), $options: 'i' } },
+        { summary: { $regex: escapeRegex(search), $options: 'i' } },
+        { tags: { $regex: escapeRegex(search), $options: 'i' } }
       ];
     }
     const sortMap = {
@@ -328,11 +333,12 @@ app.get('/api/users', async (_req, res, next) => {
 app.get('/api/mentors', async (req, res, next) => {
   try {
     const filter = {};
-    if (req.query.search) {
+    const search = typeof req.query.search === 'string' ? req.query.search.trim().slice(0, 80) : '';
+    if (search) {
       filter.$or = [
-        { name: { $regex: req.query.search, $options: 'i' } },
-        { email: { $regex: req.query.search, $options: 'i' } },
-        { expertise: { $regex: req.query.search, $options: 'i' } }
+        { name: { $regex: escapeRegex(search), $options: 'i' } },
+        { email: { $regex: escapeRegex(search), $options: 'i' } },
+        { expertise: { $regex: escapeRegex(search), $options: 'i' } }
       ];
     }
     if (req.query.status) {
@@ -340,107 +346,6 @@ app.get('/api/mentors', async (req, res, next) => {
     }
     const mentors = await MentorAccount.find(filter).lean();
     res.json(mentors.map(cleanDoc));
-  } catch (error) {
-    next(error);
-  }
-});
-
-app.post('/api/mentors/:id/rate', async (req, res, next) => {
-  try {
-    const mentorId = req.params.id;
-    const { rating, comment, studentId } = req.body;
-    const numRating = Number(rating);
-    if (isNaN(numRating) || numRating < 1 || numRating > 5) {
-      res.status(400).json({ message: 'Điểm đánh giá phải từ 1 đến 5 sao' });
-      return;
-    }
-
-    const mentor = await MentorAccount.findOne({ id: mentorId });
-    if (!mentor) {
-      res.status(404).json({ message: 'Không tìm thấy mentor' });
-      return;
-    }
-
-    const currentCount = mentor.ratingCount || 10;
-    const currentRating = mentor.rating || 4.8;
-    const newCount = currentCount + 1;
-    const newAvgRating = Number(((currentRating * currentCount + numRating) / newCount).toFixed(1));
-
-    // Determine status & screening
-    let status = mentor.status || 'active';
-    let warningReason = mentor.warningReason || '';
-    if (newAvgRating < 3.0 || numRating <= 2) {
-      status = 'warning';
-      warningReason = 'Đánh giá tiêu cực từ sinh viên - Cần kiểm định chất lượng';
-    }
-    if (newAvgRating < 2.5) {
-      status = 'disqualified';
-      warningReason = 'Điểm đánh giá trung bình quá thấp (< 2.5★) - Đã loại khỏi danh sách mentor';
-    }
-
-    // Determine reward tier
-    let rewardTier = 'Tiêu chuẩn';
-    let rewardBonusPercent = 0;
-    if (newAvgRating >= 4.8) {
-      rewardTier = 'Top Rated Mentor (+25% Thưởng)';
-      rewardBonusPercent = 25;
-    } else if (newAvgRating >= 4.5) {
-      rewardTier = 'Mentor Ưu Tú (+15% Thưởng)';
-      rewardBonusPercent = 15;
-    }
-
-    const updated = await MentorAccount.findOneAndUpdate(
-      { id: mentorId },
-      {
-        rating: newAvgRating,
-        ratingCount: newCount,
-        status,
-        warningReason,
-        rewardTier,
-        rewardBonusPercent,
-        $push: {
-          reviewsReceived: {
-            studentId: studentId || 'student-demo',
-            rating: numRating,
-            comment: comment || '',
-            date: new Date().toLocaleDateString('vi-VN')
-          }
-        }
-      },
-      { new: true }
-    );
-
-    res.json(cleanDoc(updated));
-  } catch (error) {
-    next(error);
-  }
-});
-
-app.post('/api/mentors/:id/payout', async (req, res, next) => {
-  try {
-    const mentorId = req.params.id;
-    const mentor = await MentorAccount.findOne({ id: mentorId });
-    if (!mentor) {
-      res.status(404).json({ message: 'Không tìm thấy mentor' });
-      return;
-    }
-    const amountToPay = mentor.pendingPayout || 0;
-    const payoutRecord = {
-      id: `pay-${Date.now()}`,
-      date: new Date().toLocaleDateString('vi-VN'),
-      amount: amountToPay,
-      status: 'Đã thanh toán',
-      method: req.body.method || 'Chuyển khoản Ngân hàng (Auto-settlement)'
-    };
-    const updated = await MentorAccount.findOneAndUpdate(
-      { id: mentorId },
-      {
-        pendingPayout: 0,
-        $push: { payoutHistory: payoutRecord }
-      },
-      { new: true }
-    );
-    res.json(cleanDoc(updated));
   } catch (error) {
     next(error);
   }
@@ -466,18 +371,14 @@ app.put('/api/mentors/:id/status', async (req, res, next) => {
 
 app.get('/api/kpi', async (_req, res, next) => {
   try {
-    const userCount = await UserProfile.countDocuments();
-    const kpiTarget = 300;
-    const activeMentors = await MentorAccount.countDocuments({ status: { $ne: 'disqualified' } });
-    const completedSubmissions = await Submission.countDocuments({ status: 'reviewed' });
-    res.json({
-      kpiTarget,
-      currentUserCount: userCount,
-      progressPercent: Number((userCount / kpiTarget * 100).toFixed(1)),
-      activeMentors,
-      completedSubmissions,
-      breakdown: { dev: 110, mkt: 72, design: 56 }
-    });
+    const [students, mentors, reviewerProfiles, legacySubmissions, workflowSubmissions] = await Promise.all([
+      UserProfile.find({}, { id: 1, majorKey: 1, selectedMajorKey: 1, _id: 0 }).lean(),
+      MentorAccount.find({}, { id: 1, status: 1, _id: 0 }).lean(),
+      ReviewerProfile.find({}, { mentorId: 1, available: 1, 'application.status': 1, _id: 0 }).lean(),
+      Submission.find({}, { userId: 1, challengeId: 1, status: 1, _id: 0 }).lean(),
+      ReviewSubmission.find({}, { userId: 1, challengeId: 1, status: 1, mode: 1, mentorId: 1, rating: 1, reward: 1, _id: 0 }).lean()
+    ]);
+    res.json(buildPlatformMetrics({ students, mentors, reviewerProfiles, legacySubmissions, workflowSubmissions }));
   } catch (error) {
     next(error);
   }
@@ -498,10 +399,11 @@ app.get('/api/resources', async (req, res, next) => {
     if (req.query.majorKey) filter.majorKey = req.query.majorKey;
     if (req.query.track) filter.track = req.query.track;
     if (req.query.difficulty) filter.difficulty = req.query.difficulty;
-    if (req.query.search) {
+    const search = typeof req.query.search === 'string' ? req.query.search.trim().slice(0, 80) : '';
+    if (search) {
       filter.$or = [
-        { title: { $regex: req.query.search, $options: 'i' } },
-        { type: { $regex: req.query.search, $options: 'i' } }
+        { title: { $regex: escapeRegex(search), $options: 'i' } },
+        { type: { $regex: escapeRegex(search), $options: 'i' } }
       ];
     }
     res.json(await Resource.find(filter).lean());
@@ -772,23 +674,6 @@ app.post('/api/subscriptions/upgrade', async (req, res, next) => {
   }
 });
 
-// Contact Inquiries API (MongoDB Persistent)
-app.post('/api/inquiries', async (req, res, next) => {
-  try {
-    const inquiryData = {
-      inquiryId: `INQ-${Date.now()}`,
-      name: req.body.name,
-      email: req.body.email,
-      message: req.body.message,
-      submittedAt: new Date()
-    };
-    const saved = await ContactInquiry.create(inquiryData);
-    res.status(201).json({ success: true, inquiry: saved });
-  } catch (error) {
-    next(error);
-  }
-});
-
 // Founders API (MongoDB Persistent)
 app.get('/api/founders', async (_req, res, next) => {
   try {
@@ -890,10 +775,10 @@ app.post('/api/mentors', async (req, res, next) => {
       bio: req.body.bio || '',
       expertise: Array.isArray(req.body.expertise) ? req.body.expertise : (req.body.expertise || '').split(',').map(s => s.trim()).filter(Boolean),
       hourlyRate: Number(req.body.hourlyRate) || 0,
-      ratingAvg: 5.0,
+      ratingAvg: 0,
       totalReviews: 0,
-      status: req.body.status || 'active',
-      badge: req.body.badge || 'Mentor Doanh nghiệp'
+      status: req.body.status || 'pending',
+      badge: req.body.badge || 'Chờ xác minh hồ sơ'
     });
     res.status(201).json(cleanDoc(newMentor));
   } catch (error) {
@@ -1304,10 +1189,14 @@ app.delete('/api/market-data/:id', async (req, res, next) => {
 
 app.use((error, _req, res, _next) => {
   console.error(error);
-  res.status(500).json({ message: 'Server error', detail: error.message });
+  const status = Number.isInteger(error.status) && error.status >= 400 && error.status <= 599 ? error.status : 500;
+  res.status(status).json({
+    message: status >= 500 ? 'Máy chủ chưa thể xử lý yêu cầu.' : 'Yêu cầu không hợp lệ.',
+    ...(process.env.NODE_ENV !== 'production' ? { detail: error.message } : {})
+  });
 });
 
-connectDb()
+databaseReady
   .then(() => {
     app.listen(port, () => {
       console.log(`Portfolio API running at http://127.0.0.1:${port}`);

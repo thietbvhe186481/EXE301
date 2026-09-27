@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "test": "node --test server/auth.test.js server/workflow.test.js server/api-access.test.js server/metrics.test.js server/testimonials.test.js server/inquiries.test.js server/rate-limit.test.js",
     "test:auth": "node --test server/auth.test.js",
     "test:workflow": "node --test server/workflow.test.js",
     "dev": "vite --config vite.config.js --host 127.0.0.1",
@@ -18,6 +19,7 @@
     "axios": "^1.18.1",
     "bcryptjs": "^3.0.3",
     "concurrently": "^10.0.3",
+    "connect-mongo": "^6.0.0",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",

@@ -1,3 +1,5 @@
+import { RESOURCES as curatedResources } from '../shared/catalog.js';
+
 const demoMentors = [
   { id: 'mentor-dev-frontend', name: 'Linh Pham', email: 'linh.frontend@portfolio.vn', password: 'mentor123', expertise: ['Frontend', 'UI Engineering', 'Design System'], strongestField: 'React Frontend Architecture', level: 'Lead Mentor', companies: ['Shopee', 'VNG', 'DesignOps Studio'] },
   { id: 'mentor-dev-mobile', name: 'Minh Do', email: 'minh.mobile@portfolio.vn', password: 'mentor123', expertise: ['Mobile', 'Flutter', 'Firebase'], strongestField: 'Mobile Product Delivery', level: 'Senior Mentor', companies: ['MoMo', 'Be Group', 'HealthTech Lab'] },
@@ -339,55 +341,44 @@ export function augmentSeedData(seed) {
     }
   ]);
 
-  mentorAccounts.forEach((mentor, index) => {
+  mentorAccounts.forEach((mentor) => {
     const computedStudents = userProfiles
       .filter((student) => student.joinedChallengeIds?.some((challengeId) => challengeById(challenges, challengeId)?.mentor === mentor.name))
       .slice(0, 8)
       .map((student) => student.id);
     mentor.activeStudents = computedStudents.length ? computedStudents : (mentor.activeStudents ?? []);
 
-    // Mentor payout, rating & screening mechanics
-    mentor.rating = mentor.rating ?? (4.9 - (index % 4) * 0.4);
-    mentor.ratingCount = mentor.ratingCount ?? (15 + index * 8);
-    mentor.status = mentor.status ?? (mentor.rating >= 3.5 ? 'active' : 'warning');
-
-    // Reward calculations
-    if (mentor.rating >= 4.8) {
-      mentor.rewardTier = 'Top Rated Mentor (+25% Thưởng)';
-      mentor.rewardBonusPercent = 25;
-    } else if (mentor.rating >= 4.5) {
-      mentor.rewardTier = 'Mentor Ưu Tú (+15% Thưởng)';
-      mentor.rewardBonusPercent = 15;
-    } else {
-      mentor.rewardTier = 'Tiêu chuẩn';
-      mentor.rewardBonusPercent = 0;
-    }
-
-    mentor.reviewFeePerItem = 150000;
-    mentor.completedReviewsCount = mentor.completedReviewsCount ?? (12 + index * 5);
-    mentor.totalEarnings = (mentor.completedReviewsCount * mentor.reviewFeePerItem) * (1 + mentor.rewardBonusPercent / 100);
-    mentor.pendingPayout = 600000 + (index * 300000);
-    mentor.payoutHistory = mentor.payoutHistory ?? [
-      { id: `pay-${mentor.id}-01`, date: '15/09/2026', amount: 1500000, status: 'Đã thanh toán', method: 'Chuyển khoản Ngân hàng' },
-      { id: `pay-${mentor.id}-02`, date: '01/09/2026', amount: 1800000, status: 'Đã thanh toán', method: 'Chuyển khoản Ngân hàng' }
-    ];
+    // Ratings and balances are calculated from completed, persisted mentor reviews only.
+    delete mentor.rating;
+    delete mentor.ratingAvg;
+    delete mentor.ratingCount;
+    delete mentor.rewardTier;
+    delete mentor.rewardBonusPercent;
+    delete mentor.reviewFeePerItem;
+    delete mentor.completedReviewsCount;
+    delete mentor.totalEarnings;
+    delete mentor.pendingPayout;
+    delete mentor.payoutHistory;
   });
 
-  const universityResources = [
-    { id: 'res-fpt-prn231', majorKey: 'dev', track: 'Full Stack', title: 'Slide & Bài lab Lập trình Web Fullstack (Node/React)', schoolSource: 'Đại học FPT', courseCode: 'PRN231', type: 'Slide & Lab bài tập', url: 'https://portfolio.demo/resources/fpt/prn231', difficulty: 'Mid-level' },
-    { id: 'res-fpt-swp391', majorKey: 'dev', track: 'Software Project', title: 'Đề án Thực chiến Phát triển Phần mềm & Agile Scrum', schoolSource: 'Đại học FPT', courseCode: 'SWP391', type: 'Đề tài đồ án chính quy', url: 'https://portfolio.demo/resources/fpt/swp391', difficulty: 'Senior' },
-    { id: 'res-coursera-google-dev', majorKey: 'dev', track: 'Backend', title: 'Google IT Automation & Backend Specialization', schoolSource: 'Coursera (Google)', courseCode: 'COURSERA-G01', type: 'Chứng chỉ quốc tế', url: 'https://www.coursera.org/professional-certificates/google-it-automation', difficulty: 'Junior' },
-    { id: 'res-fpt-mkt101', majorKey: 'mkt', track: 'Content', title: 'Bộ Case Study Digital Marketing & Growth Strategy', schoolSource: 'Đại học FPT', courseCode: 'MKT101', type: 'Giáo trình & Case study', url: 'https://portfolio.demo/resources/fpt/mkt101', difficulty: 'Junior' },
-    { id: 'res-coursera-google-ux', majorKey: 'design', track: 'UI Design', title: 'Google UX Design Professional Certificate & Design System', schoolSource: 'Coursera (Google)', courseCode: 'COURSERA-UX', type: 'Syllabus & Standard Kit', url: 'https://www.coursera.org/professional-certificates/google-ux-design', difficulty: 'Mid-level' }
-  ];
-
-  pushUniqueById(resources, universityResources);
-
-  pushUniqueById(resources, majors.flatMap((major) => major.columns.flatMap((column) => ([
-    { id: `res-${major.key}-${column.key}-starter`, majorKey: major.key, track: column.title, title: `${column.title} starter toolkit`, schoolSource: 'Tổng hợp tài liệu Trường Đại học', courseCode: 'UNI-101', type: 'Toolkit', url: `https://portfolio.demo/resources/${major.key}/${column.key}/starter`, difficulty: 'Junior' },
-    { id: `res-${major.key}-${column.key}-case-study`, majorKey: major.key, track: column.title, title: `${column.title} case study template`, schoolSource: 'Đề án Sinh viên Xuất sắc', courseCode: 'UNI-202', type: 'Template', url: `https://portfolio.demo/resources/${major.key}/${column.key}/case-study`, difficulty: 'Mid-level' },
-    { id: `res-${major.key}-${column.key}-rubric`, majorKey: major.key, track: column.title, title: `${column.title} mentor review rubric`, schoolSource: 'Quy chuẩn Mentor Trường & Doanh nghiệp', courseCode: 'UNI-303', type: 'Rubric', url: `https://portfolio.demo/resources/${major.key}/${column.key}/rubric`, difficulty: 'Senior' }
-  ]))));
+  pushUniqueById(resources, curatedResources.map((resource) => ({
+    id: resource.id,
+    code: resource.code || '',
+    title: resource.title,
+    majorKey: resource.majorKey || 'all',
+    majorLabel: resource.majorKey === 'dev' ? 'Công nghệ & dữ liệu' : resource.majorKey === 'mkt' ? 'Marketing' : resource.majorKey === 'design' ? 'Thiết kế & UX' : 'Tổng hợp',
+    uni: resource.source,
+    source: resource.source,
+    track: resource.track || '',
+    format: 'Khóa học hoặc cổng thông tin công khai',
+    type: 'Nguồn tham khảo chính thức',
+    note: resource.note || '',
+    desc: resource.note || '',
+    url: resource.url,
+    downloadUrl: resource.url,
+    difficulty: 'Tham khảo',
+    status: 'active'
+  })));
 
   pushUniqueById(categories, majors.flatMap((major) => major.columns.map((column) => ({
     id: `cat-${major.key}-${column.key}`,
@@ -412,4 +403,3 @@ export function augmentSeedData(seed) {
     { id: 'noti-admin-dataset', userId: 'admin-demo', role: 'admin', title: `${challenges.length} challenges, ${userProfiles.length} students, ${submissions.length} submissions seeded for demo`, unread: true, createdAt: '08:00' }
   ]);
 }
-

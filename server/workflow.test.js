@@ -1,7 +1,7 @@
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import express from 'express';
-import { createWorkflowRouter, mentorSummary, hasPaidAccess } from './workflow.js';
+import { createWorkflowRouter, mentorSummary, hasPaidAccess, nextPremiumExpiry } from './workflow.js';
 import { CHALLENGES, scoreReview, qualityFromRatings, readinessCheck } from '../shared/catalog.js';
 import { generateAiAdvice } from './ai-review.js';
 
@@ -149,6 +149,26 @@ test('orders do not self-activate, use server price and require admin verificati
   assert.equal((await request(`/admin/orders/${result.data.order.orderId}`, 'admin', { status: 'completed', reference: 'BANK-123' }, 'PATCH')).status, 200);
   assert.equal((await request('/state', 'free')).data.paid, true);
 });
+test('premium renewals extend the active term and re-verifying an order is idempotent', async () => {
+  const student = await models.UserProfile.findOne({ id: 'student' }).lean();
+  const priorExpiry = new Date(student.subscriptionExpiresAt);
+  const result = await request('/orders', 'student', { planId: 'premium-month', transactionCode: 'BANK-RENEWAL-1' });
+  assert.equal(result.status, 201);
+  const orderId = result.data.order.orderId;
+  const verified = await request(`/admin/orders/${orderId}`, 'admin', { status: 'completed', reference: 'BANK-RENEWAL-1' }, 'PATCH');
+  assert.equal(verified.status, 200);
+  assert.equal(new Date(verified.data.order.expiresAt).getTime(), priorExpiry.getTime() + 30 * 86400000);
+  const expiryAfterFirstVerification = new Date((await models.UserProfile.findOne({ id: 'student' }).lean()).subscriptionExpiresAt).getTime();
+  const repeated = await request(`/admin/orders/${orderId}`, 'admin', { status: 'completed', reference: 'BANK-RENEWAL-1' }, 'PATCH');
+  assert.equal(repeated.status, 200);
+  assert.equal(new Date((await models.UserProfile.findOne({ id: 'student' }).lean()).subscriptionExpiresAt).getTime(), expiryAfterFirstVerification);
+
+  const second = await request('/orders', 'student', { planId: 'premium-month', transactionCode: 'BANK-RENEWAL-2' });
+  const secondVerified = await request(`/admin/orders/${second.data.order.orderId}`, 'admin', { status: 'completed', reference: 'BANK-RENEWAL-2' }, 'PATCH');
+  assert.equal(new Date(secondVerified.data.order.expiresAt).getTime(), expiryAfterFirstVerification + 30 * 86400000);
+  assert.equal(nextPremiumExpiry(new Date(0), new Date('2030-01-01T00:00:00Z'), 'premium-quarter').toISOString(), '2030-04-01T00:00:00.000Z');
+});
+
 test('AI completion can be upgraded to human without duplicate challenge record', async () => {
   const job = (await request('/state', 'free')).data.submissions[0];
   const result = await request(`/submissions/${job.id}`, 'free', { ...payload(), mentorId: 'other' }, 'PUT');

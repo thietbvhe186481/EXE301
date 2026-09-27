@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { randomUUID } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import bcrypt from 'bcryptjs';
 import { z } from 'zod';
 
@@ -47,6 +47,24 @@ const saveSession = req => new Promise((resolve, reject) => req.session.save(err
 // Models are injected so the same HTTP routes can be tested without a live database.
 export function createAuthRouter({ UserProfile, MentorAccount, AdminAccount }) {
   const router = Router();
+  const failedLoginAttempts = new Map();
+  const loginWindowMs = 15 * 60 * 1000;
+  const loginLimit = 10;
+  const loginKey = req => createHash('sha256')
+    .update(`${req.ip || req.socket?.remoteAddress || 'unknown'}:${String(req.body?.email || '').trim().toLowerCase()}`)
+    .digest('hex');
+  const registerLoginFailure = key => {
+    const now = Date.now();
+    let attempt = failedLoginAttempts.get(key);
+    if (!attempt || attempt.expiresAt <= now) attempt = { count: 0, expiresAt: now + loginWindowMs };
+    attempt.count += 1;
+    failedLoginAttempts.set(key, attempt);
+    if (failedLoginAttempts.size > 10000) {
+      for (const [entryKey, entry] of failedLoginAttempts) if (entry.expiresAt <= now) failedLoginAttempts.delete(entryKey);
+      while (failedLoginAttempts.size > 10000) failedLoginAttempts.delete(failedLoginAttempts.keys().next().value);
+    }
+    return attempt;
+  };
   const findAccount = async address => {
     for (const [type, model] of [['admin', AdminAccount], ['mentor', MentorAccount], ['student', UserProfile]]) {
       const account = await model.findOne({ email: address });
@@ -97,11 +115,18 @@ export function createAuthRouter({ UserProfile, MentorAccount, AdminAccount }) {
   router.post('/login', async (req, res, next) => {
     try {
       const payload = z.object({ email, password: z.string().min(1, 'Nhập mật khẩu.').max(200), rememberMe: z.boolean().optional() }).parse(req.body);
+      const attemptKey = loginKey(req);
       const found = await findAccount(payload.email);
       if (!found || !(await bcrypt.compare(payload.password, found.account.passwordHash || ''))) {
+        const attempt = registerLoginFailure(attemptKey);
+        if (attempt.count > loginLimit) {
+          res.set('Retry-After', String(Math.ceil((attempt.expiresAt - Date.now()) / 1000)));
+          return res.status(429).json({ message: 'Bạn đã thử đăng nhập quá nhiều lần. Hãy chờ 15 phút rồi thử lại.' });
+        }
         return res.status(401).json({ message: 'Email hoặc mật khẩu không đúng.' });
       }
       if (!canSignIn(found.account)) return res.status(403).json({ message: 'Tài khoản chưa được phép đăng nhập. Vui lòng liên hệ quản trị viên.' });
+      failedLoginAttempts.delete(attemptKey);
       res.json(await authenticate(req, found, payload.rememberMe));
     } catch (error) { next(error); }
   });

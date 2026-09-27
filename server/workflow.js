@@ -36,9 +36,29 @@ export const earningsFor = jobs => jobs.reduce((total, item) => {
   return total;
 }, { base: 0, bonus: 0, total: 0, pending: 0, paid: 0, count: 0 });
 
+export function nextPremiumExpiry(currentExpiry, now, planId) {
+  const durationDays = planId === 'premium-year' ? 365 : planId === 'premium-quarter' ? 90 : 30;
+  const currentTime = currentExpiry ? new Date(currentExpiry).getTime() : 0;
+  const startTime = Math.max(now.getTime(), Number.isFinite(currentTime) ? currentTime : 0);
+  return new Date(startTime + durationDays * 86400000);
+}
+
 export function createWorkflowRouter({ UserProfile, MentorAccount, AdminAccount, ReviewSubmission, ReviewerProfile, Complaint, SubscriptionOrder, PremiumPlan }) {
   const router = Router();
+  const userOrderQueues = new Map();
   const run = handler => async (req, res, next) => { try { await handler(req, res); } catch (error) { next(error); } };
+  const serializeUserOrder = async (userId, action) => {
+    const previous = userOrderQueues.get(userId) || Promise.resolve();
+    let release;
+    const current = new Promise(resolve => { release = resolve; });
+    userOrderQueues.set(userId, current);
+    await previous;
+    try { return await action(); }
+    finally {
+      release();
+      if (userOrderQueues.get(userId) === current) userOrderQueues.delete(userId);
+    }
+  };
   const fail = (status, message) => { const error = new Error(message); error.status = status; throw error; };
   const requireRole = (req, role) => { if (req.session.user?.role !== role) fail(403, 'Bạn không có quyền thực hiện thao tác này.'); };
   const catalogItem = id => CHALLENGES.find(item => item.id === id) || fail(404, 'Không tìm thấy thử thách.');
@@ -263,16 +283,31 @@ export function createWorkflowRouter({ UserProfile, MentorAccount, AdminAccount,
   router.patch('/admin/orders/:id', run(async (req, res) => {
     requireRole(req, 'admin');
     const { status, reference } = z.object({ status: z.enum(['completed', 'cancelled']), reference: z.string().trim().min(5).max(160) }).parse(req.body);
-    const existing = await SubscriptionOrder.findOne({ orderId: req.params.id }).lean();
-    if (!existing) fail(404, 'Không tìm thấy đơn.');
-    if (existing.status !== 'pending' && existing.status !== status) fail(409, 'Đơn đã được xử lý.');
-    const days = existing.planId === 'premium-year' ? 365 : existing.planId === 'premium-quarter' ? 90 : 30;
-    const now = new Date();
-    const expiresAt = existing.status === 'completed' ? existing.expiresAt : new Date(now.getTime() + days * 86400000);
-    const order = existing.status === status ? existing : await SubscriptionOrder.findOneAndUpdate({ orderId: existing.orderId, status: 'pending' }, { $set: { status, activatedAt: now, expiresAt, verifiedBy: req.account.id, paymentReference: reference }, $push: { statusHistory: { status, changedAt: now, note: reference } } }, { new: true });
-    if (!order) fail(409, 'Đơn vừa được xử lý, hãy tải lại.');
-    if (status === 'completed') await UserProfile.updateOne({ id: order.userId, $or: [{ subscriptionExpiresAt: { $exists: false } }, { subscriptionExpiresAt: null }, { subscriptionExpiresAt: { $lte: order.expiresAt } }] }, { $set: { isPremium: true, planId: order.planId, planName: order.planName, subscriptionExpiresAt: order.expiresAt, subscription: { planId: order.planId, planName: order.planName, status: 'active', expiresAt: order.expiresAt } } });
-    res.json({ order });
+    const initial = await SubscriptionOrder.findOne({ orderId: req.params.id }).lean();
+    if (!initial) fail(404, 'Không tìm thấy đơn.');
+    await serializeUserOrder(initial.userId, async () => {
+      const existing = await SubscriptionOrder.findOne({ orderId: req.params.id }).lean();
+      if (!existing) fail(404, 'Không tìm thấy đơn.');
+      if (existing.status !== 'pending' && existing.status !== status) fail(409, 'Đơn đã được xử lý.');
+      const now = new Date();
+      let expiresAt = existing.expiresAt;
+      if (status === 'completed' && existing.status === 'pending') {
+        const student = await UserProfile.findOne({ id: existing.userId }).lean();
+        if (!student) fail(409, 'Không tìm thấy tài khoản sinh viên của đơn này.');
+        expiresAt = nextPremiumExpiry(student.subscriptionExpiresAt, now, existing.planId);
+      }
+      const order = existing.status === status ? existing : await SubscriptionOrder.findOneAndUpdate(
+        { orderId: existing.orderId, status: 'pending' },
+        { $set: { status, verifiedBy: req.account.id, paymentReference: reference, ...(status === 'completed' ? { activatedAt: now, expiresAt } : {}) }, $push: { statusHistory: { status, changedAt: now, note: reference } } },
+        { new: true }
+      );
+      if (!order) fail(409, 'Đơn vừa được xử lý. Hãy tải lại.');
+      if (status === 'completed') await UserProfile.updateOne(
+        { id: order.userId, $or: [{ subscriptionExpiresAt: { $exists: false } }, { subscriptionExpiresAt: null }, { subscriptionExpiresAt: { $lte: order.expiresAt } }] },
+        { $set: { isPremium: true, planId: order.planId, planName: order.planName, subscriptionExpiresAt: order.expiresAt, subscription: { planId: order.planId, planName: order.planName, status: 'active', expiresAt: order.expiresAt } } }
+      );
+      res.json({ order });
+    });
   }));
   router.use((error, _req, res, _next) => {
     if (error instanceof z.ZodError) return res.status(422).json({ message: error.issues[0].message, fieldErrors: Object.fromEntries(error.issues.map(item => [item.path[0], item.message])) });

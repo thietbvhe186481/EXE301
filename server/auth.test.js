@@ -100,6 +100,17 @@ test('wrong credentials never create a session', async () => {
   assert.equal(result.cookie, undefined);
   assert.equal((await request('/me')).status, 401);
 });
+test('repeated failed login attempts are rate limited and successful login clears the counter', async () => {
+  const failed = [];
+  for (let index = 0; index < 11; index += 1) {
+    failed.push(await request('/login', { email: 'throttled@example.test', password: 'WrongPass123' }));
+  }
+  assert.deepEqual(failed.slice(0, 10).map(result => result.status), Array(10).fill(401));
+  assert.equal(failed[10].status, 429);
+  assert.equal(failed[10].cookie, undefined);
+  const valid = await request('/login', { email: 'student@example.test', password: 'Testing123' });
+  assert.equal(valid.status, 200);
+});
 test('blocked account cannot log in or reuse an existing session', async () => {
   const result = await request('/register', student('blocked@example.test'));
   const account = await UserProfile.findOne({ email: 'blocked@example.test' });

@@ -74,7 +74,7 @@ import './pages/BrandConsistency.css';
 
 
 
-const API_BASE_URL = import.meta.env.VITE_API_URL ?? 'http://127.0.0.1:4000';
+const API_BASE_URL = import.meta.env.VITE_API_URL?.trim() || (import.meta.env.DEV ? 'http://127.0.0.1:4000' : '');
 
 const flow = [
   { id: 'auth', label: 'Đăng nhập', icon: LockKeyhole },
@@ -742,13 +742,6 @@ function normalizeLookupText(value) {
     .replace(/đ/g, 'd')
     .replace(/[^a-z0-9]+/g, ' ')
     .trim();
-}
-
-function findMentorForName(name, mentors = []) {
-  const normalizedName = normalizeLookupText(name);
-  return mentors.find((mentor) => normalizeLookupText(mentor.name) === normalizedName)
-    ?? mentors.find((mentor) => normalizeLookupText(mentor.name).includes(normalizedName) || normalizedName.includes(normalizeLookupText(mentor.name)))
-    ?? { name, level: 'Mentor', strongestField: 'Career review', currentCompany: 'Portfolio Mentor Network', yearsOfExperience: '5+', expertise: [], rating: 4.8, availability: 'Theo lịch review' };
 }
 
 const workPhotoUrls = [
@@ -1829,7 +1822,7 @@ function App() {
       <main>
         {page === 'auth' && !sessionChecked && <p className="status-banner" role="status">Đang kiểm tra phiên đăng nhập…</p>}
         {flowNotice && <div className="flow-notice status-banner warning"><ShieldCheck size={17} /> {flowNotice}</div>}
-        {page === 'home' && <HomePage go={(id) => { const role = currentUser?.type ?? currentUser?.user?.role; go(['hub', 'portfolio'].includes(id) && role === 'mentor' ? 'mentor' : ['hub', 'portfolio'].includes(id) && role === 'admin' ? 'admin' : id); }} onOpenUpgrade={() => currentUser ? setIsVipModalOpen(true) : go('premium')} onOpenFooterModal={(key) => setFooterModalData(getFooterModalContent(key))} />}
+        {page === 'home' && <HomePage go={(id) => { const role = currentUser?.type ?? currentUser?.user?.role; go(['hub', 'portfolio'].includes(id) && role === 'mentor' ? 'mentor' : ['hub', 'portfolio'].includes(id) && role === 'admin' ? 'admin' : id); }} onOpenUpgrade={() => currentUser ? setIsVipModalOpen(true) : go('premium')} onOpenFooterModal={(key) => key === 'about' ? go('about') : setFooterModalData(getFooterModalContent(key))} />}
         {page === 'auth' && sessionChecked && (
           <AuthPage
             authMode={authMode}
@@ -1898,6 +1891,7 @@ function App() {
         {page === 'about' && (
           <AboutPage
             go={go}
+            currentUser={currentUser}
             onOpenUpgrade={() => setIsVipModalOpen(true)}
             onOpenFooterModal={(key) => setFooterModalData(getFooterModalContent(key))}
           />
@@ -2377,7 +2371,6 @@ function ChallengeHubPage({ currentMajor, activeTrack, setActiveTrack, visibleCh
           const submission = submissionStatus[challenge.id];
           const locked = isPremiumChallenge(challenge) && !isPremium;
           const photo = makeWorkIllustrationSrc(null, index + (currentMajor.key === 'mkt' ? 4 : currentMajor.key === 'design' ? 8 : 0));
-          const mentor = findMentorForName(challenge.mentor, mentors);
           return (
             <article className={`challenge-card ${locked ? 'premium-locked-card' : ''}`} key={challenge.id}>
               <div className="challenge-photo" style={{ '--challenge-photo': `url("${photo}")` }}>
@@ -2392,16 +2385,13 @@ function ChallengeHubPage({ currentMajor, activeTrack, setActiveTrack, visibleCh
               <p>{challenge.summary}</p>
               <div className="challenge-business-row">
                 <span><Sparkles size={15} /> {challenge.xp} XP</span>
-                <button type="button" className="mentor-peek">
+                <button type="button" className="mentor-peek" aria-label="Thông tin lựa chọn mentor khi gửi bài">
                   <GraduationCap size={15} />
-                  {challenge.mentor}
+                  Mentor review
                   <div className="mentor-hover-card">
-                    <strong>{mentor.name}</strong>
-                    <small>{mentor.level ?? 'Mentor'} · {mentor.strongestField ?? challenge.track}</small>
-                    <span>{mentor.currentCompany ?? 'Portfolio Mentor Network'} · {mentor.yearsOfExperience ?? '5+'} năm kinh nghiệm</span>
-                    <span>Chuyên môn: {(mentor.expertise ?? [challenge.track]).slice(0, 3).join(', ') || challenge.track}</span>
-                    <span>Review: {mentor.availability ?? 'Theo lịch mentor'}</span>
-                    <b>{mentor.rating ?? 4.8}/5 mentor score</b>
+                    <strong>Chọn mentor ở bước gửi bài</strong>
+                    <small>Danh sách chỉ gồm mentor đã được duyệt và nhận đúng chuyên môn này.</small>
+                    <span>Điểm sao, khối lượng đang nhận và thời gian phản hồi lấy từ dữ liệu review thực tế.</span>
                   </div>
                 </button>
                 <span><Clock size={15} /> {challenge.due}</span>
@@ -2686,6 +2676,7 @@ function MentorFeedbackPage({ go, challenge, submissions, feedbackList, challeng
   const [studentRating, setStudentRating] = useState(5);
   const [studentComment, setStudentComment] = useState('');
   const [ratingNotice, setRatingNotice] = useState('');
+  const [ratingSubmitting, setRatingSubmitting] = useState(false);
 
   const userSubmissions = submissions.filter((item) => item.userId === userId);
   const userFeedback = feedbackList.filter((item) => item.userId === userId);
@@ -2710,6 +2701,7 @@ function MentorFeedbackPage({ go, challenge, submissions, feedbackList, challeng
   const activeSubmission = activeRecord?.submission;
   const activeFeedback = activeRecord?.feedback;
   const hasFeedback = Boolean(activeFeedback);
+  const canRateMentor = activeSubmission?.mode === 'human' && activeSubmission?.status === 'completed' && activeSubmission?.paidAtSubmission === true && !activeSubmission?.rating;
   const matchedMentor = mentors.find((item) => item.id === activeSubmission?.mentorId)
     ?? mentors.find((item) => item.name === activeSubmission?.mentor)
     ?? mentors.find((item) => item.name === activeFeedback?.reviewer)
@@ -2758,23 +2750,26 @@ function MentorFeedbackPage({ go, challenge, submissions, feedbackList, challeng
     setSelectedChallengeId(record.challenge.id);
   };
 
-  const submitStudentMentorRating = () => {
-    if (!matchedMentor?.id) return;
-    fetch(`${API_BASE_URL}/api/mentors/${matchedMentor.id}/rate`, {
-      method: 'POST',
-      credentials: 'include',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ rating: studentRating, comment: studentComment, studentId: userId })
-    })
-      .then((res) => res.json())
-      .then(() => {
-        setRatingNotice(`Cảm ơn bạn đã đánh giá ${studentRating}★ cho ${reviewerName}! Đánh giá này giúp hỗ trợ thưởng / sàng lọc mentor.`);
-        setStudentComment('');
-      })
-      .catch(() => {
-        setRatingNotice(`Đã ghi nhận đánh giá ${studentRating}★ cho ${reviewerName}.`);
-        setStudentComment('');
+  const submitStudentMentorRating = async () => {
+    if (!canRateMentor || !activeSubmission?.id || ratingSubmitting) return;
+    setRatingSubmitting(true);
+    setRatingNotice('');
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/workflow/submissions/${activeSubmission.id}/rating`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ stars: studentRating, comment: studentComment })
       });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(result.message || 'Chua the gui danh gia. Vui long thu lai.');
+      setRatingNotice(`Cam on ban da danh gia ${studentRating} sao cho ${reviewerName}.`);
+      setStudentComment('');
+    } catch (error) {
+      setRatingNotice(error.message || 'Chua the gui danh gia. Vui long thu lai.');
+    } finally {
+      setRatingSubmitting(false);
+    }
   };
 
   const aiAnalysis = {
@@ -2906,7 +2901,7 @@ function MentorFeedbackPage({ go, challenge, submissions, feedbackList, challeng
 
           <div className="student-rating-box">
             <h3><Star size={16} /> Đánh giá Mentor (Quyền lợi Tài khoản Trả phí)</h3>
-            <p>Hệ thống tự động dùng đánh giá này để <b>Thưởng thù lao mentor (+15-25%)</b> nếu điểm tốt, hoặc <b>Sàng lọc / Loại bỏ mentor</b> nếu phản hồi tiêu cực.</p>
+            <p>Danh gia chi mo sau khi mentor hoan tat mot phien review tra phi. Diem sao duoc dung de theo doi chat luong va tinh khoan thuong theo quy dinh.</p>
             <div className="star-rating-selector">
               {[1, 2, 3, 4, 5].map((star) => (
                 <button key={star} type="button" className={`star-btn ${studentRating >= star ? 'active' : ''}`} onClick={() => setStudentRating(star)}>
@@ -2920,9 +2915,8 @@ function MentorFeedbackPage({ go, challenge, submissions, feedbackList, challeng
               value={studentComment}
               onChange={(e) => setStudentComment(e.target.value)}
             />
-            <button className="primary-action compact" type="button" onClick={submitStudentMentorRating}>
-              <Send size={15} /> Gửi đánh giá Mentor
-            </button>
+            <button className="primary-action compact" type="button" disabled={!canRateMentor || ratingSubmitting} onClick={submitStudentMentorRating}><Send size={15} /> {ratingSubmitting ? 'Dang gui...' : 'Gui danh gia Mentor'}</button>
+            {!canRateMentor && <p role="status">Chi co the danh gia sau khi mentor hoan tat review tra phi va truoc khi don duoc quyet toan.</p>}
             {ratingNotice && <div className="status-banner">{ratingNotice}</div>}
           </div>
 
@@ -4048,6 +4042,7 @@ function AdminPage({ apiStatus, data, notice, currentUser, refreshData, setAdmin
   const submissionsData = data?.submissions ?? [];
   const categories = data?.categories ?? [];
   const mentors = data?.mentors ?? [];
+  const reviews = data?.reviews ?? [];
   const notifications = data?.notifications ?? [];
   const adminProfile = data?.admins?.find((item) => item.id === currentUser?.user?.id) ?? currentUser?.user ?? {};
   const premiumSubscriptions = apiStatus === 'mongo' ? (data?.premiumSubscriptions ?? []) : demoPremiumSubscriptions;
@@ -4084,6 +4079,25 @@ function AdminPage({ apiStatus, data, notice, currentUser, refreshData, setAdmin
   };
   const challengeById = (id) => challengesData.find((item) => item.id === id);
   const userById = (id) => users.find((item) => item.id === id);
+  const moderateTestimonial = async (review, status) => {
+    const reason = status === 'approved' ? 'Đã kiểm duyệt, nội dung phù hợp để hiển thị.' : 'Nội dung chưa phù hợp để hiển thị công khai.';
+    try {
+      await apiService.updateReviewStatus(review.id, status, reason);
+      setAdminNotice(`Đã ${status === 'approved' ? 'duyệt' : 'từ chối'} chia sẻ của ${review.name}.`);
+      await refreshData();
+    } catch (error) {
+      setAdminNotice(error.message || 'Chưa cập nhật được trạng thái chia sẻ.');
+    }
+  };
+  const deleteTestimonial = async review => {
+    try {
+      await apiService.deleteReview(review.id);
+      setAdminNotice(`Đã xóa chia sẻ của ${review.name}.`);
+      await refreshData();
+    } catch (error) {
+      setAdminNotice(error.message || 'Chưa xóa được chia sẻ.');
+    }
+  };
   const filteredChallenges = challengesData.filter((challenge) => {
     const keyword = adminFilters.challengeKeyword.trim().toLowerCase();
     if (adminFilters.challengeMajor !== 'all' && challenge.majorKey !== adminFilters.challengeMajor) return false;
@@ -4248,14 +4262,15 @@ function AdminPage({ apiStatus, data, notice, currentUser, refreshData, setAdmin
         <button className={adminSection === 'overview' ? 'active' : ''} onClick={() => setAdminSection('overview')}><LayoutDashboard size={16} /> Tổng quan</button>
         <button className={adminSection === 'profile' ? 'active' : ''} onClick={() => setAdminSection('profile')}><ShieldCheck size={16} /> Vận hành</button>
         <button className={adminSection === 'commerce' ? 'active' : ''} onClick={() => setAdminSection('commerce')}><Crown size={16} /> Premium</button>
-        <button className={adminSection === 'mentors' ? 'active' : ''} onClick={() => setAdminSection('mentors')}><GraduationCap size={16} /> Thanh toán & Sàng lọc Mentor</button>
+        <button className={adminSection === 'mentors' ? 'active' : ''} onClick={() => setAdminSection('mentors')}><GraduationCap size={16} /> Sàng lọc Mentor</button>
+        <button className={adminSection === 'testimonials' ? 'active' : ''} onClick={() => setAdminSection('testimonials')}><MessageSquareText size={16} /> Chia sẻ trải nghiệm</button>
         <button className={adminSection === 'challenges' ? 'active' : ''} onClick={() => setAdminSection('challenges')}><Blocks size={16} /> Bộ lọc & challenge</button>
         <button className={adminSection === 'users' ? 'active' : ''} onClick={() => setAdminSection('users')}><UserRound size={16} /> Sinh viên & mentor</button>
         <button className={adminSection === 'system' ? 'active' : ''} onClick={() => setAdminSection('system')}><Save size={16} /> Hệ thống</button>
       </aside>
 
       <div className={`admin-stats workspace-section ${adminSection === 'overview' ? 'active' : ''}`} id="admin-overview">
-        <StatCard icon={Rocket} title="KPI Người dùng" value="238 / 300 SV (79.3%)" />
+        <StatCard icon={Rocket} title="KPI Người dùng" value={`${users.length} / 300 SV (${(users.length / 300 * 100).toFixed(1)}%)`} />
         <StatCard icon={Blocks} title="Ngành lớn" value={overview.majors} />
         <StatCard icon={LayoutDashboard} title="Challenge" value={overview.challenges} />
         <StatCard icon={UserRound} title="Người dùng" value={overview.users} />
@@ -4338,7 +4353,8 @@ function AdminPage({ apiStatus, data, notice, currentUser, refreshData, setAdmin
           <div className="section-heading inline">
             <div>
               <p className="mono-label">Quản lý Mentor & Thù lao</p>
-              <h2>Đối soát Thù lao, Thưởng & Sàng lọc Chất lượng Mentor</h2>
+              <h2>Hoạt động review và số dư đang chờ</h2>
+              <p>Điểm, lượt review và phí được tính từ các phiên mentor thật đã hoàn thành. Duyệt hồ sơ, sàng lọc chất lượng và xác nhận chuyển khoản trong không gian Mentor phía trên.</p>
             </div>
           </div>
           <div className="admin-mentor-table-wrapper">
@@ -4348,19 +4364,18 @@ function AdminPage({ apiStatus, data, notice, currentUser, refreshData, setAdmin
                   <th>Mentor</th>
                   <th>Chuyên môn</th>
                   <th>Điểm đánh giá SV</th>
-                  <th>Chế độ Thưởng</th>
                   <th>Bài đã review</th>
                   <th>Chờ thanh toán</th>
                   <th>Trạng thái</th>
-                  <th>Thao tác Admin</th>
                 </tr>
               </thead>
               <tbody>
                 {mentors.map((mentor) => {
-                  const rating = mentor.rating ?? 4.8;
-                  const rewardTier = mentor.rewardTier ?? (rating >= 4.8 ? 'Top Rated Mentor (+25%)' : rating >= 4.5 ? 'Mentor Ưu Tú (+15%)' : 'Tiêu chuẩn');
-                  const pendingAmount = mentor.pendingPayout ?? 1200000;
-                  const status = mentor.status ?? (rating < 3.5 ? 'warning' : 'active');
+                  const rating = Number(mentor.ratingAvg ?? mentor.rating ?? 0);
+                  const ratingCount = Number(mentor.ratingCount ?? 0);
+                  const pendingAmount = Number(mentor.pendingPayout ?? 0);
+                  const status = mentor.reviewStatus ?? mentor.status ?? 'pending';
+                  const statusLabels = { active: 'Đã duyệt', warning: 'Cần theo dõi', pending: 'Chờ duyệt', rejected: 'Từ chối', suspended: 'Tạm ngưng', disqualified: 'Đã loại' };
                   return (
                     <tr key={mentor.id}>
                       <td>
@@ -4369,50 +4384,12 @@ function AdminPage({ apiStatus, data, notice, currentUser, refreshData, setAdmin
                       </td>
                       <td>{(mentor.expertise ?? []).slice(0, 2).join(', ') || 'General'}</td>
                       <td>
-                        <b>{rating} ★</b> ({mentor.ratingCount ?? 12} đánh giá)
+                        {ratingCount ? <><b>{rating.toFixed(1)} ★</b> ({ratingCount} đánh giá)</> : <span>Chưa có đánh giá</span>}
                       </td>
-                      <td>
-                        <span className={`reward-tag ${rating >= 4.5 ? 'bonus' : ''}`}>{rewardTier}</span>
-                      </td>
-                      <td>{mentor.completedReviewsCount ?? 15} bài</td>
+                      <td>{mentor.completedReviewsCount ?? 0} bài</td>
                       <td><b>{formatVnd(pendingAmount)}</b></td>
                       <td>
-                        <span className={`status-tag ${status}`}>{status === 'active' ? 'Hoạt động' : status === 'warning' ? 'Cần sàng lọc' : 'Đã loại'}</span>
-                      </td>
-                      <td>
-                        <div className="table-actions">
-                          {pendingAmount > 0 && (
-                            <button
-                              className="action-btn success"
-                              onClick={() => {
-                                fetch(`${API_BASE_URL}/api/mentors/${mentor.id}/payout`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ method: 'Chuyển khoản Ngân hàng (Auto-settlement)' }) })
-                                  .then(() => { setAdminNotice(`Đã chuyển khoản thanh toán ${formatVnd(pendingAmount)} cho ${mentor.name}`); refreshData(); });
-                              }}
-                            >
-                              <CircleDollarSign size={14} /> Thanh toán
-                            </button>
-                          )}
-                          <button
-                            className="action-btn warn"
-                            onClick={() => {
-                              const newStatus = status === 'warning' ? 'active' : 'warning';
-                              fetch(`${API_BASE_URL}/api/mentors/${mentor.id}/status`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: newStatus, warningReason: 'Cảnh báo chất lượng từ Admin' }) })
-                                .then(() => { setAdminNotice(`Đã cập nhật trạng thái mentor ${mentor.name} thành ${newStatus}`); refreshData(); });
-                            }}
-                          >
-                            <ShieldCheck size={14} /> {status === 'warning' ? 'Gỡ cảnh báo' : 'Cảnh báo'}
-                          </button>
-                          <button
-                            className="action-btn danger"
-                            onClick={() => {
-                              const newStatus = status === 'disqualified' ? 'active' : 'disqualified';
-                              fetch(`${API_BASE_URL}/api/mentors/${mentor.id}/status`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: newStatus, warningReason: 'Tạm loại khỏi hệ thống do đánh giá thấp' }) })
-                                .then(() => { setAdminNotice(`Đã ${newStatus === 'disqualified' ? 'loại' : 'kích hoạt lại'} mentor ${mentor.name}`); refreshData(); });
-                            }}
-                          >
-                            <Trash2 size={14} /> {status === 'disqualified' ? 'Mở lại' : 'Loại mentor'}
-                          </button>
-                        </div>
+                        <span className={`status-tag ${status === 'pending' ? 'warning' : status}`}>{statusLabels[status] ?? status}</span>
                       </td>
                     </tr>
                   );
@@ -4605,6 +4582,28 @@ function AdminPage({ apiStatus, data, notice, currentUser, refreshData, setAdmin
           ))}
           {!filteredSubmissions.length && <div className="empty-state">Không có bài nộp phù hợp.</div>}
           <ListPager page={submissionPage} onPrev={() => changeAdminListPage('submissions', -1)} onNext={() => changeAdminListPage('submissions', 1)} />
+        </article>
+      </div>
+
+      <div className={`admin-grid compact workspace-section ${adminSection === 'testimonials' ? 'active' : ''}`} id="admin-testimonials">
+        <article className="admin-panel full-width">
+          <h2>Kiểm duyệt chia sẻ trải nghiệm</h2>
+          <p>Chia sẻ công khai cần gắn với tài khoản sinh viên và thử thách đã hoàn thành. Mục không có mã sinh viên là dữ liệu cũ, chưa được xác minh và không hiển thị cho khách.</p>
+          {!reviews.length ? <div className="empty-state">Chưa có chia sẻ nào cần kiểm duyệt.</div> : reviews.map(review => (
+            <div className="admin-row testimonial-admin-row" key={review.id}>
+              <div>
+                <strong>{review.name} · {review.rating}/5 sao · {review.status || 'chưa kiểm duyệt'}</strong>
+                <span>{review.studentId ? 'Sinh viên đã xác minh' : 'Dữ liệu cũ chưa xác minh'} · {review.roleTrack || review.challengeId || 'Chưa gắn thử thách'}</span>
+                <p>{review.quote}</p>
+                {review.statusReason && <small>Lý do trước đó: {review.statusReason}</small>}
+              </div>
+              <div className="table-actions">
+                {review.studentId && review.status !== 'approved' && <button className="action-btn success" onClick={() => moderateTestimonial(review, 'approved')}>Duyệt</button>}
+                {review.studentId && review.status !== 'rejected' && <button className="action-btn warn" onClick={() => moderateTestimonial(review, 'rejected')}>Từ chối</button>}
+                <button className="action-btn danger" onClick={() => deleteTestimonial(review)}>Xóa</button>
+              </div>
+            </div>
+          ))}
         </article>
       </div>
 

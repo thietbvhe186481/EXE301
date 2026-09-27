@@ -51,6 +51,9 @@ export const apiService = {
   async getMe() {
     return fetchWithAuth('/api/auth/me');
   },
+  async getWorkflowState() {
+    return fetchWithAuth('/api/workflow/state');
+  },
   async logout() {
     return fetchWithAuth('/api/auth/logout', { method: 'POST' });
   },

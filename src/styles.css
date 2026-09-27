@@ -4610,6 +4610,58 @@ body:has(.about-page) main {
   color: var(--muted);
 }
 
+.about-company-page { display: grid; gap: 20px; }
+.about-company-page > .section-heading { padding: clamp(22px, 4vw, 40px); border: 1px solid #d7eaf3; border-radius: 20px; background: linear-gradient(120deg, #f3fbff 0%, #fff 72%); }
+.about-company-page > .section-heading h1 { max-width: 760px; margin: 8px 0 10px; color: #10364b; font-size: clamp(28px, 4vw, 42px); line-height: 1.13; letter-spacing: -.7px; }
+.about-company-page > .section-heading p:not(.mono-label) { max-width: 730px; color: #526d7c; line-height: 1.7; }
+.company-stats-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.company-stat-card { display: grid; align-content: start; gap: 9px; min-width: 0; padding: 18px; border: 1px solid var(--border-soft); border-radius: 14px; background: var(--surface); box-shadow: var(--shadow); }
+.stat-big-val { color: #0369a1; font-size: clamp(22px, 3vw, 30px); font-weight: 850; line-height: 1.1; }
+.stat-main-label { color: var(--text); font-size: 14px; }
+.stat-sub-note { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.6; }
+.about-block { display: grid; gap: 16px; padding: clamp(18px, 3vw, 26px); border: 1px solid var(--border-soft); border-radius: 16px; background: var(--surface); box-shadow: var(--shadow); }
+.block-header { display: flex; align-items: flex-start; gap: 12px; }
+.block-header > svg { flex: 0 0 auto; margin-top: 3px; color: #0284c7; }
+.block-header h2 { margin: 0 0 5px; color: var(--text); font-size: 20px; }
+.block-header p { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.65; }
+.learning-source-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.learning-source-card { display: flex; align-items: center; justify-content: space-between; gap: 14px; min-height: 78px; padding: 14px; border: 1px solid #dce8ed; border-radius: 11px; color: #164e63; text-decoration: none; }
+.learning-source-card:hover { border-color: #8ccde6; background: #f3fbff; }
+.learning-source-card span { display: grid; gap: 5px; }
+.learning-source-card small { color: var(--muted); font-size: 12px; line-height: 1.5; }
+.learning-source-card > svg { flex: 0 0 auto; color: #0284c7; }
+.student-reviews-waterfall { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.student-review-card { display: grid; align-content: start; gap: 12px; padding: 17px; border: 1px solid var(--border-soft); border-radius: 13px; background: var(--surface); }
+.rev-header { display: flex; align-items: center; gap: 10px; }
+.rev-avatar { display: grid; place-items: center; width: 38px; height: 38px; flex: 0 0 auto; border-radius: 50%; color: #fff; font-weight: 800; }
+.rev-header > div:nth-child(2) { display: grid; min-width: 0; gap: 3px; }
+.rev-header > div:nth-child(2) span, .rev-date { color: var(--muted); font-size: 12px; }
+.rev-stars { display: flex; margin-left: auto; }
+.rev-outcome-tag, .track-badge { width: fit-content; padding: 5px 8px; border-radius: 6px; background: #eef8fc; color: #0369a1; font-size: 11px; font-weight: 700; }
+.rev-quote { margin: 0; color: var(--text); font-size: 13px; line-height: 1.65; }
+.rev-footer { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.add-review-section { display: grid; gap: 12px; padding-top: 16px; border-top: 1px solid var(--border-soft); }
+.add-review-section h3, .add-review-section p { margin: 0; }
+.add-review-section > p { color: var(--muted); font-size: 13px; }
+.review-submit-form { display: grid; gap: 13px; max-width: 760px; }
+.review-submit-form .form-group { display: grid; gap: 6px; }
+.review-submit-form label { color: var(--text); font-size: 13px; font-weight: 700; }
+.review-submit-form :is(input, select, textarea) { width: 100%; min-height: 42px; padding: 9px 11px; border: 1px solid #ccdce4; border-radius: 8px; background: var(--surface); color: var(--text); font: inherit; }
+.review-submit-form textarea { resize: vertical; }
+.review-submit-form .form-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.status-banner.error { border-color: #fecaca; background: #fff5f5; color: #b42318; }
+.testimonial-admin-row { align-items: flex-start; gap: 14px; }
+.testimonial-admin-row p { margin: 8px 0; line-height: 1.55; }
+
+@media (max-width: 850px) {
+  .company-stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .footer-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 560px) {
+  .company-stats-grid, .learning-source-list, .student-reviews-waterfall, .review-submit-form .form-row, .footer-grid { grid-template-columns: 1fr; }
+  .about-company-page > .section-heading { align-items: flex-start; flex-direction: column; }
+}
+
 .footer-grid button {
   justify-self: start;
   border: 0;
