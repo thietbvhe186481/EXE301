@@ -1,8 +1,10 @@
 import { Router } from 'express';
-import { randomUUID } from 'node:crypto';
+import { createHmac, randomInt, randomUUID, timingSafeEqual } from 'node:crypto';
 import { z } from 'zod';
 import { aiConfigured, generateAiAdvice } from './ai-review.js';
 import { CHALLENGES, RESOURCES, REVIEW_FEE, scoreReview, readinessCheck, ratingBonus, qualityFromRatings } from '../shared/catalog.js';
+import { createPayosLink, payosConfigured, verifyPayosWebhook } from './payos.js';
+import { deliverVerificationEmail } from './auth.js';
 
 const url = z.string().trim().max(500).refine(value => {
   try { const parsed = new URL(value); return ['https:', 'http:'].includes(parsed.protocol) && !parsed.username && !parsed.password; } catch { return false; }
@@ -25,7 +27,8 @@ export const mentorSummary = (account, profile, submissions) => {
     estimatedDays: Math.max(2, Math.ceil((queueCount + 1) / capacity) * 2), ...quality,
     available: profile?.available ?? true,
     canContinue: account.status === 'active' && profile?.application?.status === 'approved',
-    eligible: account.status === 'active' && profile?.application?.status === 'approved' && profile.available !== false && quality.qualityStatus !== 'excluded'
+    eligible: account.status === 'active' && profile?.application?.status === 'approved' && profile.available !== false && (quality.qualityStatus !== 'excluded' || profile.qualityOverride === true),
+    accountStatus: account.status, applicationStatus: profile?.application?.status || 'pending', qualityOverride: profile?.qualityOverride === true
   };
 };
 export const earningsFor = jobs => jobs.reduce((total, item) => {
@@ -43,7 +46,7 @@ export function nextPremiumExpiry(currentExpiry, now, planId) {
   return new Date(startTime + durationDays * 86400000);
 }
 
-export function createWorkflowRouter({ UserProfile, MentorAccount, AdminAccount, ReviewSubmission, ReviewerProfile, Complaint, SubscriptionOrder, PremiumPlan }) {
+export function createWorkflowRouter({ UserProfile, MentorAccount, AdminAccount, ReviewSubmission, ReviewerProfile, Complaint, SubscriptionOrder, PremiumPlan, sendPaymentEmail = deliverVerificationEmail }) {
   const router = Router();
   const userOrderQueues = new Map();
   const run = handler => async (req, res, next) => { try { await handler(req, res); } catch (error) { next(error); } };
@@ -60,6 +63,28 @@ export function createWorkflowRouter({ UserProfile, MentorAccount, AdminAccount,
     }
   };
   const fail = (status, message) => { const error = new Error(message); error.status = status; throw error; };
+  const paymentOtpEnabled = () => process.env.EMAIL_VERIFICATION_REQUIRED === '1' || (process.env.NODE_ENV === 'production' && process.env.EMAIL_VERIFICATION_REQUIRED !== '0');
+  const paymentOtpHash = (sessionId, planId, code) => createHmac('sha256', process.env.OTP_SECRET || process.env.SESSION_SECRET || 'local-payment-otp').update(`${sessionId}:${planId}:${code}`).digest('hex');
+  const activateOrder = async (order, reference, actor) => {
+    if (!order) fail(404, 'Không tìm thấy đơn thanh toán.');
+    if (!['pending', 'completed'].includes(order.status)) fail(409, 'Đơn đã được xử lý.');
+    let updated = order;
+    if (order.status === 'pending') {
+      const student = await UserProfile.findOne({ id: order.userId }).lean();
+      if (!student) fail(409, 'Không tìm thấy tài khoản sinh viên của đơn này.');
+      const now = new Date();
+      const expiresAt = nextPremiumExpiry(student.subscriptionExpiresAt, now, order.planId);
+      updated = await SubscriptionOrder.findOneAndUpdate({ orderId: order.orderId, status: 'pending' }, {
+        $set: { status: 'completed', verifiedBy: actor, paymentReference: reference, activatedAt: now, expiresAt },
+        $push: { statusHistory: { status: 'completed', changedAt: now, note: reference } }
+      }, { new: true }) || await SubscriptionOrder.findOne({ orderId: order.orderId }).lean();
+    }
+    if (updated?.status !== 'completed' || !updated.expiresAt) fail(409, 'Đơn vừa được xử lý. Hãy tải lại.');
+    // Reconcile a completed order on webhook retry if a process stopped between
+    // saving the order and granting access; older callbacks cannot shorten access.
+    await UserProfile.updateOne({ id: updated.userId, $or: [{ subscriptionExpiresAt: { $exists: false } }, { subscriptionExpiresAt: null }, { subscriptionExpiresAt: { $lte: updated.expiresAt } }] }, { $set: { isPremium: true, planId: updated.planId, planName: updated.planName, subscriptionExpiresAt: updated.expiresAt, subscription: { planId: updated.planId, planName: updated.planName, status: 'active', expiresAt: updated.expiresAt } } });
+    return updated;
+  };
   const requireRole = (req, role) => { if (req.session.user?.role !== role) fail(403, 'Bạn không có quyền thực hiện thao tác này.'); };
   const catalogItem = id => CHALLENGES.find(item => item.id === id) || fail(404, 'Không tìm thấy thử thách.');
   const loadMentors = async () => {
@@ -68,6 +93,20 @@ export function createWorkflowRouter({ UserProfile, MentorAccount, AdminAccount,
       .sort((a, b) => Number(b.eligible) - Number(a.eligible) || a.queueCount / a.capacity - b.queueCount / b.capacity || b.ratingAvg - a.ratingAvg);
   };
   router.get('/catalog', (_req, res) => res.json({ catalog: CHALLENGES, resources: RESOURCES }));
+  router.post('/payments/payos-webhook', run(async (req, res) => {
+    if (!payosConfigured() || !verifyPayosWebhook(req.body)) return res.status(400).json({ code: 'INVALID_SIGNATURE' });
+    const data = req.body.data;
+    const order = await SubscriptionOrder.findOne({ providerOrderCode: Number(data.orderCode) }).lean();
+    // payOS sends a signed sample transaction while confirming a webhook URL.
+    if (!order) return res.json({ code: '00', success: true });
+    if (Number(data.amount) !== Number(order.price)) return res.status(400).json({ code: 'ORDER_MISMATCH' });
+    if (req.body.success !== true || req.body.code !== '00' || data.code !== '00') return res.json({ code: '00', success: true });
+    await serializeUserOrder(order.userId, async () => {
+      const fresh = await SubscriptionOrder.findOne({ orderId: order.orderId }).lean();
+      await activateOrder(fresh, data.reference || String(data.paymentLinkId || data.orderCode), 'payOS');
+    });
+    res.json({ code: '00', success: true });
+  }));
   router.use(async (req, _res, next) => {
     try {
       if (!req.session.user) fail(401, 'Vui lòng đăng nhập để tiếp tục.');
@@ -255,8 +294,14 @@ export function createWorkflowRouter({ UserProfile, MentorAccount, AdminAccount,
   router.patch('/admin/mentors/:id', run(async (req, res) => {
     requireRole(req, 'admin');
     const payload = z.object({ status: z.enum(['approved', 'rejected', 'suspended']), reason: z.string().trim().min(10).max(2000) }).parse(req.body);
-    const profile = await ReviewerProfile.findOneAndUpdate({ mentorId: req.params.id, 'application.submittedAt': { $exists: true } }, { $set: { 'application.status': payload.status, 'application.reason': payload.reason, 'application.reviewedAt': new Date() } }, { new: true });
-    if (!profile) fail(404, 'Mentor chưa gửi hồ sơ đăng ký review.');
+    const current = await ReviewerProfile.findOne({ mentorId: req.params.id, 'application.submittedAt': { $exists: true } }).lean();
+    if (!current) fail(404, 'Mentor chưa gửi hồ sơ đăng ký review.');
+    const restoring = payload.status === 'approved' && current.application?.status === 'suspended';
+    if (payload.status !== 'suspended' && current.application?.status !== 'pending' && !restoring) fail(409, 'Hồ sơ đã được xử lý. Chỉ hồ sơ mới được quyết định; mentor tạm ngưng có thể được tái duyệt.');
+    if (payload.status === 'suspended' && current.application?.status !== 'approved') fail(409, 'Chỉ mentor đã duyệt mới có thể tạm ngưng.');
+    const suspendedAgain = payload.status === 'suspended';
+    const profile = await ReviewerProfile.findOneAndUpdate({ mentorId: req.params.id, 'application.submittedAt': { $exists: true } }, { $set: { 'application.status': payload.status, 'application.reason': payload.reason, 'application.reviewedAt': new Date(), ...(restoring ? { qualityOverride: true } : {}), ...(suspendedAgain ? { qualityOverride: false } : {}) } }, { new: true });
+    await MentorAccount.updateOne({ id: req.params.id }, { $set: { status: payload.status === 'suspended' ? 'suspended' : 'active', statusReason: payload.reason } });
     res.json({ profile });
   }));
   router.post('/admin/payouts/:id', run(async (req, res) => {
@@ -270,14 +315,59 @@ export function createWorkflowRouter({ UserProfile, MentorAccount, AdminAccount,
     if (!submission) fail(409, 'Khoản đã thanh toán hoặc chưa đủ điều kiện quyết toán (có đánh giá hoặc đủ 7 ngày).');
     res.json({ submission });
   }));
+  router.post('/payments/request-code', run(async (req, res) => {
+    requireRole(req, 'student');
+    const { planId } = z.object({ planId: z.string().max(100) }).parse(req.body);
+    const plan = await PremiumPlan.findOne({ id: planId, status: 'active' }).lean();
+    if (!plan || plan.price <= 0) fail(404, 'Gói không khả dụng.');
+    if (!paymentOtpEnabled()) return res.json({ verificationRequired: false });
+    if (req.account.emailVerified !== true) fail(403, 'Hãy xác thực email tài khoản trước khi thanh toán.');
+    const previous = req.session.paymentOtp;
+    if (previous && Date.now() - previous.sentAt < 60_000) fail(429, 'Hãy chờ 1 phút trước khi gửi mã thanh toán mới.');
+    if (!process.env.RESEND_API_KEY && sendPaymentEmail === deliverVerificationEmail) fail(503, 'Máy chủ chưa cấu hình gửi email xác nhận thanh toán.');
+    const code = String(randomInt(0, 1_000_000)).padStart(6, '0');
+    try { await sendPaymentEmail(req.account.email, code, req.account.name, 'payment'); }
+    catch { fail(503, 'Chưa gửi được mã thanh toán tới email. Hãy thử lại sau.'); }
+    req.session.paymentOtp = { planId, hash: paymentOtpHash(req.sessionID, planId, code), expiresAt: Date.now() + 10 * 60_000, sentAt: Date.now(), attempts: 0 };
+    res.json({ verificationRequired: true, email: req.account.email, message: 'Mã thanh toán có hiệu lực trong 10 phút.' });
+  }));
   router.post('/orders', run(async (req, res) => {
     requireRole(req, 'student');
-    const { planId, transactionCode } = z.object({ planId: z.string().max(100), transactionCode: z.string().trim().min(5).max(160) }).parse(req.body);
+    const { planId, transactionCode = '', paymentCode } = z.object({ planId: z.string().max(100), transactionCode: z.string().trim().max(160).optional(), paymentCode: z.string().regex(/^\d{6}$/).optional() }).parse(req.body);
+    if (paymentOtpEnabled()) {
+      if (req.account.emailVerified !== true) fail(403, 'Hãy xác thực email trước khi thanh toán gói Premium.');
+      const otp = req.session.paymentOtp;
+      if (!otp || otp.planId !== planId || otp.expiresAt < Date.now()) fail(403, 'Mã thanh toán không có hoặc đã hết hạn. Hãy yêu cầu mã mới.');
+      if (otp.attempts >= 5) fail(429, 'Mã thanh toán bị khóa sau 5 lần nhập sai. Hãy yêu cầu mã mới.');
+      const actual = paymentOtpHash(req.sessionID, planId, paymentCode || '');
+      if (!timingSafeEqual(Buffer.from(actual), Buffer.from(otp.hash))) {
+        otp.attempts += 1;
+        fail(403, 'Mã thanh toán không đúng.');
+      }
+    }
     const plan = await PremiumPlan.findOne({ id: planId, status: 'active' }).lean();
     if (!plan || plan.price <= 0) fail(404, 'Gói không khả dụng.');
     const existing = await SubscriptionOrder.findOne({ userId: req.account.id, status: 'pending' }).lean();
-    if (existing) return res.json({ order: existing, success: true });
-    const order = await SubscriptionOrder.create({ orderId: `ORD-${randomUUID()}`, userId: req.account.id, planId: plan.id, planName: plan.name, price: plan.price, transactionCode, paymentMethod: 'VietQR — đối soát thủ công', status: 'pending', activatedAt: null });
+    if (existing) {
+      req.session.paymentOtp = null;
+      return res.json({ order: existing, success: true, ...(existing.checkoutUrl ? { payment: { checkoutUrl: existing.checkoutUrl, qrCode: existing.qrCode, provider: 'payOS' } } : {}) });
+    }
+    const orderId = `ORD-${randomUUID()}`;
+    if (payosConfigured()) {
+      // PayOS orderCode is a 32-bit integer. Millisecond modulo keeps it numeric and
+      // a database collision check protects the provider's unique order reference.
+      let providerOrderCode = Date.now() % 2_000_000_000;
+      while (await SubscriptionOrder.findOne({ providerOrderCode }).lean()) providerOrderCode = (providerOrderCode + 1) % 2_000_000_000;
+      const description = `JR${String(providerOrderCode).slice(-20)}`;
+      const link = await createPayosLink({ orderCode: providerOrderCode, amount: plan.price, description, buyerName: req.account.name, buyerEmail: req.account.email });
+      const order = await SubscriptionOrder.create({ orderId, providerOrderCode, userId: req.account.id, planId: plan.id, planName: plan.name, price: plan.price, transactionCode: description, paymentMethod: 'PayOS · VietQR', providerPaymentLinkId: link.paymentLinkId, checkoutUrl: link.checkoutUrl, qrCode: link.qrCode, status: 'pending', activatedAt: null });
+      req.session.paymentOtp = null;
+      return res.status(201).json({ order, success: true, payment: { checkoutUrl: link.checkoutUrl, qrCode: link.qrCode, provider: 'payOS' } });
+    }
+    if (process.env.NODE_ENV === 'production' && !(process.env.PAYMENT_BANK && process.env.PAYMENT_ACCOUNT && process.env.PAYMENT_ACCOUNT_NAME)) fail(503, 'Thanh toán chưa cấu hình. Quản trị viên cần cài PayOS hoặc thông tin ngân hàng nhận tiền trên máy chủ.');
+    if (transactionCode.length < 5) fail(503, 'Thanh toán tự động chưa cấu hình. Quản trị viên cần cài PayOS; chuyển khoản thủ công cần mã nội dung giao dịch.');
+    const order = await SubscriptionOrder.create({ orderId, userId: req.account.id, planId: plan.id, planName: plan.name, price: plan.price, transactionCode, paymentMethod: 'VietQR — đối soát thủ công', status: 'pending', activatedAt: null });
+    req.session.paymentOtp = null;
     res.status(201).json({ order, success: true });
   }));
   router.patch('/admin/orders/:id', run(async (req, res) => {
@@ -289,23 +379,12 @@ export function createWorkflowRouter({ UserProfile, MentorAccount, AdminAccount,
       const existing = await SubscriptionOrder.findOne({ orderId: req.params.id }).lean();
       if (!existing) fail(404, 'Không tìm thấy đơn.');
       if (existing.status !== 'pending' && existing.status !== status) fail(409, 'Đơn đã được xử lý.');
-      const now = new Date();
-      let expiresAt = existing.expiresAt;
-      if (status === 'completed' && existing.status === 'pending') {
-        const student = await UserProfile.findOne({ id: existing.userId }).lean();
-        if (!student) fail(409, 'Không tìm thấy tài khoản sinh viên của đơn này.');
-        expiresAt = nextPremiumExpiry(student.subscriptionExpiresAt, now, existing.planId);
-      }
-      const order = existing.status === status ? existing : await SubscriptionOrder.findOneAndUpdate(
+      const order = status === 'completed' ? await activateOrder(existing, reference, req.account.id) : await SubscriptionOrder.findOneAndUpdate(
         { orderId: existing.orderId, status: 'pending' },
-        { $set: { status, verifiedBy: req.account.id, paymentReference: reference, ...(status === 'completed' ? { activatedAt: now, expiresAt } : {}) }, $push: { statusHistory: { status, changedAt: now, note: reference } } },
+        { $set: { status, verifiedBy: req.account.id, paymentReference: reference }, $push: { statusHistory: { status, changedAt: new Date(), note: reference } } },
         { new: true }
       );
       if (!order) fail(409, 'Đơn vừa được xử lý. Hãy tải lại.');
-      if (status === 'completed') await UserProfile.updateOne(
-        { id: order.userId, $or: [{ subscriptionExpiresAt: { $exists: false } }, { subscriptionExpiresAt: null }, { subscriptionExpiresAt: { $lte: order.expiresAt } }] },
-        { $set: { isPremium: true, planId: order.planId, planName: order.planName, subscriptionExpiresAt: order.expiresAt, subscription: { planId: order.planId, planName: order.planName, status: 'active', expiresAt: order.expiresAt } } }
-      );
       res.json({ order });
     });
   }));

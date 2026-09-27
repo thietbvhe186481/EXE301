@@ -11,7 +11,13 @@ const makeModel = () => {
     records,
     async findOne(query) { return records.find(row => Object.entries(query).every(([k, v]) => row[k] === v)) ?? null; },
     async create(data) { records.push({ ...data }); return records.at(-1); },
-    async updateOne(query, update) { Object.assign(await this.findOne(query), update); }
+    async updateOne(query, update) {
+      const row = await this.findOne(query); if (!row) return;
+      Object.assign(row, update.$set || Object.fromEntries(Object.entries(update).filter(([key]) => !key.startsWith('$'))));
+      for (const key of Object.keys(update.$unset || {})) delete row[key];
+      for (const [key, value] of Object.entries(update.$inc || {})) row[key] = (row[key] || 0) + value;
+    },
+    async deleteOne(query) { const index = records.findIndex(row => Object.entries(query).every(([key, value]) => row[key] === value)); if (index >= 0) records.splice(index, 1); }
   };
 };
 const UserProfile = makeModel(), MentorAccount = makeModel(), AdminAccount = makeModel();
@@ -123,6 +129,28 @@ test('admin can log in through shared form without public admin registration', a
   const result = await request('/login', { email: 'admin@example.test', password: 'Testing123' });
   assert.equal(result.status, 200);
   assert.equal(result.data.type, 'admin');
+});
+
+test('production email verification issues a short-lived OTP and only creates a session after a valid code', async () => {
+  const Users = makeModel(), Mentors = makeModel(), Admins = makeModel();
+  let sentCode = '';
+  const app = express(); app.use(express.json());
+  app.use(session({ name: 'otp.sid', secret: 'test-only-session-secret', resave: false, saveUninitialized: false }));
+  app.use('/api/auth', createAuthRouter({ UserProfile: Users, MentorAccount: Mentors, AdminAccount: Admins, verificationRequired: true, sendVerificationEmail: async (_to, code) => { sentCode = code; } }));
+  const otpServer = app.listen(0, '127.0.0.1'); await new Promise(resolve => otpServer.once('listening', resolve));
+  const otpBase = `http://127.0.0.1:${otpServer.address().port}/api/auth`;
+  const call = async (path, body) => { const response = await fetch(otpBase + path, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) }); return { status: response.status, data: await response.json(), cookie: response.headers.get('set-cookie') }; };
+  try {
+    const registered = await call('/register', student('otp@example.test'));
+    assert.equal(registered.status, 202); assert.equal(registered.data.verificationRequired, true); assert.match(sentCode, /^\d{6}$/);
+    assert.equal((await call('/login', { email: 'otp@example.test', password: 'Testing123' })).status, 403);
+    const wrongCode = String((Number(sentCode) + 1) % 1_000_000).padStart(6, '0');
+    assert.equal((await call('/verify-email', { email: 'otp@example.test', code: wrongCode })).status, 400);
+    const verified = await call('/verify-email', { email: 'otp@example.test', code: sentCode });
+    assert.equal(verified.status, 200); assert.equal(verified.data.type, 'student'); assert.ok(verified.cookie);
+    assert.equal(Users.records[0].emailVerified, true); assert.equal(Users.records[0].verificationCodeHash, undefined);
+    assert.equal((await call('/verify-email', { email: 'otp@example.test', code: sentCode })).status, 400);
+  } finally { await new Promise(resolve => otpServer.close(resolve)); }
 });
 test('password change checks old password and saves a hash of new password', async () => {
   const login = await request('/login', { email: 'student@example.test', password: 'Testing123' });

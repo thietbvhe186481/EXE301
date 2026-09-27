@@ -4,6 +4,7 @@ import express from 'express';
 import { createWorkflowRouter, mentorSummary, hasPaidAccess, nextPremiumExpiry } from './workflow.js';
 import { CHALLENGES, scoreReview, qualityFromRatings, readinessCheck } from '../shared/catalog.js';
 import { generateAiAdvice } from './ai-review.js';
+import { createHmac } from 'node:crypto';
 
 const get = (obj, path) => path.split('.').reduce((value, part) => value?.[part], obj);
 const set = (obj, path, value) => { const parts = path.split('.'); const last = parts.pop(); let current = obj; for (const part of parts) current = current[part] ??= {}; current[last] = value; };
@@ -73,6 +74,7 @@ test('public catalog has real sources and rubric weights total 100; private stat
     assert.match(item.source.url, /^https:\/\/www.coursera.org\//);
     assert.ok(item.requirements.length >= 2);
     assert.ok(item.estimatedHours > 0 && item.levelDescription && item.learningOutcome);
+    assert.ok(item.scenario?.length > item.summary.length && item.reviewQuestion?.length > 30);
   }
   assert.equal((await request('/state')).status, 401);
 });
@@ -169,6 +171,41 @@ test('premium renewals extend the active term and re-verifying an order is idemp
   assert.equal(nextPremiumExpiry(new Date(0), new Date('2030-01-01T00:00:00Z'), 'premium-quarter').toISOString(), '2030-04-01T00:00:00.000Z');
 });
 
+test('mentor approval moves the account into the eligible state and cannot be decided twice', async () => {
+  await models.MentorAccount.create({ id: 'new-mentor', name: 'Ngọc Mentor', status: 'active', expertise: ['React'] });
+  await models.ReviewerProfile.create({ mentorId: 'new-mentor', available: true, capacity: 5, challengeIds: CHALLENGES.map(item => item.id), application: { status: 'pending', method: 'cv', submittedAt: new Date() } });
+  const result = await request('/admin/mentors/new-mentor', 'admin', { status: 'approved', reason: 'Hồ sơ và chuyên môn đáp ứng tiêu chí review.' }, 'PATCH');
+  assert.equal(result.status, 200); assert.equal(result.data.profile.application.status, 'approved');
+  assert.equal((await models.MentorAccount.findOne({ id: 'new-mentor' }).lean()).status, 'active');
+  const state = await request('/state', 'admin');
+  assert.ok(state.data.applications.some(item => item.mentorId === 'new-mentor'));
+  assert.equal((await request('/admin/mentors/new-mentor', 'admin', { status: 'approved', reason: 'Thử duyệt lại hồ sơ đã xử lý.' }, 'PATCH')).status, 409);
+});
+
+test('PayOS webhook validates HMAC and exact amount, then activates and extends Premium once', async () => {
+  const keys = ['PAYOS_CLIENT_ID', 'PAYOS_API_KEY', 'PAYOS_CHECKSUM_KEY', 'PAYOS_RETURN_URL', 'PAYOS_CANCEL_URL'];
+  const old = Object.fromEntries(keys.map(key => [key, process.env[key]]));
+  Object.assign(process.env, { PAYOS_CLIENT_ID: 'test-client', PAYOS_API_KEY: 'test-key', PAYOS_CHECKSUM_KEY: 'test-checksum', PAYOS_RETURN_URL: 'https://site.example/return', PAYOS_CANCEL_URL: 'https://site.example/cancel' });
+  try {
+    const code = 1900000123;
+    await models.SubscriptionOrder.create({ orderId: 'ORD-PAYOS-TEST', providerOrderCode: code, userId: 'student', planId: 'premium-month', planName: 'Tháng', price: 79000, transactionCode: 'JR123', paymentMethod: 'PayOS · VietQR', status: 'pending' });
+    const prior = new Date((await models.UserProfile.findOne({ id: 'student' }).lean()).subscriptionExpiresAt).getTime();
+    const data = { orderCode: code, amount: 79000, reference: 'BANK-REF-1', code: '00', description: 'JR123' };
+    const message = Object.keys(data).sort().map(key => `${key}=${data[key] ?? ''}`).join('&');
+    const signature = createHmac('sha256', process.env.PAYOS_CHECKSUM_KEY).update(message).digest('hex');
+    const webhook = { code: '00', desc: 'success', success: true, data, signature };
+    assert.equal((await request('/payments/payos-webhook', null, { ...webhook, signature: 'bad' })).status, 400);
+    assert.equal((await request('/payments/payos-webhook', null, { ...webhook, data: { ...data, amount: 1 } })).status, 400);
+    const sampleData = { ...data, orderCode: 1900000999 };
+    const sampleSignature = createHmac('sha256', process.env.PAYOS_CHECKSUM_KEY).update(Object.keys(sampleData).sort().map(key => `${key}=${sampleData[key] ?? ''}`).join('&')).digest('hex');
+    assert.equal((await request('/payments/payos-webhook', null, { ...webhook, data: sampleData, signature: sampleSignature })).status, 200);
+    assert.equal((await request('/payments/payos-webhook', null, webhook)).status, 200);
+    assert.equal((await request('/payments/payos-webhook', null, webhook)).status, 200);
+    assert.equal((await models.SubscriptionOrder.findOne({ orderId: 'ORD-PAYOS-TEST' }).lean()).status, 'completed');
+    assert.equal(new Date((await models.UserProfile.findOne({ id: 'student' }).lean()).subscriptionExpiresAt).getTime(), prior + 30 * 86400000);
+  } finally { for (const key of keys) old[key] === undefined ? delete process.env[key] : process.env[key] = old[key]; }
+});
+
 test('AI completion can be upgraded to human without duplicate challenge record', async () => {
   const job = (await request('/state', 'free')).data.submissions[0];
   const result = await request(`/submissions/${job.id}`, 'free', { ...payload(), mentorId: 'other' }, 'PUT');
@@ -189,11 +226,46 @@ test('AI provider adapter sends only consented notes/skills and validates struct
     const advice = await generateAiAdvice(CHALLENGES[0], payload(), async (_url, options) => {
       const body = JSON.parse(options.body);
       assert.equal(body.store, false); assert.equal(body.input.includes('example.com'), false);
-      return { ok: true, json: async () => ({ status: 'completed', output: [{ content: [{ type: 'output_text', text: JSON.stringify({ summary: 'Cần bổ sung minh chứng.', improvements: ['Nêu cách kiểm thử.'] }) }] }] }) };
+      const advice = { summary: 'Phần mô tả còn thiếu minh chứng.', rubricFeedback: CHALLENGES[0].rubric.map(item => ({ key: item.key, label: item.label, assessment: 'Chưa có minh chứng cụ thể trong ghi chú.', evidence: '' })), strengths: ['Đã nêu mục tiêu sản phẩm.'], improvements: ['Thêm ảnh giao diện ở hai kích thước.'] };
+      assert.equal(body.text.format.schema.properties.rubricFeedback.type, 'array');
+      return { ok: true, json: async () => ({ status: 'completed', output: [{ content: [{ type: 'output_text', text: JSON.stringify(advice) }] }] }) };
     });
     assert.equal(advice.improvements.length, 1);
+    assert.equal(advice.rubricFeedback.length, CHALLENGES[0].rubric.length);
+    assert.equal(advice.strengths.length, 1);
   } finally {
     if (oldKey === undefined) delete process.env.OPENAI_API_KEY; else process.env.OPENAI_API_KEY = oldKey;
     if (oldModel === undefined) delete process.env.OPENAI_REVIEW_MODEL; else process.env.OPENAI_REVIEW_MODEL = oldModel;
+  }
+});
+
+test('a payment requires a fresh emailed code for the selected plan', async () => {
+  const prior = process.env.EMAIL_VERIFICATION_REQUIRED;
+  process.env.EMAIL_VERIFICATION_REQUIRED = '1';
+  const testModels = { UserProfile: model(['id']), MentorAccount: model(['id']), AdminAccount: model(['id']), ReviewerProfile: model(['mentorId']), ReviewSubmission: model(['userId', 'challengeId']), SubscriptionOrder: model(['orderId']), PremiumPlan: model(['id']) };
+  await testModels.UserProfile.create({ id: 'otp-student', name: 'Student', email: 'student@example.com', role: 'student', status: 'active', emailVerified: true });
+  await testModels.PremiumPlan.create({ id: 'premium-month', name: 'Tháng', price: 79000, status: 'active' });
+  let sentCode = '';
+  const session = { user: { id: 'otp-student', role: 'student' } };
+  const app = express(); app.use(express.json());
+  app.use((req, _res, next) => { req.session = session; req.sessionID = 'payment-test-session'; next(); });
+  app.use('/api/workflow', createWorkflowRouter({ ...testModels, sendPaymentEmail: async (_address, code) => { sentCode = code; } }));
+  const listener = app.listen(0, '127.0.0.1'); await new Promise(resolve => listener.once('listening', resolve));
+  const url = `http://127.0.0.1:${listener.address().port}/api/workflow`;
+  const post = async (path, body) => {
+    const response = await fetch(url + path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    return { status: response.status, data: await response.json() };
+  };
+  try {
+    assert.equal((await post('/orders', { planId: 'premium-month', transactionCode: 'TEST-TRANSFER' })).status, 403);
+    assert.equal((await post('/payments/request-code', { planId: 'premium-month' })).status, 200);
+    assert.match(sentCode, /^\d{6}$/);
+    assert.equal((await post('/orders', { planId: 'premium-month', transactionCode: 'TEST-TRANSFER', paymentCode: '999999' === sentCode ? '888888' : '999999' })).status, 403);
+    assert.equal((await post('/orders', { planId: 'premium-month', transactionCode: 'TEST-TRANSFER', paymentCode: sentCode })).status, 201);
+    assert.equal(session.paymentOtp, null);
+    assert.equal((await post('/orders', { planId: 'premium-month', transactionCode: 'TEST-TRANSFER', paymentCode: sentCode })).status, 403);
+  } finally {
+    await new Promise(resolve => listener.close(resolve));
+    if (prior === undefined) delete process.env.EMAIL_VERIFICATION_REQUIRED; else process.env.EMAIL_VERIFICATION_REQUIRED = prior;
   }
 });

@@ -20,3 +20,25 @@ services:
         generateValue: true
       - key: MONGODB_URI
         sync: false
+      - key: EMAIL_VERIFICATION_REQUIRED
+        value: "1"
+      - key: RESEND_API_KEY
+        sync: false
+      - key: EMAIL_FROM
+        sync: false
+      - key: OTP_SECRET
+        generateValue: true
+      - key: PAYOS_CLIENT_ID
+        sync: false
+      - key: PAYOS_API_KEY
+        sync: false
+      - key: PAYOS_CHECKSUM_KEY
+        sync: false
+      - key: PAYOS_RETURN_URL
+        sync: false
+      - key: PAYOS_CANCEL_URL
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: OPENAI_REVIEW_MODEL
+        sync: false

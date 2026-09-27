@@ -23,6 +23,7 @@ const profile = new Schema({
   challengeIds: { type: [String], default: [] },
   capacity: { type: Number, min: 1, max: 20, default: 5 },
   available: { type: Boolean, default: true },
+  qualityOverride: { type: Boolean, default: false },
   application: {
     method: { type: String, enum: ['cv', 'chat'] }, profileUrl: String, notes: String,
     status: { type: String, enum: ['pending', 'approved', 'rejected', 'suspended'], default: 'pending' },

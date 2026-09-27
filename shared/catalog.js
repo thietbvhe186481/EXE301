@@ -65,6 +65,33 @@ const moreChallenges = [
 ].map(([id, title, major, level, summary, requirements, rubric]) => make(id, title, major, level, summary, requirements, rubric));
 CHALLENGES.push(...moreChallenges);
 
+// Local project briefs. Course links provide learning context, not copied assignments.
+const challengeContexts = {
+  'practice-dev-profile': ['Bạn chuẩn bị ứng tuyển vị trí thực tập và chỉ có hai phút để nhà tuyển dụng hiểu bạn đã làm được gì. Hãy thiết kế trang cá nhân để họ mở được dự án tiêu biểu trên cả điện thoại lẫn máy tính.', 'Người xem có tìm được dự án, xem được minh chứng và đọc được cách chạy mã nguồn ở hai kích thước màn hình không?'],
+  'practice-dev-dashboard': ['Một nhóm học tập cần theo dõi tiến độ của nhiều thành viên mà không bị lạc trong bảng dữ liệu. Hãy tạo dashboard để người phụ trách lọc, tìm và nhận biết ngay khi dữ liệu đang tải hoặc gặp lỗi.', 'Các thao tác tìm/lọc có nhất quán với trạng thái loading, rỗng và lỗi; ba ca kiểm thử có chứng minh điều đó không?'],
+  'practice-dev-capstone': ['Một nhóm tư vấn có nhiều mentor và các khung giờ có thể trùng nhau. Hãy xây luồng để sinh viên chọn lịch, xác nhận, hủy và nhìn thấy lịch còn trống sau mỗi thay đổi.', 'Có thể đặt trùng một khung giờ hoặc thao tác sai quyền không; tài liệu kiểm thử và thiết kế dữ liệu giải thích cách ngăn chặn ra sao?'],
+  'practice-mkt-persona': ['Một sản phẩm mới cần nội dung trong tuần đầu nhưng đội marketing chưa hiểu rõ người dùng. Chọn một sản phẩm cụ thể, xác định nhóm khách hàng ưu tiên rồi lập lịch bảy ngày.', 'Mỗi nội dung có mục tiêu và thông điệp phù hợp persona; dữ liệu và giả định có được phân biệt rõ không?'],
+  'practice-mkt-campaign': ['Một thương hiệu nhỏ chỉ có ngân sách giới hạn cho chiến dịch bốn tuần. Hãy phân bổ ngân sách theo kênh và giải thích cách biết chiến dịch đang đi đúng hướng.', 'Tổng ngân sách, KPI và phễu chuyển đổi có khớp nhau; nhóm có biết khi nào cần điều chỉnh chiến dịch không?'],
+  'practice-mkt-experiment': ['Một cửa hàng có lượng truy cập nhưng ít đơn hàng. Hãy đề xuất thử nghiệm A/B cho một điểm nghẽn cụ thể và cách quyết định tiếp tục hay dừng.', 'Giả thuyết, chỉ số chính, điều kiện dừng và giới hạn kết luận có đủ để tránh tuyên bố thắng cuộc khi dữ liệu chưa thuyết phục không?'],
+  'practice-design-wireframe': ['Người dùng muốn đăng ký một sự kiện trên điện thoại trong vài bước, kể cả khi nhập sai thông tin. Hãy vẽ luồng và wireframe để họ biết đang ở bước nào và sửa lỗi ra sao.', 'Bốn màn hình có tạo thành luồng liên tục; lỗi nhập liệu và lựa chọn điều hướng có dễ hiểu không?'],
+  'practice-design-prototype': ['Một nhóm học trực tuyến gặp khó khi tìm bài đang học dở. Hãy tạo prototype có thể bấm thử, kiểm tra với người dùng và ghi rõ điều bạn thay đổi sau phản hồi.', 'Prototype có đủ trạng thái để hoàn thành tác vụ; thay đổi sau usability test có căn cứ từ ghi chép đã ẩn danh không?'],
+  'practice-design-case-study': ['Một dịch vụ đặt lịch nhận nhiều phàn nàn ở bước xác nhận. Hãy điều tra nguyên nhân, đề xuất trải nghiệm mới và kể lại cách bạn kiểm chứng.', 'Case study có nối được vấn đề, bằng chứng, quyết định thiết kế và kết quả kiểm chứng mà không phóng đại tác động không?'],
+  'practice-dev-api': ['Một câu lạc bộ cần quản lý sự kiện và cho thành viên tìm danh sách theo trang. Hãy thiết kế API để tạo, sửa, xem, xóa và từ chối dữ liệu không hợp lệ.', 'Tài liệu endpoint và ví dụ lỗi có đủ để một lập trình viên khác gọi API đúng mà không phải hỏi tác giả không?'],
+  'practice-dev-data': ['Một nhóm cần hiểu xu hướng từ bộ dữ liệu công khai nhỏ. Hãy làm sạch dữ liệu, chọn câu hỏi phân tích và trình bày biểu đồ có thể tái tạo.', 'Người xem có truy lại nguồn, bước làm sạch và giới hạn của kết luận từ mã nguồn cùng dữ liệu được chia sẻ không?'],
+  'practice-dev-security': ['Một ứng dụng web chuẩn bị mở cho người dùng thật. Hãy rà soát trong phạm vi được phép, mô tả rủi ro ưu tiên và cách đội phát triển kiểm tra lại sau khi sửa.', 'Mỗi phát hiện có phạm vi, bằng chứng an toàn và biện pháp giảm thiểu đủ cụ thể để tái kiểm tra không?'],
+  'practice-mkt-research': ['Một nhóm muốn ra mắt sản phẩm ở thị trường đã có đối thủ. Hãy lập báo cáo ngắn để chọn phân khúc đầu tiên và kiểm tra giả thuyết nhu cầu.', 'Insight có bám nguồn công khai, đối thủ được so sánh công bằng và giả định còn thiếu được nêu rõ không?'],
+  'practice-mkt-seo': ['Một trang đích có nội dung rời rạc và chưa trả lời đúng điều người tìm kiếm muốn biết. Hãy xây topic cluster, brief bài viết và kế hoạch đo kết quả.', 'Mỗi nhóm từ khóa có ý định tìm kiếm rõ, nội dung đề xuất có cấu trúc và chỉ số đo không dựa vào thứ hạng tự bịa không?'],
+  'practice-mkt-analytics': ['Một phễu chuyển đổi có nhiều lượt truy cập nhưng ít người hoàn tất. Hãy dùng dữ liệu mẫu hoặc dữ liệu đã ẩn danh để chỉ ra điểm nghẽn và đề xuất phép thử.', 'Báo cáo có định nghĩa chỉ số, kích thước mẫu, giới hạn dữ liệu và giả thuyết kiểm chứng được không?'],
+  'practice-design-audit': ['Một giao diện hiện có khó dùng bằng bàn phím và chữ có thể thiếu tương phản. Hãy kiểm tra một luồng cụ thể rồi ưu tiên cách sửa.', 'Mỗi vấn đề có vị trí, bước tái hiện, tiêu chí kiểm tra và đề xuất sửa có thể thực hiện không?'],
+  'practice-design-research': ['Nhóm sản phẩm chưa biết vì sao người dùng bỏ dở một tác vụ. Hãy lập kế hoạch nghiên cứu trước khi phỏng vấn, gồm cách tuyển người tham gia và xin đồng ý.', 'Câu hỏi có trung lập, phương pháp phù hợp và kế hoạch tổng hợp insight bảo vệ được danh tính người tham gia không?'],
+  'practice-design-system': ['Một sản phẩm có web và di động đang dùng màu, khoảng cách và trạng thái nút không nhất quán. Hãy thiết kế thư viện nhỏ để hai đội sử dụng chung.', 'Token, component, trạng thái tương tác và ví dụ bàn giao có giúp kỹ thuật áp dụng nhất quán và tiếp cận được không?']
+};
+for (const challenge of CHALLENGES) {
+  const [scenario, reviewQuestion] = challengeContexts[challenge.id] || [];
+  challenge.scenario = scenario || challenge.summary;
+  challenge.reviewQuestion = reviewQuestion || 'Đầu ra và minh chứng có đáp ứng đầy đủ yêu cầu và rubric của thử thách không?';
+}
+
 RESOURCES.push(
   { id: 'source-meta-backend', title: 'Meta Back-End Developer', majorKey: 'dev', source: 'Coursera', url: 'https://www.coursera.org/professional-certificates/meta-back-end-developer', note: 'Trang chương trình chính thức; lộ trình, giá và quyền truy cập theo nhà cung cấp.' },
   { id: 'source-google-it', title: 'Google IT Support', majorKey: 'dev', source: 'Coursera', url: 'https://www.coursera.org/professional-certificates/google-it-support', note: 'Trang chương trình chính thức; lộ trình, giá và quyền truy cập theo nhà cung cấp.' },

@@ -21,12 +21,14 @@ export function AuthPage({ authMode = 'login', initialRole = 'student', setAuthM
   const [errors, setErrors] = useState({});
   const [message, setMessage] = useState('');
   const [busy, setBusy] = useState(false);
+  const [verificationEmail, setVerificationEmail] = useState('');
+  const [verificationCode, setVerificationCode] = useState('');
   const [visible, setVisible] = useState({});
   const formRef = useRef(null);
   const submitting = useRef(false);
   const mentor = values.role === 'mentor';
 
-  useEffect(() => { setStep(1); setErrors({}); setMessage(''); setVisible({}); }, [authMode]);
+  useEffect(() => { setStep(1); setErrors({}); setMessage(''); setVisible({}); setVerificationEmail(''); setVerificationCode(''); }, [authMode]);
   function update(name, value) {
     setValues(previous => ({ ...previous, [name]: value }));
     setErrors(previous => ({ ...previous, [name]: undefined }));
@@ -68,22 +70,34 @@ export function AuthPage({ authMode = 'login', initialRole = 'student', setAuthM
   async function submit(event) {
     event.preventDefault();
     if (submitting.current) return;
-    const nextErrors = validate(step === 2);
+    const nextErrors = verificationEmail ? {} : validate(step === 2);
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length) {
       if (signup && credentialKeys.some(key => nextErrors[key])) setStep(1);
       focusError(nextErrors);
       return;
     }
-    if (signup && step === 1) { setStep(2); requestAnimationFrame(() => formRef.current?.querySelector('input, select')?.focus()); return; }
+    if (signup && step === 1 && !verificationEmail) { setStep(2); requestAnimationFrame(() => formRef.current?.querySelector('input, select')?.focus()); return; }
     submitting.current = true;
     setBusy(true);
     setMessage('');
     try {
       const payload = { ...values, name: values.name.trim(), email: values.email.trim(), school: values.school.trim(), title: values.title.trim(), company: values.company.trim(), expertise: values.expertise.split(',').map(item => item.trim()).filter(Boolean), yearsExperience: Number(values.yearsExperience), profileUrl: values.profileUrl.trim(), bio: values.bio.trim() };
+      if (verificationEmail) {
+        const data = await apiService.verifyEmail({ email: verificationEmail, code: verificationCode, rememberMe: values.rememberMe });
+        onAuthenticated(data);
+        return;
+      }
       const data = signup ? await apiService.register(payload) : await apiService.login({ email: payload.email, password: values.password, rememberMe: values.rememberMe });
+      if (data.verificationRequired) {
+        setVerificationEmail(data.email || payload.email);
+        setVerificationCode('');
+        setMessage(data.message || 'Mã xác thực đã được gửi tới email của bạn.');
+        return;
+      }
       onAuthenticated(data);
     } catch (error) {
+      if (error.verificationRequired && error.email) { setVerificationEmail(error.email); setVerificationCode(''); }
       const serverErrors = error.fieldErrors || {};
       setErrors(serverErrors);
       setMessage(error.message || 'Không thể kết nối. Vui lòng thử lại sau.');
@@ -102,6 +116,13 @@ export function AuthPage({ authMode = 'login', initialRole = 'student', setAuthM
     </Field>;
   }
   const switchMode = () => { if (!busy) setAuthMode(signup ? 'login' : 'signup'); };
+  async function resendCode() {
+    if (busy || !verificationEmail) return;
+    setBusy(true); setMessage('');
+    try { const result = await apiService.resendVerification({ email: verificationEmail }); setMessage(result.message); }
+    catch (error) { setMessage(error.message); }
+    finally { setBusy(false); }
+  }
 
   return <section className="pf-auth" aria-label={signup ? 'Đăng ký tài khoản' : 'Đăng nhập'}>
     <aside className="pf-auth-story">
@@ -131,7 +152,7 @@ export function AuthPage({ authMode = 'login', initialRole = 'student', setAuthM
         {signup && <div className="pf-auth-progress" aria-label={`Bước ${step} trên 2`}><span className="is-active"><i>{step === 2 ? <Check size={12} /> : '1'}</i>Tài khoản</span><b /><span className={step === 2 ? 'is-active' : ''}><i>2</i>Hồ sơ {mentor ? 'mentor' : 'sinh viên'}</span></div>}
         <form ref={formRef} onSubmit={submit} noValidate>
           {message && <div className="pf-auth-alert" role="alert" tabIndex={-1}>{message}</div>}
-          <fieldset disabled={busy} className="pf-auth-fields">
+          {verificationEmail ? <section className="pf-auth-fields pf-auth-verification"><p>Nhập mã 6 chữ số đã gửi đến <strong>{verificationEmail}</strong>. Mã có hiệu lực trong 10 phút.</p><label className="pf-auth-field" htmlFor="pf-auth-verification-code">Mã xác thực<input id="pf-auth-verification-code" inputMode="numeric" autoComplete="one-time-code" maxLength={6} value={verificationCode} onChange={event => setVerificationCode(event.target.value.replace(/\D/g, '').slice(0, 6))} /></label><button className="pf-auth-submit" type="submit" disabled={busy || verificationCode.length !== 6}>{busy ? 'Đang xác thực…' : 'Xác thực email'}<ArrowRight size={18} /></button><button type="button" className="pf-auth-back" disabled={busy} onClick={resendCode}>Gửi mã mới</button><button type="button" className="pf-auth-back" disabled={busy} onClick={() => { setVerificationEmail(''); setVerificationCode(''); setMessage(''); }}>Dùng email khác</button></section> : <fieldset disabled={busy} className="pf-auth-fields">
             {signup && step === 1 && <div className="pf-auth-roles" role="group" aria-label="Chọn vai trò">
               {[['student', GraduationCap, 'Sinh viên', 'Học qua dự án thực tế'], ['mentor', BriefcaseBusiness, 'Mentor', 'Chia sẻ kinh nghiệm']].map(([role, Icon, title, subtitle]) => <button key={role} type="button" aria-pressed={values.role === role} className={values.role === role ? 'is-selected' : ''} onClick={() => update('role', role)}><Icon size={23} /><strong>{title}</strong><span>{subtitle}</span>{values.role === role && <Check size={15} className="pf-auth-role-check" />}</button>)}
             </div>}
@@ -154,8 +175,8 @@ export function AuthPage({ authMode = 'login', initialRole = 'student', setAuthM
             </>}
             <button type="submit" className="pf-auth-submit">{busy ? <><LoaderCircle size={19} className="pf-auth-spinner" />{signup ? 'Đang tạo tài khoản…' : 'Đang đăng nhập…'}</> : <>{signup ? step === 1 ? 'Tiếp tục' : `Tạo tài khoản ${mentor ? 'mentor' : 'sinh viên'}` : 'Đăng nhập'}<ArrowRight size={18} /></>}</button>
             {signup && step === 2 && <button type="button" className="pf-auth-back" onClick={() => { setStep(1); setMessage(''); }}><ArrowLeft size={15} /> Quay lại thông tin tài khoản</button>}
-          </fieldset>
-          <p className="pf-auth-footnote">{signup ? 'Bắt đầu với tài khoản miễn phí.' : 'Dành cho sinh viên, mentor và quản trị viên.'}</p>
+          </fieldset>}
+          {!verificationEmail && <p className="pf-auth-footnote">{signup ? 'Bắt đầu với tài khoản miễn phí.' : 'Dành cho sinh viên, mentor và quản trị viên.'}</p>}
         </form>
       </div>
     </div>

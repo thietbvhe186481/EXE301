@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ArrowRight, CheckCircle2, Crown, X } from 'lucide-react';
+import { ArrowRight, CheckCircle2, Crown, ExternalLink, RefreshCw, X } from 'lucide-react';
 import { apiService } from '../services/api';
 
 export function VipUpgradeModal({ isOpen, onClose, plans, initialPlan, currentUser, onPaymentSuccess }) {
@@ -8,6 +8,10 @@ export function VipUpgradeModal({ isOpen, onClose, plans, initialPlan, currentUs
   const [copyNotice, setCopyNotice] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentError, setPaymentError] = useState('');
+  const [checkoutUrl, setCheckoutUrl] = useState('');
+  const [orderId, setOrderId] = useState('');
+  const [paymentCode, setPaymentCode] = useState('');
+  const [verificationEmail, setVerificationEmail] = useState('');
 
   useEffect(() => {
     if (initialPlan) {
@@ -35,7 +39,8 @@ export function VipUpgradeModal({ isOpen, onClose, plans, initialPlan, currentUs
   const bank = import.meta.env.VITE_PAYMENT_BANK || '';
   const account = import.meta.env.VITE_PAYMENT_ACCOUNT || '';
   const accountName = import.meta.env.VITE_PAYMENT_ACCOUNT_NAME || '';
-  const paymentConfigured = Boolean(bank && account && accountName);
+  const payosEnabled = import.meta.env.VITE_PAYMENT_PROVIDER === 'payos';
+  const paymentConfigured = !payosEnabled && Boolean(bank && account && accountName);
   const qrUrl = paymentConfigured ? `https://img.vietqr.io/image/${encodeURIComponent(bank)}-${encodeURIComponent(account)}-compact2.png?amount=${qrPrice}&addInfo=${encodeURIComponent(transferContent)}&accountName=${encodeURIComponent(accountName)}` : '';
 
   const copyToClipboard = (text, label) => {
@@ -44,25 +49,40 @@ export function VipUpgradeModal({ isOpen, onClose, plans, initialPlan, currentUs
     setTimeout(() => setCopyNotice(''), 2500);
   };
 
-  const handleConfirmPaid = async () => {
-    if (isProcessing || !paymentConfigured) return;
+  const createOrder = async (code = '') => {
     setIsProcessing(true);
     setPaymentError('');
     try {
-      // Save order and upgrade subscription in MongoDB
-      await apiService.upgradeSubscription({
+      const result = await apiService.upgradeSubscription({
         userId: currentUser?.user?.id || currentUser?.id || 'demo-student',
         mssv: studentMssv,
         planId: selectedPlan?.id || 'premium-quarter',
         planName: selectedPlan?.name || 'Premium 3 Tháng',
         price: selectedPlan?.price || 199000,
         paymentMethod: 'VietQR MB Bank',
-        transactionCode: transferContent
+        transactionCode: transferContent,
+        paymentCode: code || undefined
       });
+      setOrderId(result.order?.orderId || '');
+      if (result.payment?.checkoutUrl) setCheckoutUrl(result.payment.checkoutUrl);
       setStep('success');
     } catch (err) {
       setPaymentError(err.message || 'Không thể gửi yêu cầu. Vui lòng thử lại.');
     }
+    setIsProcessing(false);
+  };
+  const handleConfirmPaid = async () => {
+    if (isProcessing || (!paymentConfigured && !payosEnabled)) return;
+    setIsProcessing(true);
+    setPaymentError('');
+    try {
+      const result = await apiService.requestPaymentCode({ planId: selectedPlan?.id || 'premium-quarter' });
+      if (result.verificationRequired) {
+        setVerificationEmail(result.email || 'email tài khoản');
+        setPaymentCode('');
+        setStep('verify_payment');
+      } else await createOrder();
+    } catch (err) { setPaymentError(err.message || 'Không thể gửi mã xác nhận thanh toán.'); }
     setIsProcessing(false);
   };
 
@@ -79,6 +99,7 @@ export function VipUpgradeModal({ isOpen, onClose, plans, initialPlan, currentUs
             <h2 style={{ fontSize: '22px', fontWeight: 900, margin: 0, color: 'var(--jr-text-main, #0f172a)' }}>
               {step === 'select_plan' && 'Chọn Gói Đồng Hành Chuẩn Tuyển Dụng'}
               {step === 'payment' && `Thanh toán VietQR - ${selectedPlan?.name}`}
+              {step === 'verify_payment' && 'Xác nhận thanh toán qua email'}
               {step === 'success' && 'Đã gửi yêu cầu xác nhận thanh toán'}
             </h2>
           </div>
@@ -191,15 +212,15 @@ export function VipUpgradeModal({ isOpen, onClose, plans, initialPlan, currentUs
             <div style={{ display: 'grid', gridTemplateColumns: '260px 1fr', gap: '24px', alignItems: 'center' }}>
               <div style={{ textAlign: 'center' }}>
                 <div className="vietqr-image-wrapper" style={{ margin: 0 }}>
-                  {paymentConfigured ? <img src={qrUrl} alt="Mã VietQR Chuyển Khoản" /> : <p>Thanh toán chưa được cấu hình. Vui lòng liên hệ portfolio.exe@gmail.com để được hỗ trợ.</p>}
+                  {paymentConfigured ? <img src={qrUrl} alt="Mã VietQR Chuyển Khoản" /> : payosEnabled ? <p>Liên kết thanh toán được tạo an toàn trên máy chủ sau khi bạn tiếp tục.</p> : <p>Thanh toán chưa được cấu hình. Vui lòng liên hệ quản trị viên.</p>}
                 </div>
                 <span style={{ display: 'block', fontSize: '12px', color: '#64748b', marginTop: '8px' }}>
-                  Mở App Ngân hàng hoặc MoMo để quét mã
+                  {payosEnabled ? 'Liên kết PayOS sẽ hiển thị sau khi xác nhận email.' : 'Mở App Ngân hàng để quét mã.'}
                 </span>
               </div>
 
               <div>
-                <table className="vietqr-details-table" style={{ margin: '0 0 16px' }}>
+                {!payosEnabled && <table className="vietqr-details-table" style={{ margin: '0 0 16px' }}>
                   <tbody>
                     <tr>
                       <td>Ngân hàng thụ hưởng</td>
@@ -248,7 +269,8 @@ export function VipUpgradeModal({ isOpen, onClose, plans, initialPlan, currentUs
                       </td>
                     </tr>
                   </tbody>
-                </table>
+                </table>}
+                {payosEnabled && <p style={{ color: '#475569', lineHeight: 1.6 }}>Sau khi nhập mã được gửi tới email, hệ thống tạo liên kết thanh toán PayOS cho gói <strong>{selectedPlan?.name}</strong> với số tiền <strong>{selectedPlan?.displayPrice}</strong>. Gói chỉ kích hoạt khi PayOS xác nhận giao dịch.</p>}
 
                 {copyNotice && (
                   <div style={{ color: '#059669', fontSize: '13px', fontWeight: 700, marginBottom: '10px' }}>
@@ -263,17 +285,26 @@ export function VipUpgradeModal({ isOpen, onClose, plans, initialPlan, currentUs
                   <button
                     type="button"
                     className="primary-action"
-                    disabled={isProcessing || !paymentConfigured}
+                    disabled={isProcessing || (!paymentConfigured && !payosEnabled)}
                     style={{ flex: 1, background: 'linear-gradient(135deg, #10b981, #059669)', border: 'none', color: '#fff', fontWeight: 800 }}
                     onClick={handleConfirmPaid}
                   >
-                    <CheckCircle2 size={17} /> {isProcessing ? 'Đang lưu vào hệ thống...' : 'Tôi đã chuyển khoản thành công'}
+                    <CheckCircle2 size={17} /> {isProcessing ? 'Đang gửi mã...' : payosEnabled ? 'Gửi mã email để thanh toán' : 'Tôi đã chuyển khoản · gửi mã xác nhận'}
                   </button>
                 </div>
               </div>
             </div>
           </div>
         )}
+
+        {step === 'verify_payment' && <div style={{ maxWidth: 470, margin: '0 auto', padding: '20px 0' }}>
+          <p style={{ color: '#475569', lineHeight: 1.6 }}>Nhập mã 6 số vừa gửi tới <strong>{verificationEmail}</strong> để xác nhận tạo đơn cho gói <strong>{selectedPlan?.name}</strong> ({selectedPlan?.displayPrice}). Mã có hiệu lực trong 10 phút.</p>
+          <label style={{ display: 'block', color: '#0f172a', fontWeight: 700 }}>Mã xác nhận thanh toán
+            <input type="text" inputMode="numeric" autoComplete="one-time-code" maxLength={6} value={paymentCode} onChange={event => setPaymentCode(event.target.value.replace(/\D/g, '').slice(0, 6))} placeholder="000000" style={{ display: 'block', width: '100%', marginTop: 8, padding: 12, border: '1px solid #94a3b8', borderRadius: 8, color: '#0f172a', background: '#fff' }} />
+          </label>
+          <button type="button" className="primary-action" disabled={isProcessing || paymentCode.length !== 6} onClick={() => createOrder(paymentCode)} style={{ width: '100%', marginTop: 18, justifyContent: 'center' }}>{isProcessing ? 'Đang xác nhận...' : 'Xác nhận & tạo đơn thanh toán'}</button>
+          <button type="button" className="ghost-action" disabled={isProcessing} onClick={() => setStep('payment')} style={{ width: '100%', marginTop: 9, justifyContent: 'center' }}>Quay lại thanh toán</button>
+        </div>}
 
         {/* STEP 3: THÀNH CÔNG */}
         {step === 'success' && (
@@ -282,11 +313,13 @@ export function VipUpgradeModal({ isOpen, onClose, plans, initialPlan, currentUs
               <CheckCircle2 size={36} />
             </div>
             <h3 style={{ fontSize: '22px', fontWeight: 900, margin: '0 0 10px', color: '#16a34a' }}>
-              Yêu cầu nâng cấp đang chờ đối soát
+              {checkoutUrl ? 'Đã tạo liên kết thanh toán an toàn' : 'Yêu cầu nâng cấp đang chờ đối soát'}
             </h3>
             <p style={{ color: 'var(--jr-text-sub, #64748b)', fontSize: '14.5px', maxWidth: '480px', margin: '0 auto 24px', lineHeight: 1.5 }}>
-              Gói {selectedPlan?.name} chỉ được kích hoạt sau khi quản trị viên xác nhận giao dịch thực tế. Bạn có thể xem trạng thái đơn trong khu vực bài nộp và tải lại trang sau khi được xác nhận.
+              {checkoutUrl ? `Gói ${selectedPlan?.name} sẽ được kích hoạt tự động sau khi PayOS xác nhận tiền vào. Mã đơn ${orderId}.` : `Gói ${selectedPlan?.name} chỉ được kích hoạt sau khi quản trị viên xác nhận giao dịch thực tế. Mã đơn ${orderId}.`}
             </p>
+            {checkoutUrl && <a href={checkoutUrl} target="_blank" rel="noopener noreferrer" className="jr-btn-gold-action" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, margin: '0 auto 16px' }}>Mở trang thanh toán PayOS <ExternalLink size={16} /></a>}
+            <div><button type="button" className="ghost-action" onClick={async () => { try { const state = await apiService.getWorkflowState(); const order = (state.orders || []).find(item => item.orderId === orderId); if (order?.status === 'completed') { onPaymentSuccess?.(order); onClose(); } else setPaymentError('Chưa nhận được xác nhận thanh toán. Hãy hoàn tất thanh toán rồi kiểm tra lại sau ít phút.'); } catch (error) { setPaymentError(error.message); } }}><RefreshCw size={15} /> Kiểm tra trạng thái thanh toán</button></div>
             <button
               type="button"
               className="jr-btn-gold-action"

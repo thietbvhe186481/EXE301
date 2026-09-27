@@ -28,6 +28,8 @@ export async function fetchWithAuth(url, options = {}) {
     const error = new Error(errorBody.message || 'Không thể xử lý yêu cầu. Vui lòng thử lại.');
     error.fieldErrors = errorBody.fieldErrors || {};
     error.status = response.status;
+    error.verificationRequired = errorBody.verificationRequired === true;
+    error.email = errorBody.email || '';
     throw error;
   }
   return response.json();
@@ -47,6 +49,12 @@ export const apiService = {
       method: 'POST',
       body: JSON.stringify(data)
     });
+  },
+  async verifyEmail(data) {
+    return fetchWithAuth('/api/auth/verify-email', { method: 'POST', body: JSON.stringify(data) });
+  },
+  async resendVerification(data) {
+    return fetchWithAuth('/api/auth/resend-verification', { method: 'POST', body: JSON.stringify(data) });
   },
   async getMe() {
     return fetchWithAuth('/api/auth/me');
@@ -74,6 +82,9 @@ export const apiService = {
   },
 
   // VIP Upgrade Orders (MongoDB)
+  async requestPaymentCode(data) {
+    return fetchWithAuth('/api/workflow/payments/request-code', { method: 'POST', body: JSON.stringify(data) });
+  },
   async upgradeSubscription(orderData) {
     return fetchWithAuth('/api/workflow/orders', {
       method: 'POST',
