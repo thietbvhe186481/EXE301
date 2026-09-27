@@ -5,6 +5,7 @@ import { aiConfigured, generateAiAdvice } from './ai-review.js';
 import { CHALLENGES, RESOURCES, REVIEW_FEE, scoreReview, readinessCheck, ratingBonus, qualityFromRatings } from '../shared/catalog.js';
 import { createPayosLink, payosConfigured, verifyPayosWebhook } from './payos.js';
 import { deliverVerificationEmail } from './auth.js';
+import { MENTOR_AGREEMENT_VERSION } from '../shared/mentorAgreement.js';
 
 const url = z.string().trim().max(500).refine(value => {
   try { const parsed = new URL(value); return ['https:', 'http:'].includes(parsed.protocol) && !parsed.username && !parsed.password; } catch { return false; }
@@ -22,12 +23,14 @@ export const mentorSummary = (account, profile, submissions) => {
   const quality = qualityFromRatings(jobs.filter(item => item.rating).map(item => item.rating.stars));
   const capacity = profile?.capacity || 5;
   const queueCount = jobs.filter(item => ['queued', 'in_review', 'needs_revision'].includes(item.status)).length;
+  const agreementAccepted = account.mentorAgreementVersion === MENTOR_AGREEMENT_VERSION && Boolean(account.mentorAgreementAcceptedAt);
   return { id: account.id, name: account.name, title: account.title || '', expertise: account.expertise || [],
     challengeIds: profile?.challengeIds || [], capacity, queueCount, overloaded: queueCount >= capacity,
     estimatedDays: Math.max(2, Math.ceil((queueCount + 1) / capacity) * 2), ...quality,
     available: profile?.available ?? true,
     canContinue: account.status === 'active' && profile?.application?.status === 'approved',
-    eligible: account.status === 'active' && profile?.application?.status === 'approved' && profile.available !== false && (quality.qualityStatus !== 'excluded' || profile.qualityOverride === true),
+    eligible: account.status === 'active' && profile?.application?.status === 'approved' && agreementAccepted && profile.available !== false && (quality.qualityStatus !== 'excluded' || profile.qualityOverride === true),
+    agreementAccepted,
     accountStatus: account.status, applicationStatus: profile?.application?.status || 'pending', qualityOverride: profile?.qualityOverride === true
   };
 };
@@ -133,10 +136,20 @@ export function createWorkflowRouter({ UserProfile, MentorAccount, AdminAccount,
     const approved = mentor?.eligible;
     const talents = role === 'mentor' && approved ? await ReviewSubmission.find({ shareTalent: true, status: 'completed', mode: 'human', 'review.score': { $gte: 85 } }).lean() : [];
     res.json({ catalog: CHALLENGES, resources: RESOURCES, mentors, submissions, aiEnabled: aiConfigured(),
+      mentorAgreement: role === 'mentor' ? { accepted: req.account.mentorAgreementVersion === MENTOR_AGREEMENT_VERSION && Boolean(req.account.mentorAgreementAcceptedAt), version: MENTOR_AGREEMENT_VERSION, acceptedAt: req.account.mentorAgreementAcceptedAt || null } : null,
       profile, paid: role === 'student' && hasPaidAccess(req.account), orders,
       applications: profiles.map(item => ({ ...item, name: mentors.find(mentor => mentor.id === item.mentorId)?.name || item.mentorId })),
       earnings: earningsFor(submissions), complaints,
       talents: talents.map(item => ({ id: item.id, studentName: item.studentName, challengeId: item.challengeId, score: item.review.score, links: item.links, notes: item.notes })) });
+  }));
+
+  router.post('/mentor/agreement', run(async (req, res) => {
+    requireRole(req, 'mentor');
+    z.object({ accepted: z.literal(true) }).parse(req.body);
+    if (req.account.mentorAgreementVersion === MENTOR_AGREEMENT_VERSION && req.account.mentorAgreementAcceptedAt) return res.json({ accepted: true, version: MENTOR_AGREEMENT_VERSION, acceptedAt: req.account.mentorAgreementAcceptedAt });
+    const acceptedAt = new Date();
+    await MentorAccount.updateOne({ id: req.account.id, status: 'active' }, { $set: { mentorAgreementVersion: MENTOR_AGREEMENT_VERSION, mentorAgreementAcceptedAt: acceptedAt }, $push: { mentorAgreementHistory: { version: MENTOR_AGREEMENT_VERSION, acceptedAt } } });
+    res.json({ accepted: true, version: MENTOR_AGREEMENT_VERSION, acceptedAt });
   }));
 
   router.post('/complaints', run(async (req, res) => {

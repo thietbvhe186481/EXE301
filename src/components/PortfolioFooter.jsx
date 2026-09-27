@@ -1,7 +1,7 @@
 import React from 'react';
 import { ArrowRight, FileText, Rocket } from 'lucide-react';
 
-export function PortfolioFooter({ go, onOpenUpgrade, onOpenFooterModal }) {
+export function PortfolioFooter({ go, onOpenUpgrade, onOpenFooterModal, onRegisterMentor }) {
   return (
     <footer className="jr-main-footer">
       <div className="jr-footer-container">
@@ -16,12 +16,12 @@ export function PortfolioFooter({ go, onOpenUpgrade, onOpenFooterModal }) {
           </p>
           <div className="jr-cta-actions-v2">
             <button className="jr-btn-gold-action" onClick={() => go('roadmap')}>
-              <span>Bắt đầu tạo Portfolio ngay</span>
+              <span>Khám phá lộ trình</span>
               <ArrowRight size={17} />
             </button>
             <button className="jr-btn-glass-action" onClick={onOpenUpgrade}>
               <FileText size={17} />
-              <span>Xem các gói đồng hành VIP</span>
+              <span>Xem gói Premium</span>
             </button>
           </div>
         </div>
@@ -87,9 +87,10 @@ export function PortfolioFooter({ go, onOpenUpgrade, onOpenFooterModal }) {
             <h4>Mentor Đồng Hành</h4>
             <ul className="jr-footer-links-list">
               <li><button type="button" className="jr-footer-link-btn highlight" onClick={() => onOpenFooterModal('mentor-rubric')}>Tiêu chuẩn Mentor Review</button></li>
+              <li><button type="button" className="jr-footer-link-btn" onClick={() => onOpenFooterModal('mentor-agreement')}>Thỏa thuận cộng tác Mentor</button></li>
               <li><button type="button" className="jr-footer-link-btn" onClick={() => onOpenFooterModal('mentor-rubric')}>Quy chế thù lao & Quỹ thưởng</button></li>
               <li><button type="button" className="jr-footer-link-btn" onClick={() => onOpenFooterModal('mentor-rubric')}>Đánh giá chất lượng 2 chiều</button></li>
-              <li><button type="button" className="jr-footer-link-btn" onClick={() => onOpenFooterModal('contact')}>Đăng ký làm Mentor</button></li>
+              <li><button type="button" className="jr-footer-link-btn" onClick={onRegisterMentor}>Đăng ký làm Mentor</button></li>
               <li><button type="button" className="jr-footer-link-btn" onClick={() => onOpenFooterModal('employer')}>Hợp tác Doanh nghiệp tuyển dụng</button></li>
             </ul>
           </div>

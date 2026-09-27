@@ -2227,7 +2227,7 @@ select {
   }
 }
 
-@media (max-width: 760px) {
+@media (max-width: 900px) {
   .topbar {
     height: 60px;
     min-height: 60px;
@@ -7617,7 +7617,7 @@ body:has(.career-page) .career-page {
   overflow: visible !important;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 760px) {
   .career-page > .section-heading,
   .career-page .career-step-progress {
     grid-template-columns: 1fr !important;
@@ -10468,7 +10468,7 @@ body:has(.feedback-dashboard-page) main {
   .hub-primary-nav .flow-pill { padding-inline: 8px !important; font-size: 12px !important; }
   .hub-topbar-actions .hub-signup-action { display: none; }
 }
-@media (max-width: 760px) {
+@media (max-width: 900px) {
   .hub-topbar { min-height: 62px !important; height: auto !important; padding: 8px 12px !important; flex-wrap: wrap !important; }
   .hub-primary-nav { order: 3; width: 100%; flex: 1 0 100% !important; justify-content: flex-start !important; overflow: visible !important; }
   .hub-primary-nav > .flow-pill:nth-child(n+3) { display: none !important; }
@@ -10541,3 +10541,59 @@ body:has(.app-shell) { overflow: visible !important; }
 .rw-admin-processed .rw-application-suspended { background: #fff0ef; color: #9a332e; }
 .rw-decision-note { padding: 11px 13px; border-left: 3px solid #8aa9c6; background: #f2f6f9; }
 @media (max-width: 600px) { .rw-challenge-prep, .rw-evidence-checks { grid-template-columns: 1fr; } .rw-definition-done { padding: 16px; } .rw-admin-title { align-items: flex-start; flex-direction: column; } .rw-result-heading { align-items: flex-start; } }
+
+/* Student-facing home: balanced headings, readable benefits and clear actions. */
+.jr-home-wrapper .jr-hero-title { max-width: 1100px; text-wrap: balance; }
+.jr-home-wrapper .jr-hero-title > span { display: block; text-wrap: balance; }
+.jr-home-wrapper .jr-hero-subtitle { max-width: 760px; line-height: 1.7; }
+.jr-home-wrapper .jr-hero-actions { gap: 12px; }
+.jr-home-wrapper .jr-btn-primary,
+.jr-home-wrapper .jr-btn-secondary { justify-content: center; min-height: 50px; border-radius: 13px; }
+.jr-home-wrapper .jr-btn-primary { background: #1769d2; border: 1px solid #1769d2; color: #fff; box-shadow: 0 8px 22px rgba(23, 105, 210, .2); }
+.jr-home-wrapper .jr-btn-primary:hover { background: #1059bd; border-color: #1059bd; }
+.jr-home-wrapper .jr-btn-secondary { border: 1px solid #93bbea; background: #fff; color: #1553a3; }
+.jr-home-wrapper .jr-btn-secondary:hover { background: #eaf4ff; border-color: #1769d2; }
+.jr-home-wrapper > .content-page { display: block; height: auto !important; min-height: 0 !important; max-height: none; overflow: visible; }
+.jr-home-wrapper > .content-page:has(.jr-section-title-wrap) { padding-top: clamp(46px, 5vw, 68px); padding-bottom: clamp(40px, 4vw, 60px); }
+.jr-home-wrapper .jr-section-title-wrap { max-width: 880px; margin: 0 auto 34px; }
+.jr-home-wrapper .jr-section-title { line-height: 1.2; text-wrap: balance; }
+.jr-home-wrapper .jr-section-desc { max-width: 700px; line-height: 1.65; text-wrap: balance; }
+.jr-home-wrapper .jr-process-grid,
+.jr-home-wrapper .jr-features-grid { margin-bottom: 0; }
+.jr-home-wrapper .jr-process-card,
+.jr-home-wrapper .jr-feature-card { min-width: 0; }
+.jr-home-wrapper .jr-feature-card h3 { line-height: 1.35; text-wrap: balance; }
+.jr-home-wrapper .jr-feature-card p,
+.jr-home-wrapper .jr-process-card p { font-weight: 400; line-height: 1.65; }
+
+/* Profile and career-map fixes from the annotated feedback. */
+.portfolio-page .profile-skill-wide .cv-section { padding: clamp(18px, 2.5vw, 28px); }
+.portfolio-page .profile-skill-wide .progress-line { grid-template-columns: minmax(94px, 132px) minmax(0, 1fr); gap: 16px; margin-top: 15px; }
+.portfolio-page .profile-skill-wide .progress-line b { height: 11px; background: #e5edf4; }
+.portfolio-page .profile-skill-wide .cv-skill-tags { margin-top: 24px; }
+.featured-project-list .project-score-pill { width: 70px; min-width: 70px; height: 70px; padding: 5px; text-align: center; }
+.featured-project-list .project-score-pill strong { font-size: clamp(14px, 1.6vw, 20px); line-height: 1.05; overflow-wrap: anywhere; }
+.featured-project-list .project-score-pill span { font-size: 11px; font-weight: 650; }
+.featured-project-list .featured-project-body p { font-weight: 400; line-height: 1.55; }
+.career-page .step-card-grid button small { font-weight: 400 !important; line-height: 1.5; }
+.career-page .major-switcher { width: fit-content; gap: 4px; padding: 5px; border-radius: 12px; }
+.career-page .major-switcher button { min-width: 60px; min-height: 40px; padding-inline: 14px; border-radius: 8px; }
+.career-page .major-switcher button.active,
+.career-page .interactive-tab-btn.active { background: #1769d2 !important; color: #fff !important; box-shadow: 0 4px 13px rgba(23, 105, 210, .18) !important; }
+.career-page .interactive-tab-btn { border-radius: 9px; }
+.career-page :is(.major-switcher button, .interactive-tab-btn):focus-visible,
+.jr-home-wrapper :is(.jr-btn-primary, .jr-btn-secondary, .jr-step-link-btn):focus-visible { outline: 3px solid #1769d2; outline-offset: 3px; }
+
+@media (max-width: 600px) {
+  .jr-home-wrapper .jr-hero { padding-top: 42px; }
+  .jr-home-wrapper .jr-hero-badge { max-width: 100%; font-size: 10px; line-height: 1.45; }
+  .jr-home-wrapper .jr-hero-actions { align-items: stretch; flex-direction: column; }
+  .jr-home-wrapper .jr-btn-primary,
+  .jr-home-wrapper .jr-btn-secondary { width: 100%; }
+  .jr-home-wrapper .jr-section-title-wrap { margin-bottom: 28px; }
+  .portfolio-page .profile-skill-wide .progress-line { grid-template-columns: minmax(76px, 104px) minmax(0, 1fr); gap: 10px; }
+  .career-page .major-switcher { max-width: 100%; }
+}
+.mentor-agreement-content{font-size:14px;line-height:1.7;color:#334155}.mentor-agreement-content section{padding:14px 0;border-bottom:1px solid #e2e8f0}.mentor-agreement-content section:last-child{border-bottom:0}.mentor-agreement-content h4{font-size:16px;color:#0f2742;margin:0 0 8px}.mentor-agreement-content p{margin:0 0 10px}.mentor-agreement-content p:last-child{margin-bottom:0}
+.jr-main-footer .jr-cta-banner-v2 .jr-cta-desc-v2{color:#e0f2fe !important}.jr-main-footer .jr-cta-banner-v2 .jr-btn-glass-action{color:#fff !important}
+.jr-main-footer .jr-cta-title-v2 .gold-text{color:#dbeafe !important}.jr-main-footer .jr-cta-banner-v2 .jr-btn-gold-action{background:#fff !important;color:#14539b !important;box-shadow:0 7px 20px rgba(6,43,94,.18)}.jr-main-footer .jr-cta-banner-v2 .jr-btn-gold-action:hover{background:#eff6ff !important}

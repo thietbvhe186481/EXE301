@@ -13,7 +13,7 @@ function Link({ url, children }) { return safeUrl(url) ? <a href={url} target="_
 function Empty({ children }) { return <div className="rw-empty"><BookOpen size={28} /><p>{children}</p></div>; }
 function Field({ label, children, hint }) { return <label className="rw-field"><span>{label}</span>{children}{hint && <small>{hint}</small>}</label>; }
 
-export default function ReviewWorkspace({ currentUser, go, initialTab = 'catalog', initialChallengeId }) {
+export default function ReviewWorkspace({ currentUser, go, onOpenPolicy, initialTab = 'catalog', initialChallengeId }) {
   const role = currentUser?.type || 'guest';
   const mentor = role === 'mentor', admin = role === 'admin';
   const tabs = admin ? [['applications', 'Duyệt mentor'], ['payments', 'Đối soát & chi trả'], ['quality', 'Chất lượng'], ['complaints', 'Khiếu nại']] : mentor ? [['queue', 'Bài cần review'], ['scope', 'Hồ sơ & chuyên môn'], ['earnings', 'Thu nhập'], ['talent', 'Sinh viên nổi trội'], ['support', 'Hỗ trợ']] : [['catalog', 'Khám phá thử thách'], ['submissions', 'Bài của tôi'], ['resources', 'Học liệu'], ['support', 'Hỗ trợ']];
@@ -26,6 +26,7 @@ export default function ReviewWorkspace({ currentUser, go, initialTab = 'catalog
   const [scope, setScope] = useState({ challengeIds: [], capacity: 5, available: true });
   const [application, setApplication] = useState({ method: 'cv', profileUrl: '', notes: '' });
   const [opened, setOpened] = useState(null);
+  const [agreementConsent, setAgreementConsent] = useState(false);
   useEffect(() => { setTab(normalizeTab(initialTab)); setSelected(null); }, [initialTab, role]);
   useEffect(() => { if (initialChallengeId && !mentor && !admin) { const match = CHALLENGES.find(c => c.id === initialChallengeId); if (match) { setSelected(match); setTab('catalog'); setEditingId(null); setForm(emptyForm); } } }, [initialChallengeId, role]);
   async function refresh() {
@@ -75,6 +76,7 @@ export default function ReviewWorkspace({ currentUser, go, initialTab = 'catalog
   const decidedApplications = (data.applications || []).filter(p => ['approved', 'rejected', 'suspended'].includes((p.application || p).status));
   return <main className="rw-workspace">
     <header className="rw-header"><div><p className="rw-eyebrow">PORTFOLIO FPT HUB / THỰC HÀNH & PHẢN HỒI</p><h1>{admin ? 'Vận hành có kiểm chứng.' : mentor ? 'Kinh nghiệm của bạn. Bước tiến của sinh viên.' : 'Làm một bài thật. Tiến thêm một bước.'}</h1><p>{admin ? 'Duyệt năng lực mentor, theo dõi đánh giá và xác nhận giao dịch thực tế.' : mentor ? 'Chọn đúng chuyên môn, chủ động khối lượng và nhận phí cho mỗi bài hoàn thành.' : 'Chọn thử thách phù hợp, nộp đường dẫn sản phẩm và nhận hướng dẫn cải thiện.'}</p></div><button className="rw-secondary" onClick={refresh} disabled={loading || busy}><RefreshCw size={16} />{loading ? 'Đang tải…' : 'Làm mới'}</button></header>
+    {mentor && online && data.mentorAgreement?.accepted === false && <section className="rw-panel rw-agreement-banner" aria-labelledby="rw-agreement-heading"><h2 id="rw-agreement-heading">Cần chấp thuận thỏa thuận Mentor</h2><p>Đọc quyền lợi, trách nhiệm và cách đối soát thù lao trước khi nhận bài mới. Bài đã được phân công vẫn có thể tiếp tục xử lý.</p><button type="button" className="rw-text-button" onClick={() => onOpenPolicy?.('mentor-agreement')}>Xem thỏa thuận cộng tác · phiên bản {data.mentorAgreement.version}</button><label className="rw-check"><input type="checkbox" checked={agreementConsent} onChange={event => setAgreementConsent(event.target.checked)} />Tôi đã đọc và chấp thuận phiên bản thỏa thuận này.</label><button type="button" className="rw-primary" disabled={busy || !agreementConsent} onClick={async () => { if (await mutate('/mentor/agreement', { accepted: true }, 'POST', 'Đã ghi nhận chấp thuận thỏa thuận Mentor.')) setAgreementConsent(false); }}>Chấp thuận và tiếp tục</button></section>}
     {!mentor && !admin && <ol className="rw-steps"><li><b>01</b> Chọn thử thách</li><li><b>02</b> Nộp minh chứng</li><li><b>03</b> Nhận phản hồi</li></ol>}
     <nav className="rw-tabs" aria-label="Không gian thực hành">{tabs.map(([key, label]) => <button key={key} className={tab === key ? 'active' : ''} onClick={() => { setTab(key); setSelected(null); }}>{label}</button>)}</nav>
     {error && <div className="rw-alert rw-error" role="alert">{error}</div>}

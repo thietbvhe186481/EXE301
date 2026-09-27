@@ -5,6 +5,7 @@ import { createWorkflowRouter, mentorSummary, hasPaidAccess, nextPremiumExpiry }
 import { CHALLENGES, scoreReview, qualityFromRatings, readinessCheck } from '../shared/catalog.js';
 import { generateAiAdvice } from './ai-review.js';
 import { createHmac } from 'node:crypto';
+import { MENTOR_AGREEMENT_VERSION } from '../shared/mentorAgreement.js';
 
 const get = (obj, path) => path.split('.').reduce((value, part) => value?.[part], obj);
 const set = (obj, path, value) => { const parts = path.split('.'); const last = parts.pop(); let current = obj; for (const part of parts) current = current[part] ??= {}; current[last] = value; };
@@ -48,7 +49,7 @@ const actors = { student: { id: 'student', role: 'student' }, free: { id: 'free'
 before(async () => {
   for (const id of ['student', 'free', 'stranger']) await models.UserProfile.create({ id, name: id, status: 'active', isPremium: id !== 'free', subscriptionExpiresAt: new Date(Date.now() + 86400000) });
   for (const id of ['mentor', 'other']) {
-    await models.MentorAccount.create({ id, name: id, status: 'active', expertise: ['React'] });
+    await models.MentorAccount.create({ id, name: id, status: 'active', expertise: ['React'], mentorAgreementVersion: MENTOR_AGREEMENT_VERSION, mentorAgreementAcceptedAt: new Date() });
     await models.ReviewerProfile.create({ mentorId: id, capacity: 1, available: true, challengeIds: CHALLENGES.map(item => item.id), application: { status: 'approved' } });
   }
   await models.AdminAccount.create({ id: 'admin', status: 'active' });
@@ -77,6 +78,14 @@ test('public catalog has real sources and rubric weights total 100; private stat
     assert.ok(item.scenario?.length > item.summary.length && item.reviewQuestion?.length > 30);
   }
   assert.equal((await request('/state')).status, 401);
+});
+test('mentor needs current agreement before accepting new reviews but can finish assigned work', () => {
+  const profile = { available: true, application: { status: 'approved' } };
+  const legacy = mentorSummary({ id: 'legacy', status: 'active', mentorAgreementVersion: 'older' }, profile, []);
+  assert.equal(legacy.eligible, false);
+  assert.equal(legacy.canContinue, true);
+  const current = mentorSummary({ id: 'current', status: 'active', mentorAgreementVersion: MENTOR_AGREEMENT_VERSION, mentorAgreementAcceptedAt: new Date() }, profile, []);
+  assert.equal(current.eligible, true);
 });
 test('free student cannot submit premium challenges or human reviews', async () => {
   assert.equal((await request('/submissions', 'free', payload())).status, 403);
@@ -268,4 +277,21 @@ test('a payment requires a fresh emailed code for the selected plan', async () =
     await new Promise(resolve => listener.close(resolve));
     if (prior === undefined) delete process.env.EMAIL_VERIFICATION_REQUIRED; else process.env.EMAIL_VERIFICATION_REQUIRED = prior;
   }
+});
+
+test('existing mentor explicitly accepts a new agreement once before receiving new work', async () => {
+  const account = models.MentorAccount.rows.find(item => item.id === 'mentor');
+  account.mentorAgreementVersion = 'old-version';
+  account.mentorAgreementAcceptedAt = new Date(0);
+  const beforeState = await request('/state', 'mentor');
+  assert.equal(beforeState.data.mentorAgreement.accepted, false);
+  assert.equal(beforeState.data.mentors.find(item => item.id === 'mentor').eligible, false);
+  assert.equal((await request('/mentor/agreement', 'mentor', { accepted: false })).status, 422);
+  const accepted = await request('/mentor/agreement', 'mentor', { accepted: true });
+  assert.equal(accepted.status, 200);
+  assert.equal(accepted.data.version, MENTOR_AGREEMENT_VERSION);
+  assert.equal((await request('/state', 'mentor')).data.mentorAgreement.accepted, true);
+  assert.equal(account.mentorAgreementHistory.length, 1);
+  assert.equal((await request('/mentor/agreement', 'mentor', { accepted: true })).status, 200);
+  assert.equal(account.mentorAgreementHistory.length, 1);
 });

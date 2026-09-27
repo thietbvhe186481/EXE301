@@ -1822,7 +1822,7 @@ function App() {
       <main>
         {page === 'auth' && !sessionChecked && <p className="status-banner" role="status">Đang kiểm tra phiên đăng nhập…</p>}
         {flowNotice && <div className="flow-notice status-banner warning"><ShieldCheck size={17} /> {flowNotice}</div>}
-        {page === 'home' && <HomePage go={(id) => { const role = currentUser?.type ?? currentUser?.user?.role; go(['hub', 'portfolio'].includes(id) && role === 'mentor' ? 'mentor' : ['hub', 'portfolio'].includes(id) && role === 'admin' ? 'admin' : id); }} onOpenUpgrade={() => currentUser ? setIsVipModalOpen(true) : go('premium')} onOpenFooterModal={(key) => key === 'about' ? go('about') : setFooterModalData(getFooterModalContent(key))} />}
+        {page === 'home' && <HomePage go={(id) => { const role = currentUser?.type ?? currentUser?.user?.role; go(['hub', 'portfolio'].includes(id) && role === 'mentor' ? 'mentor' : ['hub', 'portfolio'].includes(id) && role === 'admin' ? 'admin' : id); }} onOpenUpgrade={() => currentUser ? setIsVipModalOpen(true) : go('premium')} onOpenFooterModal={(key) => key === 'about' ? go('about') : setFooterModalData(getFooterModalContent(key))} onRegisterMentor={() => { setSignupRole('mentor'); setAuthMode('signup'); go('auth'); }} />}
         {page === 'auth' && sessionChecked && (
           <AuthPage
             authMode={authMode}
@@ -1833,7 +1833,7 @@ function App() {
             go={go}
           />
         )}
-        {['hub', 'join', 'submit', 'feedback', 'submissionHistory', 'mentor'].includes(page) && <Suspense fallback={<p className="status-banner" role="status">Đang mở không gian thực hành…</p>}><ReviewWorkspace key={currentUser?.user?.id ?? 'guest'} currentUser={currentUser} go={go} initialTab={['feedback', 'submissionHistory'].includes(page) ? 'submissions' : page === 'mentor' ? 'queue' : 'catalog'} initialChallengeId={['join', 'submit'].includes(page) ? selectedChallengeId : undefined} /></Suspense>}
+        {['hub', 'join', 'submit', 'feedback', 'submissionHistory', 'mentor'].includes(page) && <Suspense fallback={<p className="status-banner" role="status">Đang mở không gian thực hành…</p>}><ReviewWorkspace key={currentUser?.user?.id ?? 'guest'} currentUser={currentUser} go={go} onOpenPolicy={(key) => setFooterModalData(getFooterModalContent(key))} initialTab={['feedback', 'submissionHistory'].includes(page) ? 'submissions' : page === 'mentor' ? 'queue' : 'catalog'} initialChallengeId={['join', 'submit'].includes(page) ? selectedChallengeId : undefined} /></Suspense>}
         {page === 'learning' && <LearningPage go={go} />}
         {page === 'roadmap' && (
           <CareerMapPage
@@ -1896,7 +1896,7 @@ function App() {
             onOpenFooterModal={(key) => setFooterModalData(getFooterModalContent(key))}
           />
         )}
-        {page === 'admin' && <Suspense fallback={<p className="status-banner" role="status">Đang mở bảng quản trị…</p>}><ReviewWorkspace currentUser={currentUser} go={go} initialTab='applications' /></Suspense>}
+        {page === 'admin' && <Suspense fallback={<p className="status-banner" role="status">Đang mở bảng quản trị…</p>}><ReviewWorkspace currentUser={currentUser} go={go} onOpenPolicy={(key) => setFooterModalData(getFooterModalContent(key))} initialTab='applications' /></Suspense>}
         {page === 'admin' && <AdminPage apiStatus={apiStatus} data={managementData} notice={adminNotice} currentUser={currentUser} refreshData={refreshData} setAdminNotice={setAdminNotice} createFeedback={createFeedback} />}
       </main>
     </div>
@@ -2078,17 +2078,16 @@ function CareerMapPage({ majors, currentMajor, changeMajor, columns, levels, sel
                   <MoveUp size={15} />
                   Chọn chức vụ khác
                 </button>
-                <button className="primary-action compact" disabled={!canBuildPath} onClick={() => addToPath(selectedRole.id)}>
-                  <Plus size={15} />
-                  {canBuildPath ? 'Lưu vị trí quan tâm' : 'Chỉ xem tham khảo'}
-                </button>
+                {canBuildPath && <button className="primary-action compact" onClick={() => addToPath(selectedRole.id)}>
+                  <Plus size={15} /> Lưu vị trí quan tâm
+                </button>}
               </div>
             </div>
           </div>
           {!canBuildPath && (
             <div className="status-banner muted">
               <ShieldCheck size={17} />
-              Chỉ xem tham khảo. Bạn chỉ có thể lập lộ trình cho ngành đã chọn khi đăng nhập.
+              Đăng nhập bằng tài khoản sinh viên và chọn ngành đã đăng ký để lưu vị trí này. Bạn vẫn có thể xem yêu cầu và bài tập gợi ý.
             </div>
           )}
 

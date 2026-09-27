@@ -4,6 +4,7 @@ import express from 'express';
 import session from 'express-session';
 import bcrypt from 'bcryptjs';
 import { createAuthRouter } from './auth.js';
+import { MENTOR_AGREEMENT_VERSION } from '../shared/mentorAgreement.js';
 
 const makeModel = () => {
   const records = [];
@@ -45,7 +46,7 @@ const student = (email = 'student@example.test') => ({
   acceptedTerms: true, selectedMajorKey: 'design', school: 'Trường kiểm thử'
 });
 const mentor = (email = 'mentor@example.test') => ({
-  ...student(email), role: 'mentor', title: 'Product Designer', company: 'Studio kiểm thử',
+  ...student(email), role: 'mentor', acceptedMentorAgreement: true, title: 'Product Designer', company: 'Studio kiểm thử',
   expertise: ['UX Design'], yearsExperience: 5, profileUrl: 'https://example.test/portfolio'
 });
 
@@ -72,6 +73,8 @@ test('mentor registration creates professional profile in mentor collection and 
   assert.equal(result.data.user.company, 'Studio kiểm thử');
   assert.deepEqual(result.data.user.expertise, ['UX Design']);
   assert.equal(result.data.user.ratingAvg, 0);
+  assert.equal(result.data.user.mentorAgreementVersion, MENTOR_AGREEMENT_VERSION);
+  assert.ok(result.data.user.mentorAgreementAcceptedAt);
   assert.equal((await request('/me', undefined, result.cookie)).data.type, 'mentor');
   const login = await request('/login', { email: 'MENTOR@example.test', password: 'Testing123', rememberMe: true });
   assert.equal(login.data.type, 'mentor');
@@ -86,6 +89,9 @@ test('rejects duplicate email across roles including concurrent registrations', 
   assert.deepEqual(results.map(r => r.status).sort(), [201, 409]);
 });
 test('validates consent, passwords, role, email and required role-specific fields', async () => {
+  const noAgreement = await request('/register', { ...mentor('missing-agreement@example.test'), acceptedMentorAgreement: false });
+  assert.equal(noAgreement.status, 400);
+  assert.ok(noAgreement.data.fieldErrors.acceptedMentorAgreement);
   for (const [patch, field] of [
     [{ acceptedTerms: false }, 'acceptedTerms'], [{ confirmPassword: 'different' }, 'confirmPassword'],
     [{ role: 'admin' }, 'role'], [{ email: 'invalid' }, 'email'], [{ school: '' }, 'school'],

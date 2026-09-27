@@ -1,8 +1,15 @@
 import React, { useState } from 'react';
 import { Crown, Flame, Rocket, ShieldCheck, X } from 'lucide-react';
 import { apiService } from '../services/api';
+import { MENTOR_AGREEMENT, MENTOR_AGREEMENT_VERSION } from '../../shared/mentorAgreement.js';
 
 export function getFooterModalContent(key) {
+  if (key === 'mentor-agreement') return {
+    category: 'Thỏa thuận Mentor',
+    title: 'Thỏa thuận cộng tác Mentor',
+    subtitle: `Quyền lợi, trách nhiệm và cách đối soát · Phiên bản ${MENTOR_AGREEMENT_VERSION}`,
+    body: <div className="mentor-agreement-content">{MENTOR_AGREEMENT.map(section => <section key={section.title}><h4>{section.title}</h4>{section.paragraphs.map(paragraph => <p key={paragraph}>{paragraph}</p>)}</section>)}</div>
+  };
   if (key === 'about') {
     return {
       category: 'Về chúng tôi',
@@ -170,25 +177,24 @@ export function FooterDetailModal({ isOpen, onClose, data, go, onOpenUpgrade }) 
       setContactEmail('');
       setContactMsg('');
     } catch {
-      // Local fallback
-      setSubmitStatus('success');
+      setSubmitStatus('error');
     }
   };
 
   return (
     <div className="vietqr-modal-overlay" onClick={onClose}>
-      <div className="footer-info-modal-card animate-in" onClick={(e) => e.stopPropagation()}>
+      <div className="footer-info-modal-card animate-in" role="dialog" aria-modal="true" aria-labelledby="footer-info-title" onClick={(e) => e.stopPropagation()} onKeyDown={(e) => { if (e.key === 'Escape') onClose(); }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
           <div>
             <span className="footer-info-category-pill">{data.category}</span>
-            <h2 style={{ fontSize: '21px', fontWeight: 900, margin: '4px 0 6px', color: 'var(--jr-text-main, #0f172a)' }}>
+            <h2 id="footer-info-title" style={{ fontSize: '21px', fontWeight: 900, margin: '4px 0 6px', color: 'var(--jr-text-main, #0f172a)' }}>
               {data.title}
             </h2>
             <p style={{ color: '#64748b', fontSize: '13.5px', margin: 0 }}>
               {data.subtitle}
             </p>
           </div>
-          <button type="button" onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748b', padding: '6px' }}>
+          <button type="button" aria-label="Đóng cửa sổ" onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748b', padding: '6px' }}>
             <X size={22} />
           </button>
         </div>
@@ -234,6 +240,7 @@ export function FooterDetailModal({ isOpen, onClose, data, go, onOpenUpgrade }) 
                     ✓ Cảm ơn bạn! Yêu cầu hỗ trợ đã được ghi nhận vào hệ thống cơ sở dữ liệu.
                   </div>
                 )}
+                {submitStatus === 'error' && <div role="alert" style={{ background: '#fef2f2', color: '#b91c1c', padding: '10px 14px', borderRadius: '8px', fontSize: '13.5px', marginBottom: '12px' }}>Chưa gửi được yêu cầu. Vui lòng thử lại sau hoặc gửi email đến portfolio.exe@gmail.com.</div>}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                   <input
                     type="text"
@@ -274,9 +281,9 @@ export function FooterDetailModal({ isOpen, onClose, data, go, onOpenUpgrade }) 
           <button type="button" className="ghost-action" onClick={onClose}>
             Đóng
           </button>
-          <button type="button" className="jr-btn-gold-action" style={{ padding: '8px 18px', fontSize: '13.5px' }} onClick={onOpenUpgrade}>
+          {data.category !== 'Thỏa thuận Mentor' && <button type="button" className="jr-btn-gold-action" style={{ padding: '8px 18px', fontSize: '13.5px' }} onClick={onOpenUpgrade}>
             <Crown size={15} /> Xem các gói nâng cấp VIP
-          </button>
+          </button>}
         </div>
       </div>
     </div>

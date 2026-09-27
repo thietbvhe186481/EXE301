@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { createHash, randomUUID, randomInt, timingSafeEqual } from 'node:crypto';
 import bcrypt from 'bcryptjs';
 import { z } from 'zod';
+import { MENTOR_AGREEMENT_VERSION } from '../shared/mentorAgreement.js';
 
 const email = z.string().trim().toLowerCase().email('Email không hợp lệ.').max(254);
 const password = z.string().min(8, 'Mật khẩu cần ít nhất 8 ký tự.').max(72, 'Mật khẩu quá dài.')
@@ -13,6 +14,7 @@ export const registrationSchema = z.object({
   email, password,
   confirmPassword: z.string(),
   acceptedTerms: z.literal(true, { error: 'Vui lòng đồng ý với điều khoản và chính sách bảo mật.' }),
+  acceptedMentorAgreement: z.boolean().optional(),
   selectedMajorKey: z.enum(['dev', 'mkt', 'design']),
   school: z.string().trim().max(160).optional(),
   title: z.string().trim().max(120).optional(),
@@ -26,6 +28,7 @@ export const registrationSchema = z.object({
   if (value.password !== value.confirmPassword) issue('confirmPassword', 'Mật khẩu nhập lại chưa khớp.');
   if (value.role === 'student' && !value.school) issue('school', 'Nhập trường đang theo học.');
   if (value.role === 'mentor') {
+    if (value.acceptedMentorAgreement !== true) issue('acceptedMentorAgreement', 'Vui lòng chấp thuận thỏa thuận cộng tác Mentor.');
     for (const field of ['title', 'company']) if (!value[field]) issue(field, 'Vui lòng điền thông tin này.');
     if (!value.expertise?.length) issue('expertise', 'Nhập ít nhất một chuyên môn.');
     if (value.yearsExperience === undefined) issue('yearsExperience', 'Nhập số năm kinh nghiệm.');
@@ -97,6 +100,7 @@ export function createAuthRouter({ UserProfile, MentorAccount, AdminAccount, sen
       if (verificationRequired && !process.env.RESEND_API_KEY && sendVerificationEmail === deliverVerificationEmail) return res.status(503).json({ message: 'Máy chủ chưa cấu hình dịch vụ gửi email (RESEND_API_KEY, EMAIL_FROM). Hãy cấu hình trước khi mở đăng ký.' });
       const result = registrationQueue.then(async () => {
         if (await findAccount(payload.email)) return null;
+        const agreementAcceptedAt = new Date();
         const common = {
           id: `${payload.role}-${randomUUID()}`, name: payload.name, email: payload.email,
           passwordHash: await bcrypt.hash(payload.password, 12), status: verificationRequired ? 'unverified' : 'active', emailVerified: !verificationRequired,
@@ -109,7 +113,9 @@ export function createAuthRouter({ UserProfile, MentorAccount, AdminAccount, sen
             company: payload.company, currentCompany: payload.company, jobTitle: payload.title,
             expertise: payload.expertise, strongestField: payload.expertise[0],
             yearsExperience: payload.yearsExperience, profileUrl: payload.profileUrl,
-            badge: 'Mentor mới', ratingAvg: 0, rating: 0, ratingCount: 0, totalReviews: 0 })
+            badge: 'Mentor mới', ratingAvg: 0, rating: 0, ratingCount: 0, totalReviews: 0,
+            mentorAgreementVersion: MENTOR_AGREEMENT_VERSION, mentorAgreementAcceptedAt: agreementAcceptedAt,
+            mentorAgreementHistory: [{ version: MENTOR_AGREEMENT_VERSION, acceptedAt: agreementAcceptedAt }] })
           : await UserProfile.create({ ...common, role: 'student', school: payload.school,
             careerGoal: '', path: [], joinedChallengeIds: [],
             stats: { completedChallenges: 0, mentorRating: 0, portfolioProjects: 0, verifiedSkills: 0 },

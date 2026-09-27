@@ -2,11 +2,11 @@ import React from 'react';
 import {
   ArrowRight,
   Compass,
-  FileUp,
+  BarChart3,
+  CheckCircle2,
   GraduationCap,
   LayoutDashboard,
   Rocket,
-  ShieldCheck,
   Star,
   UserRound
 } from 'lucide-react';
@@ -23,7 +23,7 @@ const exampleJourneys = [
   ['06', 'Sẵn sàng giới thiệu năng lực', 'Xây dựng hồ sơ cá nhân', 'Tổng hợp sản phẩm đã hoàn thành và chủ động quyết định có chia sẻ hồ sơ nổi bật với mentor hay không.']
 ];
 
-export function HomePage({ go, onOpenUpgrade, onOpenFooterModal }) {
+export function HomePage({ go, onOpenUpgrade, onOpenFooterModal, onRegisterMentor }) {
   return (
     <div className="jr-home-wrapper">
       {/* Hero Section */}
@@ -34,33 +34,28 @@ export function HomePage({ go, onOpenUpgrade, onOpenFooterModal }) {
         </div>
 
         <h1 className="jr-hero-title">
-          Xây Dựng Portfolio Chuẩn Doanh Nghiệp, <br />
-          <span className="jr-gradient-text">Chinh Phục Mọi Nhà Tuyển Dụng</span>
+          <span>Học qua dự án thực tế.</span>
+          <span className="jr-gradient-text">Xây portfolio có minh chứng.</span>
         </h1>
 
         <p className="jr-hero-subtitle">
-          Nền tảng hướng nghiệp thực chiến dành cho sinh viên đại học: Định hình lộ trình nghề nghiệp (Roadmap),
-          thực hiện các bài tập dự án (Challenge Hub), kiểm tra bài nộp và nhận góp ý từ Mentor,
-          và xây dựng Portfolio cá nhân từ những sản phẩm bạn thực sự hoàn thành.
+          Chọn lộ trình nghề nghiệp, thực hành với thử thách vừa sức và lưu lại sản phẩm có minh chứng.
+          Nhận góp ý theo tiêu chí rõ ràng để từng bước hoàn thiện hồ sơ của bạn.
         </p>
 
         <div className="jr-hero-actions">
           <button className="jr-btn-primary" onClick={() => go('roadmap')}>
             <Rocket size={18} />
-            <span>Bắt đầu tạo Portfolio ngay</span>
+            <span>Khám phá lộ trình</span>
             <ArrowRight size={16} />
           </button>
-          <button className="jr-btn-secondary" onClick={() => go('portfolio')}>
-            <UserRound size={18} color="#38bdf8" />
-            <span>Khám phá Portfolio cá nhân</span>
-          </button>
-          <button className="ghost-action" onClick={() => go('hub')}>
+          <button className="jr-btn-secondary" onClick={() => go('hub')}>
             <LayoutDashboard size={18} />
-            <span>Khám phá Thử thách dự án</span>
+            <span>Xem thử thách dự án</span>
           </button>
         </div>
 
-        {/* Live Stats from MongoDB */}
+        {/* Catalogue summary */}
         <div className="jr-stats-grid">
           <div className="jr-stat-card">
             <span className="jr-stat-num">{CHALLENGES.length}</span>
@@ -85,9 +80,9 @@ export function HomePage({ go, onOpenUpgrade, onOpenFooterModal }) {
       <section className="content-page">
         <div className="jr-section-title-wrap">
           <span className="jr-sub-pill">Quy trình 4 bước tạo Portfolio hoàn chỉnh</span>
-          <h2 className="jr-section-title">Hành Trình Xây Dựng Hồ Sơ Năng Lực Chuẩn Ngành</h2>
+          <h2 className="jr-section-title">Từ định hướng đến sản phẩm đầu tiên</h2>
           <p className="jr-section-desc">
-            Từ việc chọn lộ trình đến hoàn thành dự án có minh chứng thực tế và nhận góp ý từ mentor phù hợp.
+            Bốn bước dễ theo dõi để biến điều bạn học thành bài làm có thể giới thiệu trong portfolio.
           </p>
         </div>
 
@@ -112,8 +107,8 @@ export function HomePage({ go, onOpenUpgrade, onOpenFooterModal }) {
 
           <div className="jr-process-card">
             <div className="jr-step-badge">3</div>
-            <h3>3. Mentor & AI Đánh Giá 2 Chiều</h3>
-            <p>Nộp liên kết GitHub, demo hoặc CV. Kiểm tra tự động trước khi chọn mentor chấm theo rubric riêng của từng bài.</p>
+            <h3>3. Nhận Phản Hồi Theo Tiêu Chí</h3>
+            <p>Nộp liên kết sản phẩm và mô tả cách làm. Xem kiểm tra thông tin ban đầu hoặc chọn mentor góp ý theo rubric của bài.</p>
             <button className="jr-step-link-btn" onClick={() => go('hub')}>
               Nộp bài & Nhận review <ArrowRight size={13} />
             </button>
@@ -134,8 +129,8 @@ export function HomePage({ go, onOpenUpgrade, onOpenFooterModal }) {
       <section className="content-page">
         <div className="jr-section-title-wrap">
           <span className="jr-sub-pill">Tính năng nền tảng</span>
-          <h2 className="jr-section-title">Hệ Sinh Thái Hỗ Trợ Xây Dựng Portfolio Toàn Diện</h2>
-          <p className="jr-section-desc">Kết hợp giữa bài tập thực tế, đánh giá chuyên gia và công nghệ AI để chuẩn hóa hồ sơ ứng tuyển.</p>
+          <h2 className="jr-section-title">Những công cụ giúp bạn tiến bộ qua từng bài làm</h2>
+          <p className="jr-section-desc">Tìm hướng học, hiểu yêu cầu bài tập và biết nên cải thiện điều gì ở bước tiếp theo.</p>
         </div>
 
         <div className="jr-features-grid">
@@ -148,7 +143,7 @@ export function HomePage({ go, onOpenUpgrade, onOpenFooterModal }) {
           <div className="jr-feature-card">
             <div className="jr-feat-icon gold"><Rocket size={26} /></div>
             <h3>Trung Tâm Thử Thách Dự Án (Hub)</h3>
-            <p>Kho bài tập thực tế từ cơ bản đến nâng cao. Mỗi thử thách hoàn thành sẽ trở thành một case study chất lượng trong Portfolio của bạn.</p>
+            <p>Kho bài tập từ cơ bản đến nâng cao. Bạn có thể đưa bài làm vào portfolio khi trình bày rõ quá trình, kết quả và minh chứng.</p>
           </div>
 
           <div className="jr-feature-card">
@@ -164,15 +159,15 @@ export function HomePage({ go, onOpenUpgrade, onOpenFooterModal }) {
           </div>
 
           <div className="jr-feature-card">
-            <div className="jr-feat-icon blue"><FileUp size={26} /></div>
-            <h3>Gửi CV & Trao Đổi Với Mentor</h3>
-            <p>Gửi liên kết CV hoặc trao đổi trong bài nộp để làm rõ mục tiêu và nhận góp ý. Không cần tải nhiều tệp lên hệ thống.</p>
+            <div className="jr-feat-icon blue"><CheckCircle2 size={26} /></div>
+            <h3>Biết rõ tiêu chí trước khi làm bài</h3>
+            <p>Mỗi thử thách nêu đầu ra cần có, mức độ khó và tiêu chí đánh giá. Bạn có thể tự kiểm tra bài làm trước khi nộp và xem phần góp ý theo từng tiêu chí.</p>
           </div>
 
           <div className="jr-feature-card">
-            <div className="jr-feat-icon gold"><ShieldCheck size={26} /></div>
-            <h3>Phân Luồng Mentor & Quỹ Thưởng Phạt</h3>
-            <p>Tách biệt kiểm tra tự động và mentor thật. Mentor nhận phí 5.000đ cho bài hoàn tất và thưởng theo sao; chất lượng được theo dõi minh bạch.</p>
+            <div className="jr-feat-icon gold"><BarChart3 size={26} /></div>
+            <h3>Nhìn thấy tiến độ học tập</h3>
+            <p>Quản lý các dự án đã làm trong hồ sơ cá nhân, xem trạng thái bài nộp và tiếp tục hoàn thiện sản phẩm từ phản hồi nhận được.</p>
           </div>
         </div>
       </section>
@@ -201,7 +196,7 @@ export function HomePage({ go, onOpenUpgrade, onOpenFooterModal }) {
         </div>
       </section>
 
-      <PortfolioFooter go={go} onOpenUpgrade={onOpenUpgrade} onOpenFooterModal={onOpenFooterModal} />
+      <PortfolioFooter go={go} onOpenUpgrade={onOpenUpgrade} onOpenFooterModal={onOpenFooterModal} onRegisterMentor={onRegisterMentor} />
     </div>
   );
 }

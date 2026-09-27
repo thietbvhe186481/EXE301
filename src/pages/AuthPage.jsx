@@ -3,7 +3,7 @@ import { ArrowLeft, ArrowRight, Check, Eye, EyeOff, GraduationCap, BriefcaseBusi
 import { apiService } from '../services/api';
 import './AuthPage.css';
 
-const initialValues = { role: 'student', name: '', email: '', password: '', confirmPassword: '', school: '', selectedMajorKey: 'dev', title: '', company: '', expertise: '', yearsExperience: '', profileUrl: '', bio: '', acceptedTerms: false, rememberMe: false };
+const initialValues = { role: 'student', name: '', email: '', password: '', confirmPassword: '', school: '', selectedMajorKey: 'dev', title: '', company: '', expertise: '', yearsExperience: '', profileUrl: '', bio: '', acceptedTerms: false, acceptedMentorAgreement: false, rememberMe: false };
 const credentialKeys = ['name', 'email', 'password', 'confirmPassword'];
 
 function Field({ name, label, errors, hint, children }) {
@@ -63,6 +63,7 @@ export function AuthPage({ authMode = 'login', initialRole = 'student', setAuthM
           try { const url = new URL(values.profileUrl); if (!['https:', 'http:'].includes(url.protocol)) throw new Error(); } catch { next.profileUrl = 'Nhập đường dẫn hồ sơ đầy đủ, bắt đầu bằng https:// hoặc http://.'; }
         }
         if (!values.acceptedTerms) next.acceptedTerms = 'Bạn cần đồng ý với điều khoản và chính sách bảo mật.';
+        if (mentor && !values.acceptedMentorAgreement) next.acceptedMentorAgreement = 'Bạn cần đọc và chấp thuận thỏa thuận cộng tác Mentor.';
       }
     }
     return next;
@@ -172,6 +173,7 @@ export function AuthPage({ authMode = 'login', initialRole = 'student', setAuthM
                 {input('profileUrl', 'Đường dẫn hồ sơ chuyên môn', { type: 'url', placeholder: 'https://www.linkedin.com/in/...', maxLength: 500, hint: 'LinkedIn, GitHub, Behance hoặc website portfolio của bạn.' })}
               </> : input('school', 'Trường đang theo học', { placeholder: 'VD: Đại học FPT', autoComplete: 'organization', maxLength: 150 })}
               <div className="pf-auth-consent"><label className="pf-auth-checkbox"><input id="pf-auth-acceptedTerms" type="checkbox" checked={values.acceptedTerms} onChange={event => update('acceptedTerms', event.target.checked)} aria-invalid={!!errors.acceptedTerms} aria-describedby={errors.acceptedTerms ? 'pf-auth-acceptedTerms-error' : undefined} /><span>Tôi đồng ý với <button type="button" onClick={() => onOpenPolicy('terms')}>Điều khoản sử dụng</button> và <button type="button" onClick={() => onOpenPolicy('privacy')}>Chính sách bảo mật</button> của Portfolio FPT Hub.</span></label>{errors.acceptedTerms && <span className="pf-auth-field-error" id="pf-auth-acceptedTerms-error">{errors.acceptedTerms}</span>}</div>
+              {mentor && <div className="pf-auth-consent"><label className="pf-auth-checkbox"><input id="pf-auth-acceptedMentorAgreement" type="checkbox" checked={values.acceptedMentorAgreement} onChange={event => update('acceptedMentorAgreement', event.target.checked)} aria-invalid={!!errors.acceptedMentorAgreement} aria-describedby={errors.acceptedMentorAgreement ? 'pf-auth-acceptedMentorAgreement-error' : undefined} /><span>Tôi đã đọc và chấp thuận <button type="button" onClick={() => onOpenPolicy('mentor-agreement')}>Thỏa thuận cộng tác Mentor</button>, gồm quyền lợi, trách nhiệm và cách đối soát thù lao.</span></label>{errors.acceptedMentorAgreement && <span className="pf-auth-field-error" id="pf-auth-acceptedMentorAgreement-error">{errors.acceptedMentorAgreement}</span>}</div>}
             </>}
             <button type="submit" className="pf-auth-submit">{busy ? <><LoaderCircle size={19} className="pf-auth-spinner" />{signup ? 'Đang tạo tài khoản…' : 'Đang đăng nhập…'}</> : <>{signup ? step === 1 ? 'Tiếp tục' : `Tạo tài khoản ${mentor ? 'mentor' : 'sinh viên'}` : 'Đăng nhập'}<ArrowRight size={18} /></>}</button>
             {signup && step === 2 && <button type="button" className="pf-auth-back" onClick={() => { setStep(1); setMessage(''); }}><ArrowLeft size={15} /> Quay lại thông tin tài khoản</button>}
