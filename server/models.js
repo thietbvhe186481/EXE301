@@ -94,9 +94,9 @@ const AdminAccountSchema = new mongoose.Schema({
 
 // 4. Major Catalog
 const MajorSchema = new mongoose.Schema({
-  id: { type: String, default: function() { return this.key; } },
+  id: { type: String, default: function() { return this?.key; } },
   key: { type: String, required: true, unique: true },
-  name: { type: String, default: function() { return this.title || this.key; } },
+  name: { type: String, default: function() { return this?.title || this?.key; } },
   title: { type: String },
   displayOrder: { type: Number, default: 0 },
   description: { type: String, default: '' },
