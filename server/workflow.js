@@ -77,7 +77,7 @@ export function createWorkflowRouter({ UserProfile, MentorAccount, AdminAccount,
     const bank = order.receivingBank;
     if (!bank?.bankId || !bank.accountNumber || !bank.accountHolder) return null;
     const query = new URLSearchParams({ amount: String(order.price), addInfo: order.transactionCode, accountName: bank.accountHolder });
-    return { provider: 'manual-vietqr', receivingBank: bank, amount: order.price, transferContent: order.transactionCode,
+    return { provider: 'manual-vietqr', legacyOrder: process.env.PAYMENT_PROVIDER === 'payos', receivingBank: bank, amount: order.price, transferContent: order.transactionCode,
       qrUrl: `https://img.vietqr.io/image/${encodeURIComponent(bank.bankId)}-${encodeURIComponent(bank.accountNumber)}-compact2.png?${query}` };
   };
   const activateOrder = async (order, reference, actor) => {
