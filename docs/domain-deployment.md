@@ -14,6 +14,9 @@ Tên miền được quản lý tại TenTen. Địa chỉ chính của web là 
 | `@` | A | `185.199.111.153` |
 | `www` | CNAME | `thietbvhe186481.github.io` |
 | `api` | CNAME | `exe301-portfolio-api.onrender.com` |
+| `resend._domainkey` | TXT | Giá trị DKIM hiện trong Resend > Domains > `portfolio.id.vn` |
+| `rsend` | CNAME | `rsend-apne1.forge.rmta.net` |
+| `send` | CNAME | `send.forge.rmta.net` |
 
 Xóa bản ghi A/CNAME mặc định của TenTen **chỉ nếu trùng Host** với các bản ghi trên. Đừng xóa MX/TXT phục vụ email. Tránh wildcard `*`. Nếu TenTen yêu cầu tên đầy đủ thay vì `@`, điền `portfolio.id.vn`; một số giao diện tự nối hậu tố tên miền, nên kiểm tra bản ghi sau khi lưu.
 
@@ -29,13 +32,13 @@ Atlas đã có cụm Free `portfolio-prod` tại AWS Singapore và tài khoản 
 
 Render Web Service `exe301-portfolio-api` được tạo thủ công từ nhánh `main`, dùng `npm ci`, `npm run server`, Singapore, Free, và health check `/api/health`. Render đã xác minh `api.portfolio.id.vn`; hãy kiểm tra trạng thái chứng chỉ TLS trong **Settings > Custom Domains**. Dịch vụ tạo thủ công không tự nhận các biến trong `render.yaml`: trong **Environment**, đặt `NODE_ENV=production`, `CLIENT_ORIGIN=https://portfolio.id.vn,https://thietbvhe186481.github.io`, `COOKIE_CROSS_SITE=1`, `TRUST_PROXY=1`, `SESSION_SECRET` ngẫu nhiên đủ dài, `MONGODB_USERNAME=portfolio_app`, `MONGODB_HOST=portfolio-prod.dfh3ilg.mongodb.net`, `MONGODB_DATABASE=portfolio_career` và `MONGODB_PASSWORD` do chủ tài khoản tự nhập. API tự mã hóa mật khẩu để tạo URI; không đưa mật khẩu vào Git hoặc chat. Biến `MONGODB_URI` nguyên chuỗi vẫn được hỗ trợ nếu muốn dùng cách cũ. Kiểm tra `https://api.portfolio.id.vn/api/health` trả `ok: true` sau khi Render báo service live.
 
-Trên database mới, chạy `npm run bootstrap:production` với `MONGODB_URI`, `BOOTSTRAP_ADMIN_EMAIL` và `BOOTSTRAP_ADMIN_PASSWORD` (ít nhất 14 ký tự) trong môi trường chạy lệnh. Lệnh tạo admin, gói Premium và danh mục công khai còn thiếu; có thể chạy lại, không thêm tài khoản demo hoặc xóa/ghi đè dữ liệu hiện có. Bỏ mật khẩu bootstrap khỏi môi trường sau khi chạy. **Không chạy `npm run seed` trên database đang có dữ liệu**: lệnh đó xóa nhiều collection trước khi nạp dữ liệu demo.
+Database production đã được khởi tạo bằng `npm run bootstrap:production`: admin đầu tiên, 3 gói Premium, 148 bài trong catalog API và 21 học liệu đã có. Render hiện chạy `npm run server`; `BOOTSTRAP_ADMIN_PASSWORD` đã được gỡ khỏi Environment. Nếu phải khởi tạo lại một database mới, đặt `BOOTSTRAP_ADMIN_EMAIL` và `BOOTSTRAP_ADMIN_PASSWORD` (ít nhất 14 ký tự) chỉ trong lúc chạy lệnh rồi gỡ mật khẩu ngay sau đó. Lệnh không thêm tài khoản demo hoặc xóa/ghi đè dữ liệu hiện có. **Không chạy `npm run seed` trên database đang có dữ liệu**: lệnh đó xóa nhiều collection trước khi nạp dữ liệu demo.
 
 Sau khi API có HTTPS, đặt `VITE_API_URL=https://api.portfolio.id.vn` (không thêm `/api` phía cuối) trong GitHub Actions Variables rồi chạy lại workflow. Chỉ khi biến này được đặt và API hoạt động, đăng nhập, đăng ký, Premium và quản trị mới kết nối được database từ web công khai.
 
 ## 4. Email và thanh toán
 
-Trong Resend, xác thực tên miền gửi mail bằng **các bản ghi DNS mà Resend cấp**; không tự tạo giá trị TXT/MX. Đặt `EMAIL_FROM=Portfolio FPT Hub <no-reply@portfolio.id.vn>` và `EMAIL_VERIFICATION_REQUIRED=1` trên API sau khi xác thực xong. OTP chỉ dùng khi đăng ký/xác minh email, không dùng cho thanh toán.
+Resend đã xác minh `portfolio.id.vn` bằng các bản ghi DNS ở trên. Khóa API có quyền **Sending access** được giữ trong `RESEND_API_KEY` của Render; `EMAIL_FROM=Portfolio FPT Hub <no-reply@portfolio.id.vn>` và `EMAIL_VERIFICATION_REQUIRED=1`. Luồng đăng ký sinh viên đã gửi OTP qua Resend thành công; không đưa khóa vào Git, frontend hay tài liệu. OTP chỉ dùng khi đăng ký/xác minh email, không dùng cho thanh toán.
 
 `PAYMENT_PROVIDER=manual` dùng TPBank/VietQR và admin đối soát sao kê trước khi kích hoạt Premium. Nếu muốn PayOS, cấu hình đầy đủ khóa và callback trên API trước khi đổi provider. Xem [quy trình thanh toán](payment-operations.md).
 
