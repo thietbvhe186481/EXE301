@@ -159,7 +159,7 @@ app.get('/api/bootstrap', async (req, res, next) => {
       reviews,
       founders,
       subscriptionOrders,
-      premiumPlans: premiumPlans.map(describePremiumPlan),
+      premiumPlans,
       marketData
     ] = await Promise.all([
       Major.find({}).sort({ displayOrder: 1 }).lean(),
@@ -215,7 +215,7 @@ app.get('/api/bootstrap', async (req, res, next) => {
       founders,
       subscriptionOrders: isAdmin ? subscriptionOrders : subscriptionOrders.filter(item => item.userId === ownId),
       premiumSubscriptions: isAdmin ? subscriptionOrders.filter(item => item.status === 'completed').map(item => ({ id: item.orderId, orderId: item.orderId, userId: item.userId, planId: item.planId, planName: item.planName, revenue: item.price, expiresAt: item.expiresAt, status: item.expiresAt && new Date(item.expiresAt) > new Date() ? 'active' : 'expired' })) : [],
-      premiumPlans,
+      premiumPlans: premiumPlans.map(describePremiumPlan),
       marketData,
       kpi
     });

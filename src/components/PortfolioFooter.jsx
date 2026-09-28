@@ -88,7 +88,6 @@ export function PortfolioFooter({ go, onOpenUpgrade, onOpenFooterModal, onRegist
             <ul className="jr-footer-links-list">
               <li><button type="button" className="jr-footer-link-btn highlight" onClick={() => onOpenFooterModal('mentor-rubric')}>Tiêu chuẩn Mentor Review</button></li>
               <li><button type="button" className="jr-footer-link-btn" onClick={() => onOpenFooterModal('mentor-agreement')}>Thỏa thuận cộng tác Mentor</button></li>
-               <li><button type="button" className="jr-footer-link-btn" onClick={() => onOpenFooterModal('mentor-rubric')}>Thu nhập và thưởng của mentor</button></li>
               <li><button type="button" className="jr-footer-link-btn" onClick={() => onOpenFooterModal('mentor-rubric')}>Đánh giá chất lượng 2 chiều</button></li>
               <li><button type="button" className="jr-footer-link-btn" onClick={onRegisterMentor}>Đăng ký làm Mentor</button></li>
               <li><button type="button" className="jr-footer-link-btn" onClick={() => onOpenFooterModal('employer')}>Hợp tác Doanh nghiệp tuyển dụng</button></li>

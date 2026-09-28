@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --test server/auth.test.js server/workflow.test.js server/payos.test.js server/api-access.test.js server/metrics.test.js server/testimonials.test.js server/inquiries.test.js server/rate-limit.test.js server/config/db.test.js",
+    "test": "node --check server/index.js && node --test server/auth.test.js server/workflow.test.js server/payos.test.js server/api-access.test.js server/metrics.test.js server/testimonials.test.js server/inquiries.test.js server/rate-limit.test.js server/config/db.test.js",
     "test:auth": "node --test server/auth.test.js",
     "test:workflow": "node --test server/workflow.test.js",
     "dev": "vite --config vite.config.js --host 127.0.0.1",

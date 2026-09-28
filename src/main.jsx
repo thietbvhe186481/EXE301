@@ -1206,20 +1206,17 @@ function App() {
     majors: majorCatalog,
     challenges,
     submissionRules,
-    demoUser: demoUsers[0],
-    users: demoUsers,
-    admins: demoAdmins,
-    mentors: demoMentors,
-    mentorFeedback: demoMentorFeedback,
-    submissions: demoSubmissions,
+    demoUser: null,
+    users: [],
+    admins: [],
+    mentors: [],
+    mentorFeedback: [],
+    submissions: [],
     premiumPlans,
-    premiumSubscriptions: demoPremiumSubscriptions,
+    premiumSubscriptions: [],
     categories: demoCategories,
     resources: [],
-    notifications: [
-      { id: 'noti-demo-review', userId: 'mentor-demo', role: 'mentor', title: '3 bài đang chờ mentor review', unread: true, createdAt: '09:00' },
-      { id: 'noti-demo-admin', userId: 'admin-demo', role: 'admin', title: 'Dashboard demo đã có user, mentor, challenge và submissions', unread: true, createdAt: '09:15' }
-    ]
+    notifications: []
   }), []);
   const appData = remoteData ?? fallbackData;
 
@@ -1876,7 +1873,6 @@ function App() {
           />
         )}
         {page === 'admin' && <Suspense fallback={<p className="status-banner" role="status">Đang mở bảng quản trị…</p>}><ReviewWorkspace currentUser={currentUser} go={go} onOpenPolicy={(key) => setFooterModalData(getFooterModalContent(key))} initialTab='applications' /></Suspense>}
-        {page === 'admin' && <AdminPage apiStatus={apiStatus} data={managementData} notice={adminNotice} currentUser={currentUser} refreshData={refreshData} setAdminNotice={setAdminNotice} createFeedback={createFeedback} />}
       </main>
     </div>
   );
@@ -2931,7 +2927,7 @@ function PortfolioPage({ pathRoles, currentMajor, go, demoUser, apiStatus, submi
   const [showPublicPreview, setShowPublicPreview] = useState(false);
   const [isEditingProfileInfo, setIsEditingProfileInfo] = useState(false);
   const profileName = demoUser?.name ?? 'Sinh viên';
-  const careerGoal = demoUser?.careerGoal ?? pathRoles[pathRoles.length - 1]?.title ?? 'Chưa cập nhật mục tiêu nghề nghiệp';
+  const careerGoal = demoUser?.careerGoal || pathRoles[pathRoles.length - 1]?.title || 'Chưa cập nhật mục tiêu nghề nghiệp';
   const userSubmissions = submissions.filter((item) => item.userId === (demoUser?.id ?? 'demo-student'));
   const challengeName = (challengeId) => challenges.find((item) => item.id === challengeId)?.title ?? challengeId;
   const completedSubmissions = userSubmissions.filter((item) => ['completed', 'reviewed', 'accepted'].includes(item.status));
