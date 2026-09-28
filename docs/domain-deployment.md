@@ -13,7 +13,7 @@ Tên miền được quản lý tại TenTen. Địa chỉ chính của web là 
 | `@` | A | `185.199.110.153` |
 | `@` | A | `185.199.111.153` |
 | `www` | CNAME | `thietbvhe186481.github.io` |
-| `api` | CNAME | Hostname `*.onrender.com` **thực tế của service** do Render hiển thị; không đoán giá trị này |
+| `api` | CNAME | `exe301-portfolio-api.onrender.com` |
 
 Xóa bản ghi A/CNAME mặc định của TenTen **chỉ nếu trùng Host** với các bản ghi trên. Đừng xóa MX/TXT phục vụ email. Tránh wildcard `*`. Nếu TenTen yêu cầu tên đầy đủ thay vì `@`, điền `portfolio.id.vn`; một số giao diện tự nối hậu tố tên miền, nên kiểm tra bản ghi sau khi lưu.
 
@@ -25,7 +25,9 @@ Build mặc định dùng đường dẫn asset tương đối (`VITE_BASE_PATH=
 
 ## 3. Triển khai API và dữ liệu
 
-Tạo MongoDB Atlas và Render Web Service/Blueprint từ `render.yaml`. Trên Render cần nhập `MONGODB_URI`, `RESEND_API_KEY`, `EMAIL_FROM`; `SESSION_SECRET` và `OTP_SECRET` được Blueprint sinh ra. `CLIENT_ORIGIN` trong repo đã cho phép cả tên miền mới và địa chỉ GitHub Pages để chuyển tiếp. Kiểm tra `https://<hostname-thực-tế>.onrender.com/api/health` trả `ok: true` trước khi gắn `api.portfolio.id.vn` trong Render > Service > Settings > Custom Domains. Copy chính xác CNAME Render đưa ra vào TenTen, rồi Verify và kiểm tra `https://api.portfolio.id.vn/api/health`.
+Atlas đã có cụm Free `portfolio-prod` tại AWS Singapore và tài khoản ứng dụng `portfolio_app` được giới hạn vào cụm này. IP Access List chỉ gồm IP quản trị cá nhân và hai dải outbound Render Singapore `74.220.52.0/24`, `74.220.60.0/24`; khi Render thay đổi dải outbound, cập nhật danh sách này theo **Connect > Outbound IP Addresses** của service.
+
+Render Web Service `exe301-portfolio-api` được tạo thủ công từ nhánh `main`, dùng `npm ci`, `npm run server`, Singapore, Free, và health check `/api/health`. Render đã xác minh `api.portfolio.id.vn`; hãy kiểm tra trạng thái chứng chỉ TLS trong **Settings > Custom Domains**. Dịch vụ tạo thủ công không tự nhận các biến trong `render.yaml`: trong **Environment**, đặt `NODE_ENV=production`, `CLIENT_ORIGIN=https://portfolio.id.vn,https://thietbvhe186481.github.io`, `COOKIE_CROSS_SITE=1`, `TRUST_PROXY=1`, `SESSION_SECRET` ngẫu nhiên đủ dài và `MONGODB_URI` của `portfolio_app`. Chuỗi URI có dạng `mongodb+srv://portfolio_app:<password-url-encoded>@portfolio-prod.dfh3ilg.mongodb.net/portfolio_career?retryWrites=true&w=majority`. Nhập mật khẩu trực tiếp vào Render, không đưa vào Git hoặc chat. Kiểm tra `https://api.portfolio.id.vn/api/health` trả `ok: true` sau khi Render báo service live.
 
 Trên database mới, chạy `npm run bootstrap:production` với `MONGODB_URI`, `BOOTSTRAP_ADMIN_EMAIL` và `BOOTSTRAP_ADMIN_PASSWORD` (ít nhất 14 ký tự) trong môi trường chạy lệnh. Lệnh tạo admin, gói Premium và danh mục công khai còn thiếu; có thể chạy lại, không thêm tài khoản demo hoặc xóa/ghi đè dữ liệu hiện có. Bỏ mật khẩu bootstrap khỏi môi trường sau khi chạy. **Không chạy `npm run seed` trên database đang có dữ liệu**: lệnh đó xóa nhiều collection trước khi nạp dữ liệu demo.
 
