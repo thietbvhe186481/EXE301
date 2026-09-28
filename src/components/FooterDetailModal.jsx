@@ -122,13 +122,12 @@ export function getFooterModalContent(key) {
   }
 
   if (key === 'mentor-rubric') {
-    return { category: 'Hướng dẫn', title: 'Quy chuẩn review và thù lao mentor', subtitle: 'Minh bạch tiêu chí, hàng đợi và đánh giá', body: <div>
-      <p>Sinh viên nộp tối đa 3 liên kết dự án hoặc CV, hoặc trao đổi qua chat trong bài nộp. Không tải tệp lên hệ thống. Thời gian phản hồi là ước tính theo hàng đợi, không phải cam kết.</p>
-      <p>Kiểm tra tự động chỉ kiểm tra thông tin đã khai báo, không đọc nội dung liên kết. Gợi ý AI chỉ khả dụng khi máy chủ được cấu hình và sinh viên đồng ý gửi mô tả cùng kỹ năng; không thay thế điểm mentor.</p>
-      <p>Tài khoản trả phí còn hiệu lực được chọn mentor đã duyệt, có đăng ký chấm thử thách. Mentor tự chọn năng lực và sức chứa. Khi quá tải, hệ thống cảnh báo và gợi ý người ít bài hơn; sinh viên vẫn được chọn nếu chấp nhận chậm.</p>
-      <p>Mentor chấm theo rubric riêng của từng bài. Mỗi bài hoàn tất được ghi nhận 5.000đ từ doanh thu nền tảng. Đánh giá 4 sao thưởng 750đ, 5 sao thưởng 1.250đ. Bài yêu cầu sửa chưa phát sinh phí. Admin đối soát chuyển khoản thủ công.</p>
-      <p>Sinh viên được đánh giá một lần. Chi trả được ghi nhận sau đánh giá hoặc sau 7 ngày; đánh giá đóng khi khoản đó đã được đối soát. Đánh giá từ 2 sao trở xuống được cảnh báo. Từ 3 đánh giá có trung bình dưới 3,5 sao cũng cảnh báo; từ 5 đánh giá có trung bình dưới 2,5 sao ngừng nhận bài mới. Admin xem xét và có thể đình chỉ.</p>
-      <p>Hồ sơ nổi bật đạt từ 85 điểm do mentor chấm chỉ xuất hiện khi sinh viên đồng ý; có thể thu hồi sự đồng ý. Việc xuất hiện không đảm bảo được tuyển dụng.</p>
+    return { category: 'Hướng dẫn', title: 'Cách mentor góp ý bài làm', subtitle: 'Hiểu cách nộp bài, chọn mentor và nhận phản hồi', body: <div>
+      <p>Đọc yêu cầu và tiêu chí của thử thách trước khi làm. Khi nộp, bạn có thể gửi tối đa 3 liên kết đến sản phẩm hoặc CV, kèm mô tả phần bạn đã thực hiện và điều muốn được góp ý. Hãy kiểm tra quyền xem của liên kết; website không yêu cầu tải tệp lên.</p>
+      <p>Phần kiểm tra sơ bộ đối chiếu thông tin bạn cung cấp với yêu cầu bài, không mở liên kết hoặc xác minh chất lượng sản phẩm. Nếu dùng gợi ý AI, bạn cần đồng ý gửi mô tả và kỹ năng để phân tích. Gợi ý này không thay thế nhận xét của mentor.</p>
+      <p>Sinh viên có gói Premium còn hiệu lực có thể chọn mentor phù hợp với thử thách. Nếu mentor đang nhận nhiều bài, bạn sẽ thấy cảnh báo thời gian phản hồi có thể lâu hơn và có thể chọn mentor khác.</p>
+      <p>Mentor xem minh chứng và góp ý theo tiêu chí riêng của bài: điểm tốt, điều cần sửa và hướng cải thiện. Nếu cần bổ sung, bạn có thể chỉnh sửa rồi gửi lại trong bài nộp. Sau khi nhận nhận xét hoàn tất, bạn có thể đánh giá trải nghiệm bằng số sao.</p>
+      <p>Bạn chủ động quyết định có chia sẻ bài làm nổi bật với mentor đã duyệt hay không và có thể thu hồi quyền chia sẻ. Việc xuất hiện trong danh sách nổi bật không bảo đảm cơ hội tuyển dụng.</p>
     </div> };
   }
 
