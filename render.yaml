@@ -11,7 +11,7 @@ services:
       - key: NODE_ENV
         value: production
       - key: CLIENT_ORIGIN
-        value: https://thietbvhe186481.github.io
+        sync: false
       - key: COOKIE_CROSS_SITE
         value: "1"
       - key: TRUST_PROXY

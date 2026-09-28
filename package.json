@@ -10,6 +10,7 @@
     "dev": "vite --config vite.config.js --host 127.0.0.1",
     "server": "node server/index.js",
     "seed": "node server/seed.js",
+    "bootstrap:production": "node server/bootstrap-production.js",
     "dev:full": "concurrently \"npm run server\" \"npm run dev\"",
     "build": "vite build",
     "preview": "vite preview --host 127.0.0.1"
