@@ -34,3 +34,26 @@ export async function createPayosLink({ orderCode, amount, description, buyerNam
   if (!response.ok || result.code !== '00' || !result.data?.checkoutUrl) throw new Error('PayOS chưa tạo được liên kết thanh toán. Kiểm tra cấu hình kênh thanh toán.');
   return result.data;
 }
+
+export async function getPayosLink(orderCode, transport = fetch) {
+  if (!payosConfigured()) throw new Error('PayOS chưa được cấu hình trên máy chủ.');
+  const response = await transport(`https://api-merchant.payos.vn/v2/payment-requests/${encodeURIComponent(orderCode)}`, {
+    method: 'GET', signal: AbortSignal.timeout(15_000),
+    headers: { 'x-client-id': clientId(), 'x-api-key': apiKey() }
+  });
+  const result = await response.json().catch(() => ({}));
+  if (!response.ok || result.code !== '00' || !result.data) throw new Error('Không đọc được trạng thái thanh toán từ payOS.');
+  return result.data;
+}
+
+export async function cancelPayosLink(orderCode, transport = fetch) {
+  if (!payosConfigured()) throw new Error('PayOS chưa được cấu hình trên máy chủ.');
+  const response = await transport(`https://api-merchant.payos.vn/v2/payment-requests/${encodeURIComponent(orderCode)}/cancel`, {
+    method: 'POST', signal: AbortSignal.timeout(15_000),
+    headers: { 'x-client-id': clientId(), 'x-api-key': apiKey(), 'Content-Type': 'application/json' },
+    body: JSON.stringify({ cancellationReason: 'Sinh viên hủy đơn trên Portfolio FPT Hub' })
+  });
+  const result = await response.json().catch(() => ({}));
+  if (!response.ok || result.code !== '00' || result.data?.status !== 'CANCELLED') throw new Error('payOS chưa xác nhận hủy đơn.');
+  return result.data;
+}

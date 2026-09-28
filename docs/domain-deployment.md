@@ -40,6 +40,6 @@ Sau khi API có HTTPS, đặt `VITE_API_URL=https://api.portfolio.id.vn` (không
 
 Resend đã xác minh `portfolio.id.vn` bằng các bản ghi DNS ở trên. Khóa API có quyền **Sending access** được giữ trong `RESEND_API_KEY` của Render; `EMAIL_FROM=Portfolio FPT Hub <no-reply@portfolio.id.vn>` và `EMAIL_VERIFICATION_REQUIRED=1`. Luồng đăng ký sinh viên đã gửi OTP qua Resend thành công; không đưa khóa vào Git, frontend hay tài liệu. OTP chỉ dùng khi đăng ký/xác minh email, không dùng cho thanh toán.
 
-`PAYMENT_PROVIDER=manual` dùng TPBank/VietQR và admin đối soát sao kê trước khi kích hoạt Premium. Nếu muốn PayOS, cấu hình đầy đủ khóa và callback trên API trước khi đổi provider. Xem [quy trình thanh toán](payment-operations.md).
+`PAYMENT_PROVIDER=manual` dùng BIDV/VietQR và admin đối soát sao kê trước khi kích hoạt Premium. Nếu muốn payOS, cấu hình đầy đủ khóa và callback trên API trước khi đổi provider. Xem [quy trình thanh toán](payment-operations.md).
 
 Sau cùng, kiểm thử đăng ký/OTP, đăng nhập từng role, duyệt mentor, tạo đơn Premium, đối soát, kích hoạt gói và log chi trả mentor. Kiểm tra cả `portfolio.id.vn`, `www.portfolio.id.vn` và API qua HTTPS. Không gửi mật khẩu, MongoDB URI hoặc API key trong tin nhắn; nhập trực tiếp vào Render/Resend.

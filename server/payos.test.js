@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createHmac } from 'node:crypto';
-import { createPayosLink, payosConfigured, payosPaymentSignature, verifyPayosWebhook } from './payos.js';
+import { cancelPayosLink, createPayosLink, getPayosLink, payosConfigured, payosPaymentSignature, verifyPayosWebhook } from './payos.js';
 
 const keys = ['PAYOS_CLIENT_ID', 'PAYOS_API_KEY', 'PAYOS_CHECKSUM_KEY', 'PAYOS_RETURN_URL', 'PAYOS_CANCEL_URL'];
 const withPayos = async fn => {
@@ -30,4 +30,23 @@ test('PayOS webhook HMAC is verified over sorted data and rejects tampering', as
   assert.equal(verifyPayosWebhook({ data, signature }), true);
   assert.equal(verifyPayosWebhook({ data: { ...data, amount: 1 }, signature }), false);
   assert.equal(verifyPayosWebhook({ data, signature: '00' }), false);
+}));
+
+test('PayOS cancellation only succeeds when provider confirms a cancelled link', async () => withPayos(async () => {
+  const providerOrder = { id: 'link-1', orderCode: 1900000100, amount: 79000, amountPaid: 0, status: 'CANCELLED' };
+  const status = await getPayosLink(providerOrder.orderCode, async (url, options) => {
+    assert.equal(url, 'https://api-merchant.payos.vn/v2/payment-requests/1900000100');
+    assert.equal(options.method, 'GET');
+    assert.equal(options.headers['x-client-id'], 'client-id');
+    return { ok: true, json: async () => ({ code: '00', data: { ...providerOrder, status: 'PENDING' } }) };
+  });
+  assert.equal(status.status, 'PENDING');
+  const cancelled = await cancelPayosLink(providerOrder.orderCode, async (url, options) => {
+    assert.equal(url, 'https://api-merchant.payos.vn/v2/payment-requests/1900000100/cancel');
+    assert.equal(options.method, 'POST');
+    assert.equal(options.headers['x-api-key'], 'api-key');
+    return { ok: true, json: async () => ({ code: '00', data: providerOrder }) };
+  });
+  assert.equal(cancelled.status, 'CANCELLED');
+  await assert.rejects(() => cancelPayosLink(providerOrder.orderCode, async () => ({ ok: true, json: async () => ({ code: '00', data: { ...providerOrder, status: 'PAID' } }) })), /chưa xác nhận hủy/);
 }));

@@ -28,9 +28,9 @@ Website tiếp tục gia hạn cộng dồn từ ngày hết hạn hiện tại.
 
 1. Tạo tài khoản PayOS, xác minh cá nhân/tổ chức, liên kết ngân hàng và tạo kênh thanh toán.
 2. Trên Render, nhập `PAYOS_CLIENT_ID`, `PAYOS_API_KEY`, `PAYOS_CHECKSUM_KEY` từ kênh thanh toán.
-3. Đặt `PAYOS_RETURN_URL` và `PAYOS_CANCEL_URL`, ví dụ `https://thietbvhe186481.github.io/EXE301/?payment=return` và `https://thietbvhe186481.github.io/EXE301/?payment=cancel`.
-4. Trong kênh PayOS, đăng ký webhook `https://<service>.onrender.com/api/workflow/payments/payos-webhook`. PayOS sẽ gửi callback sau giao dịch; API kiểm tra HMAC-SHA256, mã đơn và số tiền rồi tự kích hoạt/cộng dồn gói.
-5. Trong GitHub repo, thêm Actions variable `VITE_PAYMENT_PROVIDER=payos`, rồi chạy lại workflow deploy. Khóa PayOS chỉ nằm trên API, tuyệt đối không tạo biến `VITE_PAYOS_*`.
+3. Đặt `PAYOS_RETURN_URL=https://portfolio.id.vn/?payment=payos` và `PAYOS_CANCEL_URL=https://portfolio.id.vn/?payment=payos-cancel` trên Render.
+4. Trong kênh payOS, đăng ký webhook `https://api.portfolio.id.vn/api/workflow/payments/payos-webhook`. payOS sẽ gửi callback sau giao dịch; API kiểm tra HMAC-SHA256, mã đơn và số tiền rồi tự kích hoạt/cộng dồn gói.
+5. Sau khi xác nhận kênh thu và webhook hoạt động, đặt `PAYMENT_PROVIDER=payos` **trên Render API** rồi deploy. Khóa payOS chỉ nằm trên API, tuyệt đối không tạo biến `VITE_PAYOS_*` hoặc `VITE_PAYMENT_PROVIDER` cho frontend.
 
 Hướng dẫn tạo link và xác thực webhook nằm trong [tài liệu API PayOS](https://payos.vn/docs/api/) và [hướng dẫn chữ ký](https://payos.vn/docs/tich-hop-webhook/kiem-tra-du-lieu-voi-signature/). PayOS yêu cầu tài khoản/kênh thanh toán đã xác thực và cấp ba khóa tích hợp. Nếu chưa cấu hình PayOS, production chỉ cho tạo đơn chuyển khoản thủ công khi `PAYMENT_BANK`, `PAYMENT_ACCOUNT`, `PAYMENT_ACCOUNT_NAME` đã được đặt trên API; admin vẫn phải đối soát tiền thực nhận.
 

@@ -226,6 +226,32 @@ test('PayOS webhook validates HMAC and exact amount, then activates and extends 
   } finally { for (const key of keys) old[key] === undefined ? delete process.env[key] : process.env[key] = old[key]; }
 });
 
+test('student cannot manually report or locally cancel a PayOS order before provider confirms cancellation', async () => {
+  const keys = ['PAYOS_CLIENT_ID', 'PAYOS_API_KEY', 'PAYOS_CHECKSUM_KEY', 'PAYOS_RETURN_URL', 'PAYOS_CANCEL_URL'];
+  const old = Object.fromEntries(keys.map(key => [key, process.env[key]]));
+  const originalFetch = globalThis.fetch;
+  Object.assign(process.env, { PAYOS_CLIENT_ID: 'test-client', PAYOS_API_KEY: 'test-key', PAYOS_CHECKSUM_KEY: 'test-checksum', PAYOS_RETURN_URL: 'https://site.example/return', PAYOS_CANCEL_URL: 'https://site.example/cancel' });
+  const code = 1900000456;
+  let providerStatus = 'PAID';
+  await models.SubscriptionOrder.create({ orderId: 'ORD-PAYOS-CANCEL', providerOrderCode: code, providerPaymentLinkId: 'PAYOS-LINK-CANCEL', userId: 'free', planId: 'premium-month', planName: 'Tháng', price: 79000, transactionCode: 'JR456', paymentMethod: 'PayOS · VietQR', status: 'pending' });
+  globalThis.fetch = (url, options) => {
+    if (!String(url).startsWith('https://api-merchant.payos.vn/')) return originalFetch(url, options);
+    if (options.method === 'POST') providerStatus = 'CANCELLED';
+    return Promise.resolve({ ok: true, json: async () => ({ code: '00', data: { id: 'PAYOS-LINK-CANCEL', orderCode: code, amount: 79000, amountPaid: providerStatus === 'PAID' ? 79000 : 0, status: providerStatus } }) });
+  };
+  try {
+    assert.equal((await request('/orders/ORD-PAYOS-CANCEL/mark-transferred', 'free', { confirmed: true })).status, 409);
+    assert.equal((await request('/orders/ORD-PAYOS-CANCEL/cancel', 'free', { confirmNotTransferred: true })).status, 409);
+    assert.equal((await models.SubscriptionOrder.findOne({ orderId: 'ORD-PAYOS-CANCEL' }).lean()).status, 'pending');
+    providerStatus = 'PENDING';
+    assert.equal((await request('/orders/ORD-PAYOS-CANCEL/cancel', 'free', { confirmNotTransferred: true })).status, 200);
+    assert.equal((await models.SubscriptionOrder.findOne({ orderId: 'ORD-PAYOS-CANCEL' }).lean()).status, 'cancelled');
+  } finally {
+    globalThis.fetch = originalFetch;
+    for (const key of keys) old[key] === undefined ? delete process.env[key] : process.env[key] = old[key];
+  }
+});
+
 test('AI completion can be upgraded to human without duplicate challenge record', async () => {
   const job = (await request('/state', 'free')).data.submissions[0];
   const result = await request(`/submissions/${job.id}`, 'free', { ...payload(), mentorId: 'other' }, 'PUT');
@@ -280,8 +306,9 @@ test('manual payment uses a unique VietQR reference and requires bank reconcilia
     const first = await post('/orders', { planId: 'premium-month', price: 1, transactionCode: 'INJECTED' });
     assert.equal(first.status, 201);
     assert.equal(first.data.order.price, 79000);
-    assert.equal(first.data.order.receivingBank.accountNumber, '33313052004');
-    assert.equal(first.data.order.receivingBank.accountHolder, 'NGUYEN SY HUY');
+    assert.equal(first.data.order.receivingBank.bankId, '970418');
+    assert.equal(first.data.order.receivingBank.accountNumber, '5050608139');
+    assert.equal(first.data.order.receivingBank.accountHolder, 'BUI VAN THIET');
     assert.match(first.data.order.transactionCode, /^PFH[A-F0-9]{16}$/);
     assert.equal(first.data.payment.provider, 'manual-vietqr');
     assert.match(first.data.payment.qrUrl, /img\.vietqr\.io/);

@@ -3,7 +3,7 @@ import { randomUUID } from 'node:crypto';
 import { z } from 'zod';
 import { aiConfigured, generateAiAdvice } from './ai-review.js';
 import { CHALLENGES, RESOURCES, REVIEW_FEE, scoreReview, readinessCheck, ratingBonus, qualityFromRatings } from '../shared/catalog.js';
-import { createPayosLink, payosConfigured, verifyPayosWebhook } from './payos.js';
+import { cancelPayosLink, createPayosLink, getPayosLink, payosConfigured, verifyPayosWebhook } from './payos.js';
 import { MENTOR_AGREEMENT_VERSION } from '../shared/mentorAgreement.js';
 import { DEFAULT_RECEIVING_ACCOUNT } from '../shared/paymentAccount.js';
 
@@ -404,6 +404,8 @@ export function createWorkflowRouter({ UserProfile, MentorAccount, AdminAccount,
   router.post('/orders/:id/mark-transferred', run(async (req, res) => {
     requireRole(req, 'student');
     z.object({ confirmed: z.literal(true) }).parse(req.body);
+    const initial = await SubscriptionOrder.findOne({ orderId: req.params.id, userId: req.account.id }).lean();
+    if (initial?.providerOrderCode) fail(409, 'Đơn payOS được xác nhận tự động; không cần báo đã chuyển khoản.');
     const now = new Date();
     const order = await SubscriptionOrder.findOneAndUpdate({ orderId: req.params.id, userId: req.account.id, status: 'pending', reportedPaidAt: { $exists: false } },
       { $set: { reportedPaidAt: now }, $push: { statusHistory: { status: 'reported', changedAt: now, note: 'Sinh viên báo đã chuyển khoản; chờ Admin kiểm tra tiền thực nhận.' } } }, { new: true });
@@ -415,6 +417,32 @@ export function createWorkflowRouter({ UserProfile, MentorAccount, AdminAccount,
   router.post('/orders/:id/cancel', run(async (req, res) => {
     requireRole(req, 'student');
     z.object({ confirmNotTransferred: z.literal(true) }).parse(req.body);
+    const initial = await SubscriptionOrder.findOne({ orderId: req.params.id, userId: req.account.id }).lean();
+    if (!initial) fail(404, 'Không tìm thấy đơn thanh toán.');
+    if (initial.providerOrderCode) {
+      return serializeUserOrder(initial.userId, async () => {
+        const fresh = await SubscriptionOrder.findOne({ orderId: initial.orderId }).lean();
+        if (fresh?.status !== 'pending') fail(409, 'Đơn không còn chờ thanh toán. Hãy tải lại.');
+        let provider;
+        try {
+          provider = await getPayosLink(fresh.providerOrderCode);
+          if (provider.status === 'PENDING') provider = await cancelPayosLink(fresh.providerOrderCode);
+        } catch {
+          fail(409, 'Chưa thể xác nhận hủy với payOS. Đơn vẫn đang chờ; hãy thử lại sau.');
+        }
+        if (Number(provider.orderCode) !== Number(fresh.providerOrderCode) ||
+            String(provider.id) !== String(fresh.providerPaymentLinkId) ||
+            Number(provider.amount) !== Number(fresh.price) || provider.status !== 'CANCELLED' ||
+            Number(provider.amountPaid || 0) !== 0) {
+          fail(409, 'payOS chưa xác nhận hủy đơn chưa thanh toán. Hãy kiểm tra trạng thái giao dịch.');
+        }
+        const now = new Date();
+        const order = await SubscriptionOrder.findOneAndUpdate({ orderId: fresh.orderId, status: 'pending' },
+          { $set: { status: 'cancelled' }, $push: { statusHistory: { status: 'cancelled', changedAt: now, note: 'payOS xác nhận hủy link thanh toán.' } } }, { new: true });
+        if (!order) fail(409, 'Đơn vừa được xử lý. Hãy tải lại.');
+        res.json({ order });
+      });
+    }
     const now = new Date();
     const order = await SubscriptionOrder.findOneAndUpdate({ orderId: req.params.id, userId: req.account.id, status: 'pending', reportedPaidAt: { $exists: false } },
       { $set: { status: 'cancelled' }, $push: { statusHistory: { status: 'cancelled', changedAt: now, note: 'Sinh viên xác nhận chưa chuyển khoản và hủy đơn.' } } }, { new: true });
