@@ -17,7 +17,7 @@ import { CHALLENGES } from '../../shared/catalog.js';
 const exampleJourneys = [
   ['01', 'Bắt đầu từ định hướng', 'Sinh viên mới bắt đầu', 'Chọn một ngành phù hợp, xem yêu cầu kỹ năng và bắt đầu với thử thách cơ bản.'],
   ['02', 'Biến kiến thức thành sản phẩm', 'Luyện tập qua dự án', 'Đọc yêu cầu, tham khảo học liệu và lưu liên kết sản phẩm cùng phần giải thích cách làm.'],
-  ['03', 'Kiểm tra trước khi nộp', 'Chuẩn bị minh chứng', 'Kiểm tra liên kết, mô tả và kỹ năng. Gợi ý AI chỉ xuất hiện khi dịch vụ được cấu hình và bạn đồng ý.'],
+  ['03', 'Kiểm tra trước khi nộp', 'Chuẩn bị minh chứng', 'Đối chiếu bài làm với yêu cầu, kiểm tra liên kết và mô tả rõ phần bạn đã thực hiện.'],
   ['04', 'Nhận góc nhìn chuyên môn', 'Sinh viên Premium', 'Chọn mentor phù hợp với bài tập, xem tình trạng hàng đợi và nhận góp ý theo tiêu chí của bài.'],
   ['05', 'Cải thiện qua phản hồi', 'Hoàn thiện bài làm', 'Trao đổi với mentor trong bài nộp và chỉnh sửa khi được yêu cầu. Đánh giá sao sau khi hoàn tất.'],
   ['06', 'Sẵn sàng giới thiệu năng lực', 'Xây dựng hồ sơ cá nhân', 'Tổng hợp sản phẩm đã hoàn thành và chủ động quyết định có chia sẻ hồ sơ nổi bật với mentor hay không.']
@@ -154,7 +154,7 @@ export function HomePage({ go, onOpenUpgrade, onOpenFooterModal, onRegisterMento
 
           <div className="jr-feature-card">
             <div className="jr-feat-icon emerald"><GraduationCap size={26} /></div>
-            <h3>Nguồn Học Liệu Chuẩn Đại Học FPT & Coursera</h3>
+            <h3>Học liệu từ FPT & Coursera</h3>
             <p>Liên kết đến cổng học tập FPT và các chương trình Google, Meta trên Coursera. Tài liệu nội bộ cần tài khoản và quyền truy cập hợp lệ.</p>
           </div>
 
