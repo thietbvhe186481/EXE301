@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import bcrypt from 'bcryptjs';
 import mongoose from 'mongoose';
-import { connectDb } from './config/db.js';
+import { connectDb, mongoUriFromEnvironment } from './config/db.js';
 import { AdminAccount, Category, Challenge, Major, MentorAccount, PremiumPlan, Resource, SubmissionRule, UserProfile } from './models.js';
 import { adminAccounts, categories, challenges, majors, mentorAccounts, mentorFeedback, notifications, resources, submissionRules, submissions, userProfiles } from './seed-data.js';
 import { augmentSeedData } from './supplemental-data.js';
@@ -27,7 +27,7 @@ async function bootstrap() {
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || password.length < 14) {
     throw new Error('Set BOOTSTRAP_ADMIN_EMAIL and BOOTSTRAP_ADMIN_PASSWORD (at least 14 characters) in the process environment.');
   }
-  if (!process.env.MONGODB_URI) throw new Error('Set MONGODB_URI explicitly; refusing to bootstrap a local fallback database.');
+  if (!mongoUriFromEnvironment()) throw new Error('Set MongoDB connection settings explicitly; refusing to bootstrap a local fallback database.');
   await connectDb();
   const existing = await AdminAccount.findOne({ id: 'admin-primary' }).lean();
   if (!existing) {

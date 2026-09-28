@@ -11,13 +11,13 @@ import { createTestimonialsRouter } from './testimonials.js';
 import { buildMentorMetrics, buildPlatformMetrics } from './metrics.js';
 import { createInquiriesRouter } from './inquiries.js';
 import { ReviewSubmission, ReviewerProfile, Complaint } from './workflow-models.js';
-import { connectDb } from './config/db.js';
+import { connectDb, mongoUriFromEnvironment } from './config/db.js';
 import { AdminAccount, Category, Challenge, Major, MentorAccount, MentorFeedback, Notification, Resource, Submission, SubmissionRule, UserProfile, StudentReview, SubscriptionOrder, ContactInquiry, Founder, PremiumPlan, MarketData } from './models.js';
 
 const app = express();
 const port = process.env.PORT || 4000;
 if (process.env.NODE_ENV === 'production' && !process.env.SESSION_SECRET) throw new Error('SESSION_SECRET is required in production');
-if (process.env.NODE_ENV === 'production' && !process.env.MONGODB_URI) throw new Error('MONGODB_URI is required in production');
+if (process.env.NODE_ENV === 'production' && !mongoUriFromEnvironment()) throw new Error('MongoDB connection settings are required in production');
 if (process.env.TRUST_PROXY === '1') app.set('trust proxy', 1);
 const databaseReady = connectDb();
 const sessionStore = process.env.NODE_ENV === 'production'
