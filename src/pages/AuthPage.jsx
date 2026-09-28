@@ -23,12 +23,16 @@ export function AuthPage({ authMode = 'login', initialRole = 'student', setAuthM
   const [busy, setBusy] = useState(false);
   const [verificationEmail, setVerificationEmail] = useState('');
   const [verificationCode, setVerificationCode] = useState('');
+  const [resetStage, setResetStage] = useState('');
+  const [resetCode, setResetCode] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmNewPassword, setConfirmNewPassword] = useState('');
   const [visible, setVisible] = useState({});
   const formRef = useRef(null);
   const submitting = useRef(false);
   const mentor = values.role === 'mentor';
 
-  useEffect(() => { setStep(1); setErrors({}); setMessage(''); setVisible({}); setVerificationEmail(''); setVerificationCode(''); }, [authMode]);
+  useEffect(() => { setStep(1); setErrors({}); setMessage(''); setVisible({}); setVerificationEmail(''); setVerificationCode(''); setResetStage(''); }, [authMode]);
   function update(name, value) {
     setValues(previous => ({ ...previous, [name]: value }));
     setErrors(previous => ({ ...previous, [name]: undefined }));
@@ -124,6 +128,29 @@ export function AuthPage({ authMode = 'login', initialRole = 'student', setAuthM
     catch (error) { setMessage(error.message); }
     finally { setBusy(false); }
   }
+  async function submitReset(event) {
+    event.preventDefault();
+    if (busy) return;
+    const address = values.email.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(address)) { setMessage('Nhập email hợp lệ.'); return; }
+    if (resetStage === 'confirm') {
+      if (!/^\d{6}$/.test(resetCode)) { setMessage('Nhập mã 6 chữ số trong email.'); return; }
+      if (newPassword.length < 8 || !/[\p{L}]/u.test(newPassword) || !/\d/.test(newPassword) || new TextEncoder().encode(newPassword).length > 72) { setMessage('Mật khẩu mới cần 8–72 byte, gồm chữ và số.'); return; }
+      if (newPassword !== confirmNewPassword) { setMessage('Mật khẩu xác nhận chưa khớp.'); return; }
+    }
+    setBusy(true); setMessage('');
+    try {
+      if (resetStage === 'request') {
+        const result = await apiService.forgotPassword({ email: address });
+        setResetStage('confirm'); setMessage(result.message);
+      } else {
+        const result = await apiService.resetPassword({ email: address, code: resetCode, newPassword });
+        setResetStage(''); setResetCode(''); setNewPassword(''); setConfirmNewPassword(''); setValues(previous => ({ ...previous, password: '' }));
+        setMessage(result.message);
+      }
+    } catch (error) { setMessage(error.message || 'Không thể xử lý yêu cầu. Vui lòng thử lại.'); }
+    finally { setBusy(false); }
+  }
 
   return <section className="pf-auth" aria-label={signup ? 'Đăng ký tài khoản' : 'Đăng nhập'}>
     <aside className="pf-auth-story">
@@ -146,14 +173,24 @@ export function AuthPage({ authMode = 'login', initialRole = 'student', setAuthM
       <div className="pf-auth-mode-nav"><span>{signup ? 'Đã có tài khoản?' : 'Mới đến Portfolio FPT Hub?'}</span><button type="button" disabled={busy} onClick={switchMode}>{signup ? 'Đăng nhập' : 'Tạo tài khoản'} <ArrowRight size={15} /></button></div>
       <div className="pf-auth-form-wrap">
         <header className="pf-auth-heading">
-          <span className="pf-auth-kicker">{signup ? 'BẮT ĐẦU HÀNH TRÌNH' : 'TIẾP TỤC HÀNH TRÌNH'}</span>
-          <h2>{signup ? step === 1 ? 'Bạn muốn tham gia với vai trò nào?' : mentor ? 'Chia sẻ chuyên môn của bạn.' : 'Làm quen một chút nhé.' : 'Chào mừng bạn trở lại.'}</h2>
-          <p>{signup ? step === 1 ? 'Một tài khoản để học hỏi, thực hành và cùng phát triển.' : mentor ? 'Thông tin này giúp kết nối bạn với những bài thực hành đúng chuyên môn.' : 'Chọn lĩnh vực quan tâm để bắt đầu xây dựng lộ trình nghề nghiệp.' : 'Đăng nhập để tiếp tục lộ trình, dự án và những kết nối của bạn.'}</p>
+          <span className="pf-auth-kicker">{resetStage ? 'KHÔI PHỤC TÀI KHOẢN' : signup ? 'BẮT ĐẦU HÀNH TRÌNH' : 'TIẾP TỤC HÀNH TRÌNH'}</span>
+          <h2>{resetStage ? 'Đặt lại mật khẩu.' : signup ? step === 1 ? 'Bạn muốn tham gia với vai trò nào?' : mentor ? 'Chia sẻ chuyên môn của bạn.' : 'Làm quen một chút nhé.' : 'Chào mừng bạn trở lại.'}</h2>
+          <p>{resetStage ? resetStage === 'request' ? 'Nhập email đã đăng ký để nhận mã đặt lại mật khẩu.' : 'Nhập mã trong email và tạo mật khẩu mới. Mã có hiệu lực 10 phút.' : signup ? step === 1 ? 'Một tài khoản để học hỏi, thực hành và cùng phát triển.' : mentor ? 'Thông tin này giúp kết nối bạn với những bài thực hành đúng chuyên môn.' : 'Chọn lĩnh vực quan tâm để bắt đầu xây dựng lộ trình nghề nghiệp.' : 'Đăng nhập để tiếp tục lộ trình, dự án và những kết nối của bạn.'}</p>
         </header>
         {signup && <div className="pf-auth-progress" aria-label={`Bước ${step} trên 2`}><span className="is-active"><i>{step === 2 ? <Check size={12} /> : '1'}</i>Tài khoản</span><b /><span className={step === 2 ? 'is-active' : ''}><i>2</i>Hồ sơ {mentor ? 'mentor' : 'sinh viên'}</span></div>}
-        <form ref={formRef} onSubmit={submit} noValidate>
+        <form ref={formRef} onSubmit={resetStage ? submitReset : submit} noValidate>
           {message && <div className="pf-auth-alert" role="alert" tabIndex={-1}>{message}</div>}
-          {verificationEmail ? <section className="pf-auth-fields pf-auth-verification"><p>Nhập mã 6 chữ số đã gửi đến <strong>{verificationEmail}</strong>. Mã có hiệu lực trong 10 phút.</p><label className="pf-auth-field" htmlFor="pf-auth-verification-code">Mã xác thực<input id="pf-auth-verification-code" inputMode="numeric" autoComplete="one-time-code" maxLength={6} value={verificationCode} onChange={event => setVerificationCode(event.target.value.replace(/\D/g, '').slice(0, 6))} /></label><button className="pf-auth-submit" type="submit" disabled={busy || verificationCode.length !== 6}>{busy ? 'Đang xác thực…' : 'Xác thực email'}<ArrowRight size={18} /></button><button type="button" className="pf-auth-back" disabled={busy} onClick={resendCode}>Gửi mã mới</button><button type="button" className="pf-auth-back" disabled={busy} onClick={() => { setVerificationEmail(''); setVerificationCode(''); setMessage(''); }}>Dùng email khác</button></section> : <fieldset disabled={busy} className="pf-auth-fields">
+          {resetStage ? <fieldset disabled={busy} className="pf-auth-fields">
+            <label className="pf-auth-field" htmlFor="pf-auth-reset-email"><span>Email tài khoản</span><input id="pf-auth-reset-email" type="email" autoComplete="email" value={values.email} onChange={event => update('email', event.target.value)} required maxLength={254} /></label>
+            {resetStage === 'confirm' && <>
+              <label className="pf-auth-field" htmlFor="pf-auth-reset-code"><span>Mã xác thực</span><input id="pf-auth-reset-code" inputMode="numeric" autoComplete="one-time-code" value={resetCode} onChange={event => setResetCode(event.target.value.replace(/\D/g, '').slice(0, 6))} maxLength={6} /></label>
+              <label className="pf-auth-field" htmlFor="pf-auth-reset-password"><span>Mật khẩu mới</span><input id="pf-auth-reset-password" type="password" autoComplete="new-password" value={newPassword} onChange={event => setNewPassword(event.target.value)} /></label>
+              <label className="pf-auth-field" htmlFor="pf-auth-reset-confirm"><span>Nhập lại mật khẩu mới</span><input id="pf-auth-reset-confirm" type="password" autoComplete="new-password" value={confirmNewPassword} onChange={event => setConfirmNewPassword(event.target.value)} /></label>
+            </>}
+            <button className="pf-auth-submit" type="submit">{busy ? 'Đang xử lý…' : resetStage === 'request' ? 'Gửi mã qua email' : 'Đổi mật khẩu'}<ArrowRight size={18} /></button>
+            {resetStage === 'confirm' && <button type="button" className="pf-auth-back" onClick={() => { setResetStage('request'); setMessage(''); }}>Yêu cầu mã mới</button>}
+            <button type="button" className="pf-auth-back" onClick={() => { setResetStage(''); setMessage(''); }}>Quay lại đăng nhập</button>
+          </fieldset> : verificationEmail ? <section className="pf-auth-fields pf-auth-verification"><p>Nhập mã 6 chữ số đã gửi đến <strong>{verificationEmail}</strong>. Mã có hiệu lực trong 10 phút.</p><label className="pf-auth-field" htmlFor="pf-auth-verification-code">Mã xác thực<input id="pf-auth-verification-code" inputMode="numeric" autoComplete="one-time-code" maxLength={6} value={verificationCode} onChange={event => setVerificationCode(event.target.value.replace(/\D/g, '').slice(0, 6))} /></label><button className="pf-auth-submit" type="submit" disabled={busy || verificationCode.length !== 6}>{busy ? 'Đang xác thực…' : 'Xác thực email'}<ArrowRight size={18} /></button><button type="button" className="pf-auth-back" disabled={busy} onClick={resendCode}>Gửi mã mới</button><button type="button" className="pf-auth-back" disabled={busy} onClick={() => { setVerificationEmail(''); setVerificationCode(''); setMessage(''); }}>Dùng email khác</button></section> : <fieldset disabled={busy} className="pf-auth-fields">
             {signup && step === 1 && <div className="pf-auth-roles" role="group" aria-label="Chọn vai trò">
               {[['student', GraduationCap, 'Sinh viên', 'Học qua dự án thực tế'], ['mentor', BriefcaseBusiness, 'Mentor', 'Chia sẻ kinh nghiệm']].map(([role, Icon, title, subtitle]) => <button key={role} type="button" aria-pressed={values.role === role} className={values.role === role ? 'is-selected' : ''} onClick={() => update('role', role)}><Icon size={23} /><strong>{title}</strong><span>{subtitle}</span>{values.role === role && <Check size={15} className="pf-auth-role-check" />}</button>)}
             </div>}
@@ -163,6 +200,7 @@ export function AuthPage({ authMode = 'login', initialRole = 'student', setAuthM
               {input('password', 'Mật khẩu', { type: 'password', autoComplete: signup ? 'new-password' : 'current-password', placeholder: signup ? 'Tạo mật khẩu của bạn' : 'Nhập mật khẩu', ...(signup ? { maxLength: 72, hint: '8–72 ký tự, bao gồm chữ và số.' } : {}) })}
               {signup && input('confirmPassword', 'Xác nhận mật khẩu', { type: 'password', autoComplete: 'new-password', placeholder: 'Nhập lại mật khẩu', maxLength: 72 })}
               {!signup && <label className="pf-auth-checkbox"><input type="checkbox" checked={values.rememberMe} onChange={event => update('rememberMe', event.target.checked)} /> Ghi nhớ đăng nhập</label>}
+              {!signup && <button type="button" className="pf-auth-back" onClick={() => { setResetStage('request'); setMessage(''); }}>Quên mật khẩu?</button>}
             </>}
             {signup && step === 2 && <>
               <Field name="selectedMajorKey" label={mentor ? 'Lĩnh vực hướng dẫn' : 'Lĩnh vực quan tâm'} errors={errors}><select id="pf-auth-selectedMajorKey" value={values.selectedMajorKey} onChange={event => update('selectedMajorKey', event.target.value)} aria-invalid={!!errors.selectedMajorKey} aria-describedby={errors.selectedMajorKey ? 'pf-auth-selectedMajorKey-error' : undefined}><option value="dev">Công nghệ thông tin / Developer</option><option value="mkt">Marketing</option><option value="design">Thiết kế / Designer</option></select></Field>
@@ -178,7 +216,7 @@ export function AuthPage({ authMode = 'login', initialRole = 'student', setAuthM
             <button type="submit" className="pf-auth-submit">{busy ? <><LoaderCircle size={19} className="pf-auth-spinner" />{signup ? 'Đang tạo tài khoản…' : 'Đang đăng nhập…'}</> : <>{signup ? step === 1 ? 'Tiếp tục' : `Tạo tài khoản ${mentor ? 'mentor' : 'sinh viên'}` : 'Đăng nhập'}<ArrowRight size={18} /></>}</button>
             {signup && step === 2 && <button type="button" className="pf-auth-back" onClick={() => { setStep(1); setMessage(''); }}><ArrowLeft size={15} /> Quay lại thông tin tài khoản</button>}
           </fieldset>}
-          {!verificationEmail && <p className="pf-auth-footnote">{signup ? 'Bắt đầu với tài khoản miễn phí.' : 'Dành cho sinh viên, mentor và quản trị viên.'}</p>}
+          {!verificationEmail && !resetStage && <p className="pf-auth-footnote">{signup ? 'Bắt đầu với tài khoản miễn phí.' : 'Dành cho sinh viên, mentor và quản trị viên.'}</p>}
         </form>
       </div>
     </div>

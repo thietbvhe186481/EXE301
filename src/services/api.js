@@ -56,6 +56,12 @@ export const apiService = {
   async resendVerification(data) {
     return fetchWithAuth('/api/auth/resend-verification', { method: 'POST', body: JSON.stringify(data) });
   },
+  async forgotPassword(data) {
+    return fetchWithAuth('/api/auth/forgot-password', { method: 'POST', body: JSON.stringify(data) });
+  },
+  async resetPassword(data) {
+    return fetchWithAuth('/api/auth/reset-password', { method: 'POST', body: JSON.stringify(data) });
+  },
   async getMe() {
     return fetchWithAuth('/api/auth/me');
   },

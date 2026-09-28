@@ -40,7 +40,7 @@ export const registrationSchema = z.object({
 });
 
 export const sanitizeAccount = (doc) => {
-  const { _id, __v, password: ignored, passwordHash, ...user } = doc.toObject ? doc.toObject() : doc;
+  const { _id, __v, password: ignored, passwordHash, verificationCodeHash, resetCodeHash, resetExpiresAt, resetAttempts, resetSentAt, ...user } = doc.toObject ? doc.toObject() : doc;
   return user;
 };
 const canSignIn = (account, requireVerifiedEmail = false) => (!requireVerifiedEmail || account.emailVerified === true) && !['pending', 'suspended', 'rejected', 'disqualified', 'unverified'].includes(account.status);
@@ -51,6 +51,7 @@ const saveSession = req => new Promise((resolve, reject) => req.session.save(err
 export function createAuthRouter({ UserProfile, MentorAccount, AdminAccount, sendVerificationEmail = deliverVerificationEmail, verificationRequired = process.env.EMAIL_VERIFICATION_REQUIRED === '1' || (process.env.NODE_ENV === 'production' && process.env.EMAIL_VERIFICATION_REQUIRED !== '0') }) {
   const router = Router();
   const failedLoginAttempts = new Map();
+  const resetRequests = new Map();
   const loginWindowMs = 15 * 60 * 1000;
   const loginLimit = 10;
   const loginKey = req => createHash('sha256')
@@ -221,7 +222,56 @@ export function createAuthRouter({ UserProfile, MentorAccount, AdminAccount, sen
       res.json({ ok: true });
     } catch (error) { next(error); }
   });
-  router.post('/forgot-password', (_req, res) => res.status(501).json({ message: 'Chức năng đặt lại mật khẩu qua email chưa được hỗ trợ. Vui lòng liên hệ quản trị viên.' }));
+  const resetMessage = 'Nếu email có tài khoản, mã đặt lại mật khẩu đã được gửi. Hãy kiểm tra cả thư rác.';
+  router.post('/forgot-password', async (req, res, next) => {
+    try {
+      const { email: address } = z.object({ email }).parse(req.body);
+      if (!process.env.RESEND_API_KEY && sendVerificationEmail === deliverVerificationEmail) return res.status(503).json({ message: 'Dịch vụ email chưa khả dụng. Vui lòng thử lại sau.' });
+      const key = loginKey(req);
+      const now = Date.now();
+      const window = resetRequests.get(key);
+      if (window && window.expiresAt > now && window.count >= 5) return res.status(429).json({ message: 'Đã yêu cầu quá nhiều mã. Vui lòng thử lại sau 15 phút.' });
+      resetRequests.set(key, { count: window?.expiresAt > now ? window.count + 1 : 1, expiresAt: window?.expiresAt > now ? window.expiresAt : now + loginWindowMs });
+      if (resetRequests.size > 10000) {
+        for (const [entryKey, entry] of resetRequests) if (entry.expiresAt <= now) resetRequests.delete(entryKey);
+        while (resetRequests.size > 10000) resetRequests.delete(resetRequests.keys().next().value);
+      }
+      const found = await findAccount(address);
+      if (found && found.account.status !== 'suspended' && now - new Date(found.account.resetSentAt || 0).getTime() >= 60_000) {
+        const code = String(randomInt(0, 1_000_000)).padStart(6, '0');
+        const hash = otpHash(address, `reset:${code}`);
+        await found.model.updateOne({ id: found.account.id }, { $set: { resetCodeHash: hash, resetExpiresAt: new Date(now + 10 * 60_000), resetAttempts: 0, resetSentAt: new Date(now) } });
+        try { await sendVerificationEmail(address, code, found.account.name, 'password-reset'); }
+        catch {
+          await found.model.updateOne({ id: found.account.id, resetCodeHash: hash }, { $unset: { resetCodeHash: 1, resetExpiresAt: 1, resetAttempts: 1, resetSentAt: 1 } });
+          return res.status(503).json({ message: 'Chưa gửi được mã. Vui lòng thử lại sau.' });
+        }
+      }
+      res.json({ message: resetMessage });
+    } catch (error) { next(error); }
+  });
+  router.post('/reset-password', async (req, res, next) => {
+    try {
+      const payload = z.object({ email, code: z.string().regex(/^\d{6}$/, 'Nhập mã 6 chữ số.'), newPassword: password }).parse(req.body);
+      const found = await findAccount(payload.email);
+      const account = found?.account;
+      const invalid = () => res.status(400).json({ message: 'Mã không hợp lệ hoặc đã hết hạn. Hãy yêu cầu mã mới.' });
+      if (!account?.resetCodeHash || !account.resetExpiresAt || new Date(account.resetExpiresAt).getTime() <= Date.now() || account.status === 'suspended') return invalid();
+      if ((account.resetAttempts || 0) >= 5) return res.status(429).json({ message: 'Mã đã bị khóa sau 5 lần nhập sai. Hãy yêu cầu mã mới.' });
+      const expected = Buffer.from(account.resetCodeHash);
+      const actual = Buffer.from(otpHash(payload.email, `reset:${payload.code}`));
+      if (expected.length !== actual.length || !timingSafeEqual(expected, actual)) {
+        await found.model.updateOne({ id: account.id, resetCodeHash: account.resetCodeHash }, { $inc: { resetAttempts: 1 } });
+        return invalid();
+      }
+      const result = await found.model.updateOne({ id: account.id, resetCodeHash: account.resetCodeHash, resetAttempts: { $lt: 5 }, resetExpiresAt: { $gt: new Date() } }, {
+        $set: { passwordHash: await bcrypt.hash(payload.newPassword, 12) },
+        $unset: { resetCodeHash: 1, resetExpiresAt: 1, resetAttempts: 1, resetSentAt: 1 }
+      });
+      if (!result?.matchedCount) return invalid();
+      res.json({ message: 'Đã đổi mật khẩu. Hãy đăng nhập bằng mật khẩu mới.' });
+    } catch (error) { next(error); }
+  });
   router.use((error, _req, res, next) => {
     if (error instanceof z.ZodError) {
       const fieldErrors = Object.fromEntries(error.issues.map(issue => [issue.path[0], issue.message]));
@@ -240,7 +290,7 @@ export async function deliverVerificationEmail(address, code, name, purpose = 'a
   const response = await fetch('https://api.resend.com/emails', {
     method: 'POST', signal: AbortSignal.timeout(10_000),
     headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ from, to: [address], subject: purpose === 'payment' ? 'Mã xác nhận thanh toán Portfolio FPT Hub' : 'Mã xác thực tài khoản Portfolio FPT Hub', text: `Xin chào ${name}, mã ${purpose === 'payment' ? 'xác nhận thanh toán' : 'xác thực tài khoản'} của bạn là ${code}. Mã có hiệu lực trong 10 phút. Nếu bạn không thực hiện thao tác này, hãy bỏ qua email và kiểm tra tài khoản của mình.` })
+    body: JSON.stringify({ from, to: [address], subject: purpose === 'payment' ? 'Mã xác nhận thanh toán Portfolio FPT Hub' : purpose === 'password-reset' ? 'Mã đặt lại mật khẩu Portfolio FPT Hub' : 'Mã xác thực tài khoản Portfolio FPT Hub', text: `Xin chào ${name}, mã ${purpose === 'payment' ? 'xác nhận thanh toán' : purpose === 'password-reset' ? 'đặt lại mật khẩu' : 'xác thực tài khoản'} của bạn là ${code}. Mã có hiệu lực trong 10 phút. Nếu bạn không thực hiện thao tác này, hãy bỏ qua email và kiểm tra tài khoản của mình.` })
   });
   if (!response.ok) throw new Error(`Email provider returned ${response.status}`);
 }

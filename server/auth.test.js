@@ -10,13 +10,14 @@ const makeModel = () => {
   const records = [];
   return {
     records,
-    async findOne(query) { return records.find(row => Object.entries(query).every(([k, v]) => row[k] === v)) ?? null; },
+    async findOne(query) { return records.find(row => Object.entries(query).every(([k, v]) => v && typeof v === 'object' && !(v instanceof Date) ? ('$lt' in v ? row[k] < v.$lt : '$gt' in v ? row[k] > v.$gt : false) : row[k] === v)) ?? null; },
     async create(data) { records.push({ ...data }); return records.at(-1); },
     async updateOne(query, update) {
-      const row = await this.findOne(query); if (!row) return;
+      const row = await this.findOne(query); if (!row) return { matchedCount: 0 };
       Object.assign(row, update.$set || Object.fromEntries(Object.entries(update).filter(([key]) => !key.startsWith('$'))));
       for (const key of Object.keys(update.$unset || {})) delete row[key];
       for (const [key, value] of Object.entries(update.$inc || {})) row[key] = (row[key] || 0) + value;
+      return { matchedCount: 1 };
     },
     async deleteOne(query) { const index = records.findIndex(row => Object.entries(query).every(([key, value]) => row[key] === value)); if (index >= 0) records.splice(index, 1); }
   };
@@ -165,4 +166,35 @@ test('password change checks old password and saves a hash of new password', asy
   assert.equal(result.status, 200);
   assert.equal((await request('/login', { email: 'student@example.test', password: 'Testing123' })).status, 401);
   assert.equal((await request('/login', { email: 'student@example.test', password: 'Changed123' })).status, 200);
+});
+
+test('email password reset recovers admin access and never exposes or reuses a code', async () => {
+  const Users = makeModel(), Mentors = makeModel(), Admins = makeModel();
+  let sentCode = '', sentPurpose = '';
+  await Admins.create({ id: 'recovery-admin', name: 'Quản trị', email: 'recovery@example.test', status: 'active', passwordHash: await bcrypt.hash('OldPassword123', 4) });
+  const app = express(); app.use(express.json());
+  app.use(session({ name: 'recovery.sid', secret: 'test-only-session-secret', resave: false, saveUninitialized: false }));
+  app.use('/api/auth', createAuthRouter({ UserProfile: Users, MentorAccount: Mentors, AdminAccount: Admins, sendVerificationEmail: async (_to, code, _name, purpose) => { sentCode = code; sentPurpose = purpose; } }));
+  const resetServer = app.listen(0, '127.0.0.1'); await new Promise(resolve => resetServer.once('listening', resolve));
+  const call = async (path, body) => { const response = await fetch(`http://127.0.0.1:${resetServer.address().port}/api/auth${path}`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) }); return { status: response.status, data: await response.json() }; };
+  try {
+    const unknown = await call('/forgot-password', { email: 'unknown@example.test' });
+    const requested = await call('/forgot-password', { email: 'RECOVERY@example.test' });
+    assert.equal(requested.status, 200);
+    assert.equal(requested.data.message, unknown.data.message);
+    assert.equal(sentPurpose, 'password-reset');
+    assert.match(sentCode, /^\d{6}$/);
+    assert.equal(requested.data.code, undefined);
+    assert.equal(Admins.records[0].resetCodeHash.includes(sentCode), false);
+    const wrong = String((Number(sentCode) + 1) % 1_000_000).padStart(6, '0');
+    assert.equal((await call('/reset-password', { email: 'recovery@example.test', code: wrong, newPassword: 'NewPassword123' })).status, 400);
+    assert.equal(Admins.records[0].resetAttempts, 1);
+    assert.equal((await call('/reset-password', { email: 'recovery@example.test', code: sentCode, newPassword: 'NewPassword123' })).status, 200);
+    assert.equal((await call('/reset-password', { email: 'recovery@example.test', code: sentCode, newPassword: 'AnotherPass123' })).status, 400);
+    assert.equal((await call('/login', { email: 'recovery@example.test', password: 'OldPassword123' })).status, 401);
+    const login = await call('/login', { email: 'recovery@example.test', password: 'NewPassword123' });
+    assert.equal(login.status, 200);
+    assert.equal(login.data.type, 'admin');
+    assert.equal(login.data.user.resetCodeHash, undefined);
+  } finally { await new Promise(resolve => resetServer.close(resolve)); }
 });
