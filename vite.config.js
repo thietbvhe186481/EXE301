@@ -5,7 +5,7 @@ import path from 'node:path';
 
 export default defineConfig({
   plugins: [react()],
-  // GitHub's project URL uses /EXE301/; a custom domain serves the app at /.
-  base: process.env.VITE_BASE_PATH || '/EXE301/',
+  // Relative assets work at both the GitHub Pages project URL and the custom domain.
+  base: process.env.VITE_BASE_PATH || './',
   cacheDir: path.join(os.tmpdir(), 'portfolio-career-vite-cache')
 });

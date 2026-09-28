@@ -21,7 +21,7 @@ Xóa bản ghi A/CNAME mặc định của TenTen **chỉ nếu trùng Host** v�
 
 Trong [GitHub repo > Settings > Pages](https://github.com/thietbvhe186481/EXE301/settings/pages), đặt **Custom domain** là `portfolio.id.vn` rồi Save. Repo này xuất bản bằng GitHub Actions nên không cần file `CNAME`. Khi DNS và chứng chỉ đã sẵn sàng, bật **Enforce HTTPS**. GitHub sẽ chuyển `www.portfolio.id.vn` về tên miền chính nếu cả hai bản ghi được cấu hình đúng.
 
-Trong [Settings > Secrets and variables > Actions > Variables](https://github.com/thietbvhe186481/EXE301/settings/variables/actions), đặt `VITE_BASE_PATH=/` **sau khi** tên miền đã được GitHub nhận. Chạy lại workflow **Deploy Portfolio to GitHub Pages**. Cho đến lúc đó, để trống biến này hoặc giữ `/EXE301/` để [địa chỉ GitHub Pages hiện tại](https://thietbvhe186481.github.io/EXE301/) không bị hỏng. Không đặt khóa bí mật vào biến `VITE_*`.
+Build mặc định dùng đường dẫn asset tương đối (`VITE_BASE_PATH=./`), nên chạy được ở cả tên miền riêng và [địa chỉ GitHub Pages cũ](https://thietbvhe186481.github.io/EXE301/). Để trống biến `VITE_BASE_PATH` trong [Settings > Secrets and variables > Actions > Variables](https://github.com/thietbvhe186481/EXE301/settings/variables/actions), hoặc đặt `./`; không dùng `/EXE301/` khi tên miền riêng đã hoạt động. Không đặt khóa bí mật vào biến `VITE_*`.
 
 ## 3. Triển khai API và dữ liệu
 
