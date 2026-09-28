@@ -39,7 +39,13 @@ async function bootstrap() {
   // Generate the public catalog without inserting demo accounts, ratings or submissions.
   const catalog = structuredClone({ adminAccounts, categories, challenges, majors, mentorAccounts, mentorFeedback, notifications, resources, submissions, userProfiles });
   augmentSeedData(catalog);
-  await insertMissingCatalog(Major, catalog.majors, 'key');
+  // Upsert defaults run without a document context in Mongoose; Major's
+  // id/name defaults read `this.key`, so provide both explicitly here.
+  await insertMissingCatalog(Major, catalog.majors.map(major => ({
+    ...major,
+    id: major.id || major.key,
+    name: major.name || major.title || major.key
+  })), 'key');
   await insertMissingCatalog(Challenge, catalog.challenges);
   await insertMissingCatalog(Category, catalog.categories);
   await insertMissingCatalog(Resource, catalog.resources);
