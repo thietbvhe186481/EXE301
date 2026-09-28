@@ -13,6 +13,7 @@ import { createInquiriesRouter } from './inquiries.js';
 import { ReviewSubmission, ReviewerProfile, Complaint } from './workflow-models.js';
 import { connectDb, mongoUriFromEnvironment } from './config/db.js';
 import { AdminAccount, Category, Challenge, Major, MentorAccount, MentorFeedback, Notification, Resource, Submission, SubmissionRule, UserProfile, StudentReview, SubscriptionOrder, ContactInquiry, Founder, PremiumPlan, MarketData } from './models.js';
+import { describePremiumPlan } from '../shared/premiumCopy.js';
 
 const app = express();
 const port = process.env.PORT || 4000;
@@ -158,7 +159,7 @@ app.get('/api/bootstrap', async (req, res, next) => {
       reviews,
       founders,
       subscriptionOrders,
-      premiumPlans,
+      premiumPlans: premiumPlans.map(describePremiumPlan),
       marketData
     ] = await Promise.all([
       Major.find({}).sort({ displayOrder: 1 }).lean(),
@@ -1003,7 +1004,7 @@ app.delete('/api/founders/:id', async (req, res, next) => {
 app.get('/api/premium-plans', async (_req, res, next) => {
   try {
     const plans = await PremiumPlan.find({}).sort({ order: 1 }).lean();
-    res.json(plans);
+    res.json(plans.map(describePremiumPlan));
   } catch (error) {
     next(error);
   }

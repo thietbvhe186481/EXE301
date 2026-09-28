@@ -10,10 +10,9 @@ import {
   ShieldCheck,
   Star
 } from 'lucide-react';
-import { CHALLENGES, RESOURCES, REVIEW_FEE } from '../../shared/catalog.js';
+import { CHALLENGES, RESOURCES } from '../../shared/catalog.js';
 import { apiService } from '../services/api';
 
-const money = value => `${Number(value || 0).toLocaleString('vi-VN')} đ`;
 
 export function AboutPage({ go, onOpenUpgrade, onOpenFooterModal, currentUser }) {
   const [studentReviews, setStudentReviews] = useState([]);
@@ -28,10 +27,10 @@ export function AboutPage({ go, onOpenUpgrade, onOpenFooterModal, currentUser })
   const isStudent = role === 'student';
 
   const companyStats = [
-    { value: CHALLENGES.length, label: 'Thử thách thực hành', note: 'Có brief, mức độ, yêu cầu nộp và tiêu chí review theo từng lĩnh vực.' },
+    { value: CHALLENGES.length, label: 'Thử thách thực hành', note: 'Có bối cảnh, yêu cầu nộp và tiêu chí đánh giá theo từng lĩnh vực.' },
     { value: '3 lĩnh vực', label: 'Lộ trình nghề nghiệp', note: 'Công nghệ & dữ liệu, marketing, thiết kế & UX.' },
-    { value: '2 cách', label: 'Nhận phản hồi', note: 'Kiểm tra mức độ sẵn sàng theo quy tắc hoặc review bởi mentor đã duyệt.' },
-    { value: money(REVIEW_FEE), label: 'Phí cơ bản cho mentor', note: 'Được ghi nhận cho mỗi bài review mentor hoàn thành; admin đối soát trước khi chi trả.' }
+    { value: '2 cách', label: 'Nhận phản hồi', note: 'Xem kiểm tra sơ bộ hoặc nhận góp ý từ mentor đã được duyệt.' },
+    { value: 'Chủ động', label: 'Chia sẻ hồ sơ', note: 'Bạn quyết định có cho mentor xem bài nổi bật của mình hay không.' }
   ];
 
   const learningSources = useMemo(() => {
@@ -134,9 +133,9 @@ export function AboutPage({ go, onOpenUpgrade, onOpenFooterModal, currentUser })
       <article className="about-block">
         <div className="block-header"><FileCheck2 size={22} /><div><h2>Cách học và nhận review</h2><p>Mỗi bước đều cho bạn biết cần chuẩn bị gì và kết quả tiếp theo là gì.</p></div></div>
         <div className="company-stats-grid">
-          <div className="company-stat-card"><span className="stat-big-val">01</span><strong className="stat-main-label">Chọn thử thách</strong><p className="stat-sub-note">Lọc theo lĩnh vực, cấp độ và quyền truy cập. Đọc đầu ra, thời lượng dự kiến và rubric trước khi bắt đầu.</p></div>
-          <div className="company-stat-card"><span className="stat-big-val">02</span><strong className="stat-main-label">Nộp minh chứng</strong><p className="stat-sub-note">Gửi tối đa ba đường dẫn và mô tả ngắn. Hệ thống không nhận tệp lớn nên bài nộp nhẹ, dễ cập nhật.</p></div>
-          <div className="company-stat-card"><span className="stat-big-val">03</span><strong className="stat-main-label">Nhận phản hồi</strong><p className="stat-sub-note">Bài kiểm tra sơ bộ dùng checklist; review mentor chấm theo rubric của thử thách và ghi nhận phí sau khi hoàn tất.</p></div>
+          <div className="company-stat-card"><span className="stat-big-val">01</span><strong className="stat-main-label">Chọn thử thách</strong><p className="stat-sub-note">Lọc theo lĩnh vực, cấp độ và quyền truy cập. Đọc kết quả cần có, thời gian dự kiến và tiêu chí đánh giá trước khi bắt đầu.</p></div>
+          <div className="company-stat-card"><span className="stat-big-val">02</span><strong className="stat-main-label">Nộp minh chứng</strong><p className="stat-sub-note">Gửi tối đa ba đường dẫn và mô tả ngắn. Bạn có thể cập nhật bài trên dịch vụ lưu trữ mình đang dùng.</p></div>
+          <div className="company-stat-card"><span className="stat-big-val">03</span><strong className="stat-main-label">Nhận phản hồi</strong><p className="stat-sub-note">Xem phần kiểm tra sơ bộ hoặc nhận góp ý của mentor theo từng tiêu chí của bài.</p></div>
         </div>
       </article>
 
@@ -187,7 +186,7 @@ export function AboutPage({ go, onOpenUpgrade, onOpenFooterModal, currentUser })
         <div className="footer-brand"><span className="brand-mark"><Rocket size={20} color="#0284c7" /></span><div><h2>Portfolio FPT Hub</h2><p>Biến kỹ năng hôm nay thành cơ hội ngày mai.</p></div></div>
         <div className="footer-grid">
           <div><p className="mono-label">Dự án</p><strong>Portfolio FPT Hub</strong><span>Nền tảng thực hành và nhận phản hồi nghề nghiệp.</span></div>
-          <div><p className="mono-label">Liên hệ</p><a href="mailto:portfolio.exe@gmail.com">portfolio.exe@gmail.com</a><span>Thông tin hỗ trợ trực tuyến cần máy chủ API được kết nối.</span></div>
+          <div><p className="mono-label">Liên hệ</p><a href="mailto:portfolio.exe@gmail.com">portfolio.exe@gmail.com</a><span>Gửi câu hỏi qua email nếu bạn cần hỗ trợ.</span></div>
           <div><p className="mono-label">Sản phẩm</p><button type="button" onClick={() => go('roadmap')}>Bản đồ nghề</button><button type="button" onClick={() => go('hub')}>Thử thách portfolio</button><button type="button" onClick={onOpenUpgrade}>Gói Premium</button></div>
           <div><p className="mono-label">Pháp lý & quy chuẩn</p><button type="button" onClick={() => onOpenFooterModal?.('terms')}>Điều khoản dịch vụ</button><button type="button" onClick={() => onOpenFooterModal?.('privacy')}>Chính sách bảo mật</button><button type="button" onClick={() => onOpenFooterModal?.('mentor-rubric')}>Quy chuẩn Mentor Review</button></div>
         </div>

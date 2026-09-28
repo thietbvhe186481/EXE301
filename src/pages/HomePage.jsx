@@ -108,7 +108,7 @@ export function HomePage({ go, onOpenUpgrade, onOpenFooterModal, onRegisterMento
           <div className="jr-process-card">
             <div className="jr-step-badge">3</div>
             <h3>3. Nhận Phản Hồi Theo Tiêu Chí</h3>
-            <p>Nộp liên kết sản phẩm và mô tả cách làm. Xem kiểm tra thông tin ban đầu hoặc chọn mentor góp ý theo rubric của bài.</p>
+            <p>Nộp liên kết sản phẩm và mô tả cách làm. Xem kiểm tra thông tin ban đầu hoặc chọn mentor góp ý theo từng tiêu chí của bài.</p>
             <button className="jr-step-link-btn" onClick={() => go('hub')}>
               Nộp bài & Nhận review <ArrowRight size={13} />
             </button>

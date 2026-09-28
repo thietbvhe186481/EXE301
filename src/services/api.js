@@ -4,7 +4,7 @@ const isApiConfigured = Boolean(API_BASE_URL);
 
 export async function fetchWithAuth(url, options = {}) {
   if (!API_BASE_URL) {
-    throw new Error('Máy chủ tài khoản chưa được kết nối. Website hiện chỉ có giao diện; quản trị viên cần triển khai API và cấu hình VITE_API_URL.');
+    throw new Error('Dịch vụ tài khoản tạm thời chưa khả dụng. Vui lòng thử lại sau.');
   }
   const defaultOptions = {
     credentials: 'include',

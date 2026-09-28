@@ -56,10 +56,10 @@ export function MarketTrendsPage({
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
             <span style={{ background: '#0284c7', color: '#fff', fontSize: '11px', fontWeight: 800, padding: '3px 9px', borderRadius: '6px', letterSpacing: '0.5px' }}>
-              MARKET INTELLIGENCE
+              THỊ TRƯỜNG VIỆC LÀM
             </span>
             <span style={{ fontSize: '13px', color: '#64748b', fontWeight: 600 }}>
-              Dữ liệu tuyển dụng thực tế · FPT Career HUB
+              Tổng hợp từ các nguồn tuyển dụng công khai
             </span>
           </div>
           <h1 style={{ fontSize: 'clamp(24px, 3.2vw, 32px)', fontWeight: 900, margin: '0 0 8px', color: 'var(--jr-text-main, #0f172a)' }}>
@@ -86,7 +86,7 @@ export function MarketTrendsPage({
 
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '6px 14px', borderRadius: '10px', background: 'rgba(2, 132, 199, 0.08)', border: '1px solid rgba(2, 132, 199, 0.2)', fontSize: '12.5px', color: '#0284c7', fontWeight: 600 }}>
             <Sparkles size={15} />
-            <span>Cập nhật: <strong>{updatedLabel}</strong> (Đang theo dõi realtime)</span>
+             <span>Dữ liệu tham khảo: <strong>{updatedLabel}</strong> (xem ngày phát hành tại trang nguồn)</span>
           </div>
         </div>
       </div>
@@ -98,7 +98,7 @@ export function MarketTrendsPage({
           onClick={() => setActiveTab('overview')}
         >
           <Lightbulb size={16} />
-          <span>1. Tổng quan & Kỹ năng Hot</span>
+          <span>1. Tổng quan & kỹ năng nổi bật</span>
         </button>
 
         <button

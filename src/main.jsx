@@ -68,6 +68,7 @@ import { AuthPage } from './pages/AuthPage';
 const ReviewWorkspace = lazy(() => import('./pages/ReviewWorkspace'));
 import { HomePage } from './pages/HomePage';
 import { CHALLENGES, LEVEL_LABELS, RESOURCES } from '../shared/catalog.js';
+import { describePremiumPlan } from '../shared/premiumCopy.js';
 import { AboutPage } from './pages/AboutPage';
 import { MarketTrendsPage } from './pages/MarketTrendsPage';
 import './pages/BrandConsistency.css';
@@ -576,34 +577,19 @@ const premiumPlans = [
 
 const premiumCapabilities = [
   {
-    title: 'Không giới hạn toàn bộ',
-    detail: 'Mở khóa toàn bộ challenge free/premium, không giới hạn số lần tham gia và nộp lại trong thời hạn gói.',
+    title: 'Thử thách dành cho Premium',
+    detail: 'Truy cập các bài thực hành Premium trong thời hạn gói và xem trước yêu cầu, tiêu chí đánh giá.',
     icon: Trophy
   },
   {
-    title: 'Public portfolio chuyên nghiệp',
-    detail: 'Tạo trang portfolio công khai có headline, case study, link dự án, kỹ năng xác thực và lịch sử mentor review.',
-    icon: LinkIcon
-  },
-  {
-    title: 'Báo cáo tiến độ theo tháng',
-    detail: 'Theo dõi challenge hoàn thành, submission, feedback, kỹ năng mới và mục tiêu tháng tiếp theo.',
-    icon: LayoutDashboard
-  },
-  {
-    title: 'Badge xác thực kỹ năng',
-    detail: 'Tự động tạo badge khi bài được mentor chấm đạt, giúp hồ sơ có minh chứng rõ ràng hơn.',
-    icon: BadgeCheck
-  },
-  {
-    title: 'Ưu tiên mentor theo chuyên ngành',
-    detail: 'Khi nộp bài, hệ thống match mentor có expertise gần nhất với ngành, chuyên ngành và bộ kỹ năng của challenge.',
+    title: 'Góp ý từ mentor',
+    detail: 'Chọn mentor đang nhận bài phù hợp, xem thời gian phản hồi dự kiến và nhận nhận xét theo từng tiêu chí.',
     icon: GraduationCap
   },
   {
-    title: 'Chứng nhận hoàn thành lộ trình',
-    detail: 'Khi hoàn thành đủ vị trí, challenge và feedback, người học nhận chứng nhận demo để đưa vào portfolio.',
-    icon: Crown
+    title: 'Theo dõi và cải thiện bài làm',
+    detail: 'Lưu bài, trao đổi với mentor và xem lại phản hồi để tiếp tục hoàn thiện sản phẩm.',
+    icon: LayoutDashboard
   }
 ];
 
@@ -627,7 +613,7 @@ const marketSignalsByMajor = {
   dev: {
     headline: 'AI-assisted engineering, backend API và full stack vẫn là nhóm kỹ năng dễ chuyển thành portfolio nhất.',
     confidence: 'Cao',
-    updatedPolicy: 'Tổng hợp hằng ngày từ báo cáo lương, job board và nguồn tuyển dụng công khai.',
+    updatedPolicy: 'Tổng hợp từ báo cáo lương và nguồn tuyển dụng công khai; xem ngày phát hành tại trang nguồn.',
     signals: [
       { label: 'Nhu cầu tuyển dụng', value: 'Cao', note: 'Backend, Full Stack, DevOps và AI/Data thường xuất hiện trong JD sản phẩm số.' },
       { label: 'Kỹ năng nổi bật', value: 'API + Cloud + AI', note: 'Nhà tuyển dụng ưu tiên ứng viên có demo chạy được, README rõ và hiểu trade-off.' },
@@ -841,7 +827,7 @@ function buildRoleReality({ currentMajor, selectedRole }) {
 }
 
 function getMarketUpdatedLabel() {
-  return new Date().toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  return 'các báo cáo công khai';
 }
 
 const marketEvidenceByMajor = {
@@ -1274,7 +1260,7 @@ function App() {
 
   const catalog = appData?.majors?.length ? appData.majors : majorCatalog;
   const activePremiumPlans = useMemo(() => {
-    return appData?.premiumPlans?.length ? appData.premiumPlans : premiumPlans;
+    return (appData?.premiumPlans?.length ? appData.premiumPlans : premiumPlans).map(describePremiumPlan);
   }, [appData?.premiumPlans]);
 
   const marketSignalsByMajorFromRemote = useMemo(() => {
@@ -2173,7 +2159,7 @@ function CareerMapPage({ majors, currentMajor, changeMajor, columns, levels, sel
               <article className="source-credibility-card">
                 <div>
                   <p className="mono-label">Nguồn & độ tin cậy</p>
-                  <strong>Cập nhật {updatedLabel}</strong>
+                  <strong>Tham khảo {updatedLabel}</strong>
                 </div>
                 <p>{marketSignal.headline}</p>
                 <div className="source-mini-grid">
@@ -2944,19 +2930,19 @@ function MentorFeedbackPage({ go, challenge, submissions, feedbackList, challeng
 function PortfolioPage({ pathRoles, currentMajor, go, demoUser, apiStatus, submissions, challenges, updatePortfolio, updateStudentProfile, isPremium, autoOpenPublicPortfolio, onPublicPortfolioOpened }) {
   const [showPublicPreview, setShowPublicPreview] = useState(false);
   const [isEditingProfileInfo, setIsEditingProfileInfo] = useState(false);
-  const mainSpecs = currentMajor.columns.slice(0, 5);
-  const stats = demoUser?.stats ?? { completedChallenges: 6, mentorRating: 4.8, portfolioProjects: 4, verifiedSkills: 18 };
-  const profileName = demoUser?.name ?? 'Quang Nguyễn';
-  const careerGoal = demoUser?.careerGoal ?? pathRoles[pathRoles.length - 1]?.title ?? `Lead ${currentMajor.short}`;
+  const profileName = demoUser?.name ?? 'Sinh viên';
+  const careerGoal = demoUser?.careerGoal ?? pathRoles[pathRoles.length - 1]?.title ?? 'Chưa cập nhật mục tiêu nghề nghiệp';
   const userSubmissions = submissions.filter((item) => item.userId === (demoUser?.id ?? 'demo-student'));
   const challengeName = (challengeId) => challenges.find((item) => item.id === challengeId)?.title ?? challengeId;
-  const reviewedSubmissions = userSubmissions.filter((item) => ['reviewed', 'accepted'].includes(item.status)).length;
-  const publicPortfolioUrl = `https://portfolio.vn/u/${String(profileName).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'student'}`;
+  const completedSubmissions = userSubmissions.filter((item) => ['completed', 'reviewed', 'accepted'].includes(item.status));
+  const reviewedSubmissions = userSubmissions.filter((item) => item.review).length;
+  const recordedSkills = [...new Set([...(demoUser?.currentSkills || []), ...userSubmissions.flatMap(item => item.skills || [])])];
+  const stats = { completedChallenges: completedSubmissions.length, mentorReviews: reviewedSubmissions, portfolioProjects: userSubmissions.length, recordedSkills: recordedSkills.length };
   const initialProfileForm = () => ({
     school: demoUser?.school ?? '',
     academicMajor: demoUser?.academicMajor ?? currentMajor.title,
     academicYear: demoUser?.academicYear ?? '',
-    portfolioLink: demoUser?.portfolio?.links?.[0] ?? publicPortfolioUrl
+    portfolioLink: demoUser?.portfolio?.links?.[0] ?? ''
   });
   const [profileForm, setProfileForm] = useState(initialProfileForm);
   const updateProfileField = (field, value) => setProfileForm((current) => ({ ...current, [field]: value }));
@@ -2965,39 +2951,21 @@ function PortfolioPage({ pathRoles, currentMajor, go, demoUser, apiStatus, submi
     updateStudentProfile?.(profileForm);
     setIsEditingProfileInfo(false);
   };
-  const monthlyReport = [
-    { label: 'Challenge đã tham gia', value: userSubmissions.length },
-    { label: 'Feedback mentor', value: reviewedSubmissions },
-    { label: 'Kỹ năng mới', value: Math.round((stats.verifiedSkills ?? 0) / 3) }
-  ];
-  const premiumBadges = [
-    `${currentMajor.short} Skill Verified`,
-    'Mentor Reviewed',
-    'Portfolio Ready',
-    'Career Path Certified'
-  ];
-  const certificateCode = `PF-${currentMajor.short.toUpperCase()}-${String(demoUser?.id ?? 'demo').slice(-4).toUpperCase()}-2026`;
   const portfolioProjectDetails = userSubmissions.slice(0, 4).map((submission, index) => {
     const challenge = challenges.find((item) => item.id === submission.challengeId)
       ?? challenges.find((item) => item.majorKey === currentMajor.key)
       ?? { title: challengeName(submission.challengeId), track: currentMajor.columns[0]?.title ?? currentMajor.title, summary: 'Bài tập portfolio theo ngành đã chọn.', tags: currentMajor.columns.slice(0, 3).map((item) => item.title), xp: 420 };
-    const score = submission.review?.score ?? 'Chưa chấm';
+    const score = submission.review?.score ?? '—';
+    const evidenceLink = submission.links?.[0] || submission.primaryLink || '';
     return {
       id: `${submission.challengeId}-${index}`,
       title: challenge.title,
       track: challenge.track,
       status: statusLabels[submission.status] ?? submission.status,
       score,
-      summary: challenge.summary,
+      summary: submission.notes || challenge.summary,
       tags: challenge.tags ?? [],
-      outcome: [
-        `Hoàn thiện ${challenge.track} artifact có thể đưa vào CV/portfolio.`,
-        `Có minh chứng link, ghi chú nghiệp vụ và checklist nộp bài.`,
-        `Tích lũy ${challenge.xp ?? 420} XP cho hồ sơ ${currentMajor.title}.`
-      ],
-      mentorHighlight: score >= 88
-        ? 'Mentor đánh giá cao vì bài có cấu trúc rõ, minh chứng dễ kiểm tra và có khả năng trình bày thành case study.'
-        : 'Bài có nền tảng tốt, cần bổ sung thêm bằng chứng kết quả và giải thích quyết định triển khai.'
+      link: /^https?:\/\//i.test(evidenceLink) ? evidenceLink : ''
     };
   });
   useEffect(() => {
@@ -3013,15 +2981,15 @@ function PortfolioPage({ pathRoles, currentMajor, go, demoUser, apiStatus, submi
     <section className="content-page portfolio-page">
       <div className="portfolio-action-hub-banner" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--jr-card)', border: '1px solid var(--jr-card-border)', borderRadius: '18px', padding: '18px 24px', marginBottom: '20px', flexWrap: 'wrap', gap: '14px' }}>
         <div>
-          <span className="mono-label" style={{ color: '#38bdf8' }}>Hồ Sơ Năng Lực Sinh Viên · Portfolio Workspace</span>
+           <span className="mono-label" style={{ color: '#38bdf8' }}>HỒ SƠ NĂNG LỰC</span>
           <h1 style={{ margin: '4px 0 2px', fontSize: '22px', fontWeight: 800 }}>Hồ Sơ Portfolio Của {profileName}</h1>
           <p style={{ margin: 0, fontSize: '13px', color: 'var(--jr-text-sub)' }}>
-            Lộ trình: <b>{careerGoal}</b> · Trường: <b>{demoUser?.school || 'Đại học FPT'}</b> · {portfolioProjectDetails.length} Dự án đã xác thực
+             Mục tiêu: <b>{careerGoal}</b> · Trường: <b>{demoUser?.school || 'Chưa cập nhật'}</b> · {userSubmissions.length} bài đã nộp
           </p>
         </div>
         <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
           <button type="button" className="ghost-action compact" onClick={() => setShowPublicPreview((v) => !v)}>
-            <LinkIcon size={14} /> {showPublicPreview ? 'Ẩn Public Preview' : 'Trang công khai'}
+             <LinkIcon size={14} /> {showPublicPreview ? 'Ẩn tổng quan' : 'Xem tổng quan'}
           </button>
           <button type="button" className="ghost-action compact" onClick={() => go('hub')}>
             <Rocket size={14} /> Thêm dự án mới
@@ -3030,7 +2998,7 @@ function PortfolioPage({ pathRoles, currentMajor, go, demoUser, apiStatus, submi
             <BadgeCheck size={14} /> Xem góp ý Mentor
           </button>
           <button type="button" className="jr-btn-primary compact" style={{ padding: '8px 16px', fontSize: '13px' }} onClick={() => setShowPublicPreview(true)}>
-            <Sparkles size={14} /> Xem trước Portfolio công khai
+             <Sparkles size={14} /> Xem trước hồ sơ
           </button>
         </div>
       </div>
@@ -3039,78 +3007,40 @@ function PortfolioPage({ pathRoles, currentMajor, go, demoUser, apiStatus, submi
         <section className="public-portfolio-preview">
           <div className="public-preview-hero">
             <div>
-              <p className="mono-label">Public portfolio preview</p>
+               <p className="mono-label">BẢN XEM TRƯỚC HỒ SƠ</p>
               <h2>{profileName}</h2>
               <span>{careerGoal} · {currentMajor.title}</span>
             </div>
             <button className="ghost-action compact" onClick={() => setShowPublicPreview(false)}>
               <X size={16} />
-              Đóng preview
+               Đóng bản xem trước
             </button>
           </div>
-          <div className="public-url-row">
-            <LinkIcon size={17} />
-            <strong>{publicPortfolioUrl}</strong>
-            <span>Đang public trong bản demo</span>
-          </div>
-          <div className="public-preview-grid">
-            <article>
-              <p className="mono-label">Case study nổi bật</p>
-              <h3>Case study {currentMajor.title}</h3>
-              <span>Gồm lộ trình, challenge đã nộp, minh chứng sản phẩm và mentor feedback.</span>
-            </article>
-            <article>
-              <p className="mono-label">Kỹ năng xác thực</p>
-              <div className="tag-row">
-                {premiumBadges.slice(0, 3).map((item) => <span key={item}>{item}</span>)}
-              </div>
-            </article>
-            <article>
-              <p className="mono-label">Chứng nhận</p>
-              <h3>{certificateCode}</h3>
-              <span>Chứng nhận hoàn thành lộ trình Premium.</span>
-            </article>
-          </div>
-        </section>
-      )}
-      {isPremium && (
-        <div className="premium-portfolio-grid">
-          <article>
-            <p className="mono-label">Public portfolio</p>
-            <h2>{publicPortfolioUrl}</h2>
-            <span>Trang công khai có case study, kỹ năng xác thực và lịch sử mentor feedback.</span>
-          </article>
-          <article>
-            <p className="mono-label">Báo cáo tháng này</p>
-            <div className="mini-metric-row">
-              {monthlyReport.map((item) => (
-                <span key={item.label}><strong>{item.value}</strong>{item.label}</span>
-              ))}
-            </div>
-          </article>
-          <article>
-            <p className="mono-label">Badge xác thực</p>
-            <div className="tag-row">
-              {premiumBadges.map((item) => <span key={item}>{item}</span>)}
-            </div>
-          </article>
-          <article>
-            <p className="mono-label">Mentor ưu tiên</p>
-            <h2>{currentMajor.title} specialist</h2>
-            <span>Ưu tiên match mentor theo chuyên ngành, challenge và kỹ năng đang cần review.</span>
-          </article>
-          <article>
-            <p className="mono-label">Chứng nhận lộ trình</p>
-            <h2>{certificateCode}</h2>
-            <span>Cấp khi hoàn thành đủ lộ trình, challenge bắt buộc và mentor feedback đạt chuẩn.</span>
-          </article>
-        </div>
-      )}
+           <div className="public-preview-grid">
+             <article>
+               <p className="mono-label">BÀI THỰC HÀNH</p>
+               <h3>{userSubmissions.length} bài đã nộp</h3>
+               <span>{completedSubmissions.length} bài hoàn thành, {reviewedSubmissions} bài có góp ý mentor.</span>
+             </article>
+             <article>
+               <p className="mono-label">KỸ NĂNG ĐÃ GHI</p>
+               <div className="tag-row">
+                 {recordedSkills.length ? recordedSkills.slice(0, 5).map((item) => <span key={item}>{item}</span>) : <span>Chưa bổ sung kỹ năng</span>}
+               </div>
+             </article>
+             <article>
+               <p className="mono-label">LIÊN KẾT HỒ SƠ</p>
+               <h3>{demoUser?.portfolio?.links?.[0] ? 'Đã thêm liên kết' : 'Chưa thêm liên kết'}</h3>
+               <span>Bạn có thể thêm liên kết portfolio hoặc GitHub ở phần thông tin học tập.</span>
+             </article>
+           </div>
+         </section>
+       )}
       <div className="cv-layout">
         <aside className="cv-sidebar">
           <div className="cv-avatar-card">
             <div className="cv-avatar">{profileName.split(' ').map((item) => item[0]).slice(0, 2).join('')}</div>
-            <p className="mono-label">Student profile</p>
+             <p className="mono-label">HỒ SƠ SINH VIÊN</p>
             <h2>{profileName}</h2>
             <span>{careerGoal}</span>
             <div className="cv-plan-actions">
@@ -3167,18 +3097,18 @@ function PortfolioPage({ pathRoles, currentMajor, go, demoUser, apiStatus, submi
                 <div><BookOpen size={16} /><span>{demoUser?.school ?? 'Chưa cập nhật trường học'}</span></div>
                 <div><BriefcaseBusiness size={16} /><span>{demoUser?.academicMajor ?? currentMajor.title}</span></div>
                 <div><Trophy size={16} /><span>{demoUser?.academicYear ?? 'Năm học chưa cập nhật'}</span></div>
-                <div><LinkIcon size={16} /><span>{demoUser?.portfolio?.links?.[0] ?? publicPortfolioUrl}</span></div>
+                 <div><LinkIcon size={16} /><span>{demoUser?.portfolio?.links?.[0] || 'Chưa thêm liên kết portfolio'}</span></div>
               </>
             )}
           </div>
           <div className="cv-stat-list">
-            <StatCard icon={Trophy} title="Thử thách" value={stats.completedChallenges} />
-            <StatCard icon={Star} title="Mentor score" value={stats.mentorRating} />
-            <StatCard icon={BriefcaseBusiness} title="Projects" value={stats.portfolioProjects} />
-            <StatCard icon={BookOpen} title="Verified skills" value={stats.verifiedSkills} />
+             <StatCard icon={Trophy} title="Bài hoàn thành" value={stats.completedChallenges} />
+             <StatCard icon={Star} title="Góp ý mentor" value={stats.mentorReviews} />
+             <StatCard icon={BriefcaseBusiness} title="Bài đã nộp" value={stats.portfolioProjects} />
+             <StatCard icon={BookOpen} title="Kỹ năng đã ghi" value={stats.recordedSkills} />
           </div>
           <article className="cv-side-section">
-            <h3>Career path</h3>
+             <h3>Lộ trình nghề nghiệp</h3>
             {pathRoles.map((item, index) => (
               <div className="profile-timeline-item" key={item.id}>
                 <b>{index + 1}</b>
@@ -3192,44 +3122,37 @@ function PortfolioPage({ pathRoles, currentMajor, go, demoUser, apiStatus, submi
         <section className="cv-main">
           <div className="cv-two-col profile-skill-wide">
             <article className="cv-section">
-              <h2>Kỹ năng & mức độ sẵn sàng</h2>
-              {mainSpecs.map((item, index) => (
-                <div className="progress-line" key={item.key}>
-                  <span>{item.title}</span>
-                  <b><i style={{ width: `${88 - index * 10}%` }} /></b>
-                </div>
-              ))}
-              <div className="tag-row cv-skill-tags">
-                {(demoUser?.currentSkills ?? currentMajor.columns.slice(0, 5).map((item) => item.title)).map((item) => (
-                  <span key={item}>{item}</span>
-                ))}
-              </div>
+               <h2>Kỹ năng đã ghi trong hồ sơ và bài nộp</h2>
+               <div className="tag-row cv-skill-tags">
+                 {recordedSkills.length ? recordedSkills.map((item) => <span key={item}>{item}</span>) : <span>Chưa có kỹ năng. Hãy bổ sung trong bài nộp đầu tiên.</span>}
+               </div>
             </article>
           </div>
 
           <article className="cv-section featured-projects-section">
             <div className="card-topline">
-              <span>Project nổi bật</span>
-              <strong>{portfolioProjectDetails.length} project</strong>
+               <span>Bài đã nộp gần đây</span>
+               <strong>{portfolioProjectDetails.length} bài</strong>
             </div>
             <div className="featured-project-list">
               {portfolioProjectDetails.slice(0, 3).map((project) => (
                 <article className="featured-project-card" key={project.id}>
                   <div className="project-score-pill">
                     <strong>{project.score}</strong>
-                    <span>/100</span>
+                     {typeof project.score === 'number' && <span>/100</span>}
                   </div>
                   <div className="featured-project-body">
                     <span className="mono-label">{project.track} · {project.status}</span>
                     <h3>{project.title}</h3>
-                    <p>{project.summary} {project.outcome[0]}</p>
+                     <p>{project.summary}</p>
                     <div className="tag-row">
                       {project.tags.slice(0, 3).map((tag) => <span key={tag}>{tag}</span>)}
                     </div>
                   </div>
-                  <button className="ghost-action compact"><LinkIcon size={15} /> Xem project</button>
-                </article>
-              ))}
+                   {project.link && <a className="ghost-action compact" href={project.link} target="_blank" rel="noopener noreferrer"><LinkIcon size={15} /> Xem minh chứng</a>}
+                 </article>
+               ))}
+               {!portfolioProjectDetails.length && <p>Chưa có bài nộp. Hãy chọn một thử thách để bắt đầu.</p>}
             </div>
           </article>
         </section>
@@ -3295,13 +3218,12 @@ function SubmissionHistoryPage({ demoUser, submissions, challenges, feedbackList
 
 
 function PremiumPage({ plans, activeSubscription, onOpenQr, go }) {
-  const revenue = demoPremiumSubscriptions.reduce((sum, item) => sum + item.revenue, 0);
   const isActive = (plan) => activeSubscription?.status === 'active' && activeSubscription?.planId === plan.id;
   return (
     <section className="content-page premium-page">
       <div className="section-heading inline">
         <div>
-          <p className="mono-label">Premium business model</p>
+           <p className="mono-label">GÓI PREMIUM</p>
           <h1>Nâng cấp Premium để được mentor góp ý và hoàn thiện portfolio xin việc.</h1>
         </div>
         <div className="premium-current">
@@ -3330,7 +3252,7 @@ function PremiumPage({ plans, activeSubscription, onOpenQr, go }) {
               ))}
             </div>
             <button className={isActive(plan) ? 'ghost-action' : 'primary-action'} onClick={() => onOpenQr(plan)}>
-              {isActive(plan) ? 'Đang sử dụng' : 'Nâng cấp gói này'}
+               {isActive(plan) ? 'Gia hạn gói này' : 'Chọn gói này'}
               <CreditCard size={17} />
             </button>
           </article>
@@ -3348,29 +3270,6 @@ function PremiumPage({ plans, activeSubscription, onOpenQr, go }) {
             </article>
           );
         })}
-      </div>
-
-      <div className="admin-grid compact premium-admin-only">
-        <article className="admin-panel">
-          <p className="mono-label">Free</p>
-          <h2>Khám phá trước khi trả phí</h2>
-          {['Xem Career Map cơ bản', 'Chọn 1 ngành chính', 'Làm challenge cơ bản', 'Lưu portfolio nội bộ'].map((item) => (
-            <div className="activity-row" key={item}><Check size={16} /><span>{item}</span></div>
-          ))}
-        </article>
-        <article className="admin-panel">
-          <p className="mono-label">Premium</p>
-          <h2>Lý do người dùng trả tiền</h2>
-          {['Mentor feedback thật', 'Challenge nâng cao', 'Nộp lại nhiều lần', 'Public portfolio chuyên nghiệp', 'Badge xác thực kỹ năng'].map((item) => (
-            <div className="activity-row" key={item}><Crown size={16} /><span>{item}</span></div>
-          ))}
-        </article>
-        <article className="admin-panel">
-          <p className="mono-label">Demo revenue</p>
-          <h2>{formatVnd(revenue)}</h2>
-          <div className="activity-row"><UserRound size={16} /><span>{demoPremiumSubscriptions.filter((item) => item.status === 'active').length} tài khoản Premium mẫu</span></div>
-          <div className="activity-row"><Sparkles size={16} /><span>Gói 3 tháng là lựa chọn khuyến nghị cho chu kỳ làm portfolio</span></div>
-        </article>
       </div>
 
       <div className="submit-actions">
@@ -3944,8 +3843,8 @@ function AdminPage({ apiStatus, data, notice, currentUser, refreshData, setAdmin
     difficulty: 'Junior',
     xp: 350,
     due: '7 ngày',
-    mentor: 'Mentor Demo',
-    tags: 'Demo,Portfolio',
+    mentor: '',
+    tags: '',
     summary: ''
   });
   const [editingId, setEditingId] = useState('');
@@ -3970,14 +3869,14 @@ function AdminPage({ apiStatus, data, notice, currentUser, refreshData, setAdmin
   const [adminSection, setAdminSection] = useState('overview');
   const isAdmin = (currentUser?.type ?? currentUser?.user?.role) === 'admin';
   const challengesData = data?.challenges ?? [];
-  const users = data?.users?.length ? data.users : data?.demoUser ? [data.demoUser] : [];
+  const users = data?.users ?? [];
   const submissionsData = data?.submissions ?? [];
   const categories = data?.categories ?? [];
   const mentors = data?.mentors ?? [];
   const reviews = data?.reviews ?? [];
   const notifications = data?.notifications ?? [];
   const adminProfile = data?.admins?.find((item) => item.id === currentUser?.user?.id) ?? currentUser?.user ?? {};
-  const premiumSubscriptions = apiStatus === 'mongo' ? (data?.premiumSubscriptions ?? []) : demoPremiumSubscriptions;
+  const premiumSubscriptions = data?.premiumSubscriptions ?? [];
   const premiumRevenue = premiumSubscriptions.reduce((sum, item) => sum + Number(item.revenue || 0), 0);
   const activePremiumCount = premiumSubscriptions.filter((item) => item.status === 'active').length;
   const overview = {
@@ -4169,17 +4068,19 @@ function AdminPage({ apiStatus, data, notice, currentUser, refreshData, setAdmin
       .catch(() => setAdminNotice('Không cập nhật được user. Kiểm tra API/MongoDB.'));
   };
 
+  if (apiStatus !== 'mongo') return <section className="content-page admin-page"><p className="status-banner" role="status">Chưa tải được dữ liệu quản trị. Hãy thử làm mới trang sau ít phút.</p></section>;
+
   return (
     <section className="content-page admin-page">
       <div className="section-heading inline">
         <div>
-          <p className="mono-label">Admin console</p>
-          <h1>Quản lý dữ liệu Portfolio</h1>
-          <p>Demo account: admin@portfolio.vn / admin123. Nguồn dữ liệu hiện tại: {apiStatus === 'mongo' ? 'MongoDB' : 'Local fallback'}.</p>
+           <p className="mono-label">QUẢN TRỊ</p>
+           <h1>Quản lý dữ liệu Portfolio</h1>
+           <p>Theo dõi tài khoản, thử thách và gói Premium từ dữ liệu đang có.</p>
         </div>
         <button className="primary-action compact" onClick={refreshData}>
           <Save size={16} />
-          Tải lại data
+           Làm mới dữ liệu
         </button>
         <button className="primary-action compact" onClick={startCreate}>
           <Plus size={16} />
@@ -4190,7 +4091,7 @@ function AdminPage({ apiStatus, data, notice, currentUser, refreshData, setAdmin
       {notice && <div className="status-banner"><Check size={17} /> {notice}</div>}
 
       <aside className="workspace-sidebar">
-        <p className="mono-label">Admin menu</p>
+         <p className="mono-label">DANH MỤC QUẢN LÝ</p>
         <button className={adminSection === 'overview' ? 'active' : ''} onClick={() => setAdminSection('overview')}><LayoutDashboard size={16} /> Tổng quan</button>
         <button className={adminSection === 'profile' ? 'active' : ''} onClick={() => setAdminSection('profile')}><ShieldCheck size={16} /> Vận hành</button>
         <button className={adminSection === 'commerce' ? 'active' : ''} onClick={() => setAdminSection('commerce')}><Crown size={16} /> Premium</button>
@@ -4202,7 +4103,7 @@ function AdminPage({ apiStatus, data, notice, currentUser, refreshData, setAdmin
       </aside>
 
       <div className={`admin-stats workspace-section ${adminSection === 'overview' ? 'active' : ''}`} id="admin-overview">
-        <StatCard icon={Rocket} title="KPI Người dùng" value={`${users.length} / 300 SV (${(users.length / 300 * 100).toFixed(1)}%)`} />
+         <StatCard icon={Rocket} title="Tài khoản sinh viên" value={users.length} />
         <StatCard icon={Blocks} title="Ngành lớn" value={overview.majors} />
         <StatCard icon={LayoutDashboard} title="Challenge" value={overview.challenges} />
         <StatCard icon={UserRound} title="Người dùng" value={overview.users} />
@@ -4213,7 +4114,7 @@ function AdminPage({ apiStatus, data, notice, currentUser, refreshData, setAdmin
 
       <div className={`admin-grid compact workspace-section ${adminSection === 'profile' ? 'active' : ''}`} id="admin-profile">
         <article className="admin-panel">
-          <p className="mono-label">Admin profile</p>
+           <p className="mono-label">TÀI KHOẢN QUẢN TRỊ</p>
           <h2>{adminProfile.name ?? 'Portfolio Admin'}</h2>
           <div className="admin-list">
             <div className="admin-row">
@@ -4228,7 +4129,7 @@ function AdminPage({ apiStatus, data, notice, currentUser, refreshData, setAdmin
           </div>
         </article>
         <article className="admin-panel">
-          <p className="mono-label">Nghiệp vụ quản trị</p>
+           <p className="mono-label">CÔNG VIỆC QUẢN TRỊ</p>
           <div className="admin-list">
             {(adminProfile.responsibilities ?? ['Quản lý thử thách', 'Theo dõi submission', 'Điều phối mentor']).map((item) => (
               <div className="activity-row" key={item}><ShieldCheck size={16} /><span>{item}</span></div>
@@ -4236,14 +4137,14 @@ function AdminPage({ apiStatus, data, notice, currentUser, refreshData, setAdmin
           </div>
         </article>
         <article className="admin-panel">
-          <p className="mono-label">Vận hành demo</p>
-          <div className="admin-list">
-            {Object.entries(adminProfile.operatingMetrics ?? {
-              weeklyActiveStudents: users.length,
-              pendingReviews: submissionsData.filter((item) => item.status === 'submitted').length,
-              publishedChallenges: challengesData.length,
-              activeMentors: mentors.length
-            }).map(([key, value]) => (
+           <p className="mono-label">TÌNH HÌNH HIỆN TẠI</p>
+           <div className="admin-list">
+             {[
+               ['Sinh viên', users.length],
+               ['Bài đã nộp', submissionsData.length],
+               ['Thử thách', challengesData.length],
+               ['Mentor', mentors.length]
+             ].map(([key, value]) => (
               <div className="admin-row" key={key}>
                 <div>
                   <strong>{value}</strong>
@@ -4261,7 +4162,7 @@ function AdminPage({ apiStatus, data, notice, currentUser, refreshData, setAdmin
           <h2>{formatVnd(premiumRevenue)}</h2>
           <div className="admin-list">
             <div className="activity-row"><Crown size={16} /><span>{activePremiumCount} người dùng Premium đang hoạt động</span></div>
-            <div className="activity-row"><CreditCard size={16} /><span>{premiumSubscriptions.length} subscription mẫu trong hệ thống</span></div>
+             <div className="activity-row"><CreditCard size={16} /><span>{premiumSubscriptions.length} lượt đăng ký Premium</span></div>
           </div>
         </article>
         <article className="admin-panel">
@@ -4270,8 +4171,8 @@ function AdminPage({ apiStatus, data, notice, currentUser, refreshData, setAdmin
             {premiumSubscriptions.slice(0, 5).map((item) => (
               <div className="admin-row" key={item.id}>
                 <div>
-                  <strong>{item.userName}</strong>
-                  <span>{item.planName} · {item.status} · {item.expiresAt}</span>
+                  <strong>{item.userName || users.find(user => user.id === item.userId)?.name || item.userId || 'Tài khoản'}</strong>
+                  <span>{item.planName} · {item.status === 'active' ? 'Đang hoạt động' : 'Đã hết hạn'} · {item.expiresAt ? new Date(item.expiresAt).toLocaleDateString('vi-VN') : 'Chưa có hạn'}</span>
                 </div>
                 <b>{formatVnd(item.revenue)}</b>
               </div>
@@ -4284,7 +4185,7 @@ function AdminPage({ apiStatus, data, notice, currentUser, refreshData, setAdmin
         <article className="admin-panel full-width">
           <div className="section-heading inline">
             <div>
-              <p className="mono-label">Quản lý Mentor & Thù lao</p>
+           <p className="mono-label">MENTOR & THÙ LAO</p>
               <h2>Hoạt động review và số dư đang chờ</h2>
               <p>Điểm, lượt review và phí được tính từ các phiên mentor thật đã hoàn thành. Duyệt hồ sơ, sàng lọc chất lượng và xác nhận chuyển khoản trong không gian Mentor phía trên.</p>
             </div>
@@ -4541,7 +4442,7 @@ function AdminPage({ apiStatus, data, notice, currentUser, refreshData, setAdmin
 
       <div className={`admin-grid compact workspace-section ${adminSection === 'system' ? 'active' : ''}`} id="admin-system">
         <article className="admin-panel">
-          <h2>Categories & Career Domains</h2>
+           <h2>Lĩnh vực nghề nghiệp</h2>
           {categories.map((category) => (
             <div className="admin-row" key={category.id}>
               <div>
@@ -4552,23 +4453,23 @@ function AdminPage({ apiStatus, data, notice, currentUser, refreshData, setAdmin
           ))}
         </article>
         <article className="admin-panel">
-          <h2>Reports & Settings</h2>
+           <h2>Báo cáo và cài đặt</h2>
           <div className="admin-row">
             <div>
-              <strong>Monthly activity</strong>
-              <span>{submissionsData.length} submissions · {notifications.filter((item) => item.unread).length} unread notifications</span>
+               <strong>Hoạt động hiện tại</strong>
+               <span>{submissionsData.length} bài nộp · {notifications.filter((item) => item.unread).length} thông báo chưa đọc</span>
             </div>
           </div>
           <div className="admin-row">
             <div>
-              <strong>Review policy</strong>
-              <span>Mentor accept/reject submissions, admin manages challenge catalog.</span>
+               <strong>Quản lý bài thực hành</strong>
+               <span>Theo dõi bài nộp và cập nhật danh sách thử thách.</span>
             </div>
           </div>
           <div className="admin-row">
             <div>
-              <strong>System mode</strong>
-              <span>{apiStatus === 'mongo' ? 'MongoDB connected' : 'Local fallback mode'}</span>
+               <strong>Trạng thái dữ liệu</strong>
+               <span>{apiStatus === 'mongo' ? 'Đã kết nối' : 'Tạm thời chưa cập nhật'}</span>
             </div>
           </div>
         </article>

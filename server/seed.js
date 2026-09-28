@@ -5,6 +5,7 @@ import { connectDb } from './config/db.js';
 import { AdminAccount, Category, Challenge, Major, MentorAccount, MentorFeedback, Notification, Resource, Submission, SubmissionRule, UserProfile, StudentReview, Founder, PremiumPlan, MarketData } from './models.js';
 import { adminAccounts, categories, challenges, majors, mentorAccounts, mentorFeedback, notifications, resources, submissionRules, submissions, userProfiles } from './seed-data.js';
 import { augmentSeedData } from './supplemental-data.js';
+import { describePremiumPlan } from '../shared/premiumCopy.js';
 
 augmentSeedData({ adminAccounts, categories, challenges, majors, mentorAccounts, mentorFeedback, notifications, resources, submissions, userProfiles });
 
@@ -389,7 +390,7 @@ async function seed() {
   await Resource.insertMany(resources);
   await Notification.insertMany(notifications);
   await Founder.insertMany(initialFounders);
-  await PremiumPlan.insertMany(initialPremiumPlans);
+  await PremiumPlan.insertMany(initialPremiumPlans.map(describePremiumPlan));
   await MarketData.insertMany(initialMarketData);
 
   console.log('Seeded MongoDB demo data successfully.');

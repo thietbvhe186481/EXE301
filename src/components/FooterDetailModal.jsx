@@ -21,17 +21,17 @@ export function getFooterModalContent(key) {
             <b>Portfolio FPT HUB</b> là nền tảng định hướng nghề nghiệp thực chiến và xây dựng hồ sơ năng lực dành cho sinh viên công nghệ thông tin, marketing và thiết kế đồ họa.
           </p>
           <div className="footer-rubric-box">
-            <h4><Rocket size={17} /> Sứ Mệnh & KPI Giai Đoạn 1</h4>
-            <p style={{ margin: 0, fontSize: '13.5px', lineHeight: 1.6 }}>
-              Giải quyết bài toán lớn nhất của sinh viên đại học: <b>"Học xong lý thuyết nhưng thiếu sản phẩm thực tế có minh chứng năng lực và thiếu sự phản biện của chuyên gia"</b>. Mục tiêu dự án giai đoạn 1 là thu hút và đồng hành cùng <b>200 - 300 sinh viên</b> Đại học FPT và người học Coursera hoàn thiện Portfolio đạt chuẩn tuyển dụng doanh nghiệp.
-            </p>
+             <h4><Rocket size={17} /> Vì sao có Portfolio FPT Hub?</h4>
+             <p style={{ margin: 0, fontSize: '13.5px', lineHeight: 1.6 }}>
+               Nhiều sinh viên đã học kỹ năng mới nhưng còn thiếu sản phẩm để cho người khác xem và góp ý. Nền tảng giúp bạn chọn bài thực hành, lưu minh chứng và cải thiện bài làm qua phản hồi cụ thể.
+             </p>
           </div>
           <h4 style={{ margin: '18px 0 8px', fontSize: '15px' }}>4 Trụ cột cốt lõi của nền tảng:</h4>
           <ul style={{ paddingLeft: '20px', lineHeight: 1.7, fontSize: '13.5px' }}>
             <li><b>Bản đồ nghề nghiệp tương tác:</b> Cung cấp lộ trình kỹ năng từ Junior đến Senior cho từng chuyên ngành.</li>
-            <li><b>Trung tâm thử thách dự án:</b> Đề bài thực tế tham chiếu từ đồ án môn học FPT (SWP391, PRN231) và chứng chỉ Coursera (Google, Meta, AWS).</li>
-            <li><b>Phân luồng Mentor 2 cấp độ:</b> Mentor AI chấm cú pháp tự động 0đ và Senior Mentor doanh nghiệp review 1:1 chuyên sâu.</li>
-            <li><b>Trang Portfolio cá nhân chuẩn ATS:</b> URL công khai chứng thực kỹ năng, tích hợp CV chuẩn hóa và minh chứng sản phẩm.</li>
+             <li><b>Thử thách thực hành:</b> Bài do nền tảng biên soạn, có yêu cầu và tiêu chí đánh giá rõ ràng; liên kết đến nguồn học tham khảo.</li>
+             <li><b>Hai cách nhận phản hồi:</b> Kiểm tra sơ bộ phần thông tin đã gửi hoặc chọn mentor phù hợp để góp ý bài làm.</li>
+             <li><b>Hồ sơ năng lực:</b> Theo dõi bài đã nộp, kỹ năng đã ghi và phản hồi bạn nhận được.</li>
           </ul>
         </div>
       )
@@ -105,14 +105,14 @@ export function getFooterModalContent(key) {
             <li>Vận hành gói dịch vụ, hỗ trợ người dùng, xử lý phản ánh và cải thiện chất lượng trải nghiệm.</li>
             <li>Phát hiện, xử lý hành vi vi phạm và thực hiện nghĩa vụ theo pháp luật.</li>
           </ul>
-          <p>Phiên bản hiện tại không có chức năng gửi OTP email, phỏng vấn AI hoặc tự động chuyển hồ sơ cho nhà tuyển dụng. Việc gửi bài không được coi là sự đồng ý cho huấn luyện mô hình AI hay quảng cáo. Khi bạn chủ động bật gợi ý AI, mô tả và kỹ năng được gửi tới OpenAI để tạo gợi ý; hệ thống không gửi danh tính hoặc liên kết bài nộp trong yêu cầu này. Tin nhắn review được lưu để mentor và sinh viên trao đổi. Hồ sơ nổi bật chỉ chia sẻ với mentor đã duyệt khi bạn bật quyền chia sẻ và có thể thu hồi. Nếu bổ sung mục đích xử lý mới cần sự đồng ý, chúng tôi sẽ thông báo và xin xác nhận riêng trước khi thực hiện.</p>
+          <p>Đăng ký và đặt lại mật khẩu có thể yêu cầu mã xác thực qua email. Nền tảng hiện không tự động chuyển hồ sơ cho nhà tuyển dụng. Việc gửi bài không được coi là sự đồng ý cho huấn luyện mô hình AI hay quảng cáo. Khi bạn chủ động bật gợi ý AI, mô tả và kỹ năng được gửi tới OpenAI để tạo gợi ý; hệ thống không gửi danh tính hoặc liên kết bài nộp trong yêu cầu này. Tin nhắn review được lưu để mentor và sinh viên trao đổi. Hồ sơ nổi bật chỉ chia sẻ với mentor đã duyệt khi bạn bật quyền chia sẻ và có thể thu hồi. Nếu bổ sung mục đích xử lý mới cần sự đồng ý, chúng tôi sẽ thông báo và xin xác nhận riêng trước khi thực hiện.</p>
           <h4 style={{ margin: '18px 0 6px', fontSize: '14.5px' }}>3. Bảo vệ và lưu giữ thông tin</h4>
           <p>Mật khẩu được lưu dưới dạng băm, không lưu nguyên văn; cookie phiên đăng nhập được cấu hình HttpOnly để hạn chế truy cập từ mã JavaScript trong trang. Không có hệ thống nào có thể bảo đảm an toàn tuyệt đối. Bạn cần bảo vệ tài khoản, đăng xuất trên thiết bị dùng chung và không chia sẻ thông tin nhạy cảm trong bài nộp hoặc link công khai.</p>
           <p>Dữ liệu được lưu giữ trong thời gian cần thiết để cung cấp dịch vụ, xử lý yêu cầu và thực hiện nghĩa vụ pháp lý. Khi có yêu cầu xóa hợp lệ, chúng tôi xem xét xóa hoặc ẩn danh dữ liệu phù hợp; dữ liệu cần giữ để thực hiện nghĩa vụ pháp lý hoặc giải quyết tranh chấp sẽ được thông báo về lý do và phạm vi lưu giữ.</p>
           <h4 style={{ margin: '18px 0 6px', fontSize: '14.5px' }}>4. Chia sẻ thông tin và dịch vụ bên thứ ba</h4>
           <p>Bài nộp và thông tin liên quan được sử dụng để mentor thực hiện review và ban quản trị vận hành, hỗ trợ hoặc xử lý phản ánh. Nội dung bạn chủ động gửi làm đánh giá công khai có thể được hiển thị cùng thông tin bạn cung cấp. Chúng tôi không bán dữ liệu cá nhân cho đơn vị quảng cáo và không tự động gửi portfolio cho nhà tuyển dụng.</p>
           <p>Việc chia sẻ ngoài mục đích cung cấp dịch vụ cần có căn cứ pháp lý phù hợp, bao gồm sự đồng ý của bạn khi pháp luật yêu cầu hoặc yêu cầu hợp pháp của cơ quan có thẩm quyền. Nếu dùng nhà cung cấp hạ tầng để xử lý dữ liệu, việc xử lý phải giới hạn theo mục đích dịch vụ và nghĩa vụ bảo vệ dữ liệu tương ứng.</p>
-          <p>Các link GitHub, Figma, Google Drive hoặc LinkedIn chịu quyền chia sẻ do bạn thiết lập tại dịch vụ đó. Khi bạn mở link hoặc dùng chức năng VietQR, bên cung cấp dịch vụ có thể nhận dữ liệu cần thiết cho yêu cầu, chẳng hạn số tiền và nội dung chuyển khoản để tạo QR. Hãy đọc chính sách của họ; xóa tài khoản tại Portfolio FPT Hub không tự động xóa dữ liệu trên các dịch vụ bên ngoài.</p>
+          <p>Các link GitHub, Figma, Google Drive hoặc LinkedIn chịu quyền chia sẻ do bạn thiết lập tại dịch vụ đó. Khi bạn chọn thanh toán qua payOS, cổng thanh toán nhận thông tin cần thiết để tạo và xác nhận đơn, gồm mã đơn, số tiền và nội dung chuyển khoản. Hãy đọc chính sách của dịch vụ liên quan; xóa tài khoản tại Portfolio FPT Hub không tự động xóa dữ liệu trên các dịch vụ bên ngoài.</p>
           <h4 style={{ margin: '18px 0 6px', fontSize: '14.5px' }}>5. Quyền kiểm soát và liên hệ</h4>
           <p>Bạn có thể xem, chỉnh sửa các thông tin được hỗ trợ trong hồ sơ và gửi yêu cầu truy cập, chỉnh sửa, xóa dữ liệu hoặc tài khoản, rút lại sự đồng ý, hạn chế hay phản đối xử lý dữ liệu theo quy định áp dụng. Hiện chưa có nút tự xóa tài khoản; vui lòng gửi yêu cầu đến <a href="mailto:portfolio.exe@gmail.com">portfolio.exe@gmail.com</a>, nêu email tài khoản và nội dung cần xử lý. Không gửi mật khẩu hoặc OTP.</p>
           <p>Chúng tôi có thể yêu cầu thông tin cần thiết để xác minh chủ tài khoản, phản hồi yêu cầu theo thời hạn pháp luật áp dụng và giải thích trường hợp chưa thể đáp ứng toàn bộ. Việc rút lại sự đồng ý hoặc xóa dữ liệu có thể ảnh hưởng đến chức năng cần dữ liệu đó, nhưng không làm mất các quyền hợp pháp của bạn. Các cập nhật của chính sách sẽ được ghi nhận bằng ngày công bố ở đầu văn bản.</p>
@@ -136,14 +136,14 @@ export function getFooterModalContent(key) {
   return {
     category: 'Nhà tuyển dụng & Đối tác',
     title: 'Cổng Kết Nối Doanh Nghiệp & Tuyển Dụng Tài Năng FPT',
-    subtitle: 'Tiếp cận 250+ hồ sơ sinh viên đã hoàn thành thử thách thực chiến và được mentor xác thực',
+    subtitle: 'Tìm hiểu các hồ sơ được sinh viên chủ động cho phép chia sẻ',
     body: (
       <div style={{ fontSize: '13.5px', lineHeight: 1.6 }}>
-        <p>Chúng tôi kết nối trực tiếp các doanh nghiệp công nghệ hàng đầu (FPT Software, TopCV, VNG, VNPT...) với nguồn nhân lực trẻ xuất sắc:</p>
+        <p>Portfolio FPT Hub giúp sinh viên trình bày năng lực qua sản phẩm và minh chứng học tập:</p>
         <ul style={{ paddingLeft: '20px', lineHeight: 1.7 }}>
           <li><b>Xem Portfolio có minh chứng thực:</b> Thay vì chỉ xem CV mô tả suông, nhà tuyển dụng được xem mã nguồn GitHub thật, bản vẽ Figma và video demo sản phẩm của ứng viên.</li>
-          <li><b>Kỹ năng được chứng thực bởi Mentor:</b> Điểm đánh giá độc lập từ các Senior Engineer giúp rút ngắn 70% thời gian thẩm định ứng viên.</li>
-          <li><b>Đăng đề bài tuyển dụng dạng Challenge:</b> Doanh nghiệp có thể đưa bài toán thực tế của công ty thành thử thách trên nền tảng để thu hút những ứng viên giải quyết tốt nhất.</li>
+          <li><b>Kỹ năng được chứng thực bởi Mentor:</b> Bài làm có thể kèm góp ý của mentor để người xem hiểu rõ hơn về quá trình thực hiện.</li>
+           <li><b>Trao đổi về đề bài thực tế:</b> Nếu muốn hợp tác, hãy liên hệ đội ngũ qua thông tin bên dưới.</li>
         </ul>
         <div style={{ background: 'rgba(245, 158, 11, 0.1)', padding: '14px', borderRadius: '12px', marginTop: '16px' }}>
           <strong>Bộ phận Hợp tác Doanh nghiệp:</strong><br />
@@ -228,16 +228,16 @@ export function FooterDetailModal({ isOpen, onClose, data, go, onOpenUpgrade }) 
                   </tr>
                   <tr>
                     <td>Thời gian hỗ trợ</td>
-                    <td>Thứ 2 – Thứ 7: 08:30 – 21:00 (Hỗ trợ khẩn cấp qua Discord 24/7)</td>
+                    <td>Gửi yêu cầu qua biểu mẫu hoặc email; chúng tôi sẽ phản hồi khi tiếp nhận.</td>
                   </tr>
                 </tbody>
               </table>
 
               <form onSubmit={handleSendContact} style={{ marginTop: '20px', borderTop: '1px solid rgba(148,163,184,0.2)', paddingTop: '16px' }}>
-                <h4 style={{ margin: '0 0 10px', fontSize: '14.5px' }}>Gửi tin nhắn hoặc yêu cầu hỗ trợ (Lưu MongoDB):</h4>
+                <h4 style={{ margin: '0 0 10px', fontSize: '14.5px' }}>Gửi câu hỏi hoặc yêu cầu hỗ trợ:</h4>
                 {submitStatus === 'success' && (
                   <div style={{ background: '#dcfce7', color: '#16a34a', padding: '10px 14px', borderRadius: '8px', fontSize: '13.5px', fontWeight: 700, marginBottom: '12px' }}>
-                    ✓ Cảm ơn bạn! Yêu cầu hỗ trợ đã được ghi nhận vào hệ thống cơ sở dữ liệu.
+                    ✓ Cảm ơn bạn! Chúng tôi đã nhận được yêu cầu hỗ trợ.
                   </div>
                 )}
                 {submitStatus === 'error' && <div role="alert" style={{ background: '#fef2f2', color: '#b91c1c', padding: '10px 14px', borderRadius: '8px', fontSize: '13.5px', marginBottom: '12px' }}>Chưa gửi được yêu cầu. Vui lòng thử lại sau hoặc gửi email đến portfolio.exe@gmail.com.</div>}

@@ -5,6 +5,7 @@ import { connectDb, mongoUriFromEnvironment } from './config/db.js';
 import { AdminAccount, Category, Challenge, Major, MentorAccount, PremiumPlan, Resource, SubmissionRule, UserProfile } from './models.js';
 import { adminAccounts, categories, challenges, majors, mentorAccounts, mentorFeedback, notifications, resources, submissionRules, submissions, userProfiles } from './seed-data.js';
 import { augmentSeedData } from './supplemental-data.js';
+import { describePremiumPlan } from '../shared/premiumCopy.js';
 
 // Run once for a fresh production database; repeated runs preserve user data,
 // existing plan prices, and the admin's current password.
@@ -35,7 +36,7 @@ async function bootstrap() {
     if (collision.some(Boolean)) throw new Error('The bootstrap email is already registered; choose another email or use the existing admin account.');
     await AdminAccount.create({ id: 'admin-primary', name: process.env.BOOTSTRAP_ADMIN_NAME || 'Quản trị viên', email, passwordHash: await bcrypt.hash(password, 12), role: 'admin', status: 'active' });
   }
-  for (const plan of plans) await PremiumPlan.updateOne({ id: plan.id }, { $setOnInsert: plan }, { upsert: true, runValidators: true });
+  for (const plan of plans) await PremiumPlan.updateOne({ id: plan.id }, { $setOnInsert: describePremiumPlan(plan) }, { upsert: true, runValidators: true });
   // Generate the public catalog without inserting demo accounts, ratings or submissions.
   const catalog = structuredClone({ adminAccounts, categories, challenges, majors, mentorAccounts, mentorFeedback, notifications, resources, submissions, userProfiles });
   augmentSeedData(catalog);
