@@ -202,14 +202,20 @@ test('PayOS webhook validates HMAC and exact amount, then activates and extends 
   Object.assign(process.env, { PAYOS_CLIENT_ID: 'test-client', PAYOS_API_KEY: 'test-key', PAYOS_CHECKSUM_KEY: 'test-checksum', PAYOS_RETURN_URL: 'https://site.example/return', PAYOS_CANCEL_URL: 'https://site.example/cancel' });
   try {
     const code = 1900000123;
-    await models.SubscriptionOrder.create({ orderId: 'ORD-PAYOS-TEST', providerOrderCode: code, userId: 'student', planId: 'premium-month', planName: 'Tháng', price: 79000, transactionCode: 'JR123', paymentMethod: 'PayOS · VietQR', status: 'pending' });
+    await models.SubscriptionOrder.create({ orderId: 'ORD-PAYOS-TEST', providerOrderCode: code, providerPaymentLinkId: 'PAYOS-LINK-1', userId: 'student', planId: 'premium-month', planName: 'Tháng', price: 79000, transactionCode: 'JR123', paymentMethod: 'PayOS · VietQR', status: 'pending' });
     const prior = new Date((await models.UserProfile.findOne({ id: 'student' }).lean()).subscriptionExpiresAt).getTime();
-    const data = { orderCode: code, amount: 79000, reference: 'BANK-REF-1', code: '00', description: 'JR123' };
+    const data = { orderCode: code, amount: 79000, reference: 'BANK-REF-1', code: '00', description: 'JR123', paymentLinkId: 'PAYOS-LINK-1', currency: 'VND' };
     const message = Object.keys(data).sort().map(key => `${key}=${data[key] ?? ''}`).join('&');
     const signature = createHmac('sha256', process.env.PAYOS_CHECKSUM_KEY).update(message).digest('hex');
     const webhook = { code: '00', desc: 'success', success: true, data, signature };
     assert.equal((await request('/payments/payos-webhook', null, { ...webhook, signature: 'bad' })).status, 400);
     assert.equal((await request('/payments/payos-webhook', null, { ...webhook, data: { ...data, amount: 1 } })).status, 400);
+    for (const mismatch of [{ description: 'WRONG' }, { paymentLinkId: 'OTHER-LINK' }, { currency: 'USD' }]) {
+      const changed = { ...data, ...mismatch };
+      const changedSignature = createHmac('sha256', process.env.PAYOS_CHECKSUM_KEY).update(Object.keys(changed).sort().map(key => `${key}=${changed[key] ?? ''}`).join('&')).digest('hex');
+      assert.equal((await request('/payments/payos-webhook', null, { ...webhook, data: changed, signature: changedSignature })).status, 400);
+    }
+    assert.equal((await request('/admin/orders/ORD-PAYOS-TEST', 'admin', { status: 'completed', reference: 'MANUAL-REF' }, 'PATCH')).status, 409);
     const sampleData = { ...data, orderCode: 1900000999 };
     const sampleSignature = createHmac('sha256', process.env.PAYOS_CHECKSUM_KEY).update(Object.keys(sampleData).sort().map(key => `${key}=${sampleData[key] ?? ''}`).join('&')).digest('hex');
     assert.equal((await request('/payments/payos-webhook', null, { ...webhook, data: sampleData, signature: sampleSignature })).status, 200);

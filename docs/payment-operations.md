@@ -6,6 +6,14 @@ Sao chép `.env.example` thành `.env` **trên máy chủ API** và cấu hình 
 
 `PAYMENT_PROVIDER=manual` dùng VietQR và admin đối soát sao kê. Nếu sử dụng PayOS, đặt `PAYMENT_PROVIDER=payos` cùng bộ khóa PayOS và URL callback trên máy chủ. Không đưa khóa PayOS, `SESSION_SECRET`, `RESEND_API_KEY` hoặc MongoDB URI vào biến `VITE_*` hay GitHub Pages. Để giữ OTP khi **đăng ký/xác thực email**, đặt `EMAIL_VERIFICATION_REQUIRED=1` và cấu hình `RESEND_API_KEY`, `EMAIL_FROM`; bước **thanh toán** không yêu cầu OTP riêng.
 
+### Bật xác nhận tự động qua payOS
+
+1. Chủ tài khoản đăng ký tại [my.payos.vn](https://my.payos.vn/), hoàn tất xác thực chủ thể và liên kết tài khoản ngân hàng nhận tiền theo [hướng dẫn payOS](https://payos.vn/docs/huong-dan-su-dung/tao-kenh-thanh-toan/). Kiểm tra trong dashboard xem tài khoản TPBank dự kiến có được hỗ trợ cho **kênh thu** hay không; không tự đổi sang tài khoản nhận khác. Việc định danh và chấp thuận điều khoản do chủ tài khoản tự thực hiện.
+2. Tạo kênh thanh toán Premium và lấy **Client ID, API Key, Checksum Key**. Chủ tài khoản tự nhập ba giá trị vào Render > `exe301-portfolio-api` > Environment dưới tên `PAYOS_CLIENT_ID`, `PAYOS_API_KEY`, `PAYOS_CHECKSUM_KEY`; không gửi khóa qua chat hoặc đưa vào frontend. Đặt `PAYOS_RETURN_URL=https://portfolio.id.vn/?payment=payos` và `PAYOS_CANCEL_URL=https://portfolio.id.vn/?payment=payos-cancel`.
+3. Trong kênh payOS, khai báo webhook `https://api.portfolio.id.vn/api/workflow/payments/payos-webhook`. payOS gửi giao dịch mẫu để kiểm tra endpoint. Chỉ sau khi kênh thu, webhook và khóa hoạt động mới đặt `PAYMENT_PROVIDER=payos` trên Render, lưu và deploy. Nếu cấu hình chưa đủ, API từ chối tạo đơn thay vì cấp quyền sai.
+4. Sinh viên tạo đơn và mở link payOS. Khi payOS gửi webhook có chữ ký hợp lệ, đúng mã đơn, mã link, nội dung và số tiền, API tự kích hoạt/gia hạn Premium **một lần**; admin không duyệt đơn payOS. Giao diện tự kiểm tra trạng thái mỗi 6 giây khi màn thanh toán còn mở và khôi phục trạng thái khi payOS chuyển về website. Tham số trên URL trả về không tự cấp quyền.
+5. Trước khi mở bán, chủ tài khoản thực hiện một giao dịch thử giá trị nhỏ bằng tài khoản thanh toán khác, kiểm tra đơn chuyển sang `completed`, hạn gói tăng đúng một lần và tiền đến đúng tài khoản nhận. Không dùng QR VietQR thủ công để thử webhook payOS. Đơn VietQR thủ công đã tạo trước đó phải được hoàn tất hoặc hủy khi chưa chuyển tiền trước khi sinh viên tạo đơn payOS mới.
+
 GitHub Pages chỉ triển khai giao diện. Cần triển khai API Node và MongoDB riêng, cấu hình `VITE_API_URL` trong GitHub Actions trỏ tới URL HTTPS của API, đồng thời đặt `CLIENT_ORIGIN` trên API thành địa chỉ website. Nếu thiếu API, các nút tạo đơn và trả lương sẽ không thể ghi dữ liệu.
 
 ## Đối soát Premium

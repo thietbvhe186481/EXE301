@@ -1184,6 +1184,11 @@ function matchMentorForChallenge(challenge, mentors = []) {
 function App() {
   const [qrModalPlan, setQrModalPlan] = useState(null);
   const [isVipModalOpen, setIsVipModalOpen] = useState(false);
+  const [paymentReturnCode, setPaymentReturnCode] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get('orderCode');
+    return params.get('payment')?.startsWith('payos') && /^\d{1,10}$/.test(code || '') ? Number(code) : null;
+  });
   const [footerModalData, setFooterModalData] = useState(null);
   const [page, setPage] = useState('home');
   const [authMode, setAuthMode] = useState('login');
@@ -1206,6 +1211,11 @@ function App() {
   const [joinedChallengeIds, setJoinedChallengeIds] = useState([]);
   const [submissionStatus, setSubmissionStatus] = useState({});
   const currentRole = currentUser?.type ?? currentUser?.user?.role ?? null;
+  useEffect(() => {
+    if (!paymentReturnCode || !sessionChecked) return;
+    if (currentRole === 'student') setIsVipModalOpen(true);
+    else if (!currentUser) { setFlowNotice('Đăng nhập tài khoản sinh viên đã tạo đơn để xem trạng thái thanh toán.'); setPage('auth'); }
+  }, [paymentReturnCode, sessionChecked, currentRole]);
   const fallbackData = useMemo(() => ({
     majors: majorCatalog,
     challenges,
@@ -1784,6 +1794,13 @@ function App() {
         onLogin={() => go('auth')}
         onPaymentSuccess={(plan) => {
           upgradePlan(plan);
+        }}
+        paymentReturnCode={paymentReturnCode}
+        onClearPaymentReturn={() => {
+          const url = new URL(window.location.href);
+          for (const key of ['payment', 'code', 'id', 'cancel', 'status', 'orderCode']) url.searchParams.delete(key);
+          window.history.replaceState({}, '', `${url.pathname}${url.search}${url.hash}`);
+          setPaymentReturnCode(null);
         }}
       />
       <FooterDetailModal

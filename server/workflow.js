@@ -115,6 +115,11 @@ export function createWorkflowRouter({ UserProfile, MentorAccount, AdminAccount,
     // payOS sends a signed sample transaction while confirming a webhook URL.
     if (!order) return res.json({ code: '00', success: true });
     if (Number(data.amount) !== Number(order.price)) return res.status(400).json({ code: 'ORDER_MISMATCH' });
+    if (String(data.description || '') !== String(order.transactionCode || '') ||
+        (data.currency && data.currency !== 'VND') ||
+        (order.providerPaymentLinkId && String(data.paymentLinkId || '') !== String(order.providerPaymentLinkId))) {
+      return res.status(400).json({ code: 'ORDER_MISMATCH' });
+    }
     if (req.body.success !== true || req.body.code !== '00' || data.code !== '00') return res.json({ code: '00', success: true });
     await serializeUserOrder(order.userId, async () => {
       const fresh = await SubscriptionOrder.findOne({ orderId: order.orderId }).lean();
@@ -421,6 +426,7 @@ export function createWorkflowRouter({ UserProfile, MentorAccount, AdminAccount,
     const { status, reference } = z.object({ status: z.enum(['completed', 'cancelled']), reference: z.string().trim().min(5).max(160) }).parse(req.body);
     const initial = await SubscriptionOrder.findOne({ orderId: req.params.id }).lean();
     if (!initial) fail(404, 'Không tìm thấy đơn.');
+    if (initial.providerOrderCode) fail(409, 'Đơn payOS được xác nhận tự động bởi cổng thanh toán; admin không duyệt hoặc hủy thủ công tại đây.');
     await serializeUserOrder(initial.userId, async () => {
       const existing = await SubscriptionOrder.findOne({ orderId: req.params.id }).lean();
       if (!existing) fail(404, 'Không tìm thấy đơn.');
