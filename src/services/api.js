@@ -210,18 +210,6 @@ export const apiService = {
     return fetchWithAuth(`/api/reviews/${id}`, { method: 'DELETE' });
   },
 
-  // Subscriptions & Orders
-  async getSubscriptionOrders(params = {}) {
-    const query = new URLSearchParams(params).toString();
-    return fetchWithAuth(`/api/subscriptions/orders${query ? `?${query}` : ''}`);
-  },
-  async updateSubscriptionOrderStatus(orderId, status, note = '') {
-    return fetchWithAuth(`/api/subscriptions/orders/${orderId}/status`, { method: 'PATCH', body: JSON.stringify({ status, note }) });
-  },
-  async deleteSubscriptionOrder(orderId) {
-    return fetchWithAuth(`/api/subscriptions/orders/${orderId}`, { method: 'DELETE' });
-  },
-
   // Resources CRUD
   async getResources(params = {}) {
     const query = new URLSearchParams(params).toString();

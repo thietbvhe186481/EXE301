@@ -5,7 +5,7 @@ import './VipUpgradeModal.css';
 
 const money = value => `${Number(value || 0).toLocaleString('vi-VN')} đ`;
 
-export function VipUpgradeModal({ isOpen, onClose, plans = [], initialPlan, currentUser, onPaymentSuccess }) {
+export function VipUpgradeModal({ isOpen, onClose, plans = [], initialPlan, currentUser, onLogin, onPaymentSuccess }) {
   const [step, setStep] = useState('select');
   const [selectedPlan, setSelectedPlan] = useState(initialPlan || plans[1] || plans[0]);
   const [order, setOrder] = useState(null);
@@ -25,6 +25,8 @@ export function VipUpgradeModal({ isOpen, onClose, plans = [], initialPlan, curr
 
   async function createOrder() {
     if (!selectedPlan?.id || busy) return;
+    if (!currentUser) { onClose(); onLogin?.(); return; }
+    if ((currentUser.type || currentUser.user?.role) !== 'student') { setError('Chỉ tài khoản sinh viên mới có thể gia hạn Premium.'); return; }
     setBusy(true); setError('');
     try {
       const result = await apiService.upgradeSubscription({ planId: selectedPlan.id });

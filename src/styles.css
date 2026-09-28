@@ -10487,6 +10487,27 @@ body:has(.feedback-dashboard-page) main {
   .learning-provider { justify-content: space-between; }
 }
 
+/* Keep account identity and the two main actions readable on narrow headers. */
+@media (max-width: 900px) {
+  .hub-topbar .hub-account-trigger {
+    width: auto !important;
+    min-width: 44px !important;
+    max-width: min(190px, 44vw) !important;
+    padding: 7px 10px !important;
+    color: #16455e !important;
+  }
+  .hub-topbar .hub-account-trigger > svg:first-child { display: block !important; flex: 0 0 auto; color: #16455e !important; }
+  .hub-topbar .hub-account-trigger > span:first-of-type { display: inline !important; max-width: 100px; }
+  .hub-topbar .hub-account-trigger > svg:last-child { display: none !important; }
+}
+@media (max-width: 520px) {
+  .hub-topbar .hub-primary-nav > .flow-pill { min-width: 0; padding: 8px 10px !important; }
+  .hub-topbar .hub-primary-nav > .flow-pill > span { display: inline !important; }
+  .hub-topbar .hub-primary-nav .hub-menu-trigger { min-width: 0; padding: 8px 9px !important; }
+  .hub-topbar .hub-primary-nav .hub-menu-trigger > span:first-of-type { display: inline !important; }
+  .hub-topbar .hub-account-trigger > span:first-of-type { max-width: 74px; }
+}
+
 /* Keep the shared header attached to the viewport while the document scrolls. */
 body:has(.app-shell) { overflow: visible !important; }
 .hub-topbar { position: sticky !important; top: 0 !important; z-index: 300 !important; }

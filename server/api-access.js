@@ -19,7 +19,7 @@ export function createApiAccessMiddleware(allowedOrigins = []) {
     if (req.method === 'POST' && path === '/inquiries') return next();
     if (!req.session?.user) return res.status(401).json({ message: 'Vui lòng đăng nhập.' });
     if (req.method === 'POST' && path === '/reviews' && req.session.user.role === 'student') return next();
-    if (path === '/subscriptions/upgrade' || /^\/mentors\/[^/]+\/(rate|payout)$/.test(path)) {
+    if (path === '/subscriptions/upgrade' || path.startsWith('/subscriptions/orders') || /^\/mentors\/[^/]+\/(rate|payout)$/.test(path)) {
       return res.status(410).json({ message: 'Hãy sử dụng luồng review và thanh toán mới.' });
     }
     if (req.session.user.role === 'admin') return next();

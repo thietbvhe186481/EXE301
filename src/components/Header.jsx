@@ -102,7 +102,7 @@ export function Header({ page, go, currentUser, logout, onOpenQrPayment }) {
         <button className="hub-login-action" type="button" onClick={() => navigate('auth')}><UserRound size={16} />Đăng nhập</button>
         <button className="hub-signup-action" type="button" onClick={() => navigate('auth')}>Tạo tài khoản</button>
       </> : <div className="account-menu">
-        <button className="role-chip hub-account-trigger" type="button" aria-expanded={accountOpen} onClick={() => setAccountOpen(value => !value)}>
+        <button className="role-chip hub-account-trigger" type="button" aria-label={`Tài khoản ${roleBadgeLabel}`} aria-haspopup="menu" aria-expanded={accountOpen} onClick={() => setAccountOpen(value => !value)}>
           <UserRound size={16} /><span>{roleBadgeLabel}</span><span className="hub-plan-badge">{userPlan}</span><ChevronDown size={14} />
         </button>
         {accountOpen && <div className="nav-dropdown account-dropdown hub-account-menu">

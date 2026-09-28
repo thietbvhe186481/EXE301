@@ -637,43 +637,6 @@ app.post('/api/reviews', async (req, res, next) => {
   }
 });
 
-// VIP Upgrade / Subscription Payment API (MongoDB Persistent)
-app.post('/api/subscriptions/upgrade', async (req, res, next) => {
-  try {
-    const { userId, planId, planName, price, paymentMethod, transactionCode } = req.body;
-    const orderData = {
-      orderId: `ORD-${Date.now()}`,
-      userId: userId || 'demo-student',
-      planId,
-      planName,
-      price: Number(price) || 0,
-      paymentMethod: paymentMethod || 'VietQR MB Bank',
-      transactionCode: transactionCode || `EXE301-${Date.now()}`,
-      status: 'completed',
-      activatedAt: new Date(),
-      expiresAt: new Date(Date.now() + (planId === 'premium-year' ? 365 : (planId === 'premium-quarter' ? 90 : 30)) * 24 * 60 * 60 * 1000)
-    };
-    const savedOrder = await SubscriptionOrder.create(orderData);
-
-    if (userId) {
-      await UserProfile.updateOne(
-        { id: userId },
-        { 
-          $set: { 
-            isPremium: true, 
-            planName, 
-            planId, 
-            subscriptionExpiresAt: orderData.expiresAt 
-          } 
-        }
-      );
-    }
-    res.json({ success: true, order: savedOrder });
-  } catch (error) {
-    next(error);
-  }
-});
-
 // Founders API (MongoDB Persistent)
 app.get('/api/founders', async (_req, res, next) => {
   try {
@@ -907,50 +870,6 @@ app.patch('/api/reviews/:id/status', async (req, res, next) => {
 app.delete('/api/reviews/:id', async (req, res, next) => {
   try {
     const result = await StudentReview.deleteOne({ id: req.params.id });
-    res.json({ ok: result.deletedCount > 0 });
-  } catch (error) {
-    next(error);
-  }
-});
-
-// --- 6. SUBSCRIPTION ORDERS LIST & STATUS ---
-app.get('/api/subscriptions/orders', async (req, res, next) => {
-  try {
-    const filter = {};
-    if (req.query.userId) filter.userId = req.query.userId;
-    if (req.query.status) filter.status = req.query.status;
-    const orders = await SubscriptionOrder.find(filter).sort({ createdAt: -1 }).lean();
-    res.json(orders);
-  } catch (error) {
-    next(error);
-  }
-});
-
-app.patch('/api/subscriptions/orders/:orderId/status', async (req, res, next) => {
-  try {
-    const { status, note } = req.body;
-    const order = await SubscriptionOrder.findOne({ orderId: req.params.orderId });
-    if (!order) return res.status(404).json({ message: 'Đơn hàng không tồn tại' });
-    order.status = status;
-    if (!order.statusHistory) order.statusHistory = [];
-    order.statusHistory.push({ status, changedAt: new Date(), note: note || '' });
-    await order.save();
-    
-    // If completed or refunded, sync user's isPremium
-    if (status === 'completed') {
-      await UserProfile.updateOne({ id: order.userId }, { $set: { isPremium: true, planId: order.planId, planName: order.planName } });
-    } else if (status === 'refunded' || status === 'cancelled') {
-      await UserProfile.updateOne({ id: order.userId }, { $set: { isPremium: false, planId: '', planName: '' } });
-    }
-    res.json(order);
-  } catch (error) {
-    next(error);
-  }
-});
-
-app.delete('/api/subscriptions/orders/:orderId', async (req, res, next) => {
-  try {
-    const result = await SubscriptionOrder.deleteOne({ orderId: req.params.orderId });
     res.json({ ok: result.deletedCount > 0 });
   } catch (error) {
     next(error);

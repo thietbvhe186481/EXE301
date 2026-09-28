@@ -67,3 +67,9 @@ test('students can update only their own profile fields and joined challenges', 
   assert.equal((await request('/users/student-2', { method: 'PUT', role: 'student', id: 'student-1' })).status, 403);
   assert.equal((await request('/users/student-1/joined-challenges', { method: 'POST', role: 'student', id: 'student-1' })).status, 200);
 });
+
+test('legacy upgrade endpoint cannot activate Premium directly', async () => {
+  assert.equal((await request('/subscriptions/upgrade', { method: 'POST', role: 'student', body: { planId: 'premium-month', price: 1 } })).status, 410);
+  assert.equal((await request('/subscriptions/upgrade', { method: 'POST', role: 'admin', body: { planId: 'premium-month', price: 1 } })).status, 410);
+  assert.equal((await request('/subscriptions/orders/old/status', { method: 'PATCH', role: 'admin', body: { status: 'completed' } })).status, 410);
+});

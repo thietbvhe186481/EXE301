@@ -106,8 +106,9 @@ main.rw-workspace nav.rw-tabs {
   border-radius: 16px;
   background: #fff;
   box-shadow: 0 2px 10px rgb(15 49 84 / 4%);
-  scrollbar-width: thin;
+  scrollbar-width: none;
 }
+main.rw-workspace nav.rw-tabs::-webkit-scrollbar { display: none; }
 main.rw-workspace nav.rw-tabs > button {
   flex: 0 0 auto;
   min-height: 44px;

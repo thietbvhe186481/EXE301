@@ -1311,42 +1311,18 @@ function App() {
     ? (currentUser.user.subscription ?? { planId: 'free', planName: 'Free', status: 'free' })
     : { planId: 'free', planName: 'Free', status: 'free' };
   const isPremium = activeSubscription.status === 'active' && activeSubscription.planId !== 'free';
-  const upgradePlan = (plan) => {
-    const expiresAt = plan.id === 'premium-month' ? '20/08/2026' : plan.id === 'premium-quarter' ? '20/10/2026' : '20/07/2027';
-    const premiumSubscription = {
-      planId: plan.id,
-      planName: plan.name,
-      status: 'active',
-      startedAt: '20/07/2026',
-      expiresAt
-    };
-    setCurrentUser((current) => {
-      const role = current?.type ?? current?.user?.role;
-      if (!current?.user || role !== 'student') {
-        const baseUser = appData?.demoUser ?? (appData?.users?.[0] ?? demoUsers[0]);
-        return {
-          type: 'student',
-          user: {
-            ...baseUser,
-            role: 'student',
-            selectedMajorKey,
-            path: path.length ? path : baseUser.path,
-            subscription: premiumSubscription
-          }
-        };
-      }
-      return {
-        ...current,
-        user: {
-          ...current.user,
-          role: current.user.role ?? 'student',
-          subscription: premiumSubscription
-        }
-      };
-    });
-    setAdminNotice(`Đã nâng cấp ${plan.name}. Các tính năng Premium đã được mở khóa.`);
-    setAutoOpenPublicPortfolio(true);
-    setPage('portfolio');
+  const upgradePlan = async (order) => {
+    if (order?.status !== 'completed') return;
+    try {
+      const account = await apiService.getMe();
+      if (account.type !== 'student' || account.user?.subscription?.status !== 'active') throw new Error('Tài khoản chưa được đồng bộ.');
+      applyAuthenticatedUser(account, false);
+      setAdminNotice(`Gói ${order.planName} đã được xác nhận và kích hoạt.`);
+      setAutoOpenPublicPortfolio(true);
+      setPage('portfolio');
+    } catch {
+      setFlowNotice('Thanh toán đã được xác nhận. Hãy tải lại trang để cập nhật quyền Premium.');
+    }
   };
 
   useEffect(() => {
@@ -1805,6 +1781,7 @@ function App() {
         plans={activePremiumPlans}
         initialPlan={qrModalPlan}
         currentUser={currentUser}
+        onLogin={() => go('auth')}
         onPaymentSuccess={(plan) => {
           upgradePlan(plan);
         }}
@@ -1880,7 +1857,6 @@ function App() {
           <PremiumPage
             plans={activePremiumPlans}
             activeSubscription={activeSubscription}
-            upgradePlan={upgradePlan}
             onOpenQr={(p) => {
               setQrModalPlan(p);
               setIsVipModalOpen(true);
@@ -3301,67 +3277,7 @@ function SubmissionHistoryPage({ demoUser, submissions, challenges, feedbackList
 }
 
 
-function VietQrPaymentModal({ isOpen, onClose, plan, currentUser, onPaymentSuccess }) {
-  if (!isOpen || !plan) return null;
-  const studentMssv = currentUser?.user?.id || currentUser?.user?.mssv || 'SE174281';
-  const studentName = currentUser?.user?.name || 'Sinh viên FPT';
-  const transferContent = `EXE301 ${plan.id || 'PRO'} ${studentMssv}`;
-  const qrPrice = plan.price || 99000;
-  const qrUrl = `https://img.vietqr.io/image/MB-0348888888-compact2.png?amount=${qrPrice}&addInfo=${encodeURIComponent(transferContent)}&accountName=EXE301%20FPT%20PORTFOLIO`;
-
-  return (
-    <div className="vietqr-modal-overlay" onClick={onClose}>
-      <div className="vietqr-modal-card animate-in" onClick={(e) => e.stopPropagation()}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
-          <h2 style={{ fontSize: '19px', fontWeight: 800, margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Crown size={20} color="#f59e0b" /> Nâng cấp tài khoản {plan.name}
-          </h2>
-          <button type="button" onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748b' }}>
-            <X size={20} />
-          </button>
-        </div>
-
-        <p style={{ fontSize: '13.5px', color: '#64748b', marginBottom: '12px' }}>
-          Quét mã VietQR bằng bất kỳ App Ngân hàng hoặc MoMo để kích hoạt đặc quyền {plan.name} và kết nối Mentor trực tiếp.
-        </p>
-
-        <div className="vietqr-image-wrapper">
-          <img src={qrUrl} alt="VietQR Thanh toán FPT Portfolio" />
-        </div>
-
-        <table className="vietqr-details-table">
-          <tbody>
-            <tr><td>Ngân hàng thụ hưởng</td><td>MB Bank (Ngân hàng Quân Đội)</td></tr>
-            <tr><td>Số tài khoản</td><td>0348888888</td></tr>
-            <tr><td>Tên chủ tài khoản</td><td>EXE301 FPT PORTFOLIO</td></tr>
-            <tr><td>Số tiền</td><td style={{ color: '#059669', fontSize: '16px' }}>{plan.displayPrice || '99.000 đ'}</td></tr>
-            <tr><td>Nội dung chuyển khoản</td><td style={{ color: '#2563eb' }}>{transferContent}</td></tr>
-            <tr><td>Sinh viên thụ hưởng</td><td>{studentName} ({studentMssv})</td></tr>
-          </tbody>
-        </table>
-
-        <div style={{ display: 'flex', gap: '10px', marginTop: '16px' }}>
-          <button type="button" className="ghost-action" style={{ flex: 1 }} onClick={onClose}>
-            Đóng
-          </button>
-          <button
-            type="button"
-            className="primary-action"
-            style={{ flex: 2, background: 'linear-gradient(135deg, #10b981, #059669)', border: 'none', color: '#fff', fontWeight: 700 }}
-            onClick={() => {
-              onPaymentSuccess(plan);
-              onClose();
-            }}
-          >
-            <CheckCircle2 size={16} /> Tôi đã chuyển khoản thành công
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function PremiumPage({ plans, activeSubscription, upgradePlan, onOpenQr, go }) {
+function PremiumPage({ plans, activeSubscription, onOpenQr, go }) {
   const revenue = demoPremiumSubscriptions.reduce((sum, item) => sum + item.revenue, 0);
   const isActive = (plan) => activeSubscription?.status === 'active' && activeSubscription?.planId === plan.id;
   return (
@@ -3396,7 +3312,7 @@ function PremiumPage({ plans, activeSubscription, upgradePlan, onOpenQr, go }) {
                 <div className="activity-row" key={item}><BadgeCheck size={16} /><span>{item}</span></div>
               ))}
             </div>
-            <button className={isActive(plan) ? 'ghost-action' : 'primary-action'} onClick={() => onOpenQr ? onOpenQr(plan) : upgradePlan(plan)}>
+            <button className={isActive(plan) ? 'ghost-action' : 'primary-action'} onClick={() => onOpenQr(plan)}>
               {isActive(plan) ? 'Đang sử dụng' : 'Nâng cấp gói này'}
               <CreditCard size={17} />
             </button>
