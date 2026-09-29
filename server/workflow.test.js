@@ -2,7 +2,7 @@ import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import express from 'express';
 import { createWorkflowRouter, mentorSummary, hasPaidAccess, nextPremiumExpiry } from './workflow.js';
-import { CHALLENGES, scoreReview, qualityFromRatings, readinessCheck } from '../shared/catalog.js';
+import { CHALLENGES, SPECIALIZATIONS, scoreReview, qualityFromRatings, readinessCheck } from '../shared/catalog.js';
 import { generateAiAdvice } from './ai-review.js';
 import { createHmac } from 'node:crypto';
 import { MENTOR_AGREEMENT_VERSION } from '../shared/mentorAgreement.js';
@@ -66,16 +66,21 @@ const request = async (path, actor, body, method = body === undefined ? 'GET' : 
   return { status: response.status, data: await response.json() };
 };
 const payload = (challengeId = CHALLENGES[0].id) => ({ challengeId, mode: 'human', format: 'project', links: ['https://example.com/project'], skills: ['React', 'CSS'], notes: 'This project includes a clear explanation of the user flow, implementation tradeoffs and test cases.', shareTalent: false, linksAccessible: true, mentorId: 'mentor', acceptDelay: false, status: 'queued' });
-const review = id => ({ decision: 'complete', scores: Object.fromEntries(CHALLENGES.find(item => item.id === id).rubric.map(item => [item.key, 9])), strengths: 'Có cấu trúc rõ ràng', improvements: 'Bổ sung kiểm thử lỗi', comment: 'Bài làm đáp ứng yêu cầu và có minh chứng phù hợp.' });
+const review = id => ({ decision: 'complete', scores: Object.fromEntries(CHALLENGES.find(item => item.id === id).rubric.map(item => [item.key, 9])), criterionFeedback: Object.fromEntries(CHALLENGES.find(item => item.id === id).rubric.map(item => [item.key, `Tiêu chí ${item.label} đã có minh chứng trong phần bài nộp; cần kiểm tra thêm trường hợp biên.`])), strengths: 'Có cấu trúc rõ ràng', improvements: 'Bổ sung kiểm thử lỗi', comment: 'Bài làm đáp ứng yêu cầu và có minh chứng phù hợp.' });
 let submissionId;
 test('public catalog has real sources and rubric weights total 100; private state requires authentication', async () => {
-  assert.equal((await request('/catalog')).data.catalog.length, 18);
+  assert.equal((await request('/catalog')).data.catalog.length, 33);
+  assert.equal(new Set(CHALLENGES.map(item => item.id)).size, CHALLENGES.length);
+  assert.equal(SPECIALIZATIONS.length, 12);
+  assert.equal(new Set(CHALLENGES.map(item => item.learningOutcome)).size, CHALLENGES.length);
   for (const item of CHALLENGES) {
+    assert.ok(SPECIALIZATIONS.some(track => track.key === item.specializationKey && track.majorKey === item.majorKey));
     assert.equal(item.rubric.reduce((sum, criterion) => sum + criterion.weight, 0), 100);
+    assert.ok(item.rubric.every(criterion => criterion.expectation?.startsWith('Minh chứng cần thấy:') && criterion.anchors?.strong?.includes('Đạt mức trên')));
     assert.match(item.source.url, /^https:\/\/www.coursera.org\//);
     assert.ok(item.requirements.length >= 2);
     assert.ok(item.estimatedHours > 0 && item.levelDescription && item.learningOutcome);
-    assert.ok(item.scenario?.length > item.summary.length && item.reviewQuestion?.length > 30);
+    assert.ok(item.scenario?.length > 30 && item.reviewQuestion?.length > 30);
   }
   assert.equal((await request('/state')).status, 401);
 });
@@ -115,8 +120,10 @@ test('only assigned mentor starts review; rubric required; completion credits ex
   assert.equal((await request(`/submissions/${submissionId}/start`, 'other', {})).status, 409);
   assert.equal((await request(`/submissions/${submissionId}/start`, 'mentor', {})).status, 200);
   assert.equal((await request(`/submissions/${submissionId}/review`, 'mentor', { ...review(CHALLENGES[0].id), scores: {} })).status, 422);
+  assert.equal((await request(`/submissions/${submissionId}/review`, 'mentor', { ...review(CHALLENGES[0].id), criterionFeedback: {} })).status, 422);
   const result = await request(`/submissions/${submissionId}/review`, 'mentor', review(CHALLENGES[0].id));
   assert.equal(result.status, 200); assert.equal(result.data.submission.review.score, 90);
+  assert.ok(result.data.submission.review.criterionFeedback.layout.length > 20);
   assert.equal(result.data.submission.reward.base, 5000);
   assert.equal((await request(`/submissions/${submissionId}/review`, 'mentor', review(CHALLENGES[0].id))).status, 409);
   assert.equal((await request(`/submissions/${submissionId}`, 'student', payload(), 'PUT')).status, 409);
@@ -365,4 +372,14 @@ test('mentor can save a payout account, while a student cannot change it', async
   assert.deepEqual((await request('/state', 'mentor')).data.payoutAccount, bankInfo);
   assert.equal((await request('/state', 'student')).data.payoutAccounts.length, 0);
   assert.equal((await models.ReviewSubmission.findOne({ id: submissionId }).lean()).reward.payoutLog.accountNumber, '123456789');
+});
+test('a conversation without a project cannot be scored as completed paid work', async () => {
+  const id = 'chat-needs-project-evidence';
+  const challengeId = CHALLENGES.at(-1).id;
+  await models.ReviewSubmission.create({ id, userId: 'student', mentorId: 'mentor', challengeId, mode: 'human', format: 'chat', links: [], status: 'in_review', paidAtSubmission: true });
+  const rejected = await request(`/submissions/${id}/review`, 'mentor', review(challengeId));
+  assert.equal(rejected.status, 422);
+  assert.match(rejected.data.message || rejected.data.error || '', /bài thực hành/i);
+  assert.equal((await models.ReviewSubmission.findOne({ id }).lean()).reward, undefined);
+  assert.equal((await request(`/submissions/${id}/review`, 'mentor', { decision: 'revise', comment: 'Vui lòng bổ sung đường dẫn tới sản phẩm đã hoàn thành.' })).status, 200);
 });

@@ -276,13 +276,17 @@ export function createWorkflowRouter({ UserProfile, MentorAccount, AdminAccount,
   router.post('/submissions/:id/review', run(async (req, res) => {
     requireRole(req, 'mentor');
     if (!await ReviewerProfile.findOne({ mentorId: req.account.id, 'application.status': 'approved' }).lean()) fail(403, 'Hồ sơ mentor chưa được Admin duyệt; không thể hoàn thành bài hoặc ghi nhận thù lao.');
-    const payload = z.object({ decision: z.enum(['complete', 'revise']), scores: z.record(z.string(), z.number().min(0).max(10)).optional(), strengths: z.string().trim().max(3000).default(''), improvements: z.string().trim().max(3000).default(''), comment: z.string().trim().min(20, 'Nhận xét cần ít nhất 20 ký tự.').max(3000) }).parse(req.body);
+    const payload = z.object({ decision: z.enum(['complete', 'revise']), scores: z.record(z.string(), z.number().min(0).max(10)).optional(), criterionFeedback: z.record(z.string(), z.string().trim().max(600)).default({}), strengths: z.string().trim().max(3000).default(''), improvements: z.string().trim().max(3000).default(''), comment: z.string().trim().min(20, 'Nhận xét cần ít nhất 20 ký tự.').max(3000) }).parse(req.body);
     const item = await ReviewSubmission.findOne({ id: req.params.id, mentorId: req.account.id, mode: 'human', status: 'in_review' }).lean();
     if (!item) fail(409, 'Bạn cần bắt đầu review bài được phân công trước.');
     const complete = payload.decision === 'complete';
     if (complete && (!payload.strengths || !payload.improvements)) fail(422, 'Ghi rõ điểm mạnh và hướng cải thiện.');
+    if (complete && (item.format !== 'project' || !item.links?.length)) fail(422, 'Cần bài thực hành có đường dẫn minh chứng trước khi hoàn thành chấm điểm. Hãy yêu cầu sinh viên bổ sung bài.');
     let score = null;
     try { if (complete) score = scoreReview(catalogItem(item.challengeId), payload.scores); } catch (error) { fail(422, error.message); }
+    if (complete && catalogItem(item.challengeId).rubric.some(criterion => (payload.criterionFeedback[criterion.key] || '').trim().length < 20)) {
+      fail(422, 'Ghi nhận xét cụ thể ít nhất 20 ký tự cho từng tiêu chí chấm bài.');
+    }
     const submission = await ReviewSubmission.findOneAndUpdate({ id: item.id, status: 'in_review', mentorId: req.account.id }, {
       $set: { status: complete ? 'completed' : 'needs_revision', reviewedAt: new Date(),
         review: { ...payload, score, mentorName: req.account.name },

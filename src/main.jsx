@@ -67,7 +67,7 @@ import { Header } from './components/Header';
 import { AuthPage } from './pages/AuthPage';
 const ReviewWorkspace = lazy(() => import('./pages/ReviewWorkspace'));
 import { HomePage } from './pages/HomePage';
-import { CHALLENGES, LEVEL_LABELS, RESOURCES } from '../shared/catalog.js';
+import { CHALLENGES, LEVEL_LABELS, RESOURCES, SPECIALIZATIONS } from '../shared/catalog.js';
 import { describePremiumPlan } from '../shared/premiumCopy.js';
 import { AboutPage } from './pages/AboutPage';
 import { MarketTrendsPage } from './pages/MarketTrendsPage';
@@ -1288,8 +1288,9 @@ function App() {
     ...item,
     difficulty: LEVEL_LABELS[item.level],
     xp: { beginner: 100, intermediate: 180, advanced: 280 }[item.level],
-    track: { dev: 'Frontend', mkt: 'Content', design: 'UX Design' }[item.majorKey],
-    tags: [LEVEL_LABELS[item.level], ...item.rubric.slice(0, 2).map(criterion => criterion.label)],
+    track: item.id === 'practice-mkt-seo' ? 'SEO' : ({ frontend: 'Frontend', backend: 'Backend', data: 'AI / Data', security: 'DevOps', 'market-research': 'Market Research', content: 'Content', performance: 'Performance Marketing', 'marketing-analytics': 'Growth', 'ux-research': 'UX Research', ui: 'UI Design', accessibility: 'UX Design', 'design-system': 'Product Design' })[item.specializationKey],
+    specialization: SPECIALIZATIONS.find(track => track.key === item.specializationKey)?.label,
+    tags: [LEVEL_LABELS[item.level], SPECIALIZATIONS.find(track => track.key === item.specializationKey)?.label, ...item.rubric.slice(0, 2).map(criterion => criterion.label)].filter(Boolean),
     mentor: 'Mentor theo chuyên môn',
     due: `${item.estimatedHours} giờ`
   }));

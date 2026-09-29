@@ -1,6 +1,22 @@
+import { RUBRIC_EVIDENCE } from './rubricEvidence.js';
+
 export const REVIEW_FEE = 5000;
-export const MAJOR_LABELS = { dev: 'Developer', mkt: 'Marketing', design: 'Thiết kế' };
+export const MAJOR_LABELS = { dev: 'Công nghệ thông tin', mkt: 'Marketing', design: 'Thiết kế' };
 export const LEVEL_LABELS = { beginner: 'Nền tảng', intermediate: 'Trung cấp', advanced: 'Nâng cao' };
+export const SPECIALIZATIONS = [
+  { key: 'frontend', majorKey: 'dev', label: 'Front-end' },
+  { key: 'backend', majorKey: 'dev', label: 'Back-end & API' },
+  { key: 'data', majorKey: 'dev', label: 'Dữ liệu' },
+  { key: 'security', majorKey: 'dev', label: 'An toàn ứng dụng' },
+  { key: 'market-research', majorKey: 'mkt', label: 'Nghiên cứu thị trường' },
+  { key: 'content', majorKey: 'mkt', label: 'Nội dung & mạng xã hội' },
+  { key: 'performance', majorKey: 'mkt', label: 'SEO & quảng cáo' },
+  { key: 'marketing-analytics', majorKey: 'mkt', label: 'Phân tích tăng trưởng' },
+  { key: 'ux-research', majorKey: 'design', label: 'Nghiên cứu UX' },
+  { key: 'ui', majorKey: 'design', label: 'Thiết kế giao diện' },
+  { key: 'accessibility', majorKey: 'design', label: 'Thiết kế tiếp cận' },
+  { key: 'design-system', majorKey: 'design', label: 'Design system' }
+];
 const sources = {
   dev: { name: 'Meta Front-End Developer · Coursera', url: 'https://www.coursera.org/professional-certificates/meta-front-end-developer' },
   mkt: { name: 'Google Digital Marketing & E-commerce · Coursera', url: 'https://www.coursera.org/professional-certificates/google-digital-marketing-ecommerce' },
@@ -33,7 +49,14 @@ const make = (id, title, majorKey, level, summary, requirements, criteria) => ({
   levelDescription: LEVEL_GUIDANCE[level], learningOutcome: OUTCOMES[majorKey][level],
   summary, requirements, estimatedHours: { beginner: 4, intermediate: 8, advanced: 16 }[level],
   source: { ...sources[majorKey], note: 'Bài thực hành do Portfolio FPT Hub biên soạn theo chủ đề của khóa học; không phải đề thi chính thức hoặc chứng chỉ của đơn vị nguồn.' },
-  rubric: criteria.map(([key, label, weight]) => ({ key, label, weight }))
+  rubric: criteria.map(([key, label, weight]) => ({ key, label, weight,
+    expectation: `Chỉ ra cách bài làm đáp ứng “${label.toLocaleLowerCase('vi')}” và dẫn tới minh chứng cụ thể trong sản phẩm.`,
+    anchors: {
+      basic: `0–4: Thiếu hoặc chưa có minh chứng rõ cho ${label.toLocaleLowerCase('vi')}.`,
+      adequate: `5–7: Đáp ứng phần chính về ${label.toLocaleLowerCase('vi')} nhưng còn điểm cần sửa.`,
+      strong: `8–10: Đáp ứng đầy đủ, có minh chứng và giải thích lựa chọn về ${label.toLocaleLowerCase('vi')}.`
+    }
+  }))
 });
 export const CHALLENGES = [
   make('practice-dev-profile', 'Trang giới thiệu cá nhân responsive', 'dev', 'beginner', 'Xây một trang giới thiệu dự án rõ ràng trên điện thoại và máy tính.', ['Link repository và README hướng dẫn chạy', 'Trang có giới thiệu, kỹ năng và ít nhất một dự án', 'Minh chứng giao diện ở 375px và 1280px'], [['layout', 'Bố cục responsive', 35], ['semantics', 'HTML ngữ nghĩa và khả năng truy cập', 25], ['content', 'Nội dung và minh chứng dự án', 20], ['readme', 'README và tổ chức mã nguồn', 20]]),
@@ -90,6 +113,176 @@ for (const challenge of CHALLENGES) {
   const [scenario, reviewQuestion] = challengeContexts[challenge.id] || [];
   challenge.scenario = scenario || challenge.summary;
   challenge.reviewQuestion = reviewQuestion || 'Đầu ra và minh chứng có đáp ứng đầy đủ yêu cầu và rubric của thử thách không?';
+}
+
+// Bài thực hành do nền tảng tự biên soạn; các khóa học chỉ là nguồn học theo chủ đề.
+const sourceBySpecialization = {
+  frontend: sources.dev,
+  backend: { name: 'Meta Back-End Developer · Coursera', url: 'https://www.coursera.org/professional-certificates/meta-back-end-developer' },
+  data: { name: 'IBM Data Science · Coursera', url: 'https://www.coursera.org/professional-certificates/ibm-data-science' },
+  security: { name: 'Google Cybersecurity · Coursera', url: 'https://www.coursera.org/professional-certificates/google-cybersecurity' },
+  'market-research': sources.mkt,
+  content: { name: 'Meta Social Media Marketing · Coursera', url: 'https://www.coursera.org/professional-certificates/facebook-social-media-marketing' },
+  performance: sources.mkt,
+  'marketing-analytics': sources.mkt,
+  'ux-research': { name: 'User Experience: Research & Prototyping · Coursera', url: 'https://www.coursera.org/learn/user-research' },
+  ui: { name: 'Introduction to UI Design · Coursera', url: 'https://www.coursera.org/learn/ui-design' },
+  accessibility: sources.design,
+  'design-system': sources.design
+};
+const sourceNote = 'Bài thực hành do Portfolio FPT Hub tự biên soạn theo chủ đề; liên kết dẫn tới khóa học tham khảo, không phải đề thi hoặc chứng chỉ của đơn vị nguồn.';
+const existingDetails = {
+  'practice-dev-profile': ['frontend', 5, 'Trang portfolio chạy trên di động và máy tính, có liên kết tới dự án thật cùng README tái hiện được.'],
+  'practice-dev-dashboard': ['frontend', 10, 'Dashboard React có tìm kiếm, lọc và ba trạng thái tải/rỗng/lỗi kèm ca kiểm thử.'],
+  'practice-dev-capstone': ['backend', 20, 'Ứng dụng đặt lịch có dữ liệu mẫu, xử lý trùng lịch và tài liệu kiểm thử phân quyền.'],
+  'practice-mkt-persona': ['market-research', 5, 'Persona có căn cứ và lịch nội dung bảy ngày, ghi rõ giả định chưa được kiểm chứng.'],
+  'practice-mkt-campaign': ['performance', 10, 'Kế hoạch chiến dịch bốn tuần có ngân sách, phễu chuyển đổi và công thức đo KPI.'],
+  'practice-mkt-experiment': ['marketing-analytics', 16, 'Thiết kế A/B test có giả thuyết, điều kiện dừng và quy tắc ra quyết định từ dữ liệu.'],
+  'practice-design-wireframe': ['ui', 5, 'User flow và bốn wireframe cho luồng đăng ký, gồm cách sửa lỗi nhập liệu trên di động.'],
+  'practice-design-prototype': ['ui', 11, 'Prototype tương tác cho tác vụ học tiếp, kèm ghi chép usability test và thay đổi sau phản hồi.'],
+  'practice-design-case-study': ['ux-research', 18, 'Case study nối được vấn đề, bằng chứng nghiên cứu, giải pháp và giới hạn kiểm chứng.'],
+  'practice-dev-api': ['backend', 7, 'API CRUD sự kiện có ví dụ request/response, phân trang và minh chứng kiểm tra lỗi.'],
+  'practice-dev-data': ['data', 11, 'Notebook hoặc ứng dụng phân tích có dữ liệu hợp lệ, bước làm sạch và biểu đồ tái lập được.'],
+  'practice-dev-security': ['security', 17, 'Báo cáo threat model trong phạm vi được phép, ưu tiên rủi ro và cách tái kiểm tra sau sửa.'],
+  'practice-mkt-research': ['market-research', 6, 'Báo cáo phân khúc và đối thủ từ nguồn công khai, tách insight với giả định cần kiểm chứng.'],
+  'practice-mkt-seo': ['performance', 9, 'Topic cluster và brief trang đích theo search intent, kèm chỉ số đo không bịa thứ hạng.'],
+  'practice-mkt-analytics': ['marketing-analytics', 16, 'Báo cáo phễu chuyển đổi có định nghĩa chỉ số, điểm nghẽn và thử nghiệm ưu tiên.'],
+  'practice-design-audit': ['accessibility', 6, 'Bảng kiểm giao diện ghi vị trí lỗi, bước tái hiện, mức ưu tiên và phương án sửa.'],
+  'practice-design-research': ['ux-research', 10, 'Kế hoạch phỏng vấn có câu hỏi trung lập, tuyển chọn người tham gia và cách bảo vệ dữ liệu.'],
+  'practice-design-system': ['design-system', 19, 'Thư viện token và component cho web/di động, có trạng thái, hướng dẫn dùng và bàn giao.']
+};
+for (const challenge of CHALLENGES) {
+  const [specializationKey, estimatedHours, learningOutcome] = existingDetails[challenge.id];
+  challenge.specializationKey = specializationKey;
+  challenge.estimatedHours = estimatedHours;
+  challenge.learningOutcome = learningOutcome;
+  challenge.source = { ...sourceBySpecialization[specializationKey], note: sourceNote };
+}
+
+const extraBriefs = [
+  { id: 'practice-dev-product-page', title: 'Trang sản phẩm thương mại điện tử', major: 'dev', specialization: 'frontend', level: 'beginner', hours: 6,
+    summary: 'Xây trang sản phẩm có ảnh, biến thể và trạng thái giỏ hàng trên màn hình nhỏ.',
+    scenario: 'Một cửa hàng muốn khách xem chi tiết sản phẩm và chọn biến thể trước khi thêm vào giỏ trên điện thoại.',
+    outcome: 'Trang sản phẩm responsive có trạng thái hết hàng, chọn biến thể và minh chứng thao tác bằng bàn phím.',
+    requirements: ['Link demo và mã nguồn có hướng dẫn chạy', 'Chọn biến thể cập nhật giá hoặc tình trạng hàng', 'Ảnh và nút thao tác dùng được ở 375px, có trạng thái focus'],
+    question: 'Khách có chọn đúng biến thể và biết rõ kết quả thao tác trong mọi trạng thái không?',
+    rubric: [['interaction', 'Thao tác chọn biến thể', 35], ['responsive', 'Giao diện di động', 25], ['accessibility', 'Bàn phím và nhãn', 25], ['handoff', 'Demo và hướng dẫn chạy', 15]] },
+  { id: 'practice-dev-auth-api', title: 'API đăng nhập và phân quyền', major: 'dev', specialization: 'backend', level: 'intermediate', hours: 12,
+    summary: 'Thiết kế API tài khoản có phiên đăng nhập, quyền truy cập và thông báo lỗi an toàn.',
+    scenario: 'Một ứng dụng nhóm cần người dùng đăng nhập và chỉ sửa dữ liệu thuộc về mình.',
+    outcome: 'API đăng nhập và tài nguyên có phân quyền, kiểm thử các trường hợp sai mật khẩu và truy cập trái quyền.',
+    requirements: ['Repository và hướng dẫn tạo dữ liệu mẫu không chứa bí mật', 'Endpoint đăng nhập/đăng xuất và một tài nguyên có kiểm tra quyền', 'Bảng ca kiểm thử cho sai mật khẩu, hết phiên và truy cập trái quyền'],
+    question: 'Người dùng có thể sửa dữ liệu của người khác hoặc xem dữ liệu sau khi hết phiên không?',
+    rubric: [['authorization', 'Kiểm tra quyền truy cập', 35], ['session', 'Xử lý phiên và lỗi', 30], ['tests', 'Kiểm thử trường hợp biên', 25], ['docs', 'Tài liệu API', 10]] },
+  { id: 'practice-dev-explore-data', title: 'Khám phá bộ dữ liệu công khai', major: 'dev', specialization: 'data', level: 'beginner', hours: 7,
+    summary: 'Đặt một câu hỏi có thể trả lời bằng dữ liệu và phân tích trên notebook.',
+    scenario: 'Nhóm dự án nhận một bộ dữ liệu công khai nhưng chưa biết dữ liệu thiếu hay lệch ở đâu.',
+    outcome: 'Notebook ghi nguồn dữ liệu, kiểm tra chất lượng, hai biểu đồ và một kết luận có giới hạn.',
+    requirements: ['Dẫn nguồn và giấy phép bộ dữ liệu công khai', 'Mô tả cột, dữ liệu thiếu và cách xử lý', 'Hai biểu đồ có nhãn, mã chạy lại được'],
+    question: 'Người khác có chạy lại notebook và hiểu dữ liệu nào hỗ trợ kết luận không?',
+    rubric: [['provenance', 'Nguồn và giấy phép', 20], ['cleaning', 'Kiểm tra dữ liệu thiếu', 30], ['visualization', 'Biểu đồ có ngữ cảnh', 25], ['conclusion', 'Kết luận thận trọng', 25]] },
+  { id: 'practice-dev-demand-forecast', title: 'Dự báo nhu cầu từ dữ liệu bán hàng', major: 'dev', specialization: 'data', level: 'advanced', hours: 20,
+    summary: 'So sánh baseline và mô hình dự báo trên dữ liệu mẫu, tránh rò rỉ dữ liệu tương lai.',
+    scenario: 'Một cửa hàng cần ước lượng nhu cầu tuần tới để lên kế hoạch tồn kho.',
+    outcome: 'Báo cáo dự báo có baseline, tách tập theo thời gian, sai số và khuyến nghị sử dụng thực tế.',
+    requirements: ['Dữ liệu mẫu/ẩn danh và mã tái lập kết quả', 'So sánh baseline với ít nhất một phương pháp dự báo', 'Nêu sai số, rủi ro rò rỉ dữ liệu và trường hợp không nên dùng'],
+    question: 'Phép đánh giá có phản ánh dữ liệu tương lai chưa biết và cho thấy mô hình có tốt hơn baseline không?',
+    rubric: [['split', 'Tách tập theo thời gian', 30], ['baseline', 'So sánh baseline', 25], ['evaluation', 'Sai số và phân tích lỗi', 30], ['handoff', 'Khuyến nghị sử dụng', 15]] },
+  { id: 'practice-dev-session-audit', title: 'Kiểm tra phiên và cấu hình web', major: 'dev', specialization: 'security', level: 'intermediate', hours: 10,
+    summary: 'Rà soát một ứng dụng mẫu được phép kiểm thử: cookie, logout và security headers.',
+    scenario: 'Đội phát triển muốn chắc chắn phiên hết hiệu lực khi đăng xuất và trình duyệt nhận cấu hình bảo vệ phù hợp.',
+    outcome: 'Báo cáo kiểm tra phiên/cookie/header có bước tái hiện an toàn và bản sửa đề xuất.',
+    requirements: ['Chỉ dùng ứng dụng mẫu hoặc hệ thống bạn được phép thử', 'Bảng kiểm cookie, logout và tối thiểu ba header liên quan', 'Bằng chứng trước/sau và cách tái kiểm tra không tiết lộ token'],
+    question: 'Mỗi phát hiện có tái hiện được và đề xuất sửa có tránh tạo tác dụng phụ không?',
+    rubric: [['scope', 'Phạm vi được phép', 20], ['checks', 'Kiểm tra phiên và cấu hình', 35], ['evidence', 'Bằng chứng an toàn', 25], ['mitigation', 'Đề xuất và tái kiểm tra', 20]] },
+  { id: 'practice-mkt-social-calendar', title: 'Lịch nội dung mạng xã hội hai tuần', major: 'mkt', specialization: 'content', level: 'beginner', hours: 6,
+    summary: 'Lập lịch bài đăng phù hợp một nhóm khách hàng và mục tiêu truyền thông cụ thể.',
+    scenario: 'Thương hiệu nhỏ có ít nhân sự nhưng cần duy trì nội dung đều đặn trong hai tuần ra mắt.',
+    outcome: 'Lịch 14 ngày có ý tưởng, định dạng, thông điệp, CTA và tiêu chí theo dõi từng bài.',
+    requirements: ['Chọn một sản phẩm và nêu nhóm khách hàng mục tiêu', 'Lịch 14 ngày ghi kênh, nội dung, CTA và người thực hiện', 'Nêu cách đo tương tác và giả định chưa kiểm chứng'],
+    question: 'Lịch có khả thi với nguồn lực đã nêu và mỗi bài có mục tiêu đo được không?',
+    rubric: [['audience', 'Phù hợp khách hàng', 25], ['plan', 'Lịch khả thi', 30], ['creative', 'Thông điệp và CTA', 25], ['measurement', 'Đo kết quả', 20]] },
+  { id: 'practice-mkt-positioning', title: 'Bản đồ định vị ba đối thủ', major: 'mkt', specialization: 'market-research', level: 'beginner', hours: 7,
+    summary: 'So sánh sản phẩm với ba đối thủ bằng tiêu chí có nguồn và nêu khoảng trống thị trường.',
+    scenario: 'Một sản phẩm mới cần quyết định nên nhấn mạnh lợi ích nào trước khi viết thông điệp quảng bá.',
+    outcome: 'Ma trận so sánh ba đối thủ, bản đồ định vị và giả thuyết thông điệp cần kiểm chứng.',
+    requirements: ['Ghi rõ sản phẩm, phân khúc và ba đối thủ', 'Mỗi tiêu chí so sánh có nguồn công khai và ngày thu thập', 'Tách quan sát khỏi giả định trong đề xuất định vị'],
+    question: 'Lợi thế đề xuất có thực sự được chứng minh bằng nguồn và phù hợp phân khúc chọn không?',
+    rubric: [['sampling', 'Chọn đối thủ phù hợp', 25], ['evidence', 'Nguồn so sánh', 30], ['positioning', 'Lập luận định vị', 30], ['limits', 'Giới hạn kết luận', 15]] },
+  { id: 'practice-mkt-ad-brief', title: 'Thử nghiệm quảng cáo ngân sách nhỏ', major: 'mkt', specialization: 'performance', level: 'intermediate', hours: 10,
+    summary: 'Lập hai phương án quảng cáo, phân bổ ngân sách giả định và tiêu chí dừng thử nghiệm.',
+    scenario: 'Một cửa hàng cần biết thông điệp nào đáng đầu tư trước khi tăng ngân sách quảng cáo.',
+    outcome: 'Ad brief hai biến thể có đối tượng, ngân sách, KPI, cách đo và quy tắc dừng.',
+    requirements: ['Nêu sản phẩm, mục tiêu và số tiền mô phỏng', 'Hai biến thể chỉ khác một yếu tố cần kiểm chứng', 'Công thức KPI, điều kiện dừng và rủi ro sai lệch mẫu'],
+    question: 'Thiết kế thử nghiệm có cho phép so sánh hai biến thể mà không nhầm tác động từ nhiều thay đổi không?',
+    rubric: [['hypothesis', 'Giả thuyết rõ', 25], ['creative', 'Biến thể quảng cáo', 25], ['budget', 'Ngân sách và đối tượng', 20], ['measurement', 'Đo lường và điều kiện dừng', 30]] },
+  { id: 'practice-mkt-email-onboarding', title: 'Chuỗi email chào mừng khách hàng', major: 'mkt', specialization: 'content', level: 'intermediate', hours: 9,
+    summary: 'Viết chuỗi ba email theo hành trình người dùng và tôn trọng quyền từ chối nhận thư.',
+    scenario: 'Người dùng mới đăng ký nhưng chưa hoàn tất hành động đầu tiên trong sản phẩm.',
+    outcome: 'Ba email có mục tiêu riêng, CTA, điều kiện gửi và cách đo hiệu quả không phóng đại.',
+    requirements: ['Sơ đồ thời điểm gửi và mục tiêu từng email', 'Bản nháp tiêu đề, nội dung, CTA cho ba email', 'Cách đo và cơ chế hủy đăng ký rõ ràng'],
+    question: 'Chuỗi email có dẫn người dùng tới hành động hữu ích mà không gửi quá dày hoặc gây hiểu lầm không?',
+    rubric: [['journey', 'Hành trình và thời điểm', 30], ['copy', 'Nội dung và CTA', 30], ['measurement', 'Đo kết quả', 20], ['consent', 'Quyền từ chối nhận thư', 20]] },
+  { id: 'practice-mkt-retention', title: 'Phân tích giữ chân theo cohort', major: 'mkt', specialization: 'marketing-analytics', level: 'advanced', hours: 18,
+    summary: 'Đọc dữ liệu mẫu theo nhóm đăng ký và xác định điểm người dùng rời bỏ.',
+    scenario: 'Số lượt đăng ký tăng nhưng nhóm sản phẩm chưa biết người dùng có quay lại sau tuần đầu hay không.',
+    outcome: 'Bảng cohort có định nghĩa quay lại, biểu đồ giữ chân và đề xuất thử nghiệm ưu tiên.',
+    requirements: ['Dùng dữ liệu mẫu/ẩn danh và ghi định nghĩa cohort', 'Tính tỷ lệ theo tuần, xử lý nhóm chưa đủ thời gian quan sát', 'Nêu ít nhất hai giả thuyết và giới hạn suy luận'],
+    question: 'Báo cáo có tránh so sánh sai nhóm chưa đủ thời gian quan sát và đưa ra thử nghiệm khả thi không?',
+    rubric: [['definition', 'Định nghĩa cohort', 25], ['calculation', 'Tính toán và xử lý dữ liệu', 30], ['interpretation', 'Đọc xu hướng thận trọng', 25], ['action', 'Thử nghiệm tiếp theo', 20]] },
+  { id: 'practice-design-interview', title: 'Kịch bản phỏng vấn người dùng', major: 'design', specialization: 'ux-research', level: 'beginner', hours: 5,
+    summary: 'Soạn kịch bản 20 phút để tìm hiểu khó khăn thật khi hoàn thành một tác vụ.',
+    scenario: 'Nhóm thiết kế chưa hiểu vì sao người dùng bỏ dở bước thanh toán trên điện thoại.',
+    outcome: 'Kịch bản phỏng vấn có lời xin đồng ý, câu hỏi mở và bảng ghi chép không chứa định danh.',
+    requirements: ['Nêu mục tiêu nghiên cứu và tiêu chí chọn người tham gia', 'Ít nhất tám câu hỏi mở, không gợi ý đáp án', 'Lời giới thiệu, xin đồng ý và cách lưu ghi chép ẩn danh'],
+    question: 'Câu hỏi có giúp khám phá hành vi thực tế mà không dẫn người tham gia tới kết luận có sẵn không?',
+    rubric: [['objective', 'Mục tiêu nghiên cứu', 25], ['questions', 'Câu hỏi trung lập', 35], ['flow', 'Nhịp phỏng vấn', 20], ['ethics', 'Đồng ý và riêng tư', 20]] },
+  { id: 'practice-design-checkout', title: 'Giao diện thanh toán trên di động', major: 'design', specialization: 'ui', level: 'intermediate', hours: 11,
+    summary: 'Thiết kế luồng kiểm tra đơn, nhập địa chỉ và xác nhận có trạng thái lỗi rõ.',
+    scenario: 'Khách hàng thường bỏ dở vì không hiểu phí cuối cùng và lỗi địa chỉ xuất hiện quá muộn.',
+    outcome: 'Prototype checkout di động có giá cuối, lỗi nhập liệu và trang xác nhận minh bạch.',
+    requirements: ['Link prototype có thể bấm qua ít nhất bốn trạng thái', 'Hiển thị tổng tiền/phí trước khi xác nhận', 'Thiết kế trạng thái lỗi địa chỉ và cách sửa không mất dữ liệu'],
+    question: 'Người dùng có biết chính xác sẽ trả bao nhiêu và sửa lỗi ở đâu trước khi đặt hàng không?',
+    rubric: [['flow', 'Luồng thanh toán', 30], ['clarity', 'Minh bạch tổng tiền', 25], ['error', 'Xử lý lỗi', 30], ['handoff', 'Prototype và chú thích', 15]] },
+  { id: 'practice-design-accessible-form', title: 'Biểu mẫu đăng ký dễ tiếp cận', major: 'design', specialization: 'accessibility', level: 'intermediate', hours: 9,
+    summary: 'Thiết kế lại biểu mẫu để dùng được với bàn phím, màn hình nhỏ và thông báo lỗi rõ.',
+    scenario: 'Người dùng không thể hoàn thành biểu mẫu khi dùng bàn phím hoặc phóng to màn hình.',
+    outcome: 'Prototype biểu mẫu có nhãn, focus, lỗi gắn đúng trường và bảng kiểm tiếp cận.',
+    requirements: ['Link prototype có trạng thái bình thường, focus và lỗi', 'Luồng bàn phím và thứ tự đọc được mô tả', 'Bảng kiểm tương phản, nhãn, thông báo lỗi và màn hình 320px'],
+    question: 'Người dùng có nhận ra trường lỗi và hoàn thành biểu mẫu mà không cần chuột không?',
+    rubric: [['labels', 'Nhãn và hướng dẫn', 25], ['keyboard', 'Thứ tự bàn phím và focus', 30], ['errors', 'Thông báo lỗi hữu ích', 30], ['evidence', 'Bảng kiểm và minh chứng', 15]] },
+  { id: 'practice-design-tokens', title: 'Token màu và khoảng cách cho sản phẩm', major: 'design', specialization: 'design-system', level: 'intermediate', hours: 10,
+    summary: 'Tạo bộ token nhỏ để hai màn hình dùng nhất quán và có trạng thái giao diện rõ.',
+    scenario: 'Hai nhóm đang dùng màu và khoảng cách khác nhau cho cùng một kiểu nút, gây khó bảo trì.',
+    outcome: 'Bộ token có tên theo vai trò, ví dụ áp dụng trên hai màn hình và tài liệu bàn giao.',
+    requirements: ['Link thư viện thiết kế và quy tắc đặt tên token', 'Áp dụng token cho ít nhất hai màn hình và ba trạng thái nút', 'Ghi kết quả kiểm tra tương phản và cách dùng khi bàn giao'],
+    question: 'Người khác có áp dụng token đúng ngữ cảnh mà không phải đoán mã màu hoặc khoảng cách không?',
+    rubric: [['naming', 'Tên token theo vai trò', 30], ['coverage', 'Màn hình và trạng thái', 30], ['accessibility', 'Tương phản và ngữ cảnh', 25], ['handoff', 'Hướng dẫn bàn giao', 15]] },
+  { id: 'practice-design-service-blueprint', title: 'Service blueprint cho hỗ trợ sinh viên', major: 'design', specialization: 'ux-research', level: 'advanced', hours: 17,
+    summary: 'Mô tả toàn bộ hành trình gửi yêu cầu hỗ trợ và các bước xử lý phía sau.',
+    scenario: 'Sinh viên gửi yêu cầu nhưng không biết ai xử lý, khi nào phản hồi và cách theo dõi tiến độ.',
+    outcome: 'Service blueprint có hành trình người dùng, trách nhiệm vận hành, điểm nghẽn và kế hoạch cải thiện.',
+    requirements: ['Phỏng vấn hoặc mô phỏng minh bạch tối thiểu hai góc nhìn', 'Sơ đồ frontstage/backstage, điểm bàn giao và trạng thái chờ', 'Ưu tiên ba cải tiến kèm cách đo thời gian hoặc tỷ lệ hoàn thành'],
+    question: 'Bản đồ có chỉ ra đúng điểm gây chậm và quy trách nhiệm xử lý rõ cho từng bước không?',
+    rubric: [['research', 'Căn cứ hành trình', 25], ['blueprint', 'Frontstage và backstage', 30], ['handoffs', 'Điểm bàn giao và rủi ro', 25], ['priorities', 'Ưu tiên và đo kết quả', 20]] }
+];
+for (const brief of extraBriefs) {
+  const challenge = make(brief.id, brief.title, brief.major, brief.level, brief.summary, brief.requirements, brief.rubric);
+  Object.assign(challenge, { specializationKey: brief.specialization, estimatedHours: brief.hours, learningOutcome: brief.outcome,
+    scenario: brief.scenario, reviewQuestion: brief.question, source: { ...sourceBySpecialization[brief.specialization], note: sourceNote } });
+  CHALLENGES.push(challenge);
+}
+for (const challenge of CHALLENGES) {
+  challenge.rubric.forEach((criterion, index) => {
+    const [minimum, excellent] = RUBRIC_EVIDENCE[challenge.id]?.[index] || [];
+    if (!minimum || !excellent) return;
+    criterion.expectation = `Minh chứng cần thấy: ${minimum}.`;
+    criterion.anchors = {
+      basic: `0–4 · Chưa thể kiểm chứng: ${minimum}.`,
+      adequate: `5–7 · Có thể kiểm chứng: ${minimum}.`,
+      strong: `8–10 · Đạt mức trên; thêm ${excellent}.`
+    };
+  });
 }
 
 RESOURCES.push(
