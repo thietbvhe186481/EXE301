@@ -319,6 +319,39 @@ test('AI does not turn unsupported output into a grade or strengths', async () =
   }
 });
 
+test('student AI review persists verified feedback and cannot charge the same submission twice', async () => {
+  const oldKey = process.env.GROQ_API_KEY;
+  const originalFetch = globalThis.fetch;
+  process.env.GROQ_API_KEY = 'test-only';
+  actors.aiTester = { id: 'ai-tester', role: 'student' };
+  const challenge = CHALLENGES[1];
+  const id = 'ai-persist-target';
+  const excerpt = 'The dashboard has loading, empty and error states. Filtering keeps the selected course and search query visible while results update. A test covers empty results and another covers failed requests.';
+  await models.UserProfile.create({ id: 'ai-tester', name: 'AI Tester', status: 'active' });
+  await models.ReviewSubmission.create({ id, userId: 'ai-tester', challengeId: challenge.id, mode: 'ai', status: 'completed', notes: 'This dashboard demonstrates a complete data exploration flow.', skills: ['React', 'Testing'], ai: { checks: [] } });
+  let calls = 0;
+  globalThis.fetch = (url, options) => {
+    if (String(url).startsWith('https://api.groq.com/')) {
+      calls += 1;
+      const advice = { summary: 'Đã mô tả trạng thái tải và lỗi.', rubricFeedback: challenge.rubric.map((item, index) => ({ key: item.key, label: item.label, score: 7, assessment: 'Đã nêu kết quả nhưng chưa có ảnh hoặc log kiểm thử.', action: 'Thêm minh chứng kiểm thử cho trạng thái này.', evidence: index === 0 ? 'loading, empty and error states' : '' })), strengths: ['Có trạng thái tải và lỗi.'], improvements: ['Thêm minh chứng kiểm thử.'] };
+      return Promise.resolve({ ok: true, json: async () => ({ status: 'completed', output: [{ content: [{ type: 'output_text', text: JSON.stringify(advice) }] }] }) });
+    }
+    return originalFetch(url, options);
+  };
+  try {
+    assert.equal((await request(`/submissions/${id}/ai-advice`, 'aiTester', { evidenceText: excerpt })).status, 422);
+    const result = await request(`/submissions/${id}/ai-advice`, 'aiTester', { consent: true, evidenceText: excerpt });
+    assert.equal(result.status, 200);
+    assert.equal(result.data.submission.ai.modelFeedback.evidencedCriteria, 1);
+    assert.equal((await request('/state', 'aiTester')).data.submissions[0].ai.modelFeedback.score, result.data.submission.ai.modelFeedback.score);
+    assert.equal((await request(`/submissions/${id}/ai-advice`, 'aiTester', { consent: true, evidenceText: excerpt })).status, 409);
+    assert.equal(calls, 1);
+  } finally {
+    globalThis.fetch = originalFetch;
+    if (oldKey === undefined) delete process.env.GROQ_API_KEY; else process.env.GROQ_API_KEY = oldKey;
+  }
+});
+
 test('AI request requires explicit evidence and caps successful reviews per UTC day', async () => {
   const oldKey = process.env.GROQ_API_KEY;
   process.env.GROQ_API_KEY = 'test-only';
