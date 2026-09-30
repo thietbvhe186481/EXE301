@@ -23,3 +23,4 @@
 .rw-ai-criterion-score { display: inline-block; margin-left: .55rem; color: #1258ca; font-weight: 700; }
 .rw-ai-feedback .rw-field { display: block; margin: 1rem 0; }
 .rw-ai-feedback .rw-field textarea { width: 100%; }
+.rw-ai-rubric .rw-ai-action { margin: .55rem 0 0; padding: .6rem .75rem; background: #e8f1fc; border-left: 2px solid #2563cb; color: #183b65; font-size: .86rem; }

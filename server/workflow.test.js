@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import express from 'express';
 import { createWorkflowRouter, mentorSummary, hasPaidAccess, nextPremiumExpiry } from './workflow.js';
 import { CHALLENGES, SPECIALIZATIONS, scoreReview, qualityFromRatings, readinessCheck } from '../shared/catalog.js';
-import { generateAiAdvice } from './ai-review.js';
+import { aiConfigured, generateAiAdvice } from './ai-review.js';
 import { createHmac } from 'node:crypto';
 import { MENTOR_AGREEMENT_VERSION } from '../shared/mentorAgreement.js';
 
@@ -283,7 +283,7 @@ test('free AI adapter grades only the consented excerpt and checks every quoted 
       assert.equal(body.model, 'openai/gpt-oss-20b');
       assert.equal(body.store, false); assert.equal(body.input.includes('example.com'), false);
       assert.equal(body.input.includes(excerpt), true);
-      const advice = { summary: 'Đã có minh chứng ở một số tiêu chí.', rubricFeedback: CHALLENGES[0].rubric.map((item, index) => ({ key: item.key, label: item.label, score: 8, assessment: 'Cần bổ sung kết quả kiểm thử cụ thể.', evidence: index === 0 ? 'responsive page at 375px and 1280px' : 'a made-up quote' })), strengths: ['Có mô tả kích thước màn hình.'], improvements: ['Thêm kết quả kiểm thử.'] };
+      const advice = { summary: 'Đã có minh chứng ở một số tiêu chí.', rubricFeedback: CHALLENGES[0].rubric.map((item, index) => ({ key: item.key, label: item.label, score: 8, assessment: 'Cần bổ sung kết quả kiểm thử cụ thể.', action: 'Thêm ảnh kiểm thử theo kích thước.', evidence: index === 0 ? 'responsive page at 375px and 1280px' : 'a made-up quote' })), strengths: ['Có mô tả kích thước màn hình.'], improvements: ['Thêm kết quả kiểm thử.'] };
       assert.equal(body.text.format.schema.properties.rubricFeedback.type, 'array');
       return { ok: true, json: async () => ({ status: 'completed', output: [{ content: [{ type: 'output_text', text: JSON.stringify(advice) }] }] }) };
     });
@@ -291,8 +291,29 @@ test('free AI adapter grades only the consented excerpt and checks every quoted 
     assert.equal(advice.rubricFeedback.length, CHALLENGES[0].rubric.length);
     assert.equal(advice.strengths.length, 1);
     assert.equal(advice.rubricFeedback[0].score, 8);
+    assert.equal(advice.rubricFeedback[0].action, 'Thêm ảnh kiểm thử theo kích thước.');
     assert.ok(advice.rubricFeedback.slice(1).every(item => item.score === 0 && item.evidence === ''));
+    assert.equal(advice.evidencedCriteria, 1);
     assert.ok(advice.score > 0 && advice.score < 80);
+  } finally {
+    if (oldKey === undefined) delete process.env.GROQ_API_KEY; else process.env.GROQ_API_KEY = oldKey;
+  }
+});
+
+test('AI does not turn unsupported output into a grade or strengths', async () => {
+  const oldKey = process.env.GROQ_API_KEY;
+  process.env.GROQ_API_KEY = '  ';
+  assert.equal(aiConfigured(), false);
+  process.env.GROQ_API_KEY = 'test-only';
+  try {
+    const excerpt = 'A'.repeat(160);
+    const response = { summary: 'Bài đã hoàn thiện xuất sắc.', rubricFeedback: CHALLENGES[0].rubric.map(item => ({ key: item.key, label: item.label, score: 10, assessment: 'Xuất sắc.', action: 'Tiếp tục.', evidence: 'Bằng chứng không có trong bài.' })), strengths: ['Mọi tiêu chí đều đạt.'], improvements: [] };
+    const advice = await generateAiAdvice(CHALLENGES[0], payload(), excerpt, async () => ({ ok: true, json: async () => ({ status: 'completed', output: [{ content: [{ type: 'output_text', text: JSON.stringify(response) }] }] }) }));
+    assert.equal(advice.score, 0);
+    assert.equal(advice.evidencedCriteria, 0);
+    assert.deepEqual(advice.strengths, []);
+    assert.match(advice.summary, /chưa cung cấp bằng chứng/);
+    assert.ok(advice.rubricFeedback.every(item => item.action.includes('Bổ sung đoạn thể hiện')));
   } finally {
     if (oldKey === undefined) delete process.env.GROQ_API_KEY; else process.env.GROQ_API_KEY = oldKey;
   }
