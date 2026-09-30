@@ -46,7 +46,7 @@ export default function ReviewWorkspace({ currentUser, go, onOpenPolicy, initial
   async function mutate(path, body, method = 'POST', success = 'Đã lưu thay đổi.') {
     if (busy) return false;
     setBusy(true); setError(''); setNotice('');
-    try { await fetchWithAuth(`/api/workflow${path}`, { method, body: JSON.stringify(body), ...(path.endsWith('/ai-advice') ? { signal: AbortSignal.timeout(35000) } : {}) }); await refresh(); setNotice(success); return true; }
+    try { await fetchWithAuth(`/api/workflow${path}`, { method, body: JSON.stringify(body), ...(path.endsWith('/ai-advice') ? { signal: AbortSignal.timeout(45000) } : {}) }); await refresh(); setNotice(success); return true; }
     catch (e) { setError(e.message); return false; }
     finally { setBusy(false); }
   }
