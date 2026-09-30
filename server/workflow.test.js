@@ -281,7 +281,10 @@ test('free AI adapter grades only the consented excerpt and checks every quoted 
       const body = JSON.parse(options.body);
       assert.equal(url, 'https://api.groq.com/openai/v1/responses');
       assert.equal(body.model, 'openai/gpt-oss-20b');
-      assert.equal(body.store, false); assert.equal(body.input.includes('example.com'), false);
+      assert.deepEqual(body.reasoning, { effort: 'low' });
+      assert.equal(Object.hasOwn(body, 'store'), false);
+      assert.equal(Object.hasOwn(body, 'reasoning_effort'), false);
+      assert.equal(body.input.includes('example.com'), false);
       assert.equal(body.input.includes(excerpt), true);
       const advice = { summary: 'Đã có minh chứng ở một số tiêu chí.', rubricFeedback: CHALLENGES[0].rubric.map((item, index) => ({ key: item.key, label: item.label, score: 8, assessment: 'Cần bổ sung kết quả kiểm thử cụ thể.', action: 'Thêm ảnh kiểm thử theo kích thước.', evidence: index === 0 ? 'responsive page at 375px and 1280px' : 'a made-up quote' })), strengths: ['Có mô tả kích thước màn hình.'], improvements: ['Thêm kết quả kiểm thử.'] };
       assert.equal(body.text.format.schema.properties.rubricFeedback.type, 'array');
