@@ -279,18 +279,17 @@ test('free AI adapter grades only the consented excerpt and checks every quoted 
     const excerpt = 'This artifact has a responsive page at 375px and 1280px, with a documented navigation flow and screenshots for both sizes. The README explains the build steps and includes accessibility checks.';
     const advice = await generateAiAdvice(CHALLENGES[0], payload(), excerpt, async (url, options) => {
       const body = JSON.parse(options.body);
-      assert.equal(url, 'https://api.groq.com/openai/v1/responses');
+      assert.equal(url, 'https://api.groq.com/openai/v1/chat/completions');
       assert.equal(body.model, 'openai/gpt-oss-20b');
-      assert.deepEqual(body.reasoning, { effort: 'low' });
+      assert.equal(body.reasoning_effort, 'low');
       assert.equal(Object.hasOwn(body, 'store'), false);
-      assert.equal(Object.hasOwn(body, 'reasoning_effort'), false);
-      assert.equal(body.input.includes('example.com'), false);
-      assert.equal(body.input.includes(excerpt), true);
-      const advice = { summary: 'Đã có minh chứng ở một số tiêu chí.', rubricFeedback: CHALLENGES[0].rubric.map((item, index) => ({ key: item.key, label: item.label, score: 8, assessment: 'Cần bổ sung kết quả kiểm thử cụ thể.', action: 'Thêm ảnh kiểm thử theo kích thước.', evidence: index === 0 ? 'responsive page at 375px and 1280px' : 'a made-up quote' })), strengths: ['Có mô tả kích thước màn hình.'], improvements: ['Thêm kết quả kiểm thử.'] };
-      assert.equal(body.text.format.schema.properties.rubricFeedback.type, 'array');
-      return { ok: true, json: async () => ({ status: 'completed', output: [{ content: [{ type: 'output_text', text: JSON.stringify(advice) }] }] }) };
+      assert.equal(body.messages[1].content.includes('example.com'), false);
+      assert.equal(body.messages[1].content.includes(excerpt), true);
+      const advice = { summary: 'Đã có minh chứng ở một số tiêu chí.', rubricFeedback: CHALLENGES[0].rubric.map((item, index) => ({ key: item.key, score: 8, assessment: 'Cần bổ sung kết quả kiểm thử cụ thể.', action: 'Thêm ảnh kiểm thử theo kích thước.', evidence: index === 0 ? 'responsive page at 375px and 1280px' : 'a made-up quote' })) };
+      assert.equal(body.response_format.json_schema.schema.properties.rubricFeedback.type, 'array');
+      return { ok: true, json: async () => ({ choices: [{ finish_reason: 'stop', message: { content: JSON.stringify(advice) } }] }) };
     });
-    assert.equal(advice.improvements.length, 1);
+    assert.equal(advice.improvements.length, 3);
     assert.equal(advice.rubricFeedback.length, CHALLENGES[0].rubric.length);
     assert.equal(advice.strengths.length, 1);
     assert.equal(advice.rubricFeedback[0].score, 8);
@@ -310,8 +309,8 @@ test('AI does not turn unsupported output into a grade or strengths', async () =
   process.env.GROQ_API_KEY = 'test-only';
   try {
     const excerpt = 'A'.repeat(160);
-    const response = { summary: 'Bài đã hoàn thiện xuất sắc.', rubricFeedback: CHALLENGES[0].rubric.map(item => ({ key: item.key, label: item.label, score: 10, assessment: 'Xuất sắc.', action: 'Tiếp tục.', evidence: 'Bằng chứng không có trong bài.' })), strengths: ['Mọi tiêu chí đều đạt.'], improvements: [] };
-    const advice = await generateAiAdvice(CHALLENGES[0], payload(), excerpt, async () => ({ ok: true, json: async () => ({ status: 'completed', output: [{ content: [{ type: 'output_text', text: JSON.stringify(response) }] }] }) }));
+    const response = { summary: 'Bài đã hoàn thiện xuất sắc.', rubricFeedback: CHALLENGES[0].rubric.map(item => ({ key: item.key, score: 10, assessment: 'Xuất sắc.', action: 'Tiếp tục.', evidence: 'Bằng chứng không có trong bài.' })) };
+    const advice = await generateAiAdvice(CHALLENGES[0], payload(), excerpt, async () => ({ ok: true, json: async () => ({ choices: [{ finish_reason: 'stop', message: { content: JSON.stringify(response) } }] }) }));
     assert.equal(advice.score, 0);
     assert.equal(advice.evidencedCriteria, 0);
     assert.deepEqual(advice.strengths, []);
@@ -336,8 +335,8 @@ test('student AI review persists verified feedback and cannot charge the same su
   globalThis.fetch = (url, options) => {
     if (String(url).startsWith('https://api.groq.com/')) {
       calls += 1;
-      const advice = { summary: 'Đã mô tả trạng thái tải và lỗi.', rubricFeedback: challenge.rubric.map((item, index) => ({ key: item.key, label: item.label, score: 7, assessment: 'Đã nêu kết quả nhưng chưa có ảnh hoặc log kiểm thử.', action: 'Thêm minh chứng kiểm thử cho trạng thái này.', evidence: index === 0 ? 'loading, empty and error states' : '' })), strengths: ['Có trạng thái tải và lỗi.'], improvements: ['Thêm minh chứng kiểm thử.'] };
-      return Promise.resolve({ ok: true, json: async () => ({ status: 'completed', output: [{ content: [{ type: 'output_text', text: JSON.stringify(advice) }] }] }) });
+      const advice = { summary: 'Đã mô tả trạng thái tải và lỗi.', rubricFeedback: challenge.rubric.map((item, index) => ({ key: item.key, score: 7, assessment: 'Đã nêu kết quả nhưng chưa có ảnh hoặc log kiểm thử.', action: 'Thêm minh chứng kiểm thử cho trạng thái này.', evidence: index === 0 ? 'loading, empty and error states' : '' })) };
+      return Promise.resolve({ ok: true, json: async () => ({ choices: [{ finish_reason: 'stop', message: { content: JSON.stringify(advice) } }] }) });
     }
     return originalFetch(url, options);
   };
