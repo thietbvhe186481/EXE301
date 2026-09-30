@@ -14,7 +14,7 @@ export default function ReviewLanding({ go, onSignup, onOpenPolicy, onSelectChal
       ['Mentor tôi muốn chọn đang quá tải thì sao?', 'Bạn sẽ thấy cảnh báo phản hồi chậm và gợi ý mentor ít bài chờ hơn. Nếu vẫn muốn chọn mentor đó, bạn có thể xác nhận đồng ý chờ. Thời gian hiển thị là ước tính.'],
       ['Tôi nộp bài như thế nào?', 'Gửi tối đa 3 link HTTP/HTTPS cùng kỹ năng và mô tả. Kiểm tra quyền xem trên GitHub, Figma, Drive hoặc nơi bạn lưu bài. Không gửi mật khẩu, thông tin khách hàng hay dữ liệu nhạy cảm.'],
       ['Bài của tôi có tự động chia sẻ với mentor khác không?', 'Không. Mục Sinh viên nổi trội chỉ hiển thị bài đạt từ 85 điểm khi bạn chủ động đồng ý. Bạn có thể thu hồi quyền chia sẻ ở Bài của tôi.'],
-      ['AI và mentor thật khác nhau thế nào?', 'Kiểm tra sơ bộ dùng quy tắc để xem thông tin đã đủ chưa. Gợi ý AI, khi máy chủ có cấu hình và bạn đồng ý, chỉ dựa trên ghi chú và kỹ năng. Mentor thật xem minh chứng và đánh giá theo tiêu chí chuyên môn.']
+      ['AI và mentor thật khác nhau thế nào?', 'Kiểm tra thông tin nộp dùng quy tắc. Khi dịch vụ AI khả dụng và bạn đồng ý, AI đối chiếu trích đoạn bài làm bạn dán với tiêu chí để cho điểm tham khảo; AI không mở link hoặc chạy mã. Mentor thật xem minh chứng và đánh giá chuyên môn được xác nhận.']
     ].map(([q, a]) => <details key={q}><summary>{q}</summary><p>{a}</p></details>)}</section>
     <footer className="rw-footer"><ShieldCheck size={18} /><span>Portfolio FPT Hub · Thực hành có minh chứng, phát triển có định hướng.</span>{onOpenPolicy && <button className="rw-text-button" onClick={() => onOpenPolicy('privacy')}>Chính sách bảo mật</button>}</footer>
   </main>;

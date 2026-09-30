@@ -272,23 +272,46 @@ test('mentor screening needs sufficient votes; rejected/offline profiles not ass
   assert.throws(() => scoreReview(CHALLENGES[0], {}));
   assert.equal(readinessCheck({ links: [], format: 'project', notes: '', skills: [], linksAccessible: false }).score, 0);
 });
-test('AI provider adapter sends only consented notes/skills and validates structured response', async () => {
-  const oldKey = process.env.OPENAI_API_KEY, oldModel = process.env.OPENAI_REVIEW_MODEL;
-  process.env.OPENAI_API_KEY = 'test-only'; process.env.OPENAI_REVIEW_MODEL = 'test-model';
+test('free AI adapter grades only the consented excerpt and checks every quoted claim', async () => {
+  const oldKey = process.env.GROQ_API_KEY;
+  process.env.GROQ_API_KEY = 'test-only';
   try {
-    const advice = await generateAiAdvice(CHALLENGES[0], payload(), async (_url, options) => {
+    const excerpt = 'This artifact has a responsive page at 375px and 1280px, with a documented navigation flow and screenshots for both sizes. The README explains the build steps and includes accessibility checks.';
+    const advice = await generateAiAdvice(CHALLENGES[0], payload(), excerpt, async (url, options) => {
       const body = JSON.parse(options.body);
+      assert.equal(url, 'https://api.groq.com/openai/v1/responses');
+      assert.equal(body.model, 'openai/gpt-oss-20b');
       assert.equal(body.store, false); assert.equal(body.input.includes('example.com'), false);
-      const advice = { summary: 'Phần mô tả còn thiếu minh chứng.', rubricFeedback: CHALLENGES[0].rubric.map(item => ({ key: item.key, label: item.label, assessment: 'Chưa có minh chứng cụ thể trong ghi chú.', evidence: '' })), strengths: ['Đã nêu mục tiêu sản phẩm.'], improvements: ['Thêm ảnh giao diện ở hai kích thước.'] };
+      assert.equal(body.input.includes(excerpt), true);
+      const advice = { summary: 'Đã có minh chứng ở một số tiêu chí.', rubricFeedback: CHALLENGES[0].rubric.map((item, index) => ({ key: item.key, label: item.label, score: 8, assessment: 'Cần bổ sung kết quả kiểm thử cụ thể.', evidence: index === 0 ? 'responsive page at 375px and 1280px' : 'a made-up quote' })), strengths: ['Có mô tả kích thước màn hình.'], improvements: ['Thêm kết quả kiểm thử.'] };
       assert.equal(body.text.format.schema.properties.rubricFeedback.type, 'array');
       return { ok: true, json: async () => ({ status: 'completed', output: [{ content: [{ type: 'output_text', text: JSON.stringify(advice) }] }] }) };
     });
     assert.equal(advice.improvements.length, 1);
     assert.equal(advice.rubricFeedback.length, CHALLENGES[0].rubric.length);
     assert.equal(advice.strengths.length, 1);
+    assert.equal(advice.rubricFeedback[0].score, 8);
+    assert.ok(advice.rubricFeedback.slice(1).every(item => item.score === 0 && item.evidence === ''));
+    assert.ok(advice.score > 0 && advice.score < 80);
   } finally {
-    if (oldKey === undefined) delete process.env.OPENAI_API_KEY; else process.env.OPENAI_API_KEY = oldKey;
-    if (oldModel === undefined) delete process.env.OPENAI_REVIEW_MODEL; else process.env.OPENAI_REVIEW_MODEL = oldModel;
+    if (oldKey === undefined) delete process.env.GROQ_API_KEY; else process.env.GROQ_API_KEY = oldKey;
+  }
+});
+
+test('AI request requires explicit evidence and caps successful reviews per UTC day', async () => {
+  const oldKey = process.env.GROQ_API_KEY;
+  process.env.GROQ_API_KEY = 'test-only';
+  try {
+    const id = 'ai-quota-target';
+    await models.ReviewSubmission.create({ id, userId: 'free', challengeId: id, mode: 'ai', status: 'completed' });
+    assert.equal((await request(`/submissions/${id}/ai-advice`, 'free', { consent: true, evidenceText: 'short' })).status, 422);
+    await models.ReviewSubmission.create({ id: 'ai-quota-1', userId: 'free', challengeId: 'ai-quota-1', mode: 'ai', status: 'completed', ai: { modelFeedback: { at: new Date() } } });
+    await models.ReviewSubmission.create({ id: 'ai-quota-2', userId: 'free', challengeId: 'ai-quota-2', mode: 'ai', status: 'completed', ai: { modelFeedback: { at: new Date() } } });
+    const response = await request(`/submissions/${id}/ai-advice`, 'free', { consent: true, evidenceText: 'A'.repeat(150) });
+    assert.equal(response.status, 429);
+    assert.match(response.data.message || response.data.error || JSON.stringify(response.data), /2 lượt AI/);
+  } finally {
+    if (oldKey === undefined) delete process.env.GROQ_API_KEY; else process.env.GROQ_API_KEY = oldKey;
   }
 });
 

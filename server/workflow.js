@@ -238,20 +238,25 @@ export function createWorkflowRouter({ UserProfile, MentorAccount, AdminAccount,
   router.put('/submissions/:id', saveSubmission);
   router.post('/submissions/:id/ai-advice', run(async (req, res) => {
     requireRole(req, 'student');
-    z.object({ consent: z.literal(true) }).parse(req.body);
+    const { evidenceText } = z.object({ consent: z.literal(true), evidenceText: z.string().trim().min(120).max(6000) }).parse(req.body);
     if (!aiConfigured()) fail(503, 'Dịch vụ AI chưa được cấu hình. Kiểm tra sơ bộ vẫn sử dụng được.');
-    const item = await ReviewSubmission.findOneAndUpdate({ id: req.params.id, userId: req.account.id, mode: 'ai', status: 'completed', 'ai.modelFeedback': { $exists: false },
-      $or: [{ 'ai.processingAt': { $exists: false } }, { 'ai.processingAt': { $lt: new Date(Date.now() - 60000) } }] },
-      { $set: { 'ai.processingAt': new Date(), 'ai.consentAt': new Date() } }, { new: true });
-    if (!item) fail(409, 'Bài đã có gợi ý AI hoặc đang xử lý. Hãy tải lại sau.');
-    try {
-      const modelFeedback = await generateAiAdvice(catalogItem(item.challengeId), item);
-      const submission = await ReviewSubmission.findOneAndUpdate({ id: item.id }, { $set: { 'ai.modelFeedback': modelFeedback }, $unset: { 'ai.processingAt': 1 } }, { new: true });
-      res.json({ submission });
-    } catch {
-      await ReviewSubmission.updateOne({ id: item.id }, { $unset: { 'ai.processingAt': 1 } });
-      fail(502, 'Chưa lấy được gợi ý AI. Bài đã lưu, bạn có thể thử lại sau.');
-    }
+    await serializeUserOrder(req.account.id, async () => {
+      const utcDay = new Date(); utcDay.setUTCHours(0, 0, 0, 0);
+      const today = await ReviewSubmission.find({ userId: req.account.id, 'ai.modelFeedback.at': { $gte: utcDay } }).lean();
+      if (today.length >= 2) fail(429, 'Bạn đã dùng 2 lượt AI miễn phí hôm nay. Hãy quay lại ngày mai hoặc chọn mentor.');
+      const item = await ReviewSubmission.findOneAndUpdate({ id: req.params.id, userId: req.account.id, mode: 'ai', status: 'completed', 'ai.modelFeedback': { $exists: false },
+        $or: [{ 'ai.processingAt': { $exists: false } }, { 'ai.processingAt': { $lt: new Date(Date.now() - 60000) } }] },
+        { $set: { 'ai.processingAt': new Date(), 'ai.consentAt': new Date() } }, { new: true });
+      if (!item) fail(409, 'Bài đã có nhận xét AI hoặc đang xử lý. Mỗi bài chỉ được chấm sơ bộ một lần.');
+      try {
+        const modelFeedback = await generateAiAdvice(catalogItem(item.challengeId), item, evidenceText);
+        const submission = await ReviewSubmission.findOneAndUpdate({ id: item.id }, { $set: { 'ai.modelFeedback': modelFeedback }, $unset: { 'ai.processingAt': 1 } }, { new: true });
+        res.json({ submission });
+      } catch (error) {
+        await ReviewSubmission.updateOne({ id: item.id }, { $unset: { 'ai.processingAt': 1 } });
+        fail(error.status === 429 ? 429 : 502, error.status === 429 ? error.message : 'Chưa lấy được nhận xét AI. Bài đã lưu, bạn có thể thử lại sau.');
+      }
+    });
   }));
   router.patch('/submissions/:id/cancel', run(async (req, res) => {
     requireRole(req, 'student');
