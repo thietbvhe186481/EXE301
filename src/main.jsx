@@ -66,7 +66,22 @@ import { VipUpgradeModal } from './components/VipUpgradeModal';
 import { apiService } from './services/api';
 import { Header } from './components/Header';
 import { AuthPage } from './pages/AuthPage';
-const ReviewWorkspace = lazy(() => import('./pages/ReviewWorkspace'));
+const ReviewWorkspace = lazy(async () => {
+  try {
+    const module = await import('./pages/ReviewWorkspace');
+    sessionStorage.removeItem('portfolio:chunk-reload-at');
+    return module;
+  } catch (error) {
+    const staleBundle = /failed to fetch dynamically imported module|importing a module script failed|chunkloaderror/i.test(String(error?.message || error));
+    const lastReload = Number(sessionStorage.getItem('portfolio:chunk-reload-at') || 0);
+    if (staleBundle && Date.now() - lastReload > 60_000) {
+      sessionStorage.setItem('portfolio:chunk-reload-at', String(Date.now()));
+      window.location.reload();
+      return new Promise(() => {});
+    }
+    return { default: () => <div className="status-banner" role="alert"><p>Không tải được khu vực bài tập sau khi website cập nhật.</p><button type="button" onClick={() => window.location.reload()}>Tải lại trang</button></div> };
+  }
+});
 import { HomePage } from './pages/HomePage';
 import { CHALLENGES, LEVEL_LABELS, RESOURCES, SPECIALIZATIONS } from '../shared/catalog.js';
 import { describePremiumPlan } from '../shared/premiumCopy.js';
