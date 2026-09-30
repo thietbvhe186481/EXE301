@@ -99,7 +99,7 @@ export function HomePage({ go, onOpenUpgrade, onOpenFooterModal, onRegisterMento
           <div className="jr-process-card">
             <div className="jr-step-badge">2</div>
             <h3>2. Thực Hiện Thử Thách Dự Án</h3>
-            <p>Luyện tập với bài tập do nền tảng biên soạn, tham khảo học liệu FPT và Coursera qua các liên kết nguồn.</p>
+            <p>Luyện tập với bài tập theo chuyên ngành, tham khảo thêm các khóa học và tài liệu công khai từ nhiều nguồn.</p>
             <button className="jr-step-link-btn" onClick={() => go('hub')}>
               Khám phá Thử thách <ArrowRight size={13} />
             </button>
@@ -154,8 +154,8 @@ export function HomePage({ go, onOpenUpgrade, onOpenFooterModal, onRegisterMento
 
           <div className="jr-feature-card">
             <div className="jr-feat-icon emerald"><GraduationCap size={26} /></div>
-            <h3>Học liệu từ FPT & Coursera</h3>
-            <p>Liên kết đến cổng học tập FPT và các chương trình Google, Meta trên Coursera. Tài liệu nội bộ cần tài khoản và quyền truy cập hợp lệ.</p>
+            <h3>Học liệu theo lĩnh vực</h3>
+            <p>Tìm khóa học, bài đọc và nguồn tham khảo công khai theo kỹ năng bạn đang học; truy cập trực tiếp tại đơn vị cung cấp.</p>
           </div>
 
           <div className="jr-feature-card">

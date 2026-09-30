@@ -57,6 +57,7 @@ import {
   Zap
 } from 'lucide-react';
 import './styles.css';
+import './pages/PremiumPage.css';
 import { CuteFounderAvatar } from './components/CuteFounderAvatar';
 import { FoundersSection } from './components/FoundersSection';
 import { PortfolioFooter } from './components/PortfolioFooter';
@@ -2046,7 +2047,7 @@ function CareerMapPage({ majors, currentMajor, changeMajor, columns, levels, sel
               <p>{selectedRole.title} là vị trí tập trung vào {selectedRole.track}, yêu cầu kết hợp kỹ năng thực hành, tư duy sản phẩm và khả năng tạo đầu ra có thể chứng minh trong portfolio.</p>
               <div className="focus-meta">
                 <span>{selectedRole.experience}</span>
-                <span>{selectedRole.salary}</span>
+                <button type="button" className="focus-meta-link" onClick={() => go('trends')}>Xem nguồn thị trường <ArrowRight size={14} /></button>
                 <span>{suggestedChallenges.length || 3} bài tập phù hợp</span>
               </div>
               <div className="step-actions">
@@ -2155,13 +2156,13 @@ function CareerMapPage({ majors, currentMajor, changeMajor, columns, levels, sel
             <>
               <article className="source-credibility-card">
                 <div>
-                  <p className="mono-label">Nguồn & độ tin cậy</p>
+                  <p className="mono-label">Nguồn tham khảo</p>
                   <strong>Tham khảo {updatedLabel}</strong>
                 </div>
                 <p>{marketSignal.headline}</p>
                 <div className="source-mini-grid">
-                  <span><BadgeCheck size={14} /> {marketSignal.confidence}</span>
-                  <span><BookOpen size={14} /> {trustedMarketSources.length} nguồn</span>
+                  <span><BadgeCheck size={14} /> Tổng hợp định hướng</span>
+                  <span><BookOpen size={14} /> Danh mục {trustedMarketSources.length} nguồn</span>
                 </div>
                 <button className="ghost-action compact" onClick={() => go('trends')}>
                   Xem xu hướng thị trường
@@ -2228,14 +2229,9 @@ function LearningPage({ go }) {
         <div>
           <p className="mono-label">Portfolio FPT Hub · Học liệu</p>
           <h1>Học từ nguồn tin cậy, luyện tập bằng dự án</h1>
-          <p>Khám phá khóa học công khai từ Coursera và cổng thông tin chính thức của FPT. Bài tập thực hành do Portfolio FPT Hub biên soạn riêng, không sao chép đề thi hay tài liệu nội bộ.</p>
+          <p>Tìm học liệu công khai theo lĩnh vực và kỹ năng bạn muốn phát triển. Xem nguồn học phù hợp, rồi áp dụng kiến thức vào một thử thách thực hành.</p>
         </div>
         <button className="primary-action compact" type="button" onClick={() => go('hub')}><Rocket size={15} />Xem thử thách thực hành</button>
-      </div>
-
-      <div className="learning-source-note">
-        <GraduationCap size={20} />
-        <p><strong>Với tài liệu nội bộ FPT:</strong> đăng nhập FAP/CMS bằng tài khoản trường để xem học liệu được cấp quyền. Trang này liên kết đến nguồn gốc, không lưu trữ hay phát tán tài liệu nội bộ.</p>
       </div>
 
       <div className="learning-toolbar" aria-label="Lọc học liệu">
@@ -2293,33 +2289,14 @@ function ChallengeHubPage({ currentMajor, activeTrack, setActiveTrack, visibleCh
         </div>
       </div>
 
-      <div className="user-acquisition-banner">
-        <div className="acquisition-badge"><Rocket size={18} /> <span>Chiến dịch Thu hút 200 - 300 Sinh viên</span></div>
-        <div className="acquisition-content">
-          <div>
-            <h2>Xây dựng Portfolio chuẩn tuyển dụng với Nguồn tài liệu Trường ĐH & Mentor</h2>
-            <p>🎁 <b>Ưu đãi Sinh viên .edu.vn:</b> Giảm 50% gói Premium. <b>Chương trình giới thiệu:</b> Mời 2 bạn học nhận 1 buổi Review CV 1-on-1 từ Mentor Thật. Dùng thử Mentor AI chấm tự động 0đ!</p>
-          </div>
-          <button className="primary-action compact" onClick={() => go('about')}>
-            <Sparkles size={16} /> Tìm hiểu chiến dịch 200-300 SV
-          </button>
-        </div>
-      </div>
-
       <div className="university-resources-widget">
         <div className="widget-header">
-          <GraduationCap size={20} />
+          <BookOpen size={20} />
           <div>
-            <h2>Nguồn tài liệu học tập chuẩn Đại học FPT & Coursera</h2>
-            <p>Giáo trình, slide bài giảng & đề án môn học thực chiến tham chiếu trực tiếp từ Đại học FPT và các chứng chỉ chuyên nghiệp trên Coursera (Google, Meta, AWS).</p>
+            <h2>Muốn bổ sung kiến thức trước khi bắt đầu?</h2>
+            <p>Tìm học liệu công khai theo lĩnh vực, rồi quay lại áp dụng vào bài thực hành phù hợp với trình độ của bạn.</p>
           </div>
-        </div>
-        <div className="university-resource-chips">
-          <span className="uni-chip fpt"><GraduationCap size={14} /> ĐH FPT (SWP391)</span>
-          <span className="uni-chip fpt"><GraduationCap size={14} /> ĐH FPT (PRN231)</span>
-          <span className="uni-chip coursera"><Award size={14} /> Coursera (Google Professional)</span>
-          <span className="uni-chip coursera"><Award size={14} /> Coursera (Meta Developer)</span>
-          <span className="uni-chip aws"><BookOpen size={14} /> AWS Academy Cloud</span>
+          <button className="ghost-action compact" type="button" onClick={() => go('learning')}>Khám phá học liệu <ArrowRight size={15} /></button>
         </div>
       </div>
 
@@ -2856,7 +2833,7 @@ function MentorFeedbackPage({ go, challenge, submissions, feedbackList, challeng
               {dualMode === 'ai' ? <Sparkles size={18} /> : <GraduationCap size={18} />}
             </button>
             <div className="matched-mentor-detail">
-              <p>{dualMode === 'ai' ? 'Mentor AI chấm điểm checklist 0-100%, kiểm tra độ hợp lệ của URL và định dạng bài nộp.' : matchedMentor.reviewStyle ?? 'Mentor xem link nộp, kiểm tra minh chứng, chấm điểm và gợi ý cách đưa bài vào portfolio.'}</p>
+              <p>{dualMode === 'ai' ? 'Nhận xét AI sơ bộ đối chiếu trích đoạn bài làm với tiêu chí khi dịch vụ khả dụng; kết quả chỉ để bạn tham khảo và tự cải thiện.' : matchedMentor.reviewStyle ?? 'Mentor xem link nộp, kiểm tra minh chứng, chấm điểm và gợi ý cách đưa bài vào portfolio.'}</p>
               <div className="tag-row">
                 {(matchedMentor.expertise ?? [activeChallenge.track]).map((item) => <span key={item}>{item}</span>)}
               </div>
@@ -3216,63 +3193,102 @@ function SubmissionHistoryPage({ demoUser, submissions, challenges, feedbackList
 
 function PremiumPage({ plans, activeSubscription, onOpenQr, go }) {
   const isActive = (plan) => activeSubscription?.status === 'active' && activeSubscription?.planId === plan.id;
+  const monthPrice = Number(plans.find(plan => plan.id === 'premium-month')?.price);
+  const termMonths = { 'premium-month': 1, 'premium-quarter': 3, 'premium-year': 12 };
+  const formatPrice = plan => Number.isFinite(Number(plan.price)) && Number(plan.price) > 0
+    ? `${Number(plan.price).toLocaleString('vi-VN')}đ`
+    : plan.displayPrice;
+  const savings = plan => {
+    const months = termMonths[plan.id];
+    const price = Number(plan.price);
+    return months > 1 && monthPrice > 0 && price > 0 && price < monthPrice * months
+      ? Math.round((1 - price / (monthPrice * months)) * 100)
+      : 0;
+  };
   return (
     <section className="content-page premium-page">
-      <div className="section-heading inline">
-        <div>
-           <p className="mono-label">GÓI PREMIUM</p>
-          <h1>Nâng cấp Premium để được mentor góp ý và hoàn thiện portfolio xin việc.</h1>
-        </div>
-        <div className="premium-current">
-          <Crown size={20} />
-          <div>
-            <strong>{activeSubscription?.planName ?? 'Free'}</strong>
-            <span>{activeSubscription?.status === 'active' ? `Hết hạn: ${activeSubscription.expiresAt}` : 'Đang dùng bản miễn phí'}</span>
+      <div className="premium-hero">
+        <div className="premium-hero-copy">
+          <p className="premium-eyebrow"><Crown size={17} /> PORTFOLIO PREMIUM</p>
+          <h1>Đầu tư vào bài làm.<br /><em>Nhận góp ý để làm tốt hơn.</em></h1>
+          <p className="premium-hero-lead">Mở thêm thử thách theo chuyên ngành, gửi bài cho mentor đã được duyệt và xem nhận xét theo từng tiêu chí. Chọn thời hạn phù hợp với kế hoạch học của bạn.</p>
+          <div className="premium-hero-actions">
+            <a href="#premium-plans" className="premium-link-button premium-link-button-primary">Xem các gói <ArrowRight size={17} /></a>
+            <button type="button" className="premium-link-button premium-link-button-light" onClick={() => go('hub')}>Xem thử thách miễn phí</button>
           </div>
         </div>
+        <div className="premium-hero-aside">
+          <div className="premium-aside-top"><span>TRẠNG THÁI CỦA BẠN</span><ShieldCheck size={22} /></div>
+          <strong>{activeSubscription?.status === 'active' ? activeSubscription.planName : 'Gói miễn phí'}</strong>
+          <p>{activeSubscription?.status === 'active' ? `Quyền truy cập đến ${activeSubscription.expiresAt}` : 'Bạn vẫn có thể khám phá và thực hiện các thử thách miễn phí.'}</p>
+          <div className="premium-aside-rule" />
+          <small>Chỉ thanh toán khi bạn chọn gói. Premium có hiệu lực sau khi payOS xác nhận giao dịch thành công.</small>
+        </div>
       </div>
 
-      <div className="pricing-grid">
-        {plans.map((plan) => (
-          <article className={`pricing-card ${plan.badge ? 'featured' : ''}`} key={plan.id}>
-            {plan.badge && <span className="plan-badge">{plan.badge}</span>}
-            <p className="mono-label">{plan.highlight}</p>
-            <h2>{plan.name}</h2>
-            <div className="price-line">
-              <strong>{plan.displayPrice}</strong>
-              <span>{plan.duration}</span>
-            </div>
-            <p>{plan.description}</p>
-            <div className="plan-feature-list">
-              {plan.features.map((item) => (
-                <div className="activity-row" key={item}><BadgeCheck size={16} /><span>{item}</span></div>
-              ))}
-            </div>
-            <button className={isActive(plan) ? 'ghost-action' : 'primary-action'} onClick={() => onOpenQr(plan)}>
-               {isActive(plan) ? 'Gia hạn gói này' : 'Chọn gói này'}
-              <CreditCard size={17} />
-            </button>
-          </article>
-        ))}
-      </div>
-
-      <div className="premium-capability-grid">
-        {premiumCapabilities.map((item) => {
+      <div className="premium-value-strip" aria-label="Quyền lợi Premium">
+        {premiumCapabilities.map((item, index) => {
           const Icon = item.icon;
-          return (
-            <article className="premium-capability-card" key={item.title}>
-              <Icon size={22} />
-              <h2>{item.title}</h2>
-              <p>{item.detail}</p>
-            </article>
-          );
+          return <div key={item.title} className="premium-value-item"><span className="premium-value-number">0{index + 1}</span><Icon size={22} /><div><strong>{item.title}</strong><p>{item.detail}</p></div></div>;
         })}
       </div>
 
-      <div className="submit-actions">
-        <button className="ghost-action" onClick={() => go('hub')}><LayoutDashboard size={17} /> Xem thử thách</button>
-        <button className="primary-action" onClick={() => go('portfolio')}><UserRound size={17} /> Quay lại hồ sơ</button>
+      <div className="premium-section-intro" id="premium-plans">
+        <div><p className="premium-section-kicker">CHỌN THỜI HẠN</p><h2>Cùng quyền lợi. Linh hoạt theo mục tiêu.</h2></div>
+        <p>Mỗi gói mở cùng các tính năng Premium. Thời hạn và mức giá là điểm khác nhau; bạn có thể gia hạn khi đang sử dụng.</p>
       </div>
+
+      {plans.length ? <div className="premium-plan-list">
+        {plans.map((plan) => {
+          const discount = savings(plan);
+          return <article className={`premium-plan-option ${plan.id === 'premium-quarter' ? 'premium-plan-recommended' : ''}`} key={plan.id}>
+            <div className="premium-plan-main">
+              <span className="premium-plan-term">{plan.duration}</span>
+              {plan.id === 'premium-quarter' && <span className="premium-plan-tag">Phù hợp để hoàn thiện portfolio</span>}
+              <h3>{plan.name}</h3>
+              <p>{plan.description}</p>
+              {discount > 0 && <small className="premium-plan-saving">Tiết kiệm khoảng {discount}% so với mua từng tháng</small>}
+            </div>
+            <div className="premium-plan-purchase"><div><strong>{formatPrice(plan)}</strong><span>/ {plan.duration}</span></div><button type="button" className="premium-link-button premium-link-button-primary" onClick={() => onOpenQr(plan)}>{isActive(plan) ? 'Gia hạn gói' : 'Chọn gói'} <ArrowRight size={17} /></button></div>
+          </article>;
+        })}
+      </div> : <div className="premium-plan-empty" role="status">Hiện chưa có gói Premium để đăng ký. Vui lòng quay lại sau.</div>}
+
+      <div className="premium-mobile-status" aria-label="Gói hiện tại">
+        <Crown size={18} />
+        <div><strong>{activeSubscription?.status === 'active' ? activeSubscription.planName : 'Gói miễn phí'}</strong><span>{activeSubscription?.status === 'active' ? `Có hiệu lực đến ${activeSubscription.expiresAt}` : 'Bạn vẫn có thể thực hiện các thử thách miễn phí.'}</span></div>
+      </div>
+
+      <div className="premium-fineprint"><ShieldCheck size={18} /><p>Giá thanh toán hiển thị lại trước khi tạo đơn. Việc chọn mentor phụ thuộc vào chuyên môn và số bài mentor đang nhận; thời gian phản hồi là ước tính.</p></div>
+
+      <div className="premium-section-intro premium-compare-heading">
+        <div><p className="premium-section-kicker">BẠN NHẬN ĐƯỢC GÌ?</p><h2>Nhìn rõ khác biệt trước khi nâng cấp.</h2></div>
+        <p>Bắt đầu miễn phí, rồi nâng cấp khi bạn cần thêm bài thực hành và góp ý từ người có chuyên môn.</p>
+      </div>
+      <div className="premium-comparison-wrap">
+        <table className="premium-comparison">
+          <thead><tr><th scope="col">Quyền truy cập</th><th scope="col">Miễn phí</th><th scope="col">Premium</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">Khám phá đề bài và tiêu chí đánh giá</th><td>Có</td><td>Có</td></tr>
+            <tr><th scope="row">Thực hiện thử thách miễn phí</th><td>Có</td><td>Có</td></tr>
+            <tr><th scope="row">Nộp thử thách Premium</th><td>—</td><td><CheckCircle2 size={17} aria-label="Có" /></td></tr>
+            <tr><th scope="row">Chọn mentor thật góp ý theo tiêu chí</th><td>—</td><td><CheckCircle2 size={17} aria-label="Có" /></td></tr>
+            <tr><th scope="row">Xem lại bài nộp và phản hồi</th><td>Có</td><td>Có</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div className="premium-bottom-grid">
+        <section className="premium-how" aria-labelledby="premium-how-title"><p className="premium-section-kicker">SAU KHI CHỌN GÓI</p><h2 id="premium-how-title">Ba bước để bắt đầu</h2><ol><li><span>01</span><div><strong>Chọn thời hạn</strong><p>So sánh giá và xác nhận gói phù hợp.</p></div></li><li><span>02</span><div><strong>Thanh toán qua payOS</strong><p>Kiểm tra số tiền và thông tin nhận tiền trên trang thanh toán.</p></div></li><li><span>03</span><div><strong>Sử dụng Premium</strong><p>Gói tự kích hoạt sau khi giao dịch thành công được xác nhận.</p></div></li></ol></section>
+        <section className="premium-faq" aria-labelledby="premium-faq-title"><p className="premium-section-kicker">GIẢI ĐÁP NHANH</p><h2 id="premium-faq-title">Điều bạn nên biết</h2>
+          <details><summary>Gói có bao gồm chấm bài bằng AI không?</summary><p>Quyền lợi hiện tại tập trung vào thử thách Premium và góp ý của mentor thật. Các công cụ kiểm tra tự động, nếu có, không thay thế đánh giá chuyên môn.</p></details>
+          <details><summary>Mua gói xong có phải chờ admin duyệt?</summary><p>Không. Khi payOS xác nhận thanh toán thành công, hệ thống tự kích hoạt Premium.</p></details>
+          <details><summary>Gia hạn trước ngày hết hạn có mất ngày còn lại không?</summary><p>Không. Thời hạn gói mới được cộng tiếp sau thời hạn Premium đang còn hiệu lực.</p></details>
+          <details><summary>Có được chọn bất kỳ mentor nào không?</summary><p>Bạn chọn trong danh sách mentor phù hợp đang nhận bài. Hệ thống hiển thị hàng chờ và cảnh báo nếu mentor bận.</p></details>
+        </section>
+      </div>
+
+      <div className="premium-final-cta"><div><span>SẴN SÀNG LÀM BÀI CÓ MỤC TIÊU?</span><h2>Bắt đầu từ một thử thách phù hợp với bạn.</h2></div><button type="button" className="premium-link-button premium-link-button-light" onClick={() => go('hub')}>Khám phá thử thách <ArrowRight size={17} /></button></div>
     </section>
   );
 }

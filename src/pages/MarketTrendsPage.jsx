@@ -1,444 +1,83 @@
 import React, { useState } from 'react';
-import {
-  Sparkles,
-  BadgeCheck,
-  BookOpen,
-  ShieldCheck,
-  LayoutDashboard,
-  ExternalLink,
-  Compass,
-  TrendingUp,
-  BarChart3,
-  FileSpreadsheet,
-  CheckCircle2,
-  Lightbulb
-} from 'lucide-react';
+import { ArrowRight, BookOpen, Check, Compass, ExternalLink, FileText, Lightbulb, MoveUpRight, SearchCheck, Sparkles } from 'lucide-react';
+import './MarketTrendsPage.css';
 
-export function MarketTrendsPage({
-  majors,
-  currentMajor,
-  changeMajor,
-  go,
-  marketSignalsByMajor,
-  marketResearchBriefByMajor,
-  trustedMarketSources,
-  getMarketUpdatedLabel
-}) {
-  const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'metrics' | 'research' | 'sources'
+const FALLBACK_SIGNAL = { headline: 'Chọn kỹ năng có thể chứng minh bằng một sản phẩm hoặc case study cụ thể.', hotSkills: [] };
+const FALLBACK_RESEARCH = { researchQuestion: 'Tôi nên ưu tiên kỹ năng và minh chứng nào cho hồ sơ?', analystConclusion: 'Bắt đầu từ yêu cầu công việc và tạo một bài thực hành có thể kiểm tra.', methodology: [], findings: [], implications: [], riskNotes: [] };
 
-  const signal = marketSignalsByMajor?.[currentMajor.key] ?? marketSignalsByMajor?.dev ?? {
-    headline: 'Thị trường công nghệ & sản phẩm số đang có nhu cầu cao về kỹ năng thực chiến.',
-    confidence: 'Cao',
-    updatedPolicy: 'Tổng hợp từ các báo cáo tuyển dụng công nghệ uy tín tại Việt Nam.',
-    signals: [],
-    hotSkills: []
-  };
+const sourceNotes = [
+  { match: 'Adecco Vietnam Salary Guide 2026', period: 'Báo cáo 2026', scope: 'Lương và tuyển dụng đa ngành', note: 'Khảo sát nghiêng về nhóm có kinh nghiệm; không suy ra mức lương cho sinh viên mới ra trường.' },
+  { match: 'ITviec Salary Report 2025-2026', period: 'Báo cáo 2025–2026', scope: 'Khảo sát thị trường IT Việt Nam', note: 'Số liệu lương chia theo kinh nghiệm; không xem mức trung vị như lương khởi điểm.' },
+  { match: 'TopDev Vietnam IT Market 2024', period: 'Báo cáo 2024–2025', scope: 'Thị trường IT Việt Nam', note: 'Trang giới thiệu công khai; nội dung đầy đủ cần đăng ký tải báo cáo.' },
+  { match: 'Nielsen Norman Group UX Research', period: 'Bài hướng dẫn', scope: 'Phương pháp UX', note: 'Nguồn hướng dẫn portfolio và phương pháp UX, không phải thống kê tuyển dụng.' },
+  { match: 'VietnamWorks HR Insider', period: 'Bài viết cập nhật theo nguồn', scope: 'Nghề nghiệp và nhân sự', note: 'Nguồn tham khảo biên tập; xem từng bài để kiểm tra thời điểm và dữ liệu gốc.' },
+  { match: 'LinkedIn Jobs on the Rise', period: 'Bài viết cập nhật theo nguồn', scope: 'Xu hướng nghề nghiệp quốc tế', note: 'Tín hiệu toàn cầu; không đại diện riêng cho thị trường Việt Nam.' }
+];
 
-  const research = marketResearchBriefByMajor?.[currentMajor.key] ?? marketResearchBriefByMajor?.dev ?? {
-    researchQuestion: 'Sinh viên nên ưu tiên kỹ năng nào?',
-    analystConclusion: 'Ưu tiên các kỹ năng có sản phẩm chứng minh trong Portfolio.',
-    methodology: [],
-    findings: [],
-    implications: [],
-    riskNotes: []
-  };
+function moveToSection(id) {
+  const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+  document.getElementById(id)?.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
+}
 
-  const updatedLabel = getMarketUpdatedLabel ? getMarketUpdatedLabel() : 'Tháng 09/2026';
-  const relevantSources = (trustedMarketSources || []).filter(
-    (source) => !source.majorKeys || source.majorKeys.includes(currentMajor.key)
-  );
-  const sourceByName = Object.fromEntries((trustedMarketSources || []).map((source) => [source.name, source]));
+function SourceReference({ name, sourceByName }) {
+  const source = sourceByName.get(name);
+  if (!source?.url) return <span className="market-v2-source-chip market-v2-source-chip-internal" title="Quy chuẩn biên tập của nền tảng">{name}</span>;
+  return <a className="market-v2-source-chip" href={source.url} target="_blank" rel="noopener noreferrer">{name}<ExternalLink size={12} aria-hidden="true" /><span className="sr-only">(mở trong thẻ mới)</span></a>;
+}
 
-  return (
-    <section className="content-page trend-page" style={{ padding: '24px 20px', maxWidth: '1240px', margin: '0 auto', overflowY: 'auto', height: 'calc(100vh - 64px)' }}>
-      {/* HEADER WITH MAJOR SWITCHER */}
-      <div className="section-heading inline" style={{ marginBottom: '20px' }}>
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-            <span style={{ background: '#0284c7', color: '#fff', fontSize: '11px', fontWeight: 800, padding: '3px 9px', borderRadius: '6px', letterSpacing: '0.5px' }}>
-              THỊ TRƯỜNG VIỆC LÀM
-            </span>
-            <span style={{ fontSize: '13px', color: '#64748b', fontWeight: 600 }}>
-              Tổng hợp từ các nguồn tuyển dụng công khai
-            </span>
-          </div>
-          <h1 style={{ fontSize: 'clamp(24px, 3.2vw, 32px)', fontWeight: 900, margin: '0 0 8px', color: 'var(--jr-text-main, #0f172a)' }}>
-            Xu hướng thị trường {currentMajor.title}
-          </h1>
-          <p style={{ color: 'var(--jr-text-sub, #64748b)', fontSize: '14.5px', maxWidth: '720px', margin: 0, lineHeight: 1.5 }}>
-            Dữ liệu tổng hợp từ các báo cáo lương, khảo sát tuyển dụng hàng đầu (TopDev, ITviec, Adecco). Được phân loại theo từng chuyên ngành giúp sinh viên dễ tiếp cận và xây dựng Portfolio đúng trọng tâm.
-          </p>
-        </div>
+export function MarketTrendsPage({ majors = [], currentMajor, changeMajor, go, marketSignalsByMajor, marketResearchBriefByMajor, trustedMarketSources }) {
+  const [selectedTrackKey, setSelectedTrackKey] = useState('');
+  const major = currentMajor ?? majors[0] ?? { key: 'dev', title: 'Công nghệ', short: 'Công nghệ' };
+  const signal = marketSignalsByMajor?.[major.key] ?? marketSignalsByMajor?.dev ?? FALLBACK_SIGNAL;
+  const research = marketResearchBriefByMajor?.[major.key] ?? marketResearchBriefByMajor?.dev ?? FALLBACK_RESEARCH;
+  const allSources = Array.isArray(trustedMarketSources) ? trustedMarketSources : [];
+  const relevantSources = allSources.filter((source) => !source.majorKeys?.length || source.majorKeys.includes(major.key));
+  const sourceByName = new Map(allSources.map((source) => [source.name, source]));
+  const findings = Array.isArray(research.findings) ? research.findings : [];
+  const implications = Array.isArray(research.implications) ? research.implications : [];
+  const skills = Array.isArray(signal.hotSkills) ? signal.hotSkills : [];
+  const methods = Array.isArray(research.methodology) ? research.methodology : [];
+  const risks = Array.isArray(research.riskNotes) ? research.riskNotes : [];
+  const tracks = Array.isArray(major.columns) ? major.columns : [];
+  const selectedTrack = tracks.find((track) => track.key === selectedTrackKey) ?? tracks[0];
+  const foundationRole = selectedTrack?.roles?.[0];
 
-        <div className="trend-heading-actions" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '12px' }}>
-          <div className="major-switcher trend-major-switcher">
-            {majors.map((major) => (
-              <button
-                key={major.key}
-                className={currentMajor.key === major.key ? 'active' : ''}
-                onClick={() => changeMajor(major.key)}
-                style={{ fontWeight: 700 }}
-              >
-                {major.short}
-              </button>
-            ))}
-          </div>
-
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '6px 14px', borderRadius: '10px', background: 'rgba(2, 132, 199, 0.08)', border: '1px solid rgba(2, 132, 199, 0.2)', fontSize: '12.5px', color: '#0284c7', fontWeight: 600 }}>
-            <Sparkles size={15} />
-             <span>Dữ liệu tham khảo: <strong>{updatedLabel}</strong> (xem ngày phát hành tại trang nguồn)</span>
-          </div>
-        </div>
+  return <section className="content-page trend-page market-v2">
+    <header className="market-v2-hero">
+      <div className="market-v2-hero-copy">
+        <span className="market-v2-eyebrow"><Sparkles size={15} aria-hidden="true" />GÓC NHÌN NGHỀ NGHIỆP</span>
+        <h1>Hiểu thị trường.<br /><span>Biết mình nên làm gì tiếp theo.</span></h1>
+        <p>Chọn lĩnh vực, đọc những nhận định có nguồn tham khảo và biến chúng thành kỹ năng, bài thực hành cho portfolio của bạn.</p>
+        <button className="market-v2-hero-link" type="button" onClick={() => moveToSection('market-v2-insights')}>Xem phân tích theo ngành <ArrowRight size={17} aria-hidden="true" /></button>
       </div>
-
-      {/* INTERACTIVE NAVIGATION TABS */}
-      <div className="interactive-subnav-tabs" style={{ display: 'flex', gap: '8px', borderBottom: '1px solid var(--jr-border, #e2e8f0)', paddingBottom: '10px', marginBottom: '24px' }}>
-        <button
-          className={`interactive-tab-btn ${activeTab === 'overview' ? 'active' : ''}`}
-          onClick={() => setActiveTab('overview')}
-        >
-          <Lightbulb size={16} />
-          <span>1. Tổng quan & kỹ năng nổi bật</span>
-        </button>
-
-        <button
-          className={`interactive-tab-btn ${activeTab === 'metrics' ? 'active' : ''}`}
-          onClick={() => setActiveTab('metrics')}
-        >
-          <BarChart3 size={16} />
-          <span>2. Chỉ số thị trường & Nhu cầu ({signal.signals?.length || 3})</span>
-        </button>
-
-        <button
-          className={`interactive-tab-btn ${activeTab === 'research' ? 'active' : ''}`}
-          onClick={() => setActiveTab('research')}
-        >
-          <TrendingUp size={16} />
-          <span>3. Báo cáo nghiên cứu & Nhận định ({research.findings?.length || 3})</span>
-        </button>
-
-        <button
-          className={`interactive-tab-btn ${activeTab === 'sources' ? 'active' : ''}`}
-          onClick={() => setActiveTab('sources')}
-        >
-          <BookOpen size={16} />
-          <span>4. Nguồn tham khảo ({relevantSources.length})</span>
-        </button>
+      <div className="market-v2-hero-path" aria-label="Cách dùng trang này">
+        <div><span>01</span><strong>Đọc nhận định</strong><small>Biết điều gì đáng chú ý</small></div>
+        <div><span>02</span><strong>Xem nguồn</strong><small>Kiểm tra cơ sở thông tin</small></div>
+        <div><span>03</span><strong>Thực hành</strong><small>Đưa minh chứng vào portfolio</small></div>
       </div>
+    </header>
 
-      {/* TAB 1: TỔNG QUAN & KỸ NĂNG HOT */}
-      {activeTab === 'overview' && (
-        <div style={{ display: 'grid', gap: '20px' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: '20px' }}>
-            {/* Main Signal Card */}
-            <article style={{ background: 'var(--jr-card, #ffffff)', border: '1px solid var(--jr-border, #e2e8f0)', borderRadius: '16px', padding: '24px', boxShadow: '0 4px 16px rgba(0,0,0,0.03)' }}>
-              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', color: '#0284c7', fontSize: '12px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '10px' }}>
-                <Sparkles size={14} />
-                <span>TÍN HIỆU ĐỊNH HƯỚNG CHÍNH</span>
-              </div>
-              <h2 style={{ fontSize: '20px', fontWeight: 800, lineHeight: 1.4, margin: '0 0 12px', color: 'var(--jr-text-main, #0f172a)' }}>
-                {signal.headline}
-              </h2>
-              <p style={{ color: 'var(--jr-text-sub, #64748b)', fontSize: '14px', lineHeight: 1.6, margin: '0 0 20px' }}>
-                {signal.updatedPolicy}
-              </p>
-
-              <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', paddingTop: '16px', borderTop: '1px solid var(--jr-border, #e2e8f0)' }}>
-                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', color: '#059669', fontSize: '13px', fontWeight: 700 }}>
-                  <BadgeCheck size={16} />
-                  <span>Độ tin cậy: {signal.confidence}</span>
-                </div>
-                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', color: '#64748b', fontSize: '13px', fontWeight: 600 }}>
-                  <BookOpen size={16} />
-                  <span>Dựa trên {relevantSources.length} nguồn tuyển dụng lớn</span>
-                </div>
-              </div>
-            </article>
-
-            {/* Hot Skills Cloud */}
-            <article style={{ background: 'var(--jr-card, #ffffff)', border: '1px solid var(--jr-border, #e2e8f0)', borderRadius: '16px', padding: '24px', boxShadow: '0 4px 16px rgba(0,0,0,0.03)' }}>
-              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', color: '#d97706', fontSize: '12px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '10px' }}>
-                <TrendingUp size={14} />
-                <span>TOP KỸ NĂNG NÊN ƯU TIÊN VÀO PORTFOLIO</span>
-              </div>
-              <p style={{ color: 'var(--jr-text-sub, #64748b)', fontSize: '13.5px', margin: '0 0 16px' }}>
-                Các từ khóa kỹ năng xuất hiện với tần suất cao nhất trong JD của nhà tuyển dụng đối với sinh viên ngành {currentMajor.short}:
-              </p>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                {(signal.hotSkills || []).map((skill) => (
-                  <span
-                    key={skill}
-                    style={{
-                      background: 'rgba(2, 132, 199, 0.08)',
-                      color: '#0284c7',
-                      border: '1px solid rgba(2, 132, 199, 0.2)',
-                      padding: '6px 14px',
-                      borderRadius: '8px',
-                      fontWeight: 700,
-                      fontSize: '13px'
-                    }}
-                  >
-                    #{skill}
-                  </span>
-                ))}
-              </div>
-            </article>
-          </div>
-
-          {/* Key Conclusion Card */}
-          <article style={{ background: 'linear-gradient(135deg, rgba(2, 132, 199, 0.04) 0%, rgba(14, 165, 233, 0.08) 100%)', border: '1px solid rgba(2, 132, 199, 0.2)', borderRadius: '16px', padding: '22px 24px' }}>
-            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '14px' }}>
-              <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: '#0284c7', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <CheckCircle2 size={22} />
-              </div>
-              <div>
-                <strong style={{ display: 'block', fontSize: '15px', color: '#0f172a', marginBottom: '4px' }}>
-                  Lời khuyên từ Analyst dành cho sinh viên {currentMajor.short}
-                </strong>
-                <p style={{ color: '#334155', fontSize: '14px', lineHeight: 1.6, margin: 0 }}>
-                  {research.analystConclusion}
-                </p>
-              </div>
-            </div>
-          </article>
-        </div>
-      )}
-
-      {/* TAB 2: CHỈ SỐ THỊ TRƯỜNG & NHU CẦU */}
-      {activeTab === 'metrics' && (
-        <div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '18px', marginBottom: '24px' }}>
-            {(signal.signals || []).map((item, idx) => (
-              <article
-                key={item.label}
-                style={{
-                  background: 'var(--jr-card, #ffffff)',
-                  border: '1px solid var(--jr-border, #e2e8f0)',
-                  borderRadius: '16px',
-                  padding: '22px',
-                  boxShadow: '0 4px 14px rgba(0,0,0,0.03)',
-                  transition: 'all 0.2s ease'
-                }}
-              >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                  <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--jr-text-sub, #64748b)' }}>
-                    {item.label}
-                  </span>
-                  <span style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'rgba(2, 132, 199, 0.1)', color: '#0284c7', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 800 }}>
-                    0{idx + 1}
-                  </span>
-                </div>
-
-                <div style={{ fontSize: '24px', fontWeight: 900, color: '#0284c7', margin: '0 0 10px', letterSpacing: '-0.3px' }}>
-                  {item.value}
-                </div>
-
-                <p style={{ fontSize: '13.5px', color: 'var(--jr-text-sub, #64748b)', lineHeight: 1.5, margin: 0 }}>
-                  {item.note}
-                </p>
-              </article>
-            ))}
-          </div>
-
-          {/* Implications / Lời khuyên hành động */}
-          {research.implications && research.implications.length > 0 && (
-            <article style={{ background: 'var(--jr-card, #ffffff)', border: '1px solid var(--jr-border, #e2e8f0)', borderRadius: '16px', padding: '22px 24px', marginTop: '16px' }}>
-              <strong style={{ display: 'block', fontSize: '15px', color: '#0f172a', marginBottom: '12px' }}>
-                🎯 Các hành động sinh viên nên thực hiện ngay:
-              </strong>
-              <div style={{ display: 'grid', gap: '10px' }}>
-                {research.implications.map((imp, idx) => (
-                  <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '13.5px', color: '#334155' }}>
-                    <CheckCircle2 size={16} color="#059669" style={{ flexShrink: 0 }} />
-                    <span>{imp}</span>
-                  </div>
-                ))}
-              </div>
-            </article>
-          )}
-        </div>
-      )}
-
-      {/* TAB 3: BÁO CÁO NGHIÊN CỨU & NHẬN ĐỊNH */}
-      {activeTab === 'research' && (
-        <div style={{ display: 'grid', gap: '20px' }}>
-          {/* Research Question */}
-          <article style={{ background: 'var(--jr-card, #ffffff)', border: '1px solid var(--jr-border, #e2e8f0)', borderRadius: '16px', padding: '22px 24px' }}>
-            <span style={{ fontSize: '12px', fontWeight: 800, color: '#0284c7', textTransform: 'uppercase', letterSpacing: '0.8px', display: 'block', marginBottom: '6px' }}>
-              CÂU HỎI NGHIÊN CỨU CỐT LÕI
-            </span>
-            <h2 style={{ fontSize: '18px', fontWeight: 800, margin: '0 0 16px', color: 'var(--jr-text-main, #0f172a)' }}>
-              "{research.researchQuestion}"
-            </h2>
-            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-              {(research.methodology || []).map((method, idx) => (
-                <div key={idx} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(2, 132, 199, 0.06)', border: '1px solid rgba(2, 132, 199, 0.15)', padding: '6px 12px', borderRadius: '8px', fontSize: '12.5px', color: '#0284c7' }}>
-                  <ShieldCheck size={14} />
-                  <span>{method}</span>
-                </div>
-              ))}
-            </div>
-          </article>
-
-          {/* Detailed Findings List */}
-          <div style={{ display: 'grid', gap: '14px' }}>
-            {(research.findings || []).map((finding, index) => (
-              <article
-                key={finding.claim}
-                style={{
-                  background: 'var(--jr-card, #ffffff)',
-                  border: '1px solid var(--jr-border, #e2e8f0)',
-                  borderRadius: '14px',
-                  padding: '20px 22px',
-                  display: 'grid',
-                  gridTemplateColumns: '44px 1fr',
-                  gap: '16px',
-                  alignItems: 'start'
-                }}
-              >
-                <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'rgba(2, 132, 199, 0.1)', color: '#0284c7', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: '16px' }}>
-                  {String(index + 1).padStart(2, '0')}
-                </div>
-                <div>
-                  <h3 style={{ fontSize: '16px', fontWeight: 800, color: 'var(--jr-text-main, #0f172a)', margin: '0 0 8px' }}>
-                    {finding.claim}
-                  </h3>
-                  <p style={{ fontSize: '14px', color: 'var(--jr-text-sub, #64748b)', lineHeight: 1.5, margin: '0 0 12px' }}>
-                    {finding.evidence}
-                  </p>
-                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                    {(finding.sources || []).map((sourceName) => {
-                      const srcObj = sourceByName[sourceName];
-                      return srcObj ? (
-                        <a
-                          key={sourceName}
-                          href={srcObj.url}
-                          target="_blank"
-                          rel="noreferrer"
-                          style={{
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '4px',
-                            background: '#f1f5f9',
-                            border: '1px solid #cbd5e1',
-                            padding: '3px 9px',
-                            borderRadius: '6px',
-                            fontSize: '12px',
-                            color: '#0284c7',
-                            textDecoration: 'none',
-                            fontWeight: 600
-                          }}
-                        >
-                          <span>{sourceName}</span>
-                          <ExternalLink size={12} />
-                        </a>
-                      ) : (
-                        <span key={sourceName} style={{ background: '#f1f5f9', border: '1px solid #e2e8f0', padding: '3px 8px', borderRadius: '6px', fontSize: '12px', color: '#64748b' }}>
-                          {sourceName}
-                        </span>
-                      );
-                    })}
-                  </div>
-                </div>
-              </article>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* TAB 4: NGUỒN THAM KHẢO UY TÍN */}
-      {activeTab === 'sources' && (
-        <div style={{ background: 'var(--jr-card, #ffffff)', border: '1px solid var(--jr-border, #e2e8f0)', borderRadius: '16px', padding: '24px', boxShadow: '0 4px 16px rgba(0,0,0,0.03)' }}>
-          <div style={{ marginBottom: '18px' }}>
-            <h3 style={{ fontSize: '17px', fontWeight: 800, margin: '0 0 6px', color: 'var(--jr-text-main, #0f172a)' }}>
-              Báo cáo & Khảo sát tuyển dụng được xác thực
-            </h3>
-            <p style={{ color: 'var(--jr-text-sub, #64748b)', fontSize: '13.5px', margin: 0 }}>
-              Nền tảng cam kết sử dụng dữ liệu uy tín, công khai và minh bạch từ các tổ chức nhân sự hàng đầu tại Việt Nam và quốc tế:
-            </p>
-          </div>
-
-          <div style={{ display: 'grid', gap: '12px' }}>
-            {relevantSources.map((source) => (
-              <div
-                key={source.name}
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  padding: '14px 18px',
-                  borderRadius: '12px',
-                  border: '1px solid var(--jr-border, #e2e8f0)',
-                  background: 'var(--jr-surface, #f8fafc)',
-                  gap: '16px'
-                }}
-              >
-                <div>
-                  <strong style={{ display: 'block', fontSize: '14.5px', color: 'var(--jr-text-main, #0f172a)', marginBottom: '4px' }}>
-                    {source.name}
-                  </strong>
-                  <span style={{ fontSize: '12.5px', color: '#64748b' }}>
-                    Loại dữ liệu: {source.type} · Độ tin cậy: <span style={{ color: '#059669', fontWeight: 700 }}>{source.reliability}</span>
-                  </span>
-                </div>
-
-                <a
-                  href={source.url}
-                  target="_blank"
-                  rel="noreferrer"
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    padding: '8px 14px',
-                    borderRadius: '8px',
-                    background: '#0284c7',
-                    color: '#ffffff',
-                    fontSize: '13px',
-                    fontWeight: 700,
-                    textDecoration: 'none',
-                    whiteSpace: 'nowrap'
-                  }}
-                >
-                  <span>Mở báo cáo gốc</span>
-                  <ExternalLink size={14} />
-                </a>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* QUICK ACTIONS FOOTER */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '14px', padding: '18px 24px', borderRadius: '16px', background: 'var(--jr-card, #ffffff)', border: '1px solid var(--jr-border, #e2e8f0)', marginTop: '28px' }}>
-        <div>
-          <strong style={{ display: 'block', fontSize: '15px', color: 'var(--jr-text-main, #0f172a)' }}>
-            Sẵn sàng áp dụng xu hướng thị trường vào Portfolio của bạn?
-          </strong>
-          <span style={{ fontSize: '13px', color: 'var(--jr-text-sub, #64748b)' }}>
-            Chọn các thử thách bám sát thực tế để hoàn thiện hồ sơ năng lực ngay hôm nay.
-          </span>
-        </div>
-
-        <div style={{ display: 'flex', gap: '12px' }}>
-          <button
-            className="ghost-action"
-            onClick={() => go('roadmap')}
-            style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '10px 18px', borderRadius: '10px', fontWeight: 700, cursor: 'pointer' }}
-          >
-            <Compass size={16} />
-            <span>Khám phá Bản đồ nghề</span>
-          </button>
-          <button
-            className="primary-action"
-            onClick={() => go('hub')}
-            style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '10px 18px', borderRadius: '10px', fontWeight: 700, cursor: 'pointer', background: '#0284c7', color: '#fff', border: 'none' }}
-          >
-            <LayoutDashboard size={16} />
-            <span>Xem thử thách theo xu hướng</span>
-          </button>
-        </div>
+    <section className="market-v2-selector" aria-labelledby="market-v2-selector-heading">
+      <div><span className="market-v2-section-kicker">BẮT ĐẦU TẠI ĐÂY</span><h2 id="market-v2-selector-heading">Bạn quan tâm lĩnh vực nào?</h2><p>Thông tin và gợi ý bên dưới sẽ thay đổi theo lĩnh vực bạn chọn.</p></div>
+      <div className="market-v2-major-options" role="group" aria-label="Chọn lĩnh vực nghề nghiệp">
+        {majors.map((option) => <button key={option.key} type="button" aria-pressed={major.key === option.key} className={major.key === option.key ? 'is-selected' : ''} onClick={() => changeMajor?.(option.key)}><span>{option.title ?? option.short}</span><MoveUpRight size={16} aria-hidden="true" /></button>)}
       </div>
     </section>
-  );
+
+    <nav className="market-v2-jump" aria-label="Các mục trên trang"><span>ĐI ĐẾN</span><button type="button" onClick={() => moveToSection('market-v2-insights')}>Nhận định</button><button type="button" onClick={() => moveToSection('market-v2-actions')}>Kế hoạch hành động</button><button type="button" onClick={() => moveToSection('market-v2-tracks')}>Nhánh nghề</button><button type="button" onClick={() => moveToSection('market-v2-sources')}>Nguồn tham khảo</button><button type="button" onClick={() => moveToSection('market-v2-method')}>Cách tổng hợp</button></nav>
+
+    <section className="market-v2-block" id="market-v2-insights" aria-labelledby="market-v2-insights-heading">
+      <div className="market-v2-title-row"><div><span className="market-v2-section-kicker">01 / ĐỌC ĐỂ ĐỊNH HƯỚNG</span><h2 id="market-v2-insights-heading">Góc nhìn về {major.title}</h2><p>Nhận định do nền tảng tổng hợp và biên tập từ các nguồn bên dưới; đây không phải số liệu tuyển dụng theo thời gian thực.</p></div><span className="market-v2-context"><BookOpen size={15} aria-hidden="true" />{relevantSources.length} nguồn phù hợp</span></div>
+      <div className="market-v2-editorial"><div className="market-v2-editorial-marker"><Lightbulb size={19} aria-hidden="true" /><span>NHẬN ĐỊNH CHÍNH</span></div><p>{signal.headline || FALLBACK_SIGNAL.headline}</p><div className="market-v2-editorial-bottom"><span>Câu hỏi cần trả lời</span><strong>{research.researchQuestion || FALLBACK_RESEARCH.researchQuestion}</strong></div></div>
+      {findings.length ? <div className="market-v2-findings" aria-label="Các phân tích theo lĩnh vực">{findings.map((finding, index) => <article className="market-v2-finding" key={`${major.key}-${finding.claim || index}`}><div className="market-v2-finding-number">{String(index + 1).padStart(2, '0')}</div><div className="market-v2-finding-content"><span className="market-v2-finding-label">PHÂN TÍCH CỦA NỀN TẢNG</span><h3>{finding.claim}</h3><p>{finding.evidence}</p>{implications[index] && <div className="market-v2-finding-next"><ArrowRight size={16} aria-hidden="true" /><span><strong>Áp dụng:</strong> {implications[index]}</span></div>}{!!finding.sources?.length && <div className="market-v2-finding-sources"><span>Tham chiếu</span>{finding.sources.map((name) => <SourceReference key={name} name={name} sourceByName={sourceByName} />)}</div>}</div></article>)}</div> : <p className="market-v2-empty">Chưa có phân tích chi tiết cho lĩnh vực này. Hãy xem các nguồn tham khảo và quay lại sau.</p>}
+    </section>
+
+    <section className="market-v2-block" id="market-v2-actions" aria-labelledby="market-v2-actions-heading"><div className="market-v2-title-row"><div><span className="market-v2-section-kicker">02 / BIẾN THÔNG TIN THÀNH NĂNG LỰC</span><h2 id="market-v2-actions-heading">Từ xu hướng đến một bài làm cụ thể</h2><p>Đây là gợi ý học và xây hồ sơ của nền tảng, không phải cam kết tuyển dụng từ các nguồn báo cáo.</p></div></div><div className="market-v2-action-grid"><div className="market-v2-action-main"><span className="market-v2-action-icon"><Compass size={20} aria-hidden="true" /></span><h3>Ưu tiên chất lượng minh chứng</h3><p>{research.analystConclusion || FALLBACK_RESEARCH.analystConclusion}</p><ul>{implications.map((item, index) => <li key={`${item}-${index}`}><Check size={16} aria-hidden="true" />{item}</li>)}</ul><button className="market-v2-action-button" type="button" onClick={() => go?.('hub')}>Tìm bài thực hành phù hợp <ArrowRight size={17} aria-hidden="true" /></button></div><div className="market-v2-skills"><span className="market-v2-section-kicker">BỘ KỸ NĂNG GỢI Ý</span><h3>Bắt đầu từ những gì có thể chứng minh</h3><p>Các chủ đề để chọn bài thực hành và thể hiện trong portfolio; không phải bảng xếp hạng tần suất xuất hiện trong tin tuyển dụng.</p>{skills.length ? <ul>{skills.map((skill) => <li key={skill}><SearchCheck size={15} aria-hidden="true" />{skill}</li>)}</ul> : <p>Chưa có bộ kỹ năng riêng cho lĩnh vực này.</p>}<button className="market-v2-text-link" type="button" onClick={() => go?.('roadmap')}>Xem bản đồ nghề <MoveUpRight size={16} aria-hidden="true" /></button></div></div></section>
+
+    {tracks.length > 0 && <section className="market-v2-block" id="market-v2-tracks" aria-labelledby="market-v2-tracks-heading"><div className="market-v2-title-row"><div><span className="market-v2-section-kicker">03 / CHỌN HƯỚNG ĐI SÂU HƠN</span><h2 id="market-v2-tracks-heading">Khám phá từng nhánh nghề</h2><p>Các kỹ năng và công cụ bên dưới thuộc bản đồ nghề của nền tảng, giúp bạn chọn hướng thực hành. Đây không phải danh sách vị trí đang tuyển.</p></div></div><div className="market-v2-track-tabs" role="group" aria-label="Chọn nhánh nghề">{tracks.map((track) => <button key={track.key} type="button" aria-pressed={selectedTrack?.key === track.key} className={selectedTrack?.key === track.key ? 'is-selected' : ''} onClick={() => setSelectedTrackKey(track.key)}>{track.title}</button>)}</div>{selectedTrack && <article className="market-v2-track-detail"><div className="market-v2-track-detail-head"><div><span>HƯỚNG THỰC HÀNH</span><h3>{selectedTrack.title}</h3></div><button className="market-v2-text-link" type="button" onClick={() => go?.('roadmap')}>Xem lộ trình <ArrowRight size={16} aria-hidden="true" /></button></div><div className="market-v2-track-detail-grid"><div><h4>Năng lực nền tảng</h4><ul>{foundationRole?.skills?.slice(0, 3).map((skill) => <li key={skill}>{skill}</li>)}</ul></div><div><h4>Kiến thức nên hiểu</h4><ul>{foundationRole?.knowledge?.slice(0, 3).map((item) => <li key={item}>{item}</li>)}</ul></div><div><h4>Công cụ tham khảo</h4><ul>{foundationRole?.tools?.slice(0, 4).map((tool) => <li key={tool}>{tool}</li>)}</ul></div></div></article>}</section>}
+
+    <section className="market-v2-block" id="market-v2-sources" aria-labelledby="market-v2-sources-heading"><div className="market-v2-title-row"><div><span className="market-v2-section-kicker">04 / TỰ KIỂM CHỨNG</span><h2 id="market-v2-sources-heading">Nguồn tham khảo</h2><p>Mở trang gốc để xem phạm vi, thời điểm phát hành và phương pháp của từng nguồn trước khi đưa ra quyết định nghề nghiệp.</p></div><span className="market-v2-context"><FileText size={15} aria-hidden="true" />Nguồn công khai</span></div>{relevantSources.length ? <div className="market-v2-source-list">{relevantSources.map((source, index) => { const note = sourceNotes.find((entry) => source.name?.includes(entry.match)); return <article className="market-v2-source" key={`${source.name}-${index}`}><span className="market-v2-source-index">{String(index + 1).padStart(2, '0')}</span><div><h3>{source.name}</h3><div className="market-v2-source-meta"><span>{note?.period || 'Bài viết cập nhật theo nguồn'}</span><span>{note?.scope || source.type || 'Nguồn tham khảo công khai'}</span></div>{note?.note && <small>{note.note}</small>}</div><a href={source.url} target="_blank" rel="noopener noreferrer" aria-label={`Mở nguồn ${source.name} trong thẻ mới`}>Mở nguồn <ExternalLink size={15} aria-hidden="true" /></a></article>; })}</div> : <p className="market-v2-empty">Chưa có nguồn tham khảo riêng cho lĩnh vực này.</p>}</section>
+
+    <aside className="market-v2-method market-v2-block" id="market-v2-method" aria-labelledby="market-v2-method-heading"><div className="market-v2-method-intro"><span className="market-v2-section-kicker">ĐỌC THÔNG TIN CÓ BỐI CẢNH</span><h2 id="market-v2-method-heading">Cách chúng tôi tổng hợp</h2><p>Trang này giúp định hướng, không thay thế tin tuyển dụng đang mở hoặc khảo sát lương dành riêng cho vị trí bạn ứng tuyển.</p></div><div className="market-v2-method-details"><div><h3>Phương pháp</h3><ul>{(methods.length ? methods : ['Đối chiếu nguồn công khai với yêu cầu công việc và bài thực hành.']).map((item, index) => <li key={`${item}-${index}`}>{item}</li>)}</ul></div>{risks.length > 0 && <div><h3>Điều cần lưu ý</h3><ul>{risks.map((item, index) => <li key={`${item}-${index}`}>{item}</li>)}</ul></div>}</div></aside>
+  </section>;
 }

@@ -38,8 +38,8 @@ export function AboutPage({ go, onOpenUpgrade, onOpenFooterModal, currentUser })
     return RESOURCES.filter(resource => {
       if (!resource.url || seen.has(resource.url)) return false;
       seen.add(resource.url);
-      return /coursera\.org|daihocfpt\.edu\.vn|fpt\.edu\.vn/i.test(resource.url);
-    }).slice(0, 6);
+      return /^https?:\/\//i.test(resource.url);
+    }).slice(0, 8);
   }, []);
 
   useEffect(() => {

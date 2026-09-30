@@ -134,7 +134,7 @@ export function getFooterModalContent(key) {
   // Employer & Partner
   return {
     category: 'Nhà tuyển dụng & Đối tác',
-    title: 'Cổng Kết Nối Doanh Nghiệp & Tuyển Dụng Tài Năng FPT',
+    title: 'Kết nối doanh nghiệp với hồ sơ năng lực sinh viên',
     subtitle: 'Tìm hiểu các hồ sơ được sinh viên chủ động cho phép chia sẻ',
     body: (
       <div style={{ fontSize: '13.5px', lineHeight: 1.6 }}>
@@ -254,7 +254,7 @@ export function FooterDetailModal({ isOpen, onClose, data, go, onOpenUpgrade }) 
                     required
                     value={contactEmail}
                     onChange={(e) => setContactEmail(e.target.value)}
-                    placeholder="Email của bạn (@fpt.edu.vn hoặc cá nhân)..."
+                    placeholder="Email liên hệ của bạn..."
                     style={{ padding: '10px 14px', borderRadius: '8px', border: '1px solid #cbd5e1' }}
                   />
                   <textarea
@@ -266,7 +266,7 @@ export function FooterDetailModal({ isOpen, onClose, data, go, onOpenUpgrade }) 
                     style={{ padding: '10px 14px', borderRadius: '8px', border: '1px solid #cbd5e1' }}
                   />
                   <button type="submit" className="jr-btn-gold-action" style={{ alignSelf: 'flex-start', padding: '9px 20px', fontSize: '13.5px' }}>
-                    Gửi yêu cầu tới đội ngũ FPT
+                    Gửi yêu cầu tới đội ngũ Portfolio
                   </button>
                 </div>
               </form>

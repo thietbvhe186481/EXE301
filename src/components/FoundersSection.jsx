@@ -37,7 +37,7 @@ const defaultFounders = [
     name: 'Tạ Thị Minh Giang',
     role: 'CMO',
     roleFull: 'Chief Marketing Officer',
-    bio: 'Chiến dịch thu hút 200-300 sinh viên & xây dựng cộng đồng FPT'
+    bio: 'Phát triển cộng đồng sinh viên và kết nối cơ hội nghề nghiệp'
   },
   {
     id: 'founder-nghia',
@@ -79,7 +79,7 @@ export function FoundersSection({ founders }) {
       </h2>
 
       <p className="jr-founders-subtitle">
-        Đội ngũ sinh viên đam mê công nghệ và khát vọng xây dựng bệ phóng nghề nghiệp vững chắc cho sinh viên FPT.
+        Đội ngũ sinh viên xây dựng nơi người học ở nhiều lĩnh vực có thể luyện tập, nhận góp ý và trình bày năng lực.
       </p>
 
       <div className="jr-founders-grid-unboxed">
