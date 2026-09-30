@@ -253,6 +253,7 @@ export function createWorkflowRouter({ UserProfile, MentorAccount, AdminAccount,
         const submission = await ReviewSubmission.findOneAndUpdate({ id: item.id }, { $set: { 'ai.modelFeedback': modelFeedback }, $unset: { 'ai.processingAt': 1 } }, { new: true });
         res.json({ submission });
       } catch (error) {
+        console.error('[ai-review] review attempt failed', { name: error?.name, status: error?.status });
         await ReviewSubmission.updateOne({ id: item.id }, { $unset: { 'ai.processingAt': 1 } });
         fail(error.status === 429 ? 429 : 502, error.status === 429 ? error.message : 'Chưa lấy được nhận xét AI. Bài đã lưu, bạn có thể thử lại sau.');
       }

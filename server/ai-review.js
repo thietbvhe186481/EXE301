@@ -31,6 +31,9 @@ export async function generateAiAdvice(challenge, submission, evidenceText = '',
       messages: [{ role: 'system', content: instructions }, { role: 'user', content: JSON.stringify({ challenge: { title: challenge.title, scenario: challenge.scenario, summary: challenge.summary, requirements: challenge.requirements, rubric }, artifactExcerpt: evidence, studentNotes: submission.notes, declaredSkills: submission.skills }) }],
       response_format: { type: 'json_schema', json_schema: { name: 'evidence_based_review', strict: true, schema } }
     })
+  }).catch(error => {
+    console.error('[ai-review] Groq transport failed', { name: error?.name, code: error?.code });
+    throw error;
   });
   if (!response.ok) {
     const detail = await response.json().catch(() => ({}));
@@ -40,9 +43,18 @@ export async function generateAiAdvice(challenge, submission, evidenceText = '',
     throw error;
   }
   const body = await response.json();
-  if (body.choices?.[0]?.finish_reason !== 'stop') throw new Error('AI chưa hoàn tất phản hồi. Vui lòng thử lại.');
+  if (body.choices?.[0]?.finish_reason !== 'stop') {
+    console.error('[ai-review] Groq output incomplete', { finishReason: body.choices?.[0]?.finish_reason, choiceCount: body.choices?.length });
+    throw new Error('AI chưa hoàn tất phản hồi. Vui lòng thử lại.');
+  }
   const output = body.choices[0].message?.content;
-  const parsed = z.object({ summary: z.string().max(2500), rubricFeedback: z.array(z.object({ key: z.string().max(100), score: z.number().int().min(0).max(10), assessment: z.string().max(1200), action: z.string().max(600), evidence: z.string().max(400) })).max(12) }).parse(JSON.parse(output));
+  let parsed;
+  try {
+    parsed = z.object({ summary: z.string().max(2500), rubricFeedback: z.array(z.object({ key: z.string().max(100), score: z.number().int().min(0).max(10), assessment: z.string().max(1200), action: z.string().max(600), evidence: z.string().max(400) })).max(12) }).parse(JSON.parse(output));
+  } catch (error) {
+    console.error('[ai-review] Groq output invalid', { name: error?.name, contentLength: typeof output === 'string' ? output.length : 0 });
+    throw error;
+  }
   const reported = new Map(parsed.rubricFeedback.filter(item => rubric.some(r => r.key === item.key)).map(item => [item.key, item]));
   const rubricFeedback = rubric.map(item => {
     const found = reported.get(item.key);
