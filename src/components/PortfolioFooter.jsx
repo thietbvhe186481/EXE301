@@ -1,7 +1,7 @@
 import React from 'react';
 import { ArrowRight, FileText } from 'lucide-react';
 
-export function PortfolioFooter({ go, onOpenUpgrade, onOpenFooterModal, onRegisterMentor }) {
+export function PortfolioFooter({ go, isGuest, onOpenUpgrade, onOpenFooterModal, onRegisterMentor }) {
   return (
     <footer className="jr-main-footer">
       <div className="jr-footer-container">
@@ -74,7 +74,7 @@ export function PortfolioFooter({ go, onOpenUpgrade, onOpenFooterModal, onRegist
               <li><button type="button" className="jr-footer-link-btn" onClick={() => go('roadmap')}>Bản đồ nghề nghiệp</button></li>
               <li><button type="button" className="jr-footer-link-btn" onClick={() => go('hub')}>Thử thách dự án thực hành</button></li>
               <li><button type="button" className="jr-footer-link-btn" onClick={() => go('hub')}>Nộp bài & Nhận review</button></li>
-              <li><button type="button" className="jr-footer-link-btn" onClick={() => go('portfolio')}>Hồ sơ năng lực cá nhân</button></li>
+              <li><button type="button" className="jr-footer-link-btn" onClick={() => go('portfolio')}>{isGuest ? 'Tạo hồ sơ năng lực' : 'Hồ sơ năng lực cá nhân'}</button></li>
               <li><button type="button" className="jr-footer-link-btn highlight" onClick={onOpenUpgrade}>Nâng cấp gói VIP</button></li>
             </ul>
           </div>

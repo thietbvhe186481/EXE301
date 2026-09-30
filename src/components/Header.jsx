@@ -10,7 +10,6 @@ const links = {
     { id: 'hub', label: 'Thử thách', icon: Rocket },
     { id: 'learning', label: 'Học liệu', icon: GraduationCap },
     { id: 'trends', label: 'Xu hướng thị trường', icon: BarChart2 },
-    { id: 'portfolio', label: 'Hồ sơ Portfolio', icon: UserRound },
     { id: 'pricing', label: 'Gói Premium', icon: Crown }
   ],
   student: [
@@ -38,7 +37,7 @@ const links = {
   ]
 };
 
-export function Header({ page, go, currentUser, logout, onOpenQrPayment }) {
+export function Header({ page, go, currentUser, logout, onOpenQrPayment, onAuth }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
   const menuRef = useRef(null);
@@ -98,8 +97,8 @@ export function Header({ page, go, currentUser, logout, onOpenQrPayment }) {
 
     <div className="topbar-actions hub-topbar-actions">
       {!currentUser ? <>
-        <button className="hub-login-action" type="button" onClick={() => navigate('auth')}><UserRound size={16} />Đăng nhập</button>
-        <button className="hub-signup-action" type="button" onClick={() => navigate('auth')}>Tạo tài khoản</button>
+        <button className="hub-login-action" type="button" onClick={() => { setMenuOpen(false); onAuth('login'); }}><UserRound size={16} />Đăng nhập</button>
+        <button className="hub-signup-action" type="button" onClick={() => { setMenuOpen(false); onAuth('signup'); }}>Tạo tài khoản</button>
       </> : <div className="account-menu">
         <button className="role-chip hub-account-trigger" type="button" aria-label={`Tài khoản ${roleBadgeLabel}`} aria-haspopup="menu" aria-expanded={accountOpen} onClick={() => setAccountOpen(value => !value)}>
           <UserRound size={16} /><span>{roleBadgeLabel}</span><span className="hub-plan-badge">{userPlan}</span><ChevronDown size={14} />

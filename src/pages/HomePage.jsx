@@ -23,7 +23,7 @@ const exampleJourneys = [
   ['06', 'Sẵn sàng giới thiệu năng lực', 'Xây dựng hồ sơ cá nhân', 'Tổng hợp sản phẩm đã hoàn thành và chủ động quyết định có chia sẻ hồ sơ nổi bật với mentor hay không.']
 ];
 
-export function HomePage({ go, onOpenUpgrade, onOpenFooterModal, onRegisterMentor }) {
+export function HomePage({ go, isGuest, onOpenUpgrade, onOpenFooterModal, onRegisterMentor }) {
   return (
     <div className="jr-home-wrapper">
       {/* Hero Section */}
@@ -119,7 +119,7 @@ export function HomePage({ go, onOpenUpgrade, onOpenFooterModal, onRegisterMento
             <h3>4. Hoàn Thiện Hồ Sơ Năng Lực</h3>
             <p>Tổng hợp bài làm đã hoàn thành, kỹ năng và nhận xét của mentor thành hồ sơ năng lực để tiếp tục phát triển.</p>
             <button className="jr-step-link-btn" onClick={() => go('portfolio')}>
-              Xem trang Portfolio <ArrowRight size={13} />
+              {isGuest ? 'Tạo hồ sơ của bạn' : 'Xem hồ sơ Portfolio'} <ArrowRight size={13} />
             </button>
           </div>
         </div>
@@ -196,7 +196,7 @@ export function HomePage({ go, onOpenUpgrade, onOpenFooterModal, onRegisterMento
         </div>
       </section>
 
-      <PortfolioFooter go={go} onOpenUpgrade={onOpenUpgrade} onOpenFooterModal={onOpenFooterModal} onRegisterMentor={onRegisterMentor} />
+      <PortfolioFooter go={go} isGuest={isGuest} onOpenUpgrade={onOpenUpgrade} onOpenFooterModal={onOpenFooterModal} onRegisterMentor={onRegisterMentor} />
     </div>
   );
 }

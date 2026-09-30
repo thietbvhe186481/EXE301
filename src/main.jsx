@@ -1373,8 +1373,15 @@ function App() {
   const pathRoles = path.map((roleId) => allRoles.find((roleItem) => roleItem.id === roleId)).filter(Boolean);
 
   const go = (id) => {
-    setFlowNotice('');
-    setPage(id);
+    if (id === 'portfolio' && !currentUser) {
+      setSignupRole('student');
+      setAuthMode('signup');
+      setFlowNotice('Tạo tài khoản Sinh viên hoặc đăng nhập để lưu và xem hồ sơ Portfolio của bạn.');
+      setPage('auth');
+    } else {
+      setFlowNotice('');
+      setPage(id === 'portfolio' && currentRole !== 'student' ? currentRole : id);
+    }
     window.scrollTo(0, 0);
   };
   const changeMajor = (majorKey) => {
@@ -1432,6 +1439,7 @@ function App() {
     const type = data.type;
     const user = { ...data.user, role: type };
     setCurrentUser({ type, user });
+    setFlowNotice('');
     setJoinedChallengeIds(user.joinedChallengeIds ?? []);
     setSubmissionStatus({});
     setSavedPathName('');
@@ -1466,7 +1474,7 @@ function App() {
       mentor: ['mentor', 'home', 'learning', 'pricing', 'about', 'roadmap', 'trends'],
       admin: ['admin', 'home', 'learning', 'pricing', 'about', 'roadmap', 'trends']
     };
-    const publicPages = ['home', 'learning', 'pricing', 'about', 'roadmap', 'trends', 'hub', 'portfolio', 'auth', 'premium'];
+    const publicPages = ['home', 'learning', 'pricing', 'about', 'roadmap', 'trends', 'hub', 'auth', 'premium'];
     if (!currentUser && !publicPages.includes(page)) {
       setPage('home');
       return;
@@ -1784,6 +1792,7 @@ function App() {
         currentUser={currentUser}
         logout={logout}
         onOpenQrPayment={() => setIsVipModalOpen(true)}
+        onAuth={(mode) => { setAuthMode(mode); go('auth'); }}
       />
       <VipUpgradeModal
         isOpen={isVipModalOpen || Boolean(qrModalPlan)}
@@ -1819,7 +1828,7 @@ function App() {
       <main>
         {page === 'auth' && !sessionChecked && <p className="status-banner" role="status">Đang kiểm tra phiên đăng nhập…</p>}
         {flowNotice && <div className="flow-notice status-banner warning"><ShieldCheck size={17} /> {flowNotice}</div>}
-        {page === 'home' && <HomePage go={(id) => { const role = currentUser?.type ?? currentUser?.user?.role; go(['hub', 'portfolio'].includes(id) && role === 'mentor' ? 'mentor' : ['hub', 'portfolio'].includes(id) && role === 'admin' ? 'admin' : id); }} onOpenUpgrade={() => currentUser ? setIsVipModalOpen(true) : go('premium')} onOpenFooterModal={(key) => key === 'about' ? go('about') : setFooterModalData(getFooterModalContent(key))} onRegisterMentor={() => { setSignupRole('mentor'); setAuthMode('signup'); go('auth'); }} />}
+        {page === 'home' && <HomePage isGuest={!currentUser} go={(id) => { const role = currentUser?.type ?? currentUser?.user?.role; go(['hub', 'portfolio'].includes(id) && role === 'mentor' ? 'mentor' : ['hub', 'portfolio'].includes(id) && role === 'admin' ? 'admin' : id); }} onOpenUpgrade={() => currentUser ? setIsVipModalOpen(true) : go('premium')} onOpenFooterModal={(key) => key === 'about' ? go('about') : setFooterModalData(getFooterModalContent(key))} onRegisterMentor={() => { setSignupRole('mentor'); setAuthMode('signup'); go('auth'); }} />}
         {page === 'auth' && sessionChecked && (
           <AuthPage
             authMode={authMode}
@@ -1873,7 +1882,7 @@ function App() {
             getMarketUpdatedLabel={getMarketUpdatedLabel}
           />
         )}
-        {page === 'portfolio' && <PortfolioPage pathRoles={pathRoles} currentMajor={currentMajor} go={go} demoUser={demoUser} apiStatus={apiStatus} submissions={submissionList} challenges={challengeList} updatePortfolio={updatePortfolio} updateStudentProfile={updateStudentProfile} isPremium={isPremium} autoOpenPublicPortfolio={autoOpenPublicPortfolio} onPublicPortfolioOpened={() => setAutoOpenPublicPortfolio(false)} />}
+        {page === 'portfolio' && currentRole === 'student' && <PortfolioPage pathRoles={pathRoles} currentMajor={currentMajor} go={go} demoUser={demoUser} apiStatus={apiStatus} submissions={submissionList} challenges={challengeList} updatePortfolio={updatePortfolio} updateStudentProfile={updateStudentProfile} isPremium={isPremium} autoOpenPublicPortfolio={autoOpenPublicPortfolio} onPublicPortfolioOpened={() => setAutoOpenPublicPortfolio(false)} />}
         {(page === 'premium' || page === 'pricing') && (
           <PremiumPage
             plans={activePremiumPlans}
