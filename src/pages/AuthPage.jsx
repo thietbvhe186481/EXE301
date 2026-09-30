@@ -14,7 +14,7 @@ function Field({ name, label, errors, hint, children }) {
   </div>;
 }
 
-export function AuthPage({ authMode = 'login', initialRole = 'student', setAuthMode, onAuthenticated, onOpenPolicy, go }) {
+export function AuthPage({ authMode = 'login', initialRole = 'student', resumeSubmission = false, setAuthMode, onAuthenticated, onOpenPolicy, go }) {
   const signup = authMode === 'signup';
   const [values, setValues] = useState({ ...initialValues, role: initialRole === 'mentor' ? 'mentor' : 'student' });
   const [step, setStep] = useState(1);
@@ -172,6 +172,7 @@ export function AuthPage({ authMode = 'login', initialRole = 'student', setAuthM
       {!apiService.isConfigured && <div className="pf-auth-server-notice" role="status"><b>Đăng nhập/đăng ký hiện chưa khả dụng.</b><span>Tạm thời chưa thể kết nối để đăng nhập. Vui lòng thử lại sau.</span></div>}
       <div className="pf-auth-mode-nav"><span>{signup ? 'Đã có tài khoản?' : 'Mới đến Portfolio FPT Hub?'}</span><button type="button" disabled={busy} onClick={switchMode}>{signup ? 'Đăng nhập' : 'Tạo tài khoản'} <ArrowRight size={15} /></button></div>
       <div className="pf-auth-form-wrap">
+        {resumeSubmission && <div className="pf-auth-server-notice" role="status"><b>Tiếp tục nộp bài</b><span>Đăng nhập hoặc tạo tài khoản Sinh viên. Bạn sẽ quay lại màn Nộp bài sau khi xác thực.</span></div>}
         <header className="pf-auth-heading">
           <span className="pf-auth-kicker">{resetStage ? 'KHÔI PHỤC TÀI KHOẢN' : signup ? 'BẮT ĐẦU HÀNH TRÌNH' : 'TIẾP TỤC HÀNH TRÌNH'}</span>
           <h2>{resetStage ? 'Đặt lại mật khẩu.' : signup ? step === 1 ? 'Bạn muốn tham gia với vai trò nào?' : mentor ? 'Chia sẻ chuyên môn của bạn.' : 'Làm quen một chút nhé.' : 'Chào mừng bạn trở lại.'}</h2>

@@ -16,6 +16,8 @@ app.get('/api/workflow/catalog', (_req, res) => res.json({ ok: true }));
 app.get('/api/workflow/state', (req, res) => res.status(req.session ? 200 : 401).json({ ok: Boolean(req.session) }));
 app.post('/api/auth/login', (_req, res) => res.json({ ok: true }));
 app.post('/api/inquiries', (_req, res) => res.status(201).json({ ok: true }));
+app.get('/api/assistant/topics', (_req, res) => res.json({ ok: true }));
+app.post('/api/assistant/ask', (_req, res) => res.json({ ok: true }));
 app.post('/api/reviews', (req, res) => res.status(req.session?.user.role === 'admin' ? 201 : 202).json({ ok: true }));
 app.post('/api/users/:id/joined-challenges', (_req, res) => res.json({ ok: true }));
 app.put('/api/users/:id', (req, res) => res.json({ body: req.body }));
@@ -59,6 +61,9 @@ test('students may submit a verified testimonial for moderation; mentors cannot 
 test('unsafe cross-site requests are blocked, allowed-site inquiries stay public', async () => {
   assert.equal((await request('/inquiries', { method: 'POST', origin: 'https://attacker.example' })).status, 403);
   assert.equal((await request('/inquiries', { method: 'POST', origin: 'https://portfolio.example' })).status, 201);
+  assert.equal((await request('/assistant/topics')).status, 200);
+  assert.equal((await request('/assistant/ask', { method: 'POST', origin: 'https://portfolio.example', body: { question: 'Nộp bài?' } })).status, 200);
+  assert.equal((await request('/assistant/ask', { method: 'POST', origin: 'https://attacker.example', body: { question: 'Nộp bài?' } })).status, 403);
 });
 
 test('students can update only their own profile fields and joined challenges', async () => {

@@ -10,6 +10,7 @@ import { createWorkflowRouter } from './workflow.js';
 import { createTestimonialsRouter } from './testimonials.js';
 import { buildMentorMetrics, buildPlatformMetrics } from './metrics.js';
 import { createInquiriesRouter } from './inquiries.js';
+import { createHelpAssistantRouter } from './help-assistant.js';
 import { ReviewSubmission, ReviewerProfile, Complaint } from './workflow-models.js';
 import { connectDb, mongoUriFromEnvironment } from './config/db.js';
 import { AdminAccount, Category, Challenge, Major, MentorAccount, MentorFeedback, Notification, Resource, Submission, SubmissionRule, UserProfile, StudentReview, SubscriptionOrder, ContactInquiry, Founder, PremiumPlan, MarketData } from './models.js';
@@ -57,6 +58,7 @@ app.use(session({
 
 app.use('/api', createApiAccessMiddleware(allowedClientOrigins));
 app.use('/api/inquiries', createInquiriesRouter({ ContactInquiry }));
+app.use('/api/assistant', createHelpAssistantRouter());
 app.use('/api/auth', createAuthRouter({ UserProfile, MentorAccount, AdminAccount }));
 app.use('/api/workflow', createWorkflowRouter({ UserProfile, MentorAccount, AdminAccount, ReviewSubmission, ReviewerProfile, Complaint, SubscriptionOrder, PremiumPlan }));
 app.use('/api/reviews', createTestimonialsRouter({ StudentReview, UserProfile, ReviewSubmission, Submission }));

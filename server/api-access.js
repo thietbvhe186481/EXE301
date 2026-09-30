@@ -14,6 +14,8 @@ export function createApiAccessMiddleware(allowedOrigins = []) {
 
     const path = req.path;
     if (path.startsWith('/auth/')) return next();
+    if (path === '/assistant/topics' && req.method === 'GET') return next();
+    if (path === '/assistant/ask' && req.method === 'POST') return next();
     if (req.method === 'GET' && (publicReads.has(path) || path === '/workflow/catalog' || /^\/challenges\/[^/]+$/.test(path))) return next();
     if (path.startsWith('/workflow/')) return next();
     if (req.method === 'POST' && path === '/inquiries') return next();

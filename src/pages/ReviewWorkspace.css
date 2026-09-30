@@ -24,3 +24,50 @@
 .rw-ai-feedback .rw-field { display: block; margin: 1rem 0; }
 .rw-ai-feedback .rw-field textarea { width: 100%; }
 .rw-ai-rubric .rw-ai-action { margin: .55rem 0 0; padding: .6rem .75rem; background: #e8f1fc; border-left: 2px solid #2563cb; color: #183b65; font-size: .86rem; }
+
+/* The student journey is three distinct destinations in the global navigation. */
+.rw-student-workspace{padding-top:32px}
+.rw-student-workspace .rw-header{margin-bottom:30px;padding-bottom:22px;border-bottom:1px solid #d7e2ec}
+.rw-student-workspace .rw-header h1{font-size:clamp(30px,3vw,42px);margin:0 0 8px;letter-spacing:-.035em}
+.rw-student-workspace .rw-header p{margin:0;color:#4b6077;font-size:16px}
+.rw-student-workspace .rw-header>.rw-secondary{margin-top:2px}
+.rw-brief-page,.rw-student-workspace .rw-submit,.rw-submit-entry{max-width:910px;margin-left:auto;margin-right:auto}
+.rw-brief-page{padding:32px 38px 38px;border-top:3px solid #1775d6}
+.rw-brief-page>.rw-text-button{margin-bottom:20px}
+.rw-brief-page h2{font-size:clamp(25px,2.7vw,34px);max-width:760px;margin:12px 0 10px}
+.rw-brief-page .rw-brief-lead{font-size:16px;line-height:1.65;max-width:700px}
+.rw-brief-page .rw-jump-submit{margin:7px 0 13px}
+.rw-submit-entry{display:grid;gap:22px}
+.rw-resume-panel{background:#eaf3fd;border:1px solid #c6def4;border-left:4px solid #2c78d2;padding:22px 26px}
+.rw-resume-panel h2{font-size:20px;margin-bottom:3px}
+.rw-resume-panel>div>p{color:#405b77;margin:0 0 15px}
+.rw-resume-list{display:grid;gap:8px}
+.rw-resume-list article{display:flex;justify-content:space-between;align-items:center;gap:18px;padding:12px 14px;background:#fff;border:1px solid #d3e2f0}
+.rw-resume-list article>div{display:flex;align-items:center;gap:12px;min-width:0}
+.rw-resume-list strong{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rw-picker-panel{padding:30px 34px}
+.rw-picker-panel>h2{font-size:23px;margin-bottom:3px}
+.rw-picker-panel>p{color:#4b6077;margin-bottom:22px}
+.rw-picker-panel .rw-field{max-width:550px}
+.rw-submit-picker-list{border-top:1px solid #dce6ef}
+.rw-submit-picker-list article{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:17px 0;border-bottom:1px solid #dce6ef}
+.rw-submit-picker-list article>div:first-child{display:grid;gap:2px;min-width:0}
+.rw-submit-picker-list article span{color:#34628e;font-size:12px;font-weight:700}
+.rw-submit-picker-list article strong{font-size:16px;line-height:1.4}
+.rw-submit-picker-list article small{color:#526982;font-size:12px}
+.rw-picker-actions{display:flex;gap:9px;flex-shrink:0}
+.rw-workspace .rw-picker-actions button{font-size:13px;padding:9px 12px}
+.rw-submit{padding:32px 38px 38px}
+.rw-submit-top{display:flex;justify-content:space-between;align-items:flex-start;gap:20px}
+.rw-submit-top h2{font-size:26px;margin:0 0 4px}
+.rw-submit-top p{color:#526982;margin:0 0 22px}
+.rw-workspace .rw-submit-top>.rw-secondary{font-size:13px;white-space:nowrap}
+.rw-submission-context{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:19px 22px;margin:0 0 20px;background:#f1f7fd;border-left:4px solid #2174d1}
+.rw-submission-context span{color:#1e61a6;font-size:11px;font-weight:800;letter-spacing:.1em}
+.rw-submission-context h3{font-size:18px;margin:3px 0}
+.rw-submission-context p{font-size:13px;color:#49637d;margin:0}
+.rw-workspace .rw-submission-context .rw-text-button{white-space:nowrap;margin:0}
+.rw-submit-help{color:#3e566f!important;line-height:1.55}
+.rw-list-footer{display:flex;justify-content:flex-end;margin:25px 0 10px}
+@media(max-width:700px){.rw-student-workspace .rw-header{margin-bottom:24px}.rw-brief-page,.rw-submit,.rw-picker-panel{padding:24px}.rw-submit-picker-list article{align-items:flex-start;flex-direction:column;gap:12px}.rw-picker-actions{width:100%}.rw-picker-actions button{flex:1}.rw-resume-list article{align-items:flex-start;flex-direction:column}.rw-resume-list article>div{align-items:flex-start;flex-direction:column;gap:5px}.rw-resume-list strong{white-space:normal}.rw-submission-context{align-items:flex-start;flex-direction:column;gap:10px}}
+@media(max-width:520px){.rw-student-workspace .rw-header h1{font-size:30px}.rw-student-workspace .rw-header p{font-size:14px}.rw-student-workspace .rw-header>.rw-secondary{margin-top:15px}.rw-submit-top{flex-direction:column;gap:0}.rw-submit-top>.rw-secondary{margin-bottom:16px}.rw-submit-picker-list article strong{font-size:15px}.rw-resume-panel{padding:18px}.rw-picker-panel{padding:20px}.rw-submit{padding:20px}}

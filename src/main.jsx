@@ -65,6 +65,7 @@ import { FooterDetailModal, getFooterModalContent } from './components/FooterDet
 import { VipUpgradeModal } from './components/VipUpgradeModal';
 import { apiService } from './services/api';
 import { Header } from './components/Header';
+import HelpAssistant from './components/HelpAssistant';
 import { AuthPage } from './pages/AuthPage';
 const ReviewWorkspace = lazy(async () => {
   try {
@@ -1444,7 +1445,9 @@ function App() {
       setSelectedChallengeId(challengeList.find(item => item.majorKey === majorKey)?.id ?? '');
     }
     if (navigate) {
-      setPage(type === 'student' ? 'roadmap' : type);
+      const returnToSubmit = type === 'student' && window.sessionStorage.getItem('rw:returnToSubmit') === '1';
+      window.sessionStorage.removeItem('rw:returnToSubmit');
+      setPage(returnToSubmit ? 'submit' : type === 'student' ? 'roadmap' : type);
       window.scrollTo(0, 0);
     }
   };
@@ -1821,13 +1824,14 @@ function App() {
           <AuthPage
             authMode={authMode}
             initialRole={signupRole}
+            resumeSubmission={window.sessionStorage.getItem('rw:returnToSubmit') === '1'}
             setAuthMode={setAuthMode}
             onAuthenticated={(data) => { applyAuthenticatedUser(data); loadBootstrap(); }}
             onOpenPolicy={(key) => setFooterModalData(getFooterModalContent(key))}
             go={go}
           />
         )}
-        {['hub', 'join', 'submit', 'feedback', 'submissionHistory', 'mentor'].includes(page) && <Suspense fallback={<p className="status-banner" role="status">Đang mở không gian thực hành…</p>}><ReviewWorkspace key={currentUser?.user?.id ?? 'guest'} currentUser={currentUser} go={go} onOpenPolicy={(key) => setFooterModalData(getFooterModalContent(key))} initialTab={['feedback', 'submissionHistory'].includes(page) ? 'submissions' : page === 'mentor' ? 'queue' : 'catalog'} initialChallengeId={['join', 'submit'].includes(page) ? selectedChallengeId : undefined} /></Suspense>}
+        {['hub', 'join', 'submit', 'feedback', 'submissionHistory', 'mentor'].includes(page) && <Suspense fallback={<p className="status-banner" role="status">Đang mở không gian thực hành…</p>}><ReviewWorkspace key={currentUser?.user?.id ?? 'guest'} currentUser={currentUser} go={go} onOpenPolicy={(key) => setFooterModalData(getFooterModalContent(key))} initialTab={['feedback', 'submissionHistory'].includes(page) ? 'submissions' : page === 'mentor' ? 'queue' : page === 'submit' ? 'submit' : 'catalog'} initialChallengeId={page === 'join' ? selectedChallengeId : undefined} /></Suspense>}
         {page === 'learning' && <LearningPage go={go} />}
         {page === 'roadmap' && (
           <CareerMapPage
@@ -1891,6 +1895,7 @@ function App() {
         )}
         {page === 'admin' && <Suspense fallback={<p className="status-banner" role="status">Đang mở bảng quản trị…</p>}><ReviewWorkspace currentUser={currentUser} go={go} onOpenPolicy={(key) => setFooterModalData(getFooterModalContent(key))} initialTab='applications' /></Suspense>}
       </main>
+      <HelpAssistant go={go} currentUser={currentUser} />
     </div>
   );
 }
