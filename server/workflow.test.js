@@ -45,7 +45,7 @@ function model(uniqueFields = []) {
 }
 const models = { UserProfile: model(['id']), MentorAccount: model(['id']), AdminAccount: model(['id']), ReviewerProfile: model(['mentorId']), ReviewSubmission: model(['userId', 'challengeId']), SubscriptionOrder: model(['orderId']), PremiumPlan: model(['id']) };
 let server, base;
-const actors = { student: { id: 'student', role: 'student' }, free: { id: 'free', role: 'student' }, stranger: { id: 'stranger', role: 'student' }, mentor: { id: 'mentor', role: 'mentor' }, other: { id: 'other', role: 'mentor' }, admin: { id: 'admin', role: 'admin' } };
+const actors = { student: { id: 'student', role: 'student' }, free: { id: 'free', role: 'student' }, stranger: { id: 'stranger', role: 'student' }, mentor: { id: 'mentor', role: 'mentor' }, other: { id: 'other', role: 'mentor' }, newMentor: { id: 'new-mentor', role: 'mentor' }, admin: { id: 'admin', role: 'admin' } };
 before(async () => {
   for (const id of ['student', 'free', 'stranger']) await models.UserProfile.create({ id, name: id, status: 'active', isPremium: id !== 'free', subscriptionExpiresAt: new Date(Date.now() + 86400000) });
   for (const id of ['mentor', 'other']) {
@@ -194,7 +194,14 @@ test('premium renewals extend the active term and re-verifying an order is idemp
 
 test('mentor approval moves the account into the eligible state and cannot be decided twice', async () => {
   await models.MentorAccount.create({ id: 'new-mentor', name: 'Ngọc Mentor', status: 'active', expertise: ['React'] });
-  await models.ReviewerProfile.create({ mentorId: 'new-mentor', available: true, capacity: 5, challengeIds: CHALLENGES.map(item => item.id), application: { status: 'pending', method: 'cv', submittedAt: new Date() } });
+  await models.ReviewerProfile.create({ mentorId: 'new-mentor', available: true, capacity: 5, challengeIds: CHALLENGES.map(item => item.id), application: { status: 'pending' } });
+  const beforeSubmission = await request('/state', 'admin');
+  assert.ok(beforeSubmission.data.unsubmittedMentors.some(item => item.mentorId === 'new-mentor'));
+  assert.ok(!beforeSubmission.data.applications.some(item => item.mentorId === 'new-mentor'));
+  assert.equal((await request('/admin/mentors/new-mentor', 'admin', { status: 'approved', reason: 'Hồ sơ và chuyên môn đáp ứng tiêu chí review.' }, 'PATCH')).status, 404);
+  const application = await request('/mentor/application', 'newMentor', { method: 'cv', profileUrl: 'https://example.com/cv', notes: 'Hồ sơ ghi rõ kinh nghiệm React, dự án đã làm và nội dung có thể hướng dẫn.' });
+  assert.equal(application.status, 200);
+  assert.ok(application.data.profile.application.submittedAt);
   const result = await request('/admin/mentors/new-mentor', 'admin', { status: 'approved', reason: 'Hồ sơ và chuyên môn đáp ứng tiêu chí review.' }, 'PATCH');
   assert.equal(result.status, 200); assert.equal(result.data.profile.application.status, 'approved');
   assert.equal((await models.MentorAccount.findOne({ id: 'new-mentor' }).lean()).status, 'active');

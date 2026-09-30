@@ -4,7 +4,7 @@ export const MENTOR_AGREEMENT = [
   {
     title: '1. Chủ thể, phạm vi và hiệu lực',
     paragraphs: [
-      'Thỏa thuận này áp dụng giữa người vận hành nền tảng Portfolio FPT Hub (dự án EXE301, liên hệ tại portfolio.exe@gmail.com) và cá nhân đăng ký vai trò Mentor bằng tài khoản có email xác thực. Mentor xác nhận đã đọc và chấp thuận phiên bản thỏa thuận được hiển thị tại thời điểm đăng ký hoặc chấp thuận lại.',
+      'Thỏa thuận này áp dụng giữa người vận hành nền tảng BeeLearn (dự án EXE301, liên hệ tại portfolio.exe@gmail.com) và cá nhân đăng ký vai trò Mentor bằng tài khoản có email xác thực. Mentor xác nhận đã đọc và chấp thuận phiên bản thỏa thuận được hiển thị tại thời điểm đăng ký hoặc chấp thuận lại.',
       'Việc chấp thuận cho phép nộp hồ sơ xét duyệt; Mentor chỉ được nhận bài sau khi Admin phê duyệt hồ sơ chuyên môn và bật trạng thái sẵn sàng. Mỗi bài được giao là một công việc review riêng theo phạm vi, tiêu chí và trạng thái hiển thị trên nền tảng. Việc đăng ký không bảo đảm có số lượng bài tối thiểu.'
     ]
   },

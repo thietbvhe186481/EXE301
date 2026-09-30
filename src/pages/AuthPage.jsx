@@ -156,7 +156,7 @@ export function AuthPage({ authMode = 'login', initialRole = 'student', resumeSu
     <aside className="pf-auth-story">
       <button className="pf-auth-home" type="button" onClick={() => go('home')}><ArrowLeft size={16} /> Về trang chủ</button>
       <div className="pf-auth-story-main">
-        <span className="pf-auth-eyebrow"><span /> PORTFOLIO FPT HUB</span>
+        <span className="pf-auth-eyebrow"><span /> BEELEARN</span>
         <h1>Năng lực thật.<br /><em>Cơ hội mới.</em></h1>
         <p>Mỗi dự án là một bước tiến. Cùng xây dựng hồ sơ năng lực kể được câu chuyện của bạn.</p>
         <ol className="pf-auth-roadmap">
@@ -170,7 +170,7 @@ export function AuthPage({ authMode = 'login', initialRole = 'student', resumeSu
 
     <div className="pf-auth-form-panel">
       {!apiService.isConfigured && <div className="pf-auth-server-notice" role="status"><b>Đăng nhập/đăng ký hiện chưa khả dụng.</b><span>Tạm thời chưa thể kết nối để đăng nhập. Vui lòng thử lại sau.</span></div>}
-      <div className="pf-auth-mode-nav"><span>{signup ? 'Đã có tài khoản?' : 'Mới đến Portfolio FPT Hub?'}</span><button type="button" disabled={busy} onClick={switchMode}>{signup ? 'Đăng nhập' : 'Tạo tài khoản'} <ArrowRight size={15} /></button></div>
+      <div className="pf-auth-mode-nav"><span>{signup ? 'Đã có tài khoản?' : 'Mới đến BeeLearn?'}</span><button type="button" disabled={busy} onClick={switchMode}>{signup ? 'Đăng nhập' : 'Tạo tài khoản'} <ArrowRight size={15} /></button></div>
       <div className="pf-auth-form-wrap">
         {resumeSubmission && <div className="pf-auth-server-notice" role="status"><b>Tiếp tục nộp bài</b><span>Đăng nhập hoặc tạo tài khoản Sinh viên. Bạn sẽ quay lại màn Nộp bài sau khi xác thực.</span></div>}
         <header className="pf-auth-heading">
@@ -211,7 +211,7 @@ export function AuthPage({ authMode = 'login', initialRole = 'student', resumeSu
                 {input('yearsExperience', 'Số năm kinh nghiệm', { type: 'number', min: 0, max: 60, step: '1', placeholder: 'VD: 3' })}
                 {input('profileUrl', 'Đường dẫn hồ sơ chuyên môn', { type: 'url', placeholder: 'https://www.linkedin.com/in/...', maxLength: 500, hint: 'LinkedIn, GitHub, Behance hoặc website portfolio của bạn.' })}
               </> : input('school', 'Trường đang theo học', { placeholder: 'Nhập tên trường của bạn', autoComplete: 'organization', maxLength: 150 })}
-              <div className="pf-auth-consent"><label className="pf-auth-checkbox"><input id="pf-auth-acceptedTerms" type="checkbox" checked={values.acceptedTerms} onChange={event => update('acceptedTerms', event.target.checked)} aria-invalid={!!errors.acceptedTerms} aria-describedby={errors.acceptedTerms ? 'pf-auth-acceptedTerms-error' : undefined} /><span>Tôi đồng ý với <button type="button" onClick={() => onOpenPolicy('terms')}>Điều khoản sử dụng</button> và <button type="button" onClick={() => onOpenPolicy('privacy')}>Chính sách bảo mật</button> của Portfolio FPT Hub.</span></label>{errors.acceptedTerms && <span className="pf-auth-field-error" id="pf-auth-acceptedTerms-error">{errors.acceptedTerms}</span>}</div>
+              <div className="pf-auth-consent"><label className="pf-auth-checkbox"><input id="pf-auth-acceptedTerms" type="checkbox" checked={values.acceptedTerms} onChange={event => update('acceptedTerms', event.target.checked)} aria-invalid={!!errors.acceptedTerms} aria-describedby={errors.acceptedTerms ? 'pf-auth-acceptedTerms-error' : undefined} /><span>Tôi đồng ý với <button type="button" onClick={() => onOpenPolicy('terms')}>Điều khoản sử dụng</button> và <button type="button" onClick={() => onOpenPolicy('privacy')}>Chính sách bảo mật</button> của BeeLearn.</span></label>{errors.acceptedTerms && <span className="pf-auth-field-error" id="pf-auth-acceptedTerms-error">{errors.acceptedTerms}</span>}</div>
               {mentor && <div className="pf-auth-consent"><label className="pf-auth-checkbox"><input id="pf-auth-acceptedMentorAgreement" type="checkbox" checked={values.acceptedMentorAgreement} onChange={event => update('acceptedMentorAgreement', event.target.checked)} aria-invalid={!!errors.acceptedMentorAgreement} aria-describedby={errors.acceptedMentorAgreement ? 'pf-auth-acceptedMentorAgreement-error' : undefined} /><span>Tôi đã đọc và chấp thuận <button type="button" onClick={() => onOpenPolicy('mentor-agreement')}>Thỏa thuận cộng tác Mentor</button>, gồm quyền lợi, trách nhiệm và cách đối soát thù lao.</span></label>{errors.acceptedMentorAgreement && <span className="pf-auth-field-error" id="pf-auth-acceptedMentorAgreement-error">{errors.acceptedMentorAgreement}</span>}</div>}
             </>}
             <button type="submit" className="pf-auth-submit">{busy ? <><LoaderCircle size={19} className="pf-auth-spinner" />{signup ? 'Đang tạo tài khoản…' : 'Đang đăng nhập…'}</> : <>{signup ? step === 1 ? 'Tiếp tục' : `Tạo tài khoản ${mentor ? 'mentor' : 'sinh viên'}` : 'Đăng nhập'}<ArrowRight size={18} /></>}</button>

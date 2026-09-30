@@ -94,7 +94,7 @@ export function augmentSeedData(seed) {
 
   upsertById(adminAccounts, {
     id: 'admin-demo',
-    name: 'Portfolio Admin',
+    name: 'Quản trị BeeLearn',
     email: 'admin@portfolio.vn',
     password: 'admin123',
     role: 'admin',

@@ -48,8 +48,22 @@ const regenerate = req => new Promise((resolve, reject) => req.session.regenerat
 const saveSession = req => new Promise((resolve, reject) => req.session.save(err => err ? reject(err) : resolve()));
 
 // Models are injected so the same HTTP routes can be tested without a live database.
-export function createAuthRouter({ UserProfile, MentorAccount, AdminAccount, sendVerificationEmail = deliverVerificationEmail, verificationRequired = process.env.EMAIL_VERIFICATION_REQUIRED === '1' || (process.env.NODE_ENV === 'production' && process.env.EMAIL_VERIFICATION_REQUIRED !== '0') }) {
+export function createAuthRouter({ UserProfile, MentorAccount, AdminAccount, ReviewerProfile, sendVerificationEmail = deliverVerificationEmail, verificationRequired = process.env.EMAIL_VERIFICATION_REQUIRED === '1' || (process.env.NODE_ENV === 'production' && process.env.EMAIL_VERIFICATION_REQUIRED !== '0') }) {
   const router = Router();
+  const queueMentorProfile = async account => {
+    if (!ReviewerProfile || !account?.profileUrl) return;
+    try {
+      const existing = await ReviewerProfile.findOne({ mentorId: account.id }).lean();
+      if (existing?.application?.submittedAt || ['approved', 'suspended'].includes(existing?.application?.status)) return;
+      const notes = `Hồ sơ đăng ký: ${account.title || 'Mentor'} tại ${account.company || 'đơn vị chưa cập nhật'}; ${account.yearsExperience || 0} năm kinh nghiệm. Chuyên môn: ${(account.expertise || []).join(', ') || 'chưa cập nhật'}.${account.bio ? ` ${account.bio}` : ''}`;
+      await ReviewerProfile.findOneAndUpdate({ mentorId: account.id }, {
+        $set: { application: { method: 'cv', profileUrl: account.profileUrl, notes, status: 'pending', submittedAt: new Date(), reason: '' } },
+        $setOnInsert: { mentorId: account.id, challengeIds: [], capacity: 5, available: true }
+      }, { upsert: true, new: true, runValidators: true });
+    } catch (error) {
+      console.error('[mentor-registration] Could not queue verified mentor profile', { name: error?.name, code: error?.code });
+    }
+  };
   const failedLoginAttempts = new Map();
   const resetRequests = new Map();
   const loginWindowMs = 15 * 60 * 1000;
@@ -133,6 +147,7 @@ export function createAuthRouter({ UserProfile, MentorAccount, AdminAccount, sen
         catch (error) { await model.deleteOne?.({ id: found.account.id }); throw error; }
         return res.status(202).json({ verificationRequired: true, email: found.account.email, message: 'Mã xác thực 6 số đã được gửi tới email của bạn. Mã có hiệu lực trong 10 phút.' });
       }
+      if (found.type === 'mentor') await queueMentorProfile(found.account);
       res.status(201).json(await authenticate(req, found));
     } catch (error) { next(error); }
   });
@@ -153,6 +168,7 @@ export function createAuthRouter({ UserProfile, MentorAccount, AdminAccount, sen
       }
       await found.model.updateOne({ id: account.id }, { $set: { emailVerified: true, ...(account.status === 'unverified' ? { status: 'active' } : {}), emailVerifiedAt: new Date() }, $unset: { verificationCodeHash: 1, verificationExpiresAt: 1, verificationAttempts: 1, verificationSentAt: 1 } });
       const refreshed = await findAccount(account.email);
+      if (refreshed?.type === 'mentor') await queueMentorProfile(refreshed.account);
       res.json(await authenticate(req, refreshed, payload.rememberMe));
     } catch (error) { next(error); }
   });
@@ -290,7 +306,7 @@ export async function deliverVerificationEmail(address, code, name, purpose = 'a
   const response = await fetch('https://api.resend.com/emails', {
     method: 'POST', signal: AbortSignal.timeout(10_000),
     headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ from, to: [address], subject: purpose === 'payment' ? 'Mã xác nhận thanh toán Portfolio FPT Hub' : purpose === 'password-reset' ? 'Mã đặt lại mật khẩu Portfolio FPT Hub' : 'Mã xác thực tài khoản Portfolio FPT Hub', text: `Xin chào ${name}, mã ${purpose === 'payment' ? 'xác nhận thanh toán' : purpose === 'password-reset' ? 'đặt lại mật khẩu' : 'xác thực tài khoản'} của bạn là ${code}. Mã có hiệu lực trong 10 phút. Nếu bạn không thực hiện thao tác này, hãy bỏ qua email và kiểm tra tài khoản của mình.` })
+    body: JSON.stringify({ from, to: [address], subject: purpose === 'payment' ? 'Mã xác nhận thanh toán BeeLearn' : purpose === 'password-reset' ? 'Mã đặt lại mật khẩu BeeLearn' : 'Mã xác thực tài khoản BeeLearn', text: `Xin chào ${name}, mã ${purpose === 'payment' ? 'xác nhận thanh toán' : purpose === 'password-reset' ? 'đặt lại mật khẩu' : 'xác thực tài khoản'} của bạn là ${code}. Mã có hiệu lực trong 10 phút. Nếu bạn không thực hiện thao tác này, hãy bỏ qua email và kiểm tra tài khoản của mình.` })
   });
   if (!response.ok) throw new Error(`Email provider returned ${response.status}`);
 }

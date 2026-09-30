@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowRight, FileText, Rocket } from 'lucide-react';
+import { ArrowRight, FileText } from 'lucide-react';
 
 export function PortfolioFooter({ go, onOpenUpgrade, onOpenFooterModal, onRegisterMentor }) {
   return (
@@ -31,12 +31,9 @@ export function PortfolioFooter({ go, onOpenUpgrade, onOpenFooterModal, onRegist
           {/* Brand Column */}
           <div className="jr-footer-brand-wrap">
             <div className="jr-footer-logo-line">
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
-                <Rocket size={24} color="#f59e0b" />
-                <span className="jr-footer-logo-text">Portfolio</span>
-                <span style={{ background: '#0284c7', color: '#fff', padding: '2px 8px', borderRadius: '6px', fontSize: '11px', fontWeight: 800, letterSpacing: '0.5px' }}>
-                  FPT HUB
-                </span>
+              <span className="beelearn-footer-brand">
+                <img src={`${import.meta.env.BASE_URL}beelearn-brand.png`} alt="" />
+                <span className="jr-footer-logo-text">BeeLearn</span>
               </span>
             </div>
             <p className="jr-footer-tagline">
@@ -62,7 +59,7 @@ export function PortfolioFooter({ go, onOpenUpgrade, onOpenFooterModal, onRegist
           <div className="jr-footer-col">
             <h4>Về Chúng Tôi</h4>
             <ul className="jr-footer-links-list">
-              <li><button type="button" className="jr-footer-link-btn" onClick={() => onOpenFooterModal('about')}>Giới thiệu Portfolio</button></li>
+              <li><button type="button" className="jr-footer-link-btn" onClick={() => onOpenFooterModal('about')}>Giới thiệu BeeLearn</button></li>
               <li><button type="button" className="jr-footer-link-btn" onClick={() => onOpenFooterModal('contact')}>Thông tin liên hệ</button></li>
               <li><button type="button" className="jr-footer-link-btn" onClick={() => onOpenFooterModal('terms')}>Điều khoản sử dụng</button></li>
               <li><button type="button" className="jr-footer-link-btn" onClick={() => onOpenFooterModal('privacy')}>Chính sách bảo mật</button></li>
@@ -98,7 +95,7 @@ export function PortfolioFooter({ go, onOpenUpgrade, onOpenFooterModal, onRegist
         {/* BOTTOM COPYRIGHT */}
         <div className="jr-footer-bottom">
           <div>
-            © 2026 Portfolio FPT HUB. Tất cả các quyền được bảo lưu.
+            © 2026 BeeLearn. Tất cả các quyền được bảo lưu.
           </div>
           <div>
             Dự án nghiên cứu & khởi nghiệp của nhóm sinh viên <b>EXE301 - Đại học FPT</b>

@@ -110,7 +110,7 @@ export function AboutPage({ go, onOpenUpgrade, onOpenFooterModal, currentUser })
     <section className="content-page about-company-page">
       <div className="section-heading inline">
         <div>
-          <p className="mono-label">PORTFOLIO FPT HUB</p>
+          <p className="mono-label">BEELEARN</p>
           <h1>Biến kỹ năng thành sản phẩm có thể trình bày.</h1>
           <p>Chọn một thử thách vừa sức, hoàn thiện sản phẩm theo yêu cầu rõ ràng, rồi nhận góp ý để biết bước tiếp theo cần làm.</p>
         </div>
@@ -140,7 +140,7 @@ export function AboutPage({ go, onOpenUpgrade, onOpenFooterModal, currentUser })
       </article>
 
       <article className="about-block">
-        <div className="block-header"><BookOpen size={22} /><div><h2>Nguồn học liệu tham khảo</h2><p>Liên kết đến trang công khai của đơn vị cung cấp; Portfolio FPT Hub không đại diện hoặc tuyên bố hợp tác với các đơn vị này.</p></div></div>
+        <div className="block-header"><BookOpen size={22} /><div><h2>Nguồn học liệu tham khảo</h2><p>Liên kết đến trang công khai của đơn vị cung cấp; BeeLearn không đại diện hoặc tuyên bố hợp tác với các đơn vị này.</p></div></div>
         <div className="learning-source-list">
           {learningSources.map(resource => (
             <a className="learning-source-card" href={resource.url} target="_blank" rel="noreferrer" key={resource.id}>
@@ -183,9 +183,9 @@ export function AboutPage({ go, onOpenUpgrade, onOpenFooterModal, currentUser })
       </article>
 
       <footer className="company-footer">
-        <div className="footer-brand"><span className="brand-mark"><Rocket size={20} color="#0284c7" /></span><div><h2>Portfolio FPT Hub</h2><p>Biến kỹ năng hôm nay thành cơ hội ngày mai.</p></div></div>
+        <div className="footer-brand"><img className="beelearn-about-mark" src={`${import.meta.env.BASE_URL}beelearn-brand.png`} alt="" /><div><h2>BeeLearn</h2><p>Biến kỹ năng hôm nay thành cơ hội ngày mai.</p></div></div>
         <div className="footer-grid">
-          <div><p className="mono-label">Dự án</p><strong>Portfolio FPT Hub</strong><span>Nền tảng thực hành và nhận phản hồi nghề nghiệp.</span></div>
+          <div><p className="mono-label">Dự án</p><strong>BeeLearn</strong><span>Nền tảng thực hành và nhận phản hồi nghề nghiệp.</span></div>
           <div><p className="mono-label">Liên hệ</p><a href="mailto:portfolio.exe@gmail.com">portfolio.exe@gmail.com</a><span>Gửi câu hỏi qua email nếu bạn cần hỗ trợ.</span></div>
           <div><p className="mono-label">Sản phẩm</p><button type="button" onClick={() => go('roadmap')}>Bản đồ nghề</button><button type="button" onClick={() => go('hub')}>Thử thách portfolio</button><button type="button" onClick={onOpenUpgrade}>Gói Premium</button></div>
           <div><p className="mono-label">Pháp lý & quy chuẩn</p><button type="button" onClick={() => onOpenFooterModal?.('terms')}>Điều khoản dịch vụ</button><button type="button" onClick={() => onOpenFooterModal?.('privacy')}>Chính sách bảo mật</button><button type="button" onClick={() => onOpenFooterModal?.('mentor-rubric')}>Quy chuẩn Mentor Review</button></div>

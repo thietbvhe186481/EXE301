@@ -10407,6 +10407,13 @@ body:has(.feedback-dashboard-page) main {
 /* Clear, compact navigation and honest source-linked learning catalogue. */
 .hub-topbar { gap: 12px !important; }
 .hub-brand-name { color: #102d40; font-size: 18px; font-weight: 850; letter-spacing: -.55px; }
+.beelearn-header-brand{display:inline-flex;align-items:center;gap:8px;white-space:nowrap}
+.beelearn-header-mark{display:block;width:40px;height:40px;flex:none;overflow:hidden;border-radius:11px;background:#fff8e8}
+.beelearn-header-mark img{display:block;width:88px;max-width:none;height:88px;transform:translate(-24px,-12px)}
+.beelearn-header-brand .hub-brand-name{font-size:21px;letter-spacing:-.05em;color:#174aa1}
+.beelearn-footer-brand{display:inline-flex;align-items:center;gap:12px}
+.beelearn-footer-brand img{width:54px;height:54px;object-fit:cover;border-radius:14px;background:#fff8e8}
+.beelearn-about-mark{width:56px;height:56px;object-fit:cover;border-radius:14px;background:#fff8e8}
 .hub-brand-tag { padding: 3px 8px; border-radius: 999px; background: #dff3ff; color: #0369a1; font-size: 10px; font-weight: 800; letter-spacing: .35px; }
 .hub-primary-nav { gap: 3px !important; padding-inline: 0 !important; }
 .flow-nav.role-nav.hub-primary-nav { overflow: visible !important; }

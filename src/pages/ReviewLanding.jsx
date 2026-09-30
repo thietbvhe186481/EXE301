@@ -16,6 +16,6 @@ export default function ReviewLanding({ go, onSignup, onOpenPolicy, onSelectChal
       ['Bài của tôi có tự động chia sẻ với mentor khác không?', 'Không. Mục Sinh viên nổi trội chỉ hiển thị bài đạt từ 85 điểm khi bạn chủ động đồng ý. Bạn có thể thu hồi quyền chia sẻ ở Bài của tôi.'],
       ['AI và mentor thật khác nhau thế nào?', 'Kiểm tra thông tin nộp dùng quy tắc. Khi dịch vụ AI khả dụng và bạn đồng ý, AI đối chiếu trích đoạn bài làm bạn dán với tiêu chí để cho điểm tham khảo; AI không mở link hoặc chạy mã. Mentor thật xem minh chứng và đánh giá chuyên môn được xác nhận.']
     ].map(([q, a]) => <details key={q}><summary>{q}</summary><p>{a}</p></details>)}</section>
-    <footer className="rw-footer"><ShieldCheck size={18} /><span>Portfolio FPT Hub · Thực hành có minh chứng, phát triển có định hướng.</span>{onOpenPolicy && <button className="rw-text-button" onClick={() => onOpenPolicy('privacy')}>Chính sách bảo mật</button>}</footer>
+    <footer className="rw-footer"><ShieldCheck size={18} /><span>BeeLearn · Thực hành có minh chứng, phát triển có định hướng.</span>{onOpenPolicy && <button className="rw-text-button" onClick={() => onOpenPolicy('privacy')}>Chính sách bảo mật</button>}</footer>
   </main>;
 }

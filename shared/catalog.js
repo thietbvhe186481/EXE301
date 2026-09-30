@@ -48,7 +48,7 @@ const make = (id, title, majorKey, level, summary, requirements, criteria) => ({
   id, title, majorKey, level, access: level === 'advanced' ? 'premium' : 'free',
   levelDescription: LEVEL_GUIDANCE[level], learningOutcome: OUTCOMES[majorKey][level],
   summary, requirements, estimatedHours: { beginner: 4, intermediate: 8, advanced: 16 }[level],
-  source: { ...sources[majorKey], note: 'Bài thực hành do Portfolio FPT Hub biên soạn theo chủ đề của khóa học; không phải đề thi chính thức hoặc chứng chỉ của đơn vị nguồn.' },
+  source: { ...sources[majorKey], note: 'Bài thực hành do BeeLearn biên soạn theo chủ đề của khóa học; không phải đề thi chính thức hoặc chứng chỉ của đơn vị nguồn.' },
   rubric: criteria.map(([key, label, weight]) => ({ key, label, weight,
     expectation: `Chỉ ra cách bài làm đáp ứng “${label.toLocaleLowerCase('vi')}” và dẫn tới minh chứng cụ thể trong sản phẩm.`,
     anchors: {
@@ -130,7 +130,7 @@ const sourceBySpecialization = {
   accessibility: sources.design,
   'design-system': sources.design
 };
-const sourceNote = 'Bài thực hành do Portfolio FPT Hub tự biên soạn theo chủ đề; liên kết dẫn tới khóa học tham khảo, không phải đề thi hoặc chứng chỉ của đơn vị nguồn.';
+const sourceNote = 'Bài thực hành do BeeLearn tự biên soạn theo chủ đề; liên kết dẫn tới khóa học tham khảo, không phải đề thi hoặc chứng chỉ của đơn vị nguồn.';
 const existingDetails = {
   'practice-dev-profile': ['frontend', 5, 'Trang portfolio chạy trên di động và máy tính, có liên kết tới dự án thật cùng README tái hiện được.'],
   'practice-dev-dashboard': ['frontend', 10, 'Dashboard React có tìm kiếm, lọc và ba trạng thái tải/rỗng/lỗi kèm ca kiểm thử.'],

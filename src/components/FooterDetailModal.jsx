@@ -13,15 +13,15 @@ export function getFooterModalContent(key) {
   if (key === 'about') {
     return {
       category: 'Về chúng tôi',
-      title: 'Giới Thiệu Nền Tảng Portfolio FPT HUB',
+      title: 'Giới Thiệu Nền Tảng BeeLearn',
       subtitle: 'Dự án khởi nghiệp công nghệ giáo dục từ nhóm sinh viên EXE301 - Đại học FPT',
       body: (
         <div>
           <p style={{ lineHeight: 1.6 }}>
-            <b>Portfolio FPT HUB</b> là nền tảng định hướng nghề nghiệp thực chiến và xây dựng hồ sơ năng lực dành cho sinh viên công nghệ thông tin, marketing và thiết kế đồ họa.
+            <b>BeeLearn</b> là nền tảng định hướng nghề nghiệp thực chiến và xây dựng hồ sơ năng lực dành cho sinh viên công nghệ thông tin, marketing và thiết kế đồ họa.
           </p>
           <div className="footer-rubric-box">
-             <h4><Rocket size={17} /> Vì sao có Portfolio FPT Hub?</h4>
+             <h4><Rocket size={17} /> Vì sao có BeeLearn?</h4>
              <p style={{ margin: 0, fontSize: '13.5px', lineHeight: 1.6 }}>
                Nhiều sinh viên đã học kỹ năng mới nhưng còn thiếu sản phẩm để cho người khác xem và góp ý. Nền tảng giúp bạn chọn bài thực hành, lưu minh chứng và cải thiện bài làm qua phản hồi cụ thể.
              </p>
@@ -51,14 +51,14 @@ export function getFooterModalContent(key) {
   if (key === 'terms') {
     return {
       category: 'Pháp lý',
-      title: 'Điều Khoản Dịch Vụ Portfolio FPT Hub',
+      title: 'Điều Khoản Dịch Vụ BeeLearn',
       subtitle: 'Dành cho sinh viên và mentor · Cập nhật ngày 26/09/2026',
       body: (
         <div style={{ fontSize: '13.5px', lineHeight: 1.6 }}>
           <div className="footer-rubric-box">
             <h4><ShieldCheck size={17} /> 1. Chấp thuận điều khoản & luật áp dụng</h4>
             <p style={{ margin: 0 }}>
-              Khi đăng ký tài khoản và xác nhận đồng ý, bạn chấp thuận các Điều khoản dịch vụ này. Khi sử dụng Portfolio FPT Hub, bạn có trách nhiệm tuân thủ các quy định sử dụng được công bố. Hoạt động của nền tảng được điều chỉnh và diễn giải theo pháp luật nước Cộng hòa Xã hội Chủ nghĩa Việt Nam, bao gồm các quy định hiện hành về an ninh mạng, bảo vệ dữ liệu cá nhân, sở hữu trí tuệ và bảo vệ quyền lợi người tiêu dùng. Việc xử lý dữ liệu cần sự đồng ý riêng sẽ được thực hiện theo yêu cầu của pháp luật, không mặc nhiên suy ra từ việc tiếp tục sử dụng dịch vụ.
+              Khi đăng ký tài khoản và xác nhận đồng ý, bạn chấp thuận các Điều khoản dịch vụ này. Khi sử dụng BeeLearn, bạn có trách nhiệm tuân thủ các quy định sử dụng được công bố. Hoạt động của nền tảng được điều chỉnh và diễn giải theo pháp luật nước Cộng hòa Xã hội Chủ nghĩa Việt Nam, bao gồm các quy định hiện hành về an ninh mạng, bảo vệ dữ liệu cá nhân, sở hữu trí tuệ và bảo vệ quyền lợi người tiêu dùng. Việc xử lý dữ liệu cần sự đồng ý riêng sẽ được thực hiện theo yêu cầu của pháp luật, không mặc nhiên suy ra từ việc tiếp tục sử dụng dịch vụ.
             </p>
           </div>
           <h4 style={{ margin: '18px 0 6px', fontSize: '14.5px' }}>2. Quy định dành cho sinh viên</h4>
@@ -68,13 +68,13 @@ export function getFooterModalContent(key) {
           <p>Mentor phải cung cấp thông tin trung thực về vị trí công việc, đơn vị công tác, chuyên môn, kinh nghiệm và đường dẫn hồ sơ nghề nghiệp. Việc tạo tài khoản không đồng nghĩa với việc chuyên môn đã được nền tảng chứng nhận hoặc được bảo đảm phân công bài. Ban quản trị có thể yêu cầu bổ sung minh chứng, xem xét phản ánh và hạn chế hoặc tạm ngừng tài khoản vi phạm, đồng thời thông báo lý do và tiếp nhận yêu cầu xem xét lại.</p>
           <p>Mentor có trách nhiệm nhận xét khách quan, hướng dẫn đúng chuyên môn, tôn trọng quyền tác giả và chỉ sử dụng thông tin bài nộp cho mục đích hỗ trợ người học. Không sao chép sản phẩm để khai thác riêng, tiết lộ thông tin sinh viên, lôi kéo thanh toán gian lận, quảng bá đa cấp bất hợp pháp hoặc cam kết chắc chắn kết quả tuyển dụng. Thời gian và phạm vi review áp dụng theo thông tin dịch vụ được xác nhận cụ thể với người dùng.</p>
           <h4 style={{ margin: '18px 0 6px', fontSize: '14.5px' }}>4. Liên kết và dịch vụ bên thứ ba</h4>
-          <p>Portfolio FPT Hub có thể hiển thị đường dẫn đến GitHub, GitLab, Figma, Behance, Google Drive, Coursera, LinkedIn hoặc website khác để phục vụ học tập và xem minh chứng. Các dịch vụ này có điều khoản, quyền truy cập và chính sách bảo mật riêng. Việc xuất hiện một liên kết không đồng nghĩa với quan hệ đối tác, sự xác thực hoặc bảo đảm của Portfolio FPT Hub đối với nội dung đó.</p>
+          <p>BeeLearn có thể hiển thị đường dẫn đến GitHub, GitLab, Figma, Behance, Google Drive, Coursera, LinkedIn hoặc website khác để phục vụ học tập và xem minh chứng. Các dịch vụ này có điều khoản, quyền truy cập và chính sách bảo mật riêng. Việc xuất hiện một liên kết không đồng nghĩa với quan hệ đối tác, sự xác thực hoặc bảo đảm của BeeLearn đối với nội dung đó.</p>
           <p>Nền tảng không kiểm soát nội dung hay hoạt động độc lập của bên thứ ba. Bạn cần kiểm tra địa chỉ, quyền chia sẻ và mức độ tin cậy trước khi cung cấp thông tin hoặc giao dịch; có thể báo liên kết có dấu hiệu vi phạm cho ban quản trị. Quy định này không loại trừ trách nhiệm mà pháp luật bắt buộc nền tảng phải thực hiện.</p>
           <h4 style={{ margin: '18px 0 6px', fontSize: '14.5px' }}>5. Phạm vi dịch vụ & giới hạn trách nhiệm</h4>
-          <p>Portfolio FPT Hub hỗ trợ định hướng, thực hành và trình bày năng lực; không bảo đảm người dùng sẽ được tuyển dụng, đạt mức thu nhập cụ thể hoặc được cấp chứng chỉ nghề nghiệp. Nhận xét của mentor, dữ liệu nghề nghiệp và kết quả kiểm tra tự động mang tính tham khảo, không thay thế đánh giá độc lập của nhà tuyển dụng hoặc chuyên gia. Quyền lợi Premium được áp dụng theo mô tả và điều kiện của gói được xác nhận khi đăng ký.</p>
+          <p>BeeLearn hỗ trợ định hướng, thực hành và trình bày năng lực; không bảo đảm người dùng sẽ được tuyển dụng, đạt mức thu nhập cụ thể hoặc được cấp chứng chỉ nghề nghiệp. Nhận xét của mentor, dữ liệu nghề nghiệp và kết quả kiểm tra tự động mang tính tham khảo, không thay thế đánh giá độc lập của nhà tuyển dụng hoặc chuyên gia. Quyền lợi Premium được áp dụng theo mô tả và điều kiện của gói được xác nhận khi đăng ký.</p>
           <p>Trong phạm vi pháp luật cho phép, nền tảng không bảo đảm dịch vụ luôn liên tục, không có lỗi hoặc mọi nội dung do người dùng và bên thứ ba cung cấp đều chính xác. Khi phát sinh tranh chấp hoặc thiệt hại, trách nhiệm được xác định theo hành vi, nghĩa vụ và mức độ liên quan của mỗi bên. Không điều khoản nào loại trừ nghĩa vụ bồi thường theo luật, quyền khiếu nại, khởi kiện hoặc các quyền hợp pháp khác của người dùng.</p>
           <h4 style={{ margin: '18px 0 6px', fontSize: '14.5px' }}>6. Quyền sở hữu trí tuệ</h4>
-          <p>Nội dung, thiết kế giao diện, logo và mã nguồn do đội ngũ Portfolio FPT Hub tự phát triển thuộc quyền của chủ sở hữu tương ứng; thư viện, học liệu và tài sản của bên thứ ba vẫn tuân theo giấy phép riêng. Không sao chép, phân phối hoặc sửa đổi tài sản của nền tảng khi chưa được phép, trừ trường hợp giấy phép hoặc pháp luật cho phép.</p>
+          <p>Nội dung, thiết kế giao diện, logo và mã nguồn do đội ngũ BeeLearn tự phát triển thuộc quyền của chủ sở hữu tương ứng; thư viện, học liệu và tài sản của bên thứ ba vẫn tuân theo giấy phép riêng. Không sao chép, phân phối hoặc sửa đổi tài sản của nền tảng khi chưa được phép, trừ trường hợp giấy phép hoặc pháp luật cho phép.</p>
           <p>Sinh viên và mentor giữ quyền đối với sản phẩm, mã nguồn, thiết kế, nội dung chiến dịch và nhận xét do mình tạo ra. Khi gửi nội dung, bạn cho phép nền tảng lưu trữ, xử lý và hiển thị trong phạm vi cần thiết để cung cấp chức năng bạn sử dụng. Việc dùng sản phẩm của bạn cho quảng cáo hoặc mục đích thương mại ngoài phạm vi đó cần thỏa thuận riêng; nền tảng không mặc nhiên nhận quyền sở hữu bài nộp.</p>
           <p><b>Liên hệ về điều khoản hoặc phản ánh vi phạm:</b> <a href="mailto:portfolio.exe@gmail.com">portfolio.exe@gmail.com</a>. Khi điều khoản thay đổi, ngày cập nhật sẽ được công bố; thay đổi cần sự chấp thuận mới sẽ được thông báo và xin xác nhận theo quy định áp dụng.</p>
         </div>
@@ -89,7 +89,7 @@ export function getFooterModalContent(key) {
       subtitle: 'Thông tin tài khoản, portfolio và bài nộp của sinh viên, mentor · Cập nhật ngày 26/09/2026',
       body: (
         <div style={{ fontSize: '13.5px', lineHeight: 1.6 }}>
-          <p>Chính sách này giải thích việc xử lý dữ liệu khi bạn sử dụng Portfolio FPT Hub. Chúng tôi tôn trọng quyền riêng tư của sinh viên và mentor, xử lý dữ liệu theo mục đích được thông báo và quy định bảo vệ dữ liệu cá nhân của Việt Nam.</p>
+          <p>Chính sách này giải thích việc xử lý dữ liệu khi bạn sử dụng BeeLearn. Chúng tôi tôn trọng quyền riêng tư của sinh viên và mentor, xử lý dữ liệu theo mục đích được thông báo và quy định bảo vệ dữ liệu cá nhân của Việt Nam.</p>
           <h4 style={{ margin: '18px 0 6px', fontSize: '14.5px' }}>1. Thông tin được thu thập</h4>
           <ul style={{ paddingLeft: '20px', lineHeight: 1.7 }}>
             <li><b>Tài khoản:</b> họ tên, email, vai trò, lĩnh vực quan tâm, mật khẩu dưới dạng băm và thông tin xác nhận đồng ý khi đăng ký.</li>
@@ -112,7 +112,7 @@ export function getFooterModalContent(key) {
           <h4 style={{ margin: '18px 0 6px', fontSize: '14.5px' }}>4. Chia sẻ thông tin và dịch vụ bên thứ ba</h4>
           <p>Bài nộp và thông tin liên quan được sử dụng để mentor thực hiện review và ban quản trị vận hành, hỗ trợ hoặc xử lý phản ánh. Nội dung bạn chủ động gửi làm đánh giá công khai có thể được hiển thị cùng thông tin bạn cung cấp. Chúng tôi không bán dữ liệu cá nhân cho đơn vị quảng cáo và không tự động gửi portfolio cho nhà tuyển dụng.</p>
           <p>Việc chia sẻ ngoài mục đích cung cấp dịch vụ cần có căn cứ pháp lý phù hợp, bao gồm sự đồng ý của bạn khi pháp luật yêu cầu hoặc yêu cầu hợp pháp của cơ quan có thẩm quyền. Nếu dùng nhà cung cấp hạ tầng để xử lý dữ liệu, việc xử lý phải giới hạn theo mục đích dịch vụ và nghĩa vụ bảo vệ dữ liệu tương ứng.</p>
-          <p>Các link GitHub, Figma, Google Drive hoặc LinkedIn chịu quyền chia sẻ do bạn thiết lập tại dịch vụ đó. Khi bạn chọn thanh toán qua payOS, cổng thanh toán nhận thông tin cần thiết để tạo và xác nhận đơn, gồm mã đơn, số tiền và nội dung chuyển khoản. Hãy đọc chính sách của dịch vụ liên quan; xóa tài khoản tại Portfolio FPT Hub không tự động xóa dữ liệu trên các dịch vụ bên ngoài.</p>
+          <p>Các link GitHub, Figma, Google Drive hoặc LinkedIn chịu quyền chia sẻ do bạn thiết lập tại dịch vụ đó. Khi bạn chọn thanh toán qua payOS, cổng thanh toán nhận thông tin cần thiết để tạo và xác nhận đơn, gồm mã đơn, số tiền và nội dung chuyển khoản. Hãy đọc chính sách của dịch vụ liên quan; xóa tài khoản tại BeeLearn không tự động xóa dữ liệu trên các dịch vụ bên ngoài.</p>
           <h4 style={{ margin: '18px 0 6px', fontSize: '14.5px' }}>5. Quyền kiểm soát và liên hệ</h4>
           <p>Bạn có thể xem, chỉnh sửa các thông tin được hỗ trợ trong hồ sơ và gửi yêu cầu truy cập, chỉnh sửa, xóa dữ liệu hoặc tài khoản, rút lại sự đồng ý, hạn chế hay phản đối xử lý dữ liệu theo quy định áp dụng. Hiện chưa có nút tự xóa tài khoản; vui lòng gửi yêu cầu đến <a href="mailto:portfolio.exe@gmail.com">portfolio.exe@gmail.com</a>, nêu email tài khoản và nội dung cần xử lý. Không gửi mật khẩu hoặc OTP.</p>
           <p>Chúng tôi có thể yêu cầu thông tin cần thiết để xác minh chủ tài khoản, phản hồi yêu cầu theo thời hạn pháp luật áp dụng và giải thích trường hợp chưa thể đáp ứng toàn bộ. Việc rút lại sự đồng ý hoặc xóa dữ liệu có thể ảnh hưởng đến chức năng cần dữ liệu đó, nhưng không làm mất các quyền hợp pháp của bạn. Các cập nhật của chính sách sẽ được ghi nhận bằng ngày công bố ở đầu văn bản.</p>
@@ -138,7 +138,7 @@ export function getFooterModalContent(key) {
     subtitle: 'Tìm hiểu các hồ sơ được sinh viên chủ động cho phép chia sẻ',
     body: (
       <div style={{ fontSize: '13.5px', lineHeight: 1.6 }}>
-        <p>Portfolio FPT Hub giúp sinh viên trình bày năng lực qua sản phẩm và minh chứng học tập:</p>
+        <p>BeeLearn giúp sinh viên trình bày năng lực qua sản phẩm và minh chứng học tập:</p>
         <ul style={{ paddingLeft: '20px', lineHeight: 1.7 }}>
           <li><b>Xem Portfolio có minh chứng thực:</b> Thay vì chỉ xem CV mô tả suông, nhà tuyển dụng được xem mã nguồn GitHub thật, bản vẽ Figma và video demo sản phẩm của ứng viên.</li>
           <li><b>Kỹ năng được chứng thực bởi Mentor:</b> Bài làm có thể kèm góp ý của mentor để người xem hiểu rõ hơn về quá trình thực hiện.</li>

@@ -41,7 +41,7 @@ export function createTestimonialsRouter({ StudentReview, UserProfile, ReviewSub
       studentId: student.id,
       challengeId: payload.challengeId,
       name: student.name,
-      school: student.school || 'Sinh viên Portfolio FPT Hub',
+      school: student.school || 'Sinh viên BeeLearn',
       major,
       roleTrack: challenge.track,
       rating: payload.rating,

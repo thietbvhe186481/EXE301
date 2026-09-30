@@ -510,7 +510,7 @@ const demoMentors = [
 const demoAdmins = [
   {
     id: 'admin-demo',
-    name: 'Portfolio Admin',
+    name: 'Quản trị BeeLearn',
     email: 'admin@portfolio.vn',
     role: 'admin',
     title: 'Platform Operations Manager',
@@ -2247,7 +2247,7 @@ function LearningPage({ go }) {
     <section className="content-page fpt-learning-page">
       <div className="learning-hero">
         <div>
-          <p className="mono-label">Portfolio FPT Hub · Học liệu</p>
+          <p className="mono-label">BeeLearn · Học liệu</p>
           <h1>Học từ nguồn tin cậy, luyện tập bằng dự án</h1>
           <p>Tìm học liệu công khai theo lĩnh vực và kỹ năng bạn muốn phát triển. Xem nguồn học phù hợp, rồi áp dụng kiến thức vào một thử thách thực hành.</p>
         </div>
@@ -2580,7 +2580,7 @@ function SubmitProjectPage({ challenge, currentMajor, joined, submission, mentor
                     </div>
                     <div className="mentor-facts">
                       <span><b>{matchedMentor.level ?? 'Senior Mentor'}</b> trình độ</span>
-                      <span><b>{matchedMentor.currentCompany ?? 'Portfolio Mentor Network'}</b> công ty</span>
+                      <span><b>{matchedMentor.currentCompany ?? 'Chưa cập nhật'}</b> · nơi làm việc</span>
                       <span><b>{matchedMentor.yearsOfExperience ?? 5}+ năm</b> kinh nghiệm</span>
                       <span><b>{matchedMentor.strongestField ?? challenge.track}</b> thế mạnh</span>
                     </div>
@@ -2848,7 +2848,7 @@ function MentorFeedbackPage({ go, challenge, submissions, feedbackList, challeng
             <button type="button">
               <span>
                 <i className="mono-label">{dualMode === 'ai' ? 'Trợ lý AI' : hasFeedback ? 'Mentor đã feedback' : 'Mentor phụ trách'}</i>
-                <strong>{dualMode === 'ai' ? 'Portfolio AI Evaluator' : reviewerName}</strong>
+                <strong>{dualMode === 'ai' ? 'Trợ lý chấm bài BeeLearn' : reviewerName}</strong>
               </span>
               {dualMode === 'ai' ? <Sparkles size={18} /> : <GraduationCap size={18} />}
             </button>
@@ -3229,7 +3229,7 @@ function PremiumPage({ plans, activeSubscription, onOpenQr, go }) {
     <section className="content-page premium-page">
       <div className="premium-hero">
         <div className="premium-hero-copy">
-          <p className="premium-eyebrow"><Crown size={17} /> PORTFOLIO PREMIUM</p>
+          <p className="premium-eyebrow"><Crown size={17} /> BEELEARN PREMIUM</p>
           <h1>Đầu tư vào bài làm.<br /><em>Nhận góp ý để làm tốt hơn.</em></h1>
           <p className="premium-hero-lead">Mở thêm thử thách theo chuyên ngành, gửi bài cho mentor đã được duyệt và xem nhận xét theo từng tiêu chí. Chọn thời hạn phù hợp với kế hoạch học của bạn.</p>
           <div className="premium-hero-actions">
@@ -3336,7 +3336,7 @@ function MentorPage({ apiStatus, data, currentUser, refreshData, createFeedback,
   const mentorProfile = data?.mentors?.find((item) => item.id === currentUser?.user?.id) ?? currentUser?.user ?? {};
   const [mentorProfileDraft, setMentorProfileDraft] = useState({
     title: mentorProfile.jobTitle ?? mentorProfile.level ?? 'Senior Mentor',
-    company: mentorProfile.currentCompany ?? 'Portfolio Mentor Network',
+    company: mentorProfile.currentCompany ?? 'Cộng đồng mentor BeeLearn',
     strongestField: mentorProfile.strongestField ?? 'Project Review',
     bio: mentorProfile.reviewStyle ?? 'Review theo yêu cầu, chất lượng trình bày và khả năng đưa vào portfolio.'
   });
@@ -3569,7 +3569,7 @@ function MentorPage({ apiStatus, data, currentUser, refreshData, createFeedback,
             <div className="admin-row">
               <div>
                 <strong>{mentorProfile.jobTitle ?? mentorProfile.level ?? 'Senior Mentor'}</strong>
-                <span>{mentorProfile.currentCompany ?? 'Portfolio Mentor Network'} · {mentorProfile.yearsOfExperience ?? 5}+ năm kinh nghiệm</span>
+                <span>{mentorProfile.currentCompany ?? 'Cộng đồng mentor BeeLearn'} · {mentorProfile.yearsOfExperience ?? 5}+ năm kinh nghiệm</span>
               </div>
             </div>
             <div className="tag-row">
@@ -4148,7 +4148,7 @@ function AdminPage({ apiStatus, data, notice, currentUser, refreshData, setAdmin
       <div className={`admin-grid compact workspace-section ${adminSection === 'profile' ? 'active' : ''}`} id="admin-profile">
         <article className="admin-panel">
            <p className="mono-label">TÀI KHOẢN QUẢN TRỊ</p>
-          <h2>{adminProfile.name ?? 'Portfolio Admin'}</h2>
+          <h2>{adminProfile.name ?? 'Quản trị BeeLearn'}</h2>
           <div className="admin-list">
             <div className="admin-row">
               <div>

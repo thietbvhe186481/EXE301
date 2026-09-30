@@ -23,12 +23,22 @@ const makeModel = () => {
   };
 };
 const UserProfile = makeModel(), MentorAccount = makeModel(), AdminAccount = makeModel();
+const ReviewerProfile = {
+  records: [],
+  findOne: ({ mentorId }) => ({ lean: async () => ReviewerProfile.records.find(item => item.mentorId === mentorId) || null }),
+  async findOneAndUpdate({ mentorId }, update) {
+    let item = ReviewerProfile.records.find(row => row.mentorId === mentorId);
+    if (!item) { item = { ...update.$setOnInsert }; ReviewerProfile.records.push(item); }
+    Object.assign(item, update.$set);
+    return item;
+  }
+};
 let server, base;
 before(async () => {
   const app = express();
   app.use(express.json());
   app.use(session({ name: 'portfolio.sid', secret: 'test-only-session-secret', resave: false, saveUninitialized: false }));
-  app.use('/api/auth', createAuthRouter({ UserProfile, MentorAccount, AdminAccount }));
+  app.use('/api/auth', createAuthRouter({ UserProfile, MentorAccount, AdminAccount, ReviewerProfile }));
   server = app.listen(0, '127.0.0.1');
   await new Promise(resolve => server.once('listening', resolve));
   base = `http://127.0.0.1:${server.address().port}/api/auth`;
@@ -76,6 +86,10 @@ test('mentor registration creates professional profile in mentor collection and 
   assert.equal(result.data.user.ratingAvg, 0);
   assert.equal(result.data.user.mentorAgreementVersion, MENTOR_AGREEMENT_VERSION);
   assert.ok(result.data.user.mentorAgreementAcceptedAt);
+  assert.equal(result.data.user.profileUrl, 'https://example.test/portfolio');
+  const reviewApplication = ReviewerProfile.records.find(item => item.mentorId === result.data.user.id)?.application;
+  assert.equal(reviewApplication?.status, 'pending');
+  assert.ok(reviewApplication?.submittedAt);
   assert.equal((await request('/me', undefined, result.cookie)).data.type, 'mentor');
   const login = await request('/login', { email: 'MENTOR@example.test', password: 'Testing123', rememberMe: true });
   assert.equal(login.data.type, 'mentor');
@@ -143,7 +157,7 @@ test('production email verification issues a short-lived OTP and only creates a 
   let sentCode = '';
   const app = express(); app.use(express.json());
   app.use(session({ name: 'otp.sid', secret: 'test-only-session-secret', resave: false, saveUninitialized: false }));
-  app.use('/api/auth', createAuthRouter({ UserProfile: Users, MentorAccount: Mentors, AdminAccount: Admins, verificationRequired: true, sendVerificationEmail: async (_to, code) => { sentCode = code; } }));
+  app.use('/api/auth', createAuthRouter({ UserProfile: Users, MentorAccount: Mentors, AdminAccount: Admins, ReviewerProfile, verificationRequired: true, sendVerificationEmail: async (_to, code) => { sentCode = code; } }));
   const otpServer = app.listen(0, '127.0.0.1'); await new Promise(resolve => otpServer.once('listening', resolve));
   const otpBase = `http://127.0.0.1:${otpServer.address().port}/api/auth`;
   const call = async (path, body) => { const response = await fetch(otpBase + path, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) }); return { status: response.status, data: await response.json(), cookie: response.headers.get('set-cookie') }; };
@@ -157,6 +171,11 @@ test('production email verification issues a short-lived OTP and only creates a 
     assert.equal(verified.status, 200); assert.equal(verified.data.type, 'student'); assert.ok(verified.cookie);
     assert.equal(Users.records[0].emailVerified, true); assert.equal(Users.records[0].verificationCodeHash, undefined);
     assert.equal((await call('/verify-email', { email: 'otp@example.test', code: sentCode })).status, 400);
+    const mentorRegistered = await call('/register', mentor('verified-mentor@example.test'));
+    assert.equal(mentorRegistered.status, 202);
+    assert.ok(!ReviewerProfile.records.some(item => item.mentorId === Mentors.records[0].id));
+    assert.equal((await call('/verify-email', { email: 'verified-mentor@example.test', code: sentCode })).status, 200);
+    assert.equal(ReviewerProfile.records.find(item => item.mentorId === Mentors.records[0].id)?.application?.status, 'pending');
   } finally { await new Promise(resolve => otpServer.close(resolve)); }
 });
 test('password change checks old password and saves a hash of new password', async () => {

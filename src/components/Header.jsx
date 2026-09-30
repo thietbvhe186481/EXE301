@@ -77,10 +77,9 @@ export function Header({ page, go, currentUser, logout, onOpenQrPayment }) {
   };
 
   return <header className="topbar hub-topbar" ref={menuRef}>
-    <button className="brand" onClick={() => navigate('home')} aria-label="Portfolio FPT Hub, trang chủ">
-      <Rocket size={22} color="#0284c7" aria-hidden="true" />
-      <span className="hub-brand-name">Portfolio</span>
-      <span className="hub-brand-tag">FPT HUB</span>
+    <button className="brand beelearn-header-brand" onClick={() => navigate('home')} aria-label="BeeLearn, trang chủ">
+      <span className="beelearn-header-mark" aria-hidden="true"><img src={`${import.meta.env.BASE_URL}beelearn-brand.png`} alt="" /></span>
+      <span className="hub-brand-name">BeeLearn</span>
     </button>
 
     <nav className="flow-nav role-nav hub-primary-nav" aria-label="Điều hướng chính">

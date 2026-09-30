@@ -51,7 +51,7 @@ export async function cancelPayosLink(orderCode, transport = fetch) {
   const response = await transport(`https://api-merchant.payos.vn/v2/payment-requests/${encodeURIComponent(orderCode)}/cancel`, {
     method: 'POST', signal: AbortSignal.timeout(15_000),
     headers: { 'x-client-id': clientId(), 'x-api-key': apiKey(), 'Content-Type': 'application/json' },
-    body: JSON.stringify({ cancellationReason: 'Sinh viên hủy đơn trên Portfolio FPT Hub' })
+    body: JSON.stringify({ cancellationReason: 'Sinh viên hủy đơn trên BeeLearn' })
   });
   const result = await response.json().catch(() => ({}));
   if (!response.ok || result.code !== '00' || result.data?.status !== 'CANCELLED') throw new Error('payOS chưa xác nhận hủy đơn.');
