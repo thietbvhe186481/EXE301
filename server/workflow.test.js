@@ -285,6 +285,8 @@ test('free AI adapter grades only the consented excerpt and checks every quoted 
       assert.equal(Object.hasOwn(body, 'store'), false);
       assert.equal(body.messages[1].content.includes('example.com'), false);
       assert.equal(body.messages[1].content.includes(excerpt), true);
+      assert.equal(Object.hasOwn(JSON.parse(body.messages[1].content), 'studentNotes'), false);
+      assert.equal(Object.hasOwn(JSON.parse(body.messages[1].content), 'declaredSkills'), false);
       const advice = { summary: 'Đã có minh chứng ở một số tiêu chí.', rubricFeedback: CHALLENGES[0].rubric.map((item, index) => ({ key: item.key, score: 8, assessment: 'Cần bổ sung kết quả kiểm thử cụ thể.', action: 'Thêm ảnh kiểm thử theo kích thước.', evidence: index === 0 ? 'responsive page at 375px and 1280px' : 'a made-up quote' })) };
       assert.equal(body.response_format.json_schema.schema.properties.rubricFeedback.type, 'array');
       return { ok: true, json: async () => ({ choices: [{ finish_reason: 'stop', message: { content: JSON.stringify(advice) } }] }) };
@@ -297,6 +299,30 @@ test('free AI adapter grades only the consented excerpt and checks every quoted 
     assert.ok(advice.rubricFeedback.slice(1).every(item => item.score === 0 && item.evidence === ''));
     assert.equal(advice.evidencedCriteria, 1);
     assert.ok(advice.score > 0 && advice.score < 80);
+  } finally {
+    if (oldKey === undefined) delete process.env.GROQ_API_KEY; else process.env.GROQ_API_KEY = oldKey;
+  }
+});
+
+test('AI retries a Groq schema validation failure once in JSON object mode', async () => {
+  const oldKey = process.env.GROQ_API_KEY;
+  process.env.GROQ_API_KEY = 'test-only';
+  try {
+    let calls = 0;
+    const excerpt = 'This artifact has a responsive page at 375px and 1280px, with a documented navigation flow and screenshots for both sizes. The README explains the build steps and includes accessibility checks.';
+    const response = { summary: 'Đã có minh chứng.', rubricFeedback: CHALLENGES[0].rubric.map(item => ({ key: item.key, score: 5, assessment: 'Có minh chứng một phần.', action: 'Bổ sung báo cáo kiểm thử.', evidence: 'responsive page at 375px and 1280px' })) };
+    const result = await generateAiAdvice(CHALLENGES[0], payload(), excerpt, async (_url, options) => {
+      const body = JSON.parse(options.body);
+      calls += 1;
+      if (calls === 1) {
+        assert.equal(body.response_format.type, 'json_schema');
+        return { ok: false, status: 400, json: async () => ({ error: { code: 'json_validate_failed' } }) };
+      }
+      assert.equal(body.response_format.type, 'json_object');
+      return { ok: true, json: async () => ({ choices: [{ finish_reason: 'stop', message: { content: JSON.stringify(response) } }] }) };
+    });
+    assert.equal(calls, 2);
+    assert.ok(result.evidencedCriteria > 0);
   } finally {
     if (oldKey === undefined) delete process.env.GROQ_API_KEY; else process.env.GROQ_API_KEY = oldKey;
   }

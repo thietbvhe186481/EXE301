@@ -10,7 +10,8 @@ Nếu khóa chưa được cấu hình, website chỉ kiểm tra độ đầy đ
 
 ## Phạm vi và giới hạn
 
-- AI chỉ nhận trích đoạn sinh viên tự dán, ghi chú và kỹ năng đã khai báo; máy chủ không tự mở link, tải tệp, chạy mã nguồn hoặc gửi danh tính sinh viên cho Groq.
+- AI chỉ nhận trích đoạn sinh viên tự dán cùng đề bài và tiêu chí chấm. Ghi chú, kỹ năng, liên kết minh chứng, tệp và danh tính sinh viên không được gửi tự động cho Groq. Sinh viên cần tránh dán thông tin cá nhân hoặc bí mật vào trích đoạn.
+- Nếu Groq từ chối phản hồi theo JSON Schema với mã `json_validate_failed`, máy chủ thử lại một lần bằng JSON Object Mode và vẫn kiểm tra cấu trúc cùng trích dẫn trước khi ghi điểm. Không tính lượt khi cả hai lần đều thất bại.
 - Điểm là mức độ thể hiện trong trích đoạn, không phải điểm xác nhận cho toàn bộ sản phẩm. Tiêu chí thiếu câu trích dẫn khớp bị đánh dấu chưa có bằng chứng và không được tính điểm.
 - Mỗi bài tự luyện có một lượt AI thành công; mỗi sinh viên tối đa hai lượt thành công trong một ngày UTC. Lỗi nhà cung cấp không ghi nhận lượt đã hoàn thành.
 - Chỉ mentor được quản trị viên duyệt mới đưa ra đánh giá chính thức và có thể ghi nhận thù lao.
