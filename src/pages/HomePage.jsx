@@ -30,17 +30,17 @@ export function HomePage({ go, onOpenUpgrade, onOpenFooterModal, onRegisterMento
       <section className="jr-hero">
         <div className="jr-hero-badge">
           <span className="jr-badge-pulse" />
-          <span>HỆ THỐNG XÂY DỰNG PORTFOLIO NGHỀ NGHIỆP · HỌC QUA DỰ ÁN · PHÁT TRIỂN NĂNG LỰC</span>
+          <span>BEELEARN · TỪ BÀI LÀM ĐẾN PORTFOLIO</span>
         </div>
 
         <h1 className="jr-hero-title">
-          <span>Học qua dự án thực tế.</span>
-          <span className="jr-gradient-text">Xây portfolio có minh chứng.</span>
+          <span>Học bằng cách làm.</span>
+          <span className="jr-gradient-text">Tỏa sáng bằng sản phẩm của bạn.</span>
         </h1>
 
         <p className="jr-hero-subtitle">
-          Chọn lộ trình nghề nghiệp, thực hành với thử thách vừa sức và lưu lại sản phẩm có minh chứng.
-          Nhận góp ý theo tiêu chí rõ ràng để từng bước hoàn thiện hồ sơ của bạn.
+          Chọn thử thách phù hợp với ngành và trình độ của bạn, tự tay hoàn thành dự án rồi đưa thành quả vào portfolio.
+          Nhận góp ý để biết mình làm tốt ở đâu và nên cải thiện điều gì.
         </p>
 
         <div className="jr-hero-actions">
