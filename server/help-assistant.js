@@ -25,7 +25,7 @@ export function vettedAssistantAnswer(generated, guide) {
   const comparable = text => text.normalize('NFC').toLocaleLowerCase('vi').replace(/\s+/g, ' ').trim().replace(/[.!?…]+$/, '');
   return answer.length >= 15 && comparable(guide).includes(comparable(answer)) ? answer : null;
 }
-const outOfScope = 'Mình hỗ trợ cách dùng Portfolio: tìm thử thách, nộp bài, nhận góp ý, Premium và tài khoản. Bạn có thể chọn một chủ đề bên dưới hoặc gửi yêu cầu ở mục Hỗ trợ.';
+const outOfScope = 'Mình hỗ trợ cách dùng BeeLearn: tìm thử thách, nộp bài, nhận góp ý, Premium và tài khoản. Bạn có thể chọn một chủ đề bên dưới hoặc gửi yêu cầu ở mục Hỗ trợ.';
 export function matchHelpTopic(question) {
   const normalized = ` ${normalize(question)} `;
   const ranked = HELP_TOPICS.map(topic => ({ topic, score: topic.keywords.reduce((sum, keyword) => sum + (normalized.includes(` ${keyword} `) ? keyword.split(' ').length : 0), 0) }))
