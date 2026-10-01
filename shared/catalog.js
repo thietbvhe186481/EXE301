@@ -112,7 +112,7 @@ const challengeContexts = {
 for (const challenge of CHALLENGES) {
   const [scenario, reviewQuestion] = challengeContexts[challenge.id] || [];
   challenge.scenario = scenario || challenge.summary;
-  challenge.reviewQuestion = reviewQuestion || 'Đầu ra và minh chứng có đáp ứng đầy đủ yêu cầu và rubric của thử thách không?';
+  challenge.reviewQuestion = reviewQuestion || 'Sản phẩm và minh chứng có đáp ứng đầy đủ yêu cầu và rubric của thử thách không?';
 }
 
 // Bài thực hành do nền tảng tự biên soạn; các khóa học chỉ là nguồn học theo chủ đề.

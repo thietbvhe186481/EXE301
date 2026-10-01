@@ -161,7 +161,7 @@ export function HomePage({ go, isGuest, onOpenUpgrade, onOpenFooterModal, onRegi
           <div className="jr-feature-card">
             <div className="jr-feat-icon blue"><CheckCircle2 size={26} /></div>
             <h3>Biết rõ tiêu chí trước khi làm bài</h3>
-            <p>Mỗi thử thách nêu đầu ra cần có, mức độ khó và tiêu chí đánh giá. Bạn có thể tự kiểm tra bài làm trước khi nộp và xem phần góp ý theo từng tiêu chí.</p>
+            <p>Mỗi thử thách nêu sản phẩm cần hoàn thành, mức độ khó và tiêu chí đánh giá. Bạn có thể tự kiểm tra bài làm trước khi nộp và xem phần góp ý theo từng tiêu chí.</p>
           </div>
 
           <div className="jr-feature-card">
