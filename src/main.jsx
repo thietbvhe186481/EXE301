@@ -1927,6 +1927,7 @@ function App() {
 function CareerMapPage({ majors, currentMajor, changeMajor, columns, levels, selectedColumn, selectedRole, selectedRoleId, setSelectedRoleId, path, pathRoles, allRoles, addToPath, removeFromPath, movePath, clearPath, savePath, savedPathName, canBuildPath, userMajorKey, challenges, setSelectedChallengeId, marketSignalsByMajor = {}, go }) {
   const [query, setQuery] = useState('');
   const [careerStep, setCareerStep] = useState('specialization');
+  const [detailTab, setDetailTab] = useState('overview');
   const filteredRoleIds = useMemo(() => {
     const normalized = query.trim().toLowerCase();
     if (!normalized) return null;
@@ -1938,6 +1939,12 @@ function CareerMapPage({ majors, currentMajor, changeMajor, columns, levels, sel
     )).map((item) => item.id));
   }, [allRoles, query]);
   const roleGuide = getCareerRoleGuide(currentMajor.key, selectedColumn.key, selectedRole);
+  const careerPhoto = {
+    'dev:fullstack': 'developer-booking.png',
+    'mkt:performance': 'marketing-campaign.png',
+    'design:ux': 'ux-booking.png'
+  }[`${currentMajor.key}:${selectedColumn.key}`];
+  const careerPhotoUrl = careerPhoto ? `${import.meta.env.BASE_URL}career/${careerPhoto}` : null;
   const challengeLevelRank = { beginner: 0, intermediate: 1, advanced: 2 };
   const targetChallengeRank = selectedRole.levelKey === 'nen-tang' || selectedRole.levelKey === 'so-cap' ? 0
     : selectedRole.levelKey === 'trung-cap' ? 1 : 2;
@@ -1961,6 +1968,8 @@ function CareerMapPage({ majors, currentMajor, changeMajor, columns, levels, sel
     setCareerStep('specialization');
   }, [currentMajor.key]);
 
+  useEffect(() => { setDetailTab('overview'); }, [selectedRole.id]);
+
   return (
     <section className="career-page">
       <div className="section-heading inline">
@@ -1980,7 +1989,7 @@ function CareerMapPage({ majors, currentMajor, changeMajor, columns, levels, sel
       <div className="career-step-progress">
         {[
           ['specialization', '01', 'Chuyên ngành', selectedColumn.title],
-          ['role', '02', 'Cấp độ', careerLevelHeadings[Math.max(0, levels.findIndex((level) => level.key === selectedRole.levelKey))]],
+          ['role', '02', 'Cấp độ', selectedRole.level],
           ['detail', '03', 'Công việc', selectedColumn.title]
         ].map(([key, index, label, value]) => (
           <button key={key} className={`${careerStep === key ? 'active' : ''} ${key === 'role' || key === 'detail' ? 'enabled' : ''}`} onClick={() => setCareerStep(key)}>
@@ -2028,7 +2037,7 @@ function CareerMapPage({ majors, currentMajor, changeMajor, columns, levels, sel
                 <b>02</b>
                 <div>
                   <p className="mono-label">{selectedColumn.title}</p>
-                  <h2>Chọn mức phù hợp với bạn</h2>
+                  <h2>Chọn chức vụ trong {selectedColumn.title}</h2>
                 </div>
               </div>
             </div>
@@ -2039,8 +2048,8 @@ function CareerMapPage({ majors, currentMajor, changeMajor, columns, levels, sel
               </button>
             </div>
           </div>
-          <p className="career-level-note">Xem bạn sẽ làm gì và tạo ra sản phẩm nào ở từng mức. Tên chức danh có thể khác nhau giữa các công ty.</p>
-          <div className="career-role-options" aria-label={`Các cấp độ ${selectedColumn.title}`}>
+          <p className="career-level-note">Đi từ công việc có hướng dẫn đến vai trò dẫn dắt. Chọn một vị trí để xem công việc và bài thực hành.</p>
+          <div className="vertical-roadmap role-step-list career-classic-timeline" aria-label={`Các chức vụ ${selectedColumn.title}`}>
             {levels.map((level, index) => {
               const roleItem = selectedColumn.roles[index];
               const guide = getCareerRoleGuide(currentMajor.key, selectedColumn.key, roleItem);
@@ -2050,18 +2059,18 @@ function CareerMapPage({ majors, currentMajor, changeMajor, columns, levels, sel
                 <button
                   key={level.key}
                   type="button"
-                  className={`career-role-option ${selectedRoleId === roleItem.id ? 'active' : ''} ${hiddenBySearch ? 'dimmed' : ''}`}
+                  className={`career-classic-role ${selectedRoleId === roleItem.id ? 'active' : ''} ${hiddenBySearch ? 'dimmed' : ''}`}
                   aria-pressed={selectedRoleId === roleItem.id}
                   onClick={() => { setSelectedRoleId(roleItem.id); setCareerStep('detail'); }}
                 >
-                  <span className="career-role-index">{level.short}</span>
-                  <span className="career-role-copy">
-                    <span className="career-role-eyebrow">{level.label}{picked && canBuildPath && <em> · Đã lưu</em>}</span>
-                    <strong>{careerLevelHeadings[index]}</strong>
-                    <span className="career-role-scope"><b>Bạn sẽ làm:</b> {guide.work}</span>
-                    <span className="career-role-detail"><b>Sản phẩm ví dụ:</b> {guide.output}</span>
+                  <b className="career-classic-node">{level.short}</b>
+                  <span className="career-classic-role-body">
+                    <span className="career-classic-level">{level.label}{picked && canBuildPath ? ' · Đã lưu' : ''}</span>
+                    <strong>{roleItem.title}</strong>
+                    <small>{guide.work}</small>
+                    <em>{guide.output}</em>
                   </span>
-                  <ArrowRight className="career-role-arrow" size={20} aria-hidden="true" />
+                  <ArrowRight className="career-classic-arrow" size={19} aria-hidden="true" />
                 </button>
               );
             })}
@@ -2076,39 +2085,89 @@ function CareerMapPage({ majors, currentMajor, changeMajor, columns, levels, sel
             <b>03</b>
             <div>
               <p className="mono-label">{currentMajor.short} / {selectedRole.track} / {selectedRole.level}</p>
-              <h2>{selectedColumn.title}: {careerLevelHeadings[Math.max(0, levels.findIndex((level) => level.key === selectedRole.levelKey))]}</h2>
+              <h2>{selectedRole.title}</h2>
             </div>
           </div>
-          <p className="career-detail-intro">{careerLevelDescriptions[Math.max(0, levels.findIndex((level) => level.key === selectedRole.levelKey))]}</p>
-          <div className="career-detail-actions">
-            <button className="ghost-action compact" onClick={() => setCareerStep('role')}><MoveUp size={15} /> Chọn cấp độ khác</button>
-            {canBuildPath && <button className="primary-action compact" onClick={() => addToPath(selectedRole.id)}><Plus size={15} /> Lưu vị trí quan tâm</button>}
+          <div className="role-detail-hero career-classic-hero">
+            {careerPhotoUrl ? (
+              <div className="role-visual-scene career-classic-photo" role="img" aria-label={`Hình minh họa công việc ${selectedColumn.title}`} style={{ '--role-photo': `url("${careerPhotoUrl}")` }}>
+                <span>{selectedColumn.title}</span>
+                <strong>{selectedRole.level}</strong>
+              </div>
+            ) : (
+              <div className={`career-classic-artifact career-classic-artifact-${currentMajor.key}`} role="img" aria-label={`Minh họa sản phẩm công việc ${selectedColumn.title}`}>
+                <span className="career-artifact-kicker">Minh họa đầu ra · {selectedColumn.title}</span>
+                <div className="career-artifact-paper">
+                  <span className="career-artifact-mark">{currentMajor.short}</span>
+                  <strong>{roleGuide.output}</strong>
+                  <div className="career-artifact-lines" aria-hidden="true"><i /><i /><i /></div>
+                  <div className="career-artifact-preview" aria-hidden="true"><i /><i /><i /></div>
+                </div>
+              </div>
+            )}
+            <div className="role-detail-summary career-classic-summary">
+              <p className="mono-label">Một công việc cụ thể</p>
+              <h3>{roleGuide.work}</h3>
+              <p>Đầu ra minh họa: <strong>{roleGuide.output}</strong>.</p>
+              <div className="focus-meta">
+                <span>{selectedRole.level}</span>
+                <button type="button" className="focus-meta-link" onClick={() => go('trends')}>Xem thông tin thị trường <ArrowRight size={14} /></button>
+                {suggestedChallenges.length > 0 && <span>{suggestedChallenges.length} bài thực hành gợi ý</span>}
+              </div>
+              <div className="step-actions">
+                <button className="ghost-action compact" onClick={() => setCareerStep('role')}><MoveUp size={15} /> Chọn chức vụ khác</button>
+                {canBuildPath && <button className="primary-action compact" onClick={() => addToPath(selectedRole.id)}><Plus size={15} /> Lưu vị trí quan tâm</button>}
+              </div>
+            </div>
           </div>
-          <section className="career-assignment" aria-labelledby="career-assignment-title">
-            <p className="mono-label">Ví dụ công việc</p>
-            <h3 id="career-assignment-title">Một việc bạn có thể được giao</h3>
-            <dl>
-              <div><dt>Nhóm cần</dt><dd>{roleGuide.request}</dd></div>
-              <div><dt>Bạn làm</dt><dd>{roleGuide.work}</dd></div>
-              <div><dt>Bạn bàn giao</dt><dd>{roleGuide.output}.</dd></div>
-            </dl>
-          </section>
           {!canBuildPath && (
-            <div className="career-guest-note">
+            <div className="status-banner muted career-guest-note">
               <ShieldCheck size={17} />
-              Đăng nhập tài khoản sinh viên để lưu vị trí này. Bạn vẫn có thể khám phá công việc và bài thực hành.
+              Đăng nhập tài khoản sinh viên để lưu vị trí này. Bạn vẫn có thể xem công việc và bài thực hành.
             </div>
           )}
 
-          <section className="career-skills" aria-labelledby="career-skills-title">
-            <h3 id="career-skills-title">Để làm việc này, bạn cần biết</h3>
-            <ul className="career-skills-list">{roleGuide.skills.map((item) => <li key={item}>{item}</li>)}</ul>
-          </section>
-          <section className="career-practice" aria-labelledby="career-practice-title">
-            <div className="career-practice-heading">
-              <div><p className="mono-label">Bài thực hành</p><h3 id="career-practice-title">Thử làm một bài phù hợp</h3></div>
-              <button type="button" className="career-market-link" onClick={() => go('trends')}>Xem thêm về thị trường <ArrowRight size={14} /></button>
-            </div>
+          <div className="interactive-subnav-tabs" role="tablist" aria-label="Thông tin công việc">
+            <button type="button" role="tab" aria-selected={detailTab === 'overview'} className={`interactive-tab-btn ${detailTab === 'overview' ? 'active' : ''}`} onClick={() => setDetailTab('overview')}>Tổng quan & công việc</button>
+            <button type="button" role="tab" aria-selected={detailTab === 'responsibilities'} className={`interactive-tab-btn ${detailTab === 'responsibilities' ? 'active' : ''}`} onClick={() => setDetailTab('responsibilities')}>Trách nhiệm & kỹ năng</button>
+            <button type="button" role="tab" aria-selected={detailTab === 'challenges'} className={`interactive-tab-btn ${detailTab === 'challenges' ? 'active' : ''}`} onClick={() => setDetailTab('challenges')}>Bài thực hành</button>
+          </div>
+
+          {detailTab === 'overview' && (
+            <section className="role-work-gallery career-classic-overview" role="tabpanel" aria-label="Tổng quan và công việc">
+              <div className="card-topline"><span>Công việc thực tế</span><strong>Một ví dụ theo cấp độ</strong></div>
+              <div className="work-gallery-grid career-classic-steps">
+                <article><b>01</b><span>Bối cảnh</span><p>{roleGuide.request}</p></article>
+                <article><b>02</b><span>Điều cần chú ý</span><p>{roleGuide.skills[0]}</p></article>
+                <article><b>03</b><span>Cách kiểm tra</span><p>{roleGuide.skills[2] ?? roleGuide.skills[1] ?? 'Kiểm tra đầu ra với người dùng.'}</p></article>
+              </div>
+              <p className="career-classic-context">Ví dụ này giúp bạn hình dung công việc; tên vị trí và phạm vi thực tế có thể khác giữa các tổ chức.</p>
+            </section>
+          )}
+
+          {detailTab === 'responsibilities' && (
+            <section className="role-detail-grid career-classic-responsibilities" role="tabpanel" aria-label="Trách nhiệm và kỹ năng">
+              <article className="role-reality-card">
+                <p className="mono-label">Việc bạn phụ trách</p>
+                <h3>Phạm vi của vị trí</h3>
+                <div className="requirement-item compact narrative"><BadgeCheck size={17} /><span>{careerLevelDescriptions[Math.max(0, levels.findIndex((level) => level.key === selectedRole.levelKey))]}</span></div>
+                <div className="requirement-item compact narrative"><BadgeCheck size={17} /><span>Giải thích cách làm và cho nhóm xem sản phẩm trước khi bàn giao.</span></div>
+              </article>
+              <article className="role-reality-card">
+                <p className="mono-label">Năng lực cần luyện</p>
+                <h3>Để làm tốt việc này</h3>
+                {roleGuide.skills.slice(1).map((item) => <div className="requirement-item compact narrative" key={item}><Check size={17} /><span>{item}</span></div>)}
+              </article>
+            </section>
+          )}
+
+          {detailTab === 'challenges' && (
+            <section className="career-practice" role="tabpanel" aria-label="Bài thực hành">
+              <div className="career-practice-heading">
+                <div><p className="mono-label">Bài thực hành</p><h3>Chọn bài để thử sức</h3></div>
+                <button type="button" className="career-market-link" onClick={() => go('trends')}>Xem thêm về thị trường <ArrowRight size={14} /></button>
+              </div>
+              <p className="career-classic-context">Bài cùng chuyên ngành được ưu tiên; bài liên quan giúp luyện thêm kỹ năng gần với vị trí này.</p>
               <div className="recommended-challenge-panel embedded">
                 <div className="recommended-challenge-grid">
                   {suggestedChallenges.map(({ challenge, relation }) => (
@@ -2119,16 +2178,14 @@ function CareerMapPage({ majors, currentMajor, changeMajor, columns, levels, sel
                         <span>{challenge.summary}</span>
                         <small>{challenge.specialization || challenge.track || currentMajor.title} · Khoảng {challenge.estimatedHours} giờ</small>
                       </div>
-                      <button className="ghost-action compact" onClick={() => { setSelectedChallengeId(challenge.id); go('join'); }}>
-                        Xem bài
-                        <Rocket size={15} />
-                      </button>
+                      <button className="ghost-action compact" onClick={() => { setSelectedChallengeId(challenge.id); go('join'); }}>Xem bài <Rocket size={15} /></button>
                     </article>
                   ))}
                   {suggestedChallenges.length === 0 && <p className="career-empty-challenges">Chưa có bài ở cấp độ này. Bạn có thể xem toàn bộ thử thách và chọn bài phù hợp với kỹ năng muốn luyện.</p>}
                 </div>
               </div>
-          </section>
+            </section>
+          )}
         </section>
       )}
     </section>
