@@ -722,6 +722,8 @@ const specializationDescriptions = {
     'Market Research': 'Thu thập insight thị trường, phân tích đối thủ, khảo sát khách hàng và đề xuất hướng đi sản phẩm.'
   },
   design: {
+    'UX Design': 'Phân tích hành trình người dùng, vẽ luồng và wireframe, rồi kiểm tra xem họ hoàn thành tác vụ có thuận tiện không.',
+    'Graphic Design': 'Thiết kế ấn phẩm truyền thông theo brief, từ bố cục và hình ảnh đến bộ file bàn giao cho từng kênh.',
     'Product Design': 'Thiết kế luồng sản phẩm từ problem, user flow, wireframe đến prototype có thể kiểm thử.',
     'UI Design': 'Xây giao diện đẹp, dễ dùng, nhất quán về màu sắc, typography, spacing và component.',
     'UX Research': 'Nghiên cứu người dùng, phỏng vấn, tổng hợp insight và biến dữ liệu thành quyết định thiết kế.',
@@ -765,6 +767,107 @@ const workPhotoUrls = [
 function makeWorkIllustrationSrc(_, index) {
   const baseUrl = workPhotoUrls[index % workPhotoUrls.length];
   return `${baseUrl}?auto=format&fit=crop&w=900&q=82&sat=-4&sig=${index + 41}`;
+}
+
+// Short field-guide notes describe a kind of work, not a promised job or salary.
+const careerWorkByTrack = {
+  dev: {
+    frontend: ['xây một luồng giao diện dùng được trên điện thoại', 'xử lý trạng thái tải, lỗi và thao tác bàn phím', 'giao diện có demo responsive và ca kiểm thử', 'người dùng không hoàn tất được biểu mẫu khi mạng chậm'],
+    backend: ['thiết kế API và luồng dữ liệu cho một tính năng', 'kiểm tra quyền truy cập, dữ liệu đầu vào và lỗi', 'API có tài liệu endpoint và kiểm thử phân quyền', 'một tài khoản có thể xem hoặc sửa dữ liệu của người khác'],
+    fullstack: ['kết nối giao diện, API và dữ liệu thành một luồng hoàn chỉnh', 'phân chia xử lý giữa trình duyệt và máy chủ', 'tính năng có demo, sơ đồ luồng và ca kiểm thử', 'trạng thái trên màn hình không khớp với dữ liệu đã lưu'],
+    mobile: ['xây luồng thao tác trên ứng dụng di động', 'xử lý quyền thiết bị, ngoại tuyến và trạng thái lỗi', 'prototype hoặc ứng dụng có video thao tác trên thiết bị', 'người dùng mất tiến độ khi ứng dụng chuyển sang nền'],
+    devops: ['tự động hóa việc kiểm tra và phát hành ứng dụng', 'thiết kế health check, cảnh báo và cách quay lui', 'pipeline có log chạy và hướng dẫn khôi phục', 'bản phát hành lỗi nhưng hệ thống không phát hiện kịp'],
+    ai: ['chuẩn bị dữ liệu và kiểm tra một mô hình hoặc phân tích', 'chọn thước đo, phát hiện dữ liệu lệch và giới hạn kết luận', 'notebook hoặc báo cáo tái lập được kết quả', 'kết quả mô hình trông tốt nhưng sai trên nhóm dữ liệu quan trọng'],
+    architecture: ['phân rã hệ thống thành các thành phần có trách nhiệm rõ', 'ghi nhận đánh đổi về dữ liệu, độ tin cậy và khả năng mở rộng', 'sơ đồ kiến trúc cùng bản ghi quyết định kỹ thuật', 'nhiều nhóm cùng sửa một luồng khiến hệ thống khó thay đổi']
+  },
+  mkt: {
+    content: ['lập nội dung cho một nhóm người đọc và mục tiêu cụ thể', 'chọn thông điệp, định dạng và nhịp đăng phù hợp', 'lịch nội dung kèm brief và ví dụ bài viết', 'nội dung được đăng đều nhưng không giải đáp nhu cầu người đọc'],
+    seo: ['tổ chức nội dung theo ý định tìm kiếm', 'ưu tiên từ khóa, cấu trúc trang và vấn đề kỹ thuật', 'bản audit cùng topic cluster và cách đo', 'trang có nhiều bài viết nhưng không trả lời đúng câu hỏi tìm kiếm'],
+    performance: ['lập và theo dõi một chiến dịch quảng cáo có ngân sách', 'chọn chỉ số chuyển đổi và ngưỡng điều chỉnh', 'media plan cùng báo cáo giả định và kết quả đo', 'chi phí tăng nhưng không biết bước nào của phễu đang nghẽn'],
+    social: ['xây lịch nội dung và vận hành một kênh xã hội', 'chọn định dạng, phản hồi cộng đồng và cách đo tương tác', 'lịch đăng cùng mẫu bài và báo cáo tương tác', 'nội dung có lượt xem nhưng ít trao đổi có ý nghĩa'],
+    brand: ['định hình thông điệp thương hiệu cho một nhóm khách hàng', 'đối chiếu concept với định vị và hành vi người dùng', 'brand brief và bộ thông điệp dùng được trên nhiều kênh', 'mỗi kênh đang kể một câu chuyện khác nhau về sản phẩm'],
+    growth: ['phân tích một điểm nghẽn trong hành trình người dùng', 'đặt giả thuyết và chọn chỉ số kiểm chứng thử nghiệm', 'backlog thử nghiệm cùng báo cáo phễu', 'nhiều người đăng ký nhưng ít người quay lại'],
+    crm: ['thiết kế chuỗi chăm sóc theo giai đoạn khách hàng', 'phân nhóm, chọn thời điểm gửi và điều kiện dừng', 'sơ đồ journey và email mẫu có logic kích hoạt', 'khách hàng nhận cùng một thông điệp dù nhu cầu rất khác nhau'],
+    research: ['tìm hiểu phân khúc, đối thủ và nhu cầu chưa được xác minh', 'chọn mẫu nghiên cứu và tách dữ liệu khỏi giả định', 'báo cáo insight có nguồn và giới hạn nghiên cứu', 'nhóm muốn ra mắt sản phẩm dựa trên một vài ý kiến đơn lẻ']
+  },
+  design: {
+    ui: ['thiết kế một luồng giao diện rõ cấp bậc thông tin', 'chọn component, khoảng cách, tương phản và trạng thái', 'bộ màn hình có component và chú thích bàn giao', 'màn hình đẹp nhưng khó đọc hoặc không dùng được bằng bàn phím'],
+    ux: ['vẽ hành trình và tháo gỡ một điểm vướng khi thao tác', 'chọn phương án luồng dựa trên quan sát người dùng', 'user flow, wireframe và ghi chép kiểm thử', 'người dùng bỏ dở vì không biết bước tiếp theo'],
+    product: ['thiết kế một tính năng từ vấn đề đến prototype', 'cân bằng nhu cầu người dùng với giới hạn sản phẩm', 'case study có prototype và lý do chọn giải pháp', 'ý tưởng tính năng hấp dẫn nhưng không giải quyết vấn đề ưu tiên'],
+    graphic: ['tạo tài sản truyền thông theo một brief cụ thể', 'chọn bố cục, định dạng và cách giữ nhất quán thương hiệu', 'bộ ấn phẩm có file nguồn và quy cách xuất', 'một thông điệp bị biến dạng khi dùng trên nhiều kích thước'],
+    motion: ['tạo chuyển động giải thích trạng thái hoặc dẫn hướng', 'chọn nhịp, thời lượng và phương án giảm chuyển động', 'storyboard và mẫu chuyển động có thông số', 'hiệu ứng bắt mắt nhưng khiến người dùng khó theo dõi'],
+    brand: ['xây ngôn ngữ hình ảnh cho một thương hiệu', 'chọn quy tắc logo, màu và ứng dụng trong nhiều ngữ cảnh', 'bộ nhận diện và hướng dẫn sử dụng ngắn', 'tài sản thương hiệu thiếu nhất quán giữa sản phẩm và truyền thông'],
+    research: ['đặt câu hỏi và thu thập bằng chứng về hành vi người dùng', 'chọn phương pháp, hạn chế thiên lệch và bảo vệ dữ liệu', 'kế hoạch nghiên cứu và báo cáo insight ẩn danh', 'đội sản phẩm đang quyết định dựa trên phỏng đoán']
+  }
+};
+
+// The three most visited paths have level-specific examples instead of the same
+// project repeated under five title prefixes. Each item is scope / decision / proof.
+const careerTrackProgression = {
+  dev: {
+    fullstack: [
+      ['Dựng một màn hình từ dữ liệu mẫu và nối thử API có sẵn.', 'Kiểm tra dữ liệu trả về và hiển thị lỗi khi yêu cầu thất bại.', 'Trang demo một luồng nhỏ với ảnh trạng thái tải và lỗi.'],
+      ['Tự làm luồng tạo và xem lịch hẹn trên giao diện lẫn API.', 'Xác định dữ liệu nào phải kiểm tra ở trình duyệt và máy chủ.', 'Repo, demo và README cho luồng thành công lẫn thất bại.'],
+      ['Phụ trách luồng đặt lịch, đồng bộ trạng thái giữa giao diện, API và cơ sở dữ liệu.', 'So sánh cách xử lý xung đột lịch và kiểm thử các nhánh lỗi.', 'Case study có sơ đồ dữ liệu, demo và bộ ca kiểm thử.'],
+      ['Thiết kế cách xử lý giao dịch đặt lịch khi nhiều người thao tác cùng lúc.', 'Cân nhắc độ tin cậy, quyền truy cập và khả năng khôi phục khi lỗi.', 'Bản thiết kế kiến trúc và bằng chứng thử tải, xử lý lỗi.'],
+      ['Định ranh giới dịch vụ và quy ước tích hợp cho nhiều nhóm phát triển.', 'Thống nhất tiêu chí giám sát, thay đổi API và trách nhiệm vận hành.', 'Bộ tài liệu kiến trúc, quyết định kỹ thuật và hướng dẫn bàn giao.']
+    ]
+  },
+  mkt: {
+    performance: [
+      ['Chuẩn bị nhóm quảng cáo mẫu cho một đối tượng và mục tiêu rõ ràng.', 'Kiểm tra thông điệp, trang đích và cách gắn tham số đo lường.', 'Brief quảng cáo cùng mẫu nội dung và bảng theo dõi giả định.'],
+      ['Vận hành thử một chiến dịch trên một kênh trong ngân sách giới hạn.', 'Chọn chỉ số chính và quy tắc dừng mẫu quảng cáo kém hiệu quả.', 'Media plan một kênh và báo cáo kết quả có ghi rõ nguồn số liệu.'],
+      ['Phân bổ ngân sách giữa các nhóm quảng cáo và tối ưu một điểm nghẽn chuyển đổi.', 'So sánh chi phí và chất lượng chuyển đổi trước khi điều chỉnh ngân sách.', 'Case study chiến dịch có phễu, quyết định tối ưu và kết quả đo.'],
+      ['Thiết kế kế hoạch thử nghiệm nhiều kênh khi dữ liệu chuyển đổi chưa nhất quán.', 'Đánh giá sai lệch tracking và giới hạn của mô hình phân bổ hiệu quả.', 'Kế hoạch đo lường và báo cáo quyết định đầu tư theo kịch bản.'],
+      ['Thiết lập nguyên tắc ngân sách, đo lường và review cho nhiều chiến dịch.', 'Thống nhất ngưỡng hiệu quả và cách kiểm chứng số liệu giữa các nhóm.', 'Bộ quy chuẩn vận hành kèm dashboard và nhật ký quyết định.']
+    ]
+  },
+  design: {
+    ux: [
+      ['Vẽ luồng một tác vụ đơn giản từ brief đã được xác định.', 'Kiểm tra các bước và trạng thái lỗi có dễ hiểu với người dùng.', 'User flow và wireframe có ghi chú điểm cần hỏi thêm.'],
+      ['Tự thiết kế lại một luồng đang gây bỏ dở tác vụ.', 'Quan sát vài lượt thao tác và sửa điểm vướng được lặp lại.', 'Prototype có thể bấm thử cùng ghi chép kiểm tra ẩn danh.'],
+      ['Phụ trách nghiên cứu vấn đề, thiết kế và kiểm tra một hành trình chính.', 'Đối chiếu hai phương án bằng mục tiêu tác vụ và bằng chứng kiểm thử.', 'Case study nối insight, user flow, prototype và thay đổi sau test.'],
+      ['Ưu tiên các điểm nghẽn xuyên nhiều luồng và hướng dẫn đội thiết kế.', 'Cân nhắc tác động tới khả năng tiếp cận, kỹ thuật và số liệu sản phẩm.', 'Bản đồ hành trình, phương án ưu tiên và kế hoạch kiểm chứng.'],
+      ['Thiết lập cách đội sản phẩm nghiên cứu và đánh giá trải nghiệm nhất quán.', 'Thống nhất tiêu chí chất lượng, cách chia sẻ insight và bảo vệ dữ liệu.', 'Bộ quy trình nghiên cứu, mẫu báo cáo và ví dụ áp dụng.']
+    ]
+  }
+};
+
+const careerMajorProgression = {
+  dev: [
+    ['Làm một phần nhỏ theo hướng dẫn', 'Bài demo nhỏ kèm cách chạy'],
+    ['Tự hoàn thành một tính năng có phạm vi rõ', 'Repo và demo có trường hợp lỗi'],
+    ['Phụ trách một luồng từ yêu cầu đến kiểm thử', 'Case study có sơ đồ luồng và ca kiểm thử'],
+    ['Thiết kế phương án cho trường hợp phức tạp', 'Bản thiết kế có đánh đổi và bằng chứng kiểm tra'],
+    ['Định hướng cách làm cho nhiều đầu việc', 'Quy ước kỹ thuật và hướng dẫn bàn giao']
+  ],
+  mkt: [
+    ['Làm một phần brief theo hướng dẫn', 'Mẫu nội dung và bảng giả định'],
+    ['Tự triển khai hoạt động trên một kênh', 'Kế hoạch một kênh và báo cáo kết quả'],
+    ['Phụ trách chiến dịch có mục tiêu và cách đo rõ', 'Case study chiến dịch có quyết định và chỉ số'],
+    ['Thiết kế thử nghiệm cho nhiều kênh', 'Kế hoạch đo lường có giới hạn dữ liệu'],
+    ['Định hướng kế hoạch và cách đánh giá cho cả nhóm', 'Quy trình chiến dịch và dashboard theo dõi']
+  ],
+  design: [
+    ['Làm một phần thiết kế theo brief có sẵn', 'Bản phác thảo và ghi chú lựa chọn'],
+    ['Tự hoàn thành một luồng hoặc bộ ấn phẩm', 'Prototype hoặc bộ file có thể xem thử'],
+    ['Phụ trách thiết kế từ vấn đề đến bàn giao', 'Case study có phản hồi và lần cải tiến'],
+    ['Giải quyết điểm nghẽn qua nhiều luồng', 'Phương án ưu tiên cùng bằng chứng kiểm chứng'],
+    ['Thiết lập quy chuẩn làm việc cho cả nhóm', 'Hướng dẫn thiết kế và ví dụ áp dụng']
+  ]
+};
+
+function getCareerRoleGuide(majorKey, trackKey, role) {
+  const [work, decision, artifact, problem] = careerWorkByTrack[majorKey]?.[trackKey]
+    ?? [`thực hiện công việc ${role.track}`, `kiểm tra chất lượng công việc ${role.track}`, `sản phẩm thực hành có minh chứng`, `yêu cầu của người dùng chưa được giải quyết`];
+  const levelIndex = levels.findIndex((level) => level.key === role.levelKey);
+  const index = levelIndex < 0 ? 2 : levelIndex;
+  const specific = careerTrackProgression[majorKey]?.[trackKey]?.[index];
+  const [stageScope, stageOutput] = careerMajorProgression[majorKey]?.[index] ?? careerMajorProgression.dev[index];
+  const scope = specific?.[0] ?? `${stageScope}: ${work}.`;
+  const decisionSentence = specific?.[1] ?? `Điểm cần cân nhắc: ${decision}.`;
+  const proof = specific?.[2] ?? `${stageOutput} về ${role.track.toLocaleLowerCase('vi')}; ví dụ đầu ra: ${artifact}.`;
+  return { work, decision, artifact: proof, problem, scope, decisionSentence };
 }
 
 function buildRoleReality({ currentMajor, selectedRole }) {
@@ -1933,19 +2036,44 @@ function CareerMapPage({ majors, currentMajor, changeMajor, columns, levels, sel
 
   const marketSignal = marketSignalsByMajor?.[currentMajor.key] ?? marketSignalsByMajor?.dev ?? {};
   const updatedLabel = getMarketUpdatedLabel();
-  const suggestedChallenges = (challenges ?? [])
-    .filter((challenge) => challenge.majorKey === currentMajor.key && challenge.track === selectedRole.track)
-    .slice(0, 3);
-  const roleReality = buildRoleReality({ currentMajor, selectedRole });
-  const dailyWork = roleReality.day;
-  const roleResponsibilities = roleReality.responsibility;
-  const roleSituations = roleReality.situations;
-  const roleProof = roleReality.proof;
-  const workIllustrations = (workGalleryBase[currentMajor.key] ?? workGalleryBase.dev).map(([title, subtitle, accent], index) => ({
-    title,
-    subtitle,
-    src: makeWorkIllustrationSrc({ title, subtitle, accent, roleTitle: selectedRole.title, majorShort: currentMajor.short }, index)
-  }));
+  const roleGuide = getCareerRoleGuide(currentMajor.key, selectedColumn.key, selectedRole);
+  const challengeLevelRank = { beginner: 0, intermediate: 1, advanced: 2 };
+  const targetChallengeRank = selectedRole.levelKey === 'nen-tang' || selectedRole.levelKey === 'so-cap' ? 0
+    : selectedRole.levelKey === 'trung-cap' ? 1 : 2;
+  const exactChallengeKeys = {
+    dev: { frontend: 'frontend', backend: 'backend', ai: 'data' },
+    mkt: { content: 'content', performance: 'performance', research: 'market-research' },
+    design: { ui: 'ui', research: 'ux-research' }
+  }[currentMajor.key] ?? {};
+  const suitableChallenges = (challenges ?? []).filter((challenge) => challenge.majorKey === currentMajor.key
+    && (challengeLevelRank[challenge.level] ?? 0) <= targetChallengeRank);
+  const sortByLevel = (a, b) => Math.abs(targetChallengeRank - challengeLevelRank[a.level]) - Math.abs(targetChallengeRank - challengeLevelRank[b.level]);
+  const isExactChallenge = (challenge) => challenge.specializationKey === exactChallengeKeys[selectedColumn.key]
+    && normalizeLookupText(challenge.track) === normalizeLookupText(selectedRole.track);
+  const exactChallenges = suitableChallenges.filter(isExactChallenge).sort(sortByLevel);
+  const relatedChallenges = suitableChallenges.filter((challenge) => !isExactChallenge(challenge)).sort(sortByLevel);
+  const suggestedChallenges = [...exactChallenges.map((challenge) => ({ challenge, relation: 'Đúng chuyên ngành' })),
+    ...relatedChallenges.map((challenge) => ({ challenge, relation: 'Bài liên quan' }))].slice(0, 3);
+  const dailyWork = [
+    `Nhận một vấn đề cụ thể: ${roleGuide.problem}.`,
+    `Triển khai: ${roleGuide.scope} ${roleGuide.decisionSentence}`,
+    `Bàn giao minh chứng: ${roleGuide.artifact}`
+  ];
+  const roleResponsibilities = [
+    `Làm rõ phạm vi: ai gặp vấn đề “${roleGuide.problem}” và kết quả mong đợi là gì.`,
+    roleGuide.scope,
+    `Kiểm tra chất lượng, giải thích phần bạn trực tiếp làm và bàn giao đầu ra đúng phạm vi.`
+  ];
+  const roleSituations = [
+    `Yêu cầu thay đổi khi đang làm: xác định phần nào ảnh hưởng đến ${roleGuide.work}.`,
+    roleGuide.decisionSentence,
+    `Kết quả chưa như mong muốn: ghi lại bằng chứng, giới hạn và việc cần kiểm tra lại.`
+  ];
+  const roleProof = [
+    `Trình bày bài toán và phạm vi công việc ở giai đoạn ${selectedRole.level}.`,
+    roleGuide.decisionSentence,
+    roleGuide.artifact
+  ];
 
   useEffect(() => {
     document.querySelector('.career-page')?.scrollTo({ left: 0, top: 0 });
@@ -1971,8 +2099,8 @@ function CareerMapPage({ majors, currentMajor, changeMajor, columns, levels, sel
       <div className="career-step-progress">
         {[
           ['specialization', '01', 'Chuyên ngành', selectedColumn.title],
-          ['role', '02', 'Chức vụ', selectedRole.title],
-          ['detail', '03', 'Chi tiết', selectedRole.level]
+          ['role', '02', 'Cấp độ', selectedRole.title],
+          ['detail', '03', 'Công việc', selectedRole.level]
         ].map(([key, index, label, value]) => (
           <button key={key} className={`${careerStep === key ? 'active' : ''} ${key === 'role' || key === 'detail' ? 'enabled' : ''}`} onClick={() => setCareerStep(key)}>
             <b>{index}</b>
@@ -2018,8 +2146,8 @@ function CareerMapPage({ majors, currentMajor, changeMajor, columns, levels, sel
               <div className="step-heading compact">
                 <b>02</b>
                 <div>
-                  <p className="mono-label">Chọn level</p>
-                  <h2>Chọn chức vụ trong {selectedColumn.title}</h2>
+                  <p className="mono-label">Các giai đoạn phát triển</p>
+                  <h2>Khám phá công việc {selectedColumn.title}</h2>
                 </div>
               </div>
             </div>
@@ -2030,30 +2158,35 @@ function CareerMapPage({ majors, currentMajor, changeMajor, columns, levels, sel
               </button>
             </div>
           </div>
-          <div className="vertical-roadmap role-step-list">
+          <p className="career-level-note">Các cấp độ giúp bạn hình dung phạm vi công việc và chọn bài thực hành. Tên chức danh ở mỗi công ty có thể khác nhau.</p>
+          <div className="career-role-options" aria-label={`Các cấp độ ${selectedColumn.title}`}>
             {levels.map((level, index) => {
               const roleItem = selectedColumn.roles[index];
+              const guide = getCareerRoleGuide(currentMajor.key, selectedColumn.key, roleItem);
               const picked = path.includes(roleItem.id);
               const hiddenBySearch = filteredRoleIds && !filteredRoleIds.has(roleItem.id);
               return (
                 <button
                   key={level.key}
-                  className={`${selectedRoleId === roleItem.id ? 'active' : ''} ${picked ? 'picked' : ''} ${hiddenBySearch ? 'dimmed' : ''}`}
+                  type="button"
+                  className={`career-role-option ${selectedRoleId === roleItem.id ? 'active' : ''} ${hiddenBySearch ? 'dimmed' : ''}`}
+                  aria-pressed={selectedRoleId === roleItem.id}
                   onClick={() => { setSelectedRoleId(roleItem.id); setCareerStep('detail'); }}
                 >
-                  <b>{level.short}</b>
-                  <div>
-                    <span>{level.label}</span>
+                  <span className="career-role-index">{level.short}</span>
+                  <span className="career-role-copy">
+                    <span className="career-role-eyebrow">{level.label}{picked && canBuildPath && <em> · Đã thêm vào lộ trình</em>}</span>
                     <strong>{roleItem.title}</strong>
-                    <small>{roleItem.experience} - {roleItem.salary}</small>
-                  </div>
-                  <i className={!canBuildPath ? 'disabled' : ''} onClick={(event) => { event.stopPropagation(); if (canBuildPath) picked ? removeFromPath(roleItem.id) : addToPath(roleItem.id); }}>
-                    {picked ? <Check size={15} /> : canBuildPath ? <Plus size={15} /> : <ShieldCheck size={15} />}
-                  </i>
+                    <span className="career-role-scope">{guide.scope}</span>
+                    <span className="career-role-detail"><b>Quyết định chính</b>{guide.decisionSentence}</span>
+                    <span className="career-role-detail"><b>Có thể đưa vào hồ sơ</b>{guide.artifact}</span>
+                  </span>
+                  <ArrowRight className="career-role-arrow" size={20} aria-hidden="true" />
                 </button>
               );
             })}
           </div>
+          <button type="button" className="career-market-link" onClick={() => go('trends')}>Xem dữ liệu thị trường và mức lương theo nguồn tham khảo <ArrowRight size={16} /></button>
         </section>
       )}
 
@@ -2067,22 +2200,26 @@ function CareerMapPage({ majors, currentMajor, changeMajor, columns, levels, sel
             </div>
           </div>
           <div className="role-detail-hero">
-            <div className="role-visual-scene" style={{ '--role-photo': `url("${workIllustrations[0]?.src}")` }}>
-              <span>{selectedRole.track}</span>
-              <strong>{selectedRole.level}</strong>
-              <i>{currentMajor.short}</i>
+            <div className="career-workflow" aria-label="Từ vấn đề đến sản phẩm có minh chứng">
+              <div className="career-workflow-heading"><span>Trong thực tế</span><strong>Một việc bạn có thể làm</strong></div>
+              <ol>
+                <li><span>01 · Vấn đề</span><p>{roleGuide.problem}.</p></li>
+                <li><span>02 · Cách làm</span><p>{roleGuide.scope} {roleGuide.decisionSentence}</p></li>
+                <li><span>03 · Minh chứng</span><p>{roleGuide.artifact}</p></li>
+              </ol>
             </div>
             <div className="role-detail-summary">
-              <p>{selectedRole.title} là vị trí tập trung vào {selectedRole.track}, yêu cầu kết hợp kỹ năng thực hành, tư duy sản phẩm và khả năng tạo đầu ra có thể chứng minh trong portfolio.</p>
+              <p className="mono-label">{selectedColumn.title} · {selectedRole.level}</p>
+              <h3>Công việc ở cấp độ {selectedRole.level}</h3>
+              <p>{roleGuide.scope} {roleGuide.decisionSentence} Hồ sơ của bạn nên cho người xem thấy cả quá trình ra quyết định lẫn đầu ra.</p>
               <div className="focus-meta">
-                <span>{selectedRole.experience}</span>
                 <button type="button" className="focus-meta-link" onClick={() => go('trends')}>Xem nguồn thị trường <ArrowRight size={14} /></button>
-                <span>{suggestedChallenges.length || 3} bài tập phù hợp</span>
+                <span>{suggestedChallenges.length} bài thực hành gợi ý</span>
               </div>
               <div className="step-actions">
                 <button className="ghost-action compact" onClick={() => setCareerStep('role')}>
                   <MoveUp size={15} />
-                  Chọn chức vụ khác
+                  Chọn cấp độ khác
                 </button>
                 {canBuildPath && <button className="primary-action compact" onClick={() => addToPath(selectedRole.id)}>
                   <Plus size={15} /> Lưu vị trí quan tâm
@@ -2091,9 +2228,9 @@ function CareerMapPage({ majors, currentMajor, changeMajor, columns, levels, sel
             </div>
           </div>
           {!canBuildPath && (
-            <div className="status-banner muted">
+            <div className="career-guest-note">
               <ShieldCheck size={17} />
-              Đăng nhập bằng tài khoản sinh viên và chọn ngành đã đăng ký để lưu vị trí này. Bạn vẫn có thể xem yêu cầu và bài tập gợi ý.
+              Đăng nhập tài khoản sinh viên để lưu vị trí này. Bạn vẫn có thể khám phá công việc và bài thực hành.
             </div>
           )}
 
@@ -2113,27 +2250,22 @@ function CareerMapPage({ majors, currentMajor, changeMajor, columns, levels, sel
           {/* TAB 1: TỔNG QUAN & CÔNG VIỆC */}
           {detailTab === 'overview' && (
             <>
-              <section className="role-work-gallery">
-                <div className="card-topline">
-                  <span>Ảnh minh họa công việc</span>
-                  <strong>{workIllustrations.length} ảnh</strong>
+              <section className="career-evidence" aria-labelledby="career-evidence-title">
+                <div className="career-evidence-heading">
+                  <div><p className="mono-label">Đầu ra đáng đưa vào hồ sơ</p><h3 id="career-evidence-title">Cho thấy việc đã làm, không chỉ kể về kỹ năng</h3></div>
+                  <span>{selectedColumn.title} · {selectedRole.level}</span>
                 </div>
-                <div className="work-gallery-grid">
-                  {workIllustrations.map((item) => (
-                    <figure className="work-gallery-card" key={`${selectedRole.id}-${item.title}`}>
-                      <img src={item.src} alt={`${item.title} - ${selectedRole.title}`} loading="lazy" />
-                      <figcaption>
-                        <strong>{item.title}</strong>
-                        <span>{item.subtitle}</span>
-                      </figcaption>
-                    </figure>
-                  ))}
+                <div className="career-evidence-grid">
+                  <article><span>01 / Bài toán</span><strong>Đặt vấn đề cụ thể</strong><p>{roleGuide.problem}. Viết rõ đối tượng gặp vấn đề và phạm vi bạn xử lý.</p></article>
+                  <article><span>02 / Quyết định</span><strong>Giải thích cách chọn</strong><p>{roleGuide.decisionSentence} Ghi lại phương án đã cân nhắc và lý do lựa chọn.</p></article>
+                  <article><span>03 / Sản phẩm</span><strong>Đưa ra bằng chứng</strong><p>{roleGuide.artifact} Đính kèm link xem được và nêu phần bạn trực tiếp thực hiện.</p></article>
                 </div>
+                {suggestedChallenges.length > 0 && <p className="career-evidence-reference">Có thể bắt đầu từ bài thực hành “{suggestedChallenges[0].challenge.title}” trong mục Dự án & Thử thách.</p>}
               </section>
               <div className="role-detail-grid">
                 <article className="role-reality-card">
-                  <p className="mono-label">Trong một ngày làm việc</p>
-                  <h3>Một ngày của {selectedRole.title}</h3>
+                  <p className="mono-label">Quy trình tham khảo</p>
+                  <h3>Một bài toán của {selectedRole.title}</h3>
                   {dailyWork.map((item) => <div className="requirement-item compact narrative" key={item}><Check size={16} /><span>{item}</span></div>)}
                 </article>
               </div>
@@ -2204,18 +2336,17 @@ function CareerMapPage({ majors, currentMajor, changeMajor, columns, levels, sel
                   <b>04</b>
                   <div>
                     <p className="mono-label">Bài tập đề xuất</p>
-                    <h2>Để đạt vị trí {selectedRole.title}</h2>
+                    <h2>Bài thực hành để bắt đầu</h2>
                   </div>
                 </div>
                 <div className="recommended-challenge-grid">
-                  {(suggestedChallenges.length ? suggestedChallenges : (challenges ?? []).filter((challenge) => challenge.majorKey === currentMajor.key).slice(0, 3)).map((challenge) => (
+                  {suggestedChallenges.map(({ challenge, relation }) => (
                     <article className="recommended-challenge-card" key={challenge.id}>
-                      <div className="challenge-illustration mini" data-track={challenge.track}>
-                        <span>{challenge.track}</span>
-                      </div>
+                      <div className="career-challenge-marker"><span>{relation}</span><b>{challenge.difficulty}</b></div>
                       <div>
                         <strong>{challenge.title}</strong>
-                        <span>{challenge.difficulty} · {challenge.xp} XP · {challenge.due}</span>
+                        <span>{challenge.summary}</span>
+                        <small>{challenge.specialization || challenge.track || currentMajor.title} · Khoảng {challenge.estimatedHours} giờ</small>
                       </div>
                       <button className="ghost-action compact" onClick={() => { setSelectedChallengeId(challenge.id); go('join'); }}>
                         Xem bài
@@ -2223,6 +2354,7 @@ function CareerMapPage({ majors, currentMajor, changeMajor, columns, levels, sel
                       </button>
                     </article>
                   ))}
+                  {suggestedChallenges.length === 0 && <p className="career-empty-challenges">Chưa có bài ở cấp độ này. Bạn có thể xem toàn bộ thử thách và chọn bài phù hợp với kỹ năng muốn luyện.</p>}
                 </div>
               </div>
             </>
