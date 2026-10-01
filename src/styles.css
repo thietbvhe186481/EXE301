@@ -10768,7 +10768,6 @@ body:has(.app-shell) { overflow: visible !important; }
 .career-page .career-classic-role-body .career-classic-level { margin: 0; color: #416177; font: 800 11px 'DM Mono', monospace; letter-spacing: .035em; text-transform: uppercase; }
 .career-page .career-classic-role-body strong { color: #112c40; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 19px; line-height: 1.25; }
 .career-page .career-classic-role-body small { margin: 1px 0 0; color: #405e70; font-size: 14px; line-height: 1.4; }
-.career-page .career-classic-role-body small b { color: #1b5c78; font-weight: 800; }
 .career-page .career-classic-arrow { color: #177eaa; }
 .career-page .career-classic-hero { grid-template-columns: minmax(0, .43fr) minmax(0, .57fr); align-items: stretch; gap: 22px; margin: 18px 0 14px; }
 .career-page .career-classic-photo { min-height: 335px; background-position: center; border-radius: 18px; }

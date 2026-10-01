@@ -2113,7 +2113,7 @@ function CareerMapPage({ majors, currentMajor, changeMajor, columns, levels, sel
                   <span className="career-classic-role-body">
                     <span className="career-classic-level">{level.label}{picked && canBuildPath ? ' · Đã lưu' : ''}</span>
                     <strong>{roleItem.title}</strong>
-                    <small><b>Trách nhiệm chính:</b> {guide.work}</small>
+                    <small>{guide.work}</small>
                   </span>
                   <ArrowRight className="career-classic-arrow" size={19} aria-hidden="true" />
                 </button>
