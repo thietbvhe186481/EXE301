@@ -1971,7 +1971,7 @@ function App() {
         )}
         {page === 'admin' && <Suspense fallback={<p className="status-banner" role="status">Đang mở bảng quản trị…</p>}><ReviewWorkspace currentUser={currentUser} go={go} onOpenPolicy={(key) => setFooterModalData(getFooterModalContent(key))} initialTab='applications' /></Suspense>}
       </main>
-      <HelpAssistant go={go} currentUser={currentUser} />
+      <HelpAssistant go={go} currentUser={currentUser} page={page} quiet={isVipModalOpen || Boolean(qrModalPlan)} />
     </div>
   );
 }
