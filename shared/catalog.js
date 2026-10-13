@@ -1,4 +1,5 @@
 import { RUBRIC_EVIDENCE } from './rubricEvidence.js';
+import { EXPANDED_BRIEFS } from './expandedChallenges.js';
 
 export const REVIEW_FEE = 5000;
 export const MAJOR_LABELS = { dev: 'Công nghệ thông tin', mkt: 'Marketing', design: 'Thiết kế' };
@@ -272,6 +273,65 @@ for (const brief of extraBriefs) {
     scenario: brief.scenario, reviewQuestion: brief.question, source: { ...sourceBySpecialization[brief.specialization], note: sourceNote } });
   CHALLENGES.push(challenge);
 }
+const universityPrograms = {
+  dev: { name: 'Khung Kỹ thuật phần mềm · Đại học FPT', url: 'https://daihoc.fpt.edu.vn/wp-content/uploads/2025/04/Inforgraphic-Khungchuongtrinh-KTPM.pdf' },
+  mkt: { name: 'Khung Digital Marketing · Đại học FPT', url: 'https://daihoc.fpt.edu.vn/wp-content/uploads/2025/04/Inforgraphic-Khungchuongtrinh-DIGITALMKT.pdf' },
+  design: { name: 'Khung Thiết kế mỹ thuật số · Đại học FPT', url: 'https://daihoc.fpt.edu.vn/wp-content/uploads/2025/04/Inforgraphic-Khungchuongtrinh-TKMTS.pdf' }
+};
+const informationSystemsProgram = { name: 'Khung Hệ thống thông tin · Đại học FPT', url: 'https://daihoc.fpt.edu.vn/wp-content/uploads/2025/04/Inforgraphic-Khungchuongtrinh-HTTT.pdf' };
+for (const [specializationKey, briefs] of Object.entries(EXPANDED_BRIEFS)) {
+  const majorKey = SPECIALIZATIONS.find(item => item.key === specializationKey)?.majorKey;
+  if (!majorKey) throw new Error(`Chuyên ngành không tồn tại: ${specializationKey}`);
+  for (const [slug, title, level, subject, scenario, outcome, ...requirements] of briefs) {
+    const challenge = make(`practice-${specializationKey}-${slug}`, title, majorKey, level,
+      scenario, requirements, [
+        ['scope', 'Xác định đúng vấn đề và phạm vi', 20],
+        ['product', 'Sản phẩm đáp ứng yêu cầu chính', 35],
+        ['evidence', 'Minh chứng và kiểm chứng kết quả', 30],
+        ['handoff', 'Trình bày và bàn giao', 15]
+      ]);
+    Object.assign(challenge, {
+      specializationKey, scenario, summary: scenario, learningOutcome: outcome,
+      reviewQuestion: `Bài làm có chứng minh được “${requirements[1]}” và giải thích các giới hạn còn lại không?`,
+      estimatedHours: { beginner: 6, intermediate: 10, advanced: 18 }[level],
+      curriculum: { subject, ...(specializationKey === 'data' || specializationKey === 'security' ? informationSystemsProgram : universityPrograms[majorKey]) },
+      source: { ...sourceBySpecialization[specializationKey], note: sourceNote }
+    });
+    challenge.rubric[0].expectation = `Nêu bối cảnh, đối tượng và phạm vi: ${scenario}`;
+    challenge.rubric[1].expectation = `Minh chứng sản phẩm: ${requirements[0]}; ${requirements[1]}.`;
+    challenge.rubric[2].expectation = `Cho thấy cách kiểm tra: ${requirements[2]}.`;
+    challenge.rubric[3].expectation = `Người khác mở được sản phẩm và hiểu cách bạn thực hiện: ${outcome}`;
+    challenge.rubric.forEach(criterion => {
+      criterion.anchors = {
+        basic: `0–4 · Thiếu minh chứng: ${criterion.expectation}`,
+        adequate: `5–7 · Có minh chứng nhưng chưa đầy đủ: ${criterion.expectation}`,
+        strong: `8–10 · Đáp ứng đầy đủ và giải thích được lựa chọn: ${criterion.expectation}`
+      };
+    });
+    CHALLENGES.push(challenge);
+  }
+}
+const submissionGuides = {
+  frontend: { label: 'Link demo hoặc repository mã nguồn', example: 'https://github.com/ten-ban/du-an', evidence: 'Cho xem giao diện chạy được, mã nguồn/README và trạng thái quan trọng.' },
+  backend: { label: 'Link repository API và tài liệu chạy thử', example: 'https://github.com/ten-ban/api', evidence: 'Có hướng dẫn chạy, request/response mẫu và kiểm thử; không đưa khóa bí mật vào repo.' },
+  data: { label: 'Link notebook hoặc báo cáo phân tích', example: 'https://colab.research.google.com/…', evidence: 'Ghi nguồn dữ liệu, bước xử lý, kết quả và cách tái lập; chỉ dùng dữ liệu được phép chia sẻ.' },
+  security: { label: 'Link báo cáo rà soát an toàn', example: 'https://drive.google.com/…', evidence: 'Nêu phạm vi được phép, bước kiểm tra, mức rủi ro và cách sửa; ẩn token/dữ liệu nhạy cảm.' },
+  'market-research': { label: 'Link báo cáo nghiên cứu hoặc bảng tính', example: 'https://docs.google.com/document/…', evidence: 'Có nguồn, ngày thu thập, cách chọn mẫu và ranh giới giữa quan sát với giả định.' },
+  content: { label: 'Link bộ nội dung hoặc kịch bản', example: 'https://docs.google.com/document/…', evidence: 'Cho xem nội dung hoàn chỉnh, đối tượng, thông điệp, kênh và cách đo phù hợp.' },
+  performance: { label: 'Link kế hoạch SEO/quảng cáo', example: 'https://docs.google.com/spreadsheets/…', evidence: 'Có nhóm từ khóa hoặc kênh, ngân sách giả định, KPI và điều kiện đánh giá.' },
+  'marketing-analytics': { label: 'Link dashboard, bảng tính hoặc báo cáo', example: 'https://docs.google.com/spreadsheets/…', evidence: 'Định nghĩa chỉ số, nguồn dữ liệu, công thức và giới hạn kết luận.' },
+  'ux-research': { label: 'Link case study hoặc báo cáo UX', example: 'https://docs.google.com/document/…', evidence: 'Có phương pháp, quan sát đã ẩn danh, insight và quyết định thiết kế.' },
+  ui: { label: 'Link prototype giao diện', example: 'https://www.figma.com/…', evidence: 'Cho phép bấm qua luồng chính, xem các trạng thái lỗi và chú thích bàn giao.' },
+  accessibility: { label: 'Link báo cáo kiểm tra hoặc prototype', example: 'https://www.figma.com/…', evidence: 'Có tiêu chí, bước tái hiện, minh chứng trước/sau và phương án sửa.' },
+  'design-system': { label: 'Link thư viện thiết kế và hướng dẫn dùng', example: 'https://www.figma.com/…', evidence: 'Có component/token, biến thể, trạng thái và ví dụ áp dụng trên màn hình.' }
+};
+for (const challenge of CHALLENGES) {
+  const guide = submissionGuides[challenge.specializationKey];
+  challenge.submission = { ...guide,
+    taskEvidence: challenge.requirements?.at(-1) || 'Đưa minh chứng cho các yêu cầu của đề bài.',
+    notePrompt: `Bạn đã thực hiện ${challenge.title.toLocaleLowerCase('vi')} như thế nào? Đường dẫn nào thể hiện yêu cầu quan trọng nhất, bạn đã kiểm tra kết quả ra sao?`
+  };
+}
 for (const challenge of CHALLENGES) {
   challenge.rubric.forEach((criterion, index) => {
     const [minimum, excellent] = RUBRIC_EVIDENCE[challenge.id]?.[index] || [];
@@ -286,6 +346,8 @@ for (const challenge of CHALLENGES) {
 }
 
 RESOURCES.push(
+  ...Object.values(universityPrograms).map((program, index) => ({ id: `source-fpt-curriculum-${index}`, title: program.name, majorKey: ['dev', 'mkt', 'design'][index], source: 'Đại học FPT', url: program.url, note: 'Khung chương trình công khai dùng để tham khảo chủ đề học; thử thách trên BeeLearn do nền tảng tự biên soạn.' })),
+  { id: 'source-fpt-curriculum-information-systems', title: informationSystemsProgram.name, majorKey: 'dev', source: 'Đại học FPT', url: informationSystemsProgram.url, note: 'Khung chương trình công khai dùng để tham khảo chủ đề dữ liệu và an toàn hệ thống; thử thách do BeeLearn tự biên soạn.' },
   { id: 'source-meta-backend', title: 'Meta Back-End Developer', majorKey: 'dev', source: 'Coursera', url: 'https://www.coursera.org/professional-certificates/meta-back-end-developer', note: 'Trang chương trình chính thức; lộ trình, giá và quyền truy cập theo nhà cung cấp.' },
   { id: 'source-google-it', title: 'Google IT Support', majorKey: 'dev', source: 'Coursera', url: 'https://www.coursera.org/professional-certificates/google-it-support', note: 'Trang chương trình chính thức; lộ trình, giá và quyền truy cập theo nhà cung cấp.' },
   { id: 'source-google-ai', title: 'Google AI', majorKey: 'dev', source: 'Coursera', url: 'https://www.coursera.org/professional-certificates/google-ai', note: 'Trang chương trình chính thức; nội dung và điều kiện truy cập có thể thay đổi.' },

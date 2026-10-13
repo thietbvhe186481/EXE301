@@ -37,6 +37,10 @@
 .rw-brief-page h2{font-size:clamp(25px,2.7vw,34px);max-width:760px;margin:12px 0 10px}
 .rw-brief-page .rw-brief-lead{font-size:16px;line-height:1.65;max-width:700px}
 .rw-brief-page .rw-jump-submit{margin:7px 0 13px}
+.rw-submission-guide{padding:17px 19px;margin:20px 0;background:#f0f8ff;border-left:4px solid #1d74c9;color:#173c64}
+.rw-submission-guide strong{display:block;font-size:14px}
+.rw-submission-guide p{margin:5px 0 6px;line-height:1.55}
+.rw-submission-guide small{display:block;color:#45617d;line-height:1.5}
 .rw-submit-entry{display:grid;gap:22px}
 .rw-resume-panel{background:#eaf3fd;border:1px solid #c6def4;border-left:4px solid #2c78d2;padding:22px 26px}
 .rw-resume-panel h2{font-size:20px;margin-bottom:3px}
