@@ -1,6 +1,7 @@
 import React, { lazy, Suspense, useEffect, useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import { careerExamples, careerSkillsByTrack, careerLevelDescriptions, careerLevelHeadings } from './data/careerExamples.js';
+import { careerExamples, careerSkillsByTrack, careerLevelHeadings } from './data/careerExamples.js';
+import { getCareerRoleProfile } from './data/careerRoleProfiles.js';
 import {
   AlertCircle,
   ArrowRight,
@@ -782,54 +783,20 @@ function getCareerRoleGuide(majorKey, trackKey, role) {
   };
 }
 
-function CareerWorkPreview({ currentMajor, selectedColumn, selectedRole, roleGuide }) {
-  const isMobile = currentMajor.key === 'dev' && selectedColumn.key === 'mobile';
-  const levelCopy = {
-    'nen-tang': 'Làm theo một luồng và tiêu chí đã có',
-    'so-cap': 'Tự hoàn thành một đầu việc có phạm vi rõ',
-    'trung-cap': 'Sở hữu luồng chính từ lúc nhận việc đến khi kiểm tra',
-    'cao-cap': 'Xử lý các tình huống khó và rủi ro vận hành',
-    'dan-dat': 'Thiết lập cách làm chung để cả nhóm cùng theo'
-  }[selectedRole.levelKey];
-
-  if (isMobile) {
-    const mobileState = {
-      'nen-tang': { badge: 'Màn làm bài', status: 'Làm theo hướng dẫn đã có', action: 'Mở bài' },
-      'so-cap': { badge: 'Tự lưu', status: 'Đã lưu câu trả lời', action: 'Lưu khi rời màn hình' },
-      'trung-cap': { badge: 'Khôi phục bài làm', status: 'Có thể tiếp tục bài đang làm', action: 'Tiếp tục bài' },
-      'cao-cap': { badge: 'Mất kết nối', status: 'Giữ bài khi không có mạng', action: 'Đồng bộ khi có mạng' },
-      'dan-dat': { badge: 'Quy ước lưu bài', status: 'Kiểm thử lưu và khôi phục', action: 'Xem kịch bản kiểm thử' }
-    }[selectedRole.levelKey];
-
-    return (
-      <aside className="career-work-preview career-mobile-preview" aria-label={`Minh họa công việc ${selectedRole.title}: ${roleGuide.work}`}>
-        <div className="career-preview-heading"><span>{selectedColumn.title} · {selectedRole.level}</span><b>{mobileState.badge}</b></div>
-        <div className="career-phone" aria-hidden="true">
-          <div className="career-phone-status"><i /><span>Bài đang làm</span></div>
-          <div className="career-phone-course"><small>{mobileState.badge}</small><b>{selectedRole.title}</b><em>{levelCopy}</em></div>
-          <div className="career-phone-question"><small>Trách nhiệm chính</small><span>{roleGuide.work}</span></div>
-          <div className="career-phone-answer active">{roleGuide.skills[0]} <Check size={15} /></div>
-          {roleGuide.skills[1] && <div className="career-phone-answer">{roleGuide.skills[1]}</div>}
-          <div className="career-phone-save"><Save size={14} /><span>{mobileState.status}</span></div>
-          <div className="career-phone-action">{mobileState.action}<ArrowRight size={14} /></div>
-        </div>
-        <p><strong>Tình huống:</strong> {roleGuide.request}</p>
-      </aside>
-    );
-  }
-
+function CareerWorkPreview({ currentMajor, selectedColumn, selectedRole, roleProfile }) {
   return (
-    <aside className={`career-work-preview career-work-preview-${currentMajor.key}`} aria-label={`Minh họa công việc ${selectedRole.title}: ${roleGuide.work}`}>
-      <div className="career-preview-heading"><span>{selectedColumn.title} · {selectedRole.level}</span><b>Phiên làm việc</b></div>
+    <aside className={`career-work-preview career-work-preview-${currentMajor.key} career-role-snapshot`} aria-label={`Phạm vi công việc ${selectedRole.title}`}>
+      <div className="career-preview-heading"><span>{selectedColumn.title} · {selectedRole.level}</span><b>Hồ sơ vai trò</b></div>
       <div className="career-preview-sheet">
-        <span className="career-preview-label">Trọng tâm ở cấp độ này</span>
-        <strong>{roleGuide.work}</strong>
+        <span className="career-preview-label">Phạm vi ở cấp độ này</span>
+        <strong>{roleProfile.scope}</strong>
         <div className="career-preview-divider" />
-        <span className="career-preview-label">Bối cảnh nhóm</span>
-        <p>{roleGuide.request}</p>
-        <div className="career-preview-check"><CheckCircle2 size={16} /><span>{roleGuide.skills[0]}</span></div>
+        <span className="career-preview-label career-snapshot-duties-heading">Các mảng việc thường gặp</span>
+        <ul className="career-snapshot-duties">
+          {roleProfile.responsibilities.slice(0, 3).map(item => <li key={item}><CheckCircle2 size={16} aria-hidden="true" />{item}</li>)}
+        </ul>
       </div>
-      <p><strong>Phạm vi:</strong> {levelCopy}</p>
+      <p>Phạm vi cụ thể thay đổi theo sản phẩm, quy mô nhóm và tổ chức.</p>
     </aside>
   );
 }
@@ -1991,6 +1958,7 @@ function CareerMapPage({ majors, currentMajor, changeMajor, columns, levels, sel
     )).map((item) => item.id));
   }, [allRoles, query]);
   const roleGuide = getCareerRoleGuide(currentMajor.key, selectedColumn.key, selectedRole);
+  const roleProfile = getCareerRoleProfile(currentMajor.key, selectedColumn.key, selectedRole.levelKey);
   const challengeLevelRank = { beginner: 0, intermediate: 1, advanced: 2 };
   const targetChallengeRank = selectedRole.levelKey === 'nen-tang' || selectedRole.levelKey === 'so-cap' ? 0
     : selectedRole.levelKey === 'trung-cap' ? 1 : 2;
@@ -2098,7 +2066,7 @@ function CareerMapPage({ majors, currentMajor, changeMajor, columns, levels, sel
           <div className="vertical-roadmap role-step-list career-classic-timeline" aria-label={`Các chức vụ ${selectedColumn.title}`}>
             {levels.map((level, index) => {
               const roleItem = selectedColumn.roles[index];
-              const guide = getCareerRoleGuide(currentMajor.key, selectedColumn.key, roleItem);
+              const profile = getCareerRoleProfile(currentMajor.key, selectedColumn.key, roleItem.levelKey);
               const picked = path.includes(roleItem.id);
               const hiddenBySearch = filteredRoleIds && !filteredRoleIds.has(roleItem.id);
               return (
@@ -2113,7 +2081,7 @@ function CareerMapPage({ majors, currentMajor, changeMajor, columns, levels, sel
                   <span className="career-classic-role-body">
                     <span className="career-classic-level">{level.label}{picked && canBuildPath ? ' · Đã lưu' : ''}</span>
                     <strong>{roleItem.title}</strong>
-                    <small>{guide.work}</small>
+                    <small>{profile.scope}</small>
                   </span>
                   <ArrowRight className="career-classic-arrow" size={19} aria-hidden="true" />
                 </button>
@@ -2134,11 +2102,10 @@ function CareerMapPage({ majors, currentMajor, changeMajor, columns, levels, sel
             </div>
           </div>
           <div className="role-detail-hero career-classic-hero">
-            <CareerWorkPreview currentMajor={currentMajor} selectedColumn={selectedColumn} selectedRole={selectedRole} roleGuide={roleGuide} />
+            <CareerWorkPreview currentMajor={currentMajor} selectedColumn={selectedColumn} selectedRole={selectedRole} roleProfile={roleProfile} />
             <div className="role-detail-summary career-classic-summary">
-              <p className="mono-label">Một công việc cụ thể</p>
-              <h3>{roleGuide.work}</h3>
-              <p><strong>Bối cảnh:</strong> {roleGuide.request}</p>
+              <p className="mono-label">Vai trò & phạm vi công việc</p>
+              <h3>{roleProfile.summary}</h3>
               <div className="focus-meta">
                 <span>{selectedRole.level}</span>
                 <button type="button" className="focus-meta-link" onClick={() => go('trends')}>Xem thông tin thị trường <ArrowRight size={14} /></button>
@@ -2165,13 +2132,12 @@ function CareerMapPage({ majors, currentMajor, changeMajor, columns, levels, sel
 
           {detailTab === 'overview' && (
             <section className="role-work-gallery career-classic-overview" role="tabpanel" aria-label="Tổng quan và công việc">
-              <div className="card-topline"><span>Công việc thực tế</span><strong>Một ví dụ theo cấp độ</strong></div>
+              <div className="card-topline"><span>Vai trò này làm gì?</span><strong>{selectedColumn.title}</strong></div>
               <div className="work-gallery-grid career-classic-steps">
-                <article><b>01</b><span>Bối cảnh</span><p>{roleGuide.request}</p></article>
-                <article><b>02</b><span>Điều cần chú ý</span><p>{roleGuide.skills[0]}</p></article>
-                <article><b>03</b><span>Cách kiểm tra</span><p>{roleGuide.skills[2] ?? roleGuide.skills[1] ?? 'Kiểm tra sản phẩm với người dùng.'}</p></article>
+                {roleProfile.responsibilities.slice(0, 3).map((duty, index) => <article key={duty}><b>0{index + 1}</b><span>{roleProfile.workAreas[index]}</span><p>{duty}</p></article>)}
               </div>
-              <p className="career-classic-context">Ví dụ này giúp bạn hình dung công việc; tên vị trí và phạm vi thực tế có thể khác giữa các tổ chức.</p>
+              <p className="career-classic-context">Mô tả là định hướng nghề nghiệp; trách nhiệm thực tế thay đổi theo tổ chức và sản phẩm. {roleProfile.source && <>Tham khảo và biên soạn từ <a href={roleProfile.source.url} target="_blank" rel="noopener noreferrer">{roleProfile.source.label} <ExternalLink size={13} /></a>.</>} {currentMajor.key === 'dev' && <>Tham khảo <a href="https://sfia-online.org/en/tools-and-resources/standard-industry-skills-profiles/sfia-9-skills-for-role-families-job-titles" target="_blank" rel="noopener noreferrer">hồ sơ nghề minh họa SFIA <ExternalLink size={13} /></a> và <a href="https://sfia-online.org/en/sfia-9/responsibilities" target="_blank" rel="noopener noreferrer">mức độ trách nhiệm SFIA <ExternalLink size={13} /></a>. Các cấp độ BeeLearn do chúng tôi biên soạn, không tương đương cấp hay chứng nhận SFIA.</>}</p>
+              <details className="career-example-note"><summary>Ví dụ một tình huống thực hành ở cấp độ này</summary><p>{roleGuide.request} <strong>Một phần việc có thể làm:</strong> {roleGuide.work}</p></details>
             </section>
           )}
 
@@ -2180,14 +2146,13 @@ function CareerMapPage({ majors, currentMajor, changeMajor, columns, levels, sel
               <article className="role-reality-card">
                 <p className="mono-label">Việc bạn phụ trách</p>
                 <h3>Phạm vi của vị trí</h3>
-                <div className="requirement-item compact narrative"><BadgeCheck size={17} /><span>{roleGuide.work}</span></div>
-                <div className="requirement-item compact narrative"><BadgeCheck size={17} /><span>{careerLevelDescriptions[Math.max(0, levels.findIndex((level) => level.key === selectedRole.levelKey))]}</span></div>
-                <div className="requirement-item compact narrative"><BadgeCheck size={17} /><span>Giải thích cách làm và cho nhóm xem sản phẩm trước khi bàn giao.</span></div>
+                <div className="career-responsibility-scope"><strong>Ở cấp độ {selectedRole.level}</strong><p>{roleProfile.scope}</p></div>
+                {roleProfile.responsibilities.map((item) => <div className="requirement-item compact narrative" key={item}><BadgeCheck size={17} /><span>{item}</span></div>)}
               </article>
               <article className="role-reality-card">
                 <p className="mono-label">Năng lực cần luyện</p>
                 <h3>Để làm tốt việc này</h3>
-                {roleGuide.skills.slice(1).map((item) => <div className="requirement-item compact narrative" key={item}><Check size={17} /><span>{item}</span></div>)}
+                {roleProfile.skills.map((item) => <div className="requirement-item compact narrative" key={item}><Check size={17} /><span>{item}</span></div>)}
               </article>
             </section>
           )}

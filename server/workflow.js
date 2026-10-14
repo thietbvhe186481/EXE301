@@ -3,6 +3,7 @@ import { randomUUID } from 'node:crypto';
 import { z } from 'zod';
 import { aiConfigured, generateAiAdvice } from './ai-review.js';
 import { CHALLENGES, RESOURCES, REVIEW_FEE, scoreReview, readinessCheck, ratingBonus, qualityFromRatings } from '../shared/catalog.js';
+import { summarizeMotivation } from '../shared/motivation.js';
 import { cancelPayosLink, createPayosLink, getPayosLink, payosConfigured, verifyPayosWebhook } from './payos.js';
 import { MENTOR_AGREEMENT_VERSION } from '../shared/mentorAgreement.js';
 import { DEFAULT_RECEIVING_ACCOUNT } from '../shared/paymentAccount.js';
@@ -156,6 +157,7 @@ export function createWorkflowRouter({ UserProfile, MentorAccount, AdminAccount,
     res.json({ catalog: CHALLENGES, resources: RESOURCES, mentors, submissions: role === 'student' ? submissions.map(studentVisibleSubmission) : submissions, aiEnabled: aiConfigured(),
       mentorAgreement: role === 'mentor' ? { accepted: req.account.mentorAgreementVersion === MENTOR_AGREEMENT_VERSION && Boolean(req.account.mentorAgreementAcceptedAt), version: MENTOR_AGREEMENT_VERSION, acceptedAt: req.account.mentorAgreementAcceptedAt || null } : null,
       profile, paid: role === 'student' && hasPaidAccess(req.account), orders,
+      motivation: role === 'student' ? summarizeMotivation(submissions) : null,
       applications: profiles.filter(item => item.application?.submittedAt).map(item => ({ ...item, name: mentors.find(mentor => mentor.id === item.mentorId)?.name || item.mentorId })),
       unsubmittedMentors: role === 'admin' ? payoutAccounts.filter(account => account.status === 'active' && !profiles.some(item => item.mentorId === account.id && item.application?.submittedAt))
         .map(account => ({ mentorId: account.id, name: account.name, email: account.email, title: account.title || '', expertise: account.expertise || [], profileUrl: account.profileUrl || '' })) : [],

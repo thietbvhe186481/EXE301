@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { ArrowRight, BookOpen, ExternalLink, RefreshCw, ShieldCheck, Star } from 'lucide-react';
 import { CHALLENGES, RESOURCES, SPECIALIZATIONS, MAJOR_LABELS, LEVEL_LABELS, REVIEW_FEE } from '../../shared/catalog.js';
+import { pointsForChallenge } from '../../shared/motivation.js';
 import { fetchWithAuth } from '../services/api';
 import './ReviewWorkspace.css';
 
@@ -23,13 +24,30 @@ function Link({ url, children }) { return safeUrl(url) ? <a href={url} target="_
 function Empty({ children }) { return <div className="rw-empty"><BookOpen size={28} /><p>{children}</p></div>; }
 function Field({ label, children, hint }) { return <label className="rw-field"><span>{label}</span>{children}{hint && <small>{hint}</small>}</label>; }
 
+function MotivationPanel({ motivation, view, onNavigate }) {
+  const nextSticker = motivation.stickers?.find(item => !item.earned);
+  const levelStart = [0, 0, 120, 300, 600, 1000][motivation.level] ?? 0;
+  const target = motivation.nextLevelPoints ?? motivation.totalPoints;
+  const progress = target > levelStart ? Math.min(100, Math.max(0, Math.round((motivation.totalPoints - levelStart) / (target - levelStart) * 100))) : 100;
+  return <section className={`rw-motivation rw-motivation-stage-${motivation.level}`} aria-labelledby="rw-motivation-title">
+    <div className="rw-motivation-main">
+      <div className="rw-motivation-bee" aria-hidden="true"><img src={`${import.meta.env.BASE_URL}beelearn-brand.png`} alt="" /><span>{motivation.level >= 5 ? '★' : motivation.level >= 3 ? '✦' : '✧'}</span></div>
+      <div className="rw-motivation-copy"><p className="rw-motivation-kicker">GÓC CỦA BEE · HÀNH TRÌNH THỰC HÀNH</p><h2 id="rw-motivation-title">{motivation.levelName}</h2><p>Đã nộp {motivation.submittedCount} thử thách. Điểm ghi nhận việc thực hành, không phải điểm chấm năng lực.</p></div>
+      <div className="rw-motivation-total"><strong>{motivation.totalPoints}</strong><span>điểm hoạt động</span></div>
+    </div>
+    <div className="rw-motivation-progress"><div className="rw-motivation-progress-label"><span>Cấp {motivation.level} · {motivation.beeStage}</span><span>{motivation.nextLevelPoints == null ? 'Đã đạt cấp hiện tại cao nhất' : `Còn ${motivation.pointsToNextLevel} điểm đến cấp tiếp theo`}</span></div><div className="rw-progress-track" role="progressbar" aria-valuenow={progress} aria-valuemin="0" aria-valuemax="100" aria-label="Tiến độ cấp độ Bee"><span style={{ width: `${progress}%` }} /></div></div>
+    <div className="rw-motivation-bottom"><div><strong>Sticker của bạn</strong><p>{nextSticker ? `Sắp mở: ${nextSticker.title} · ${nextSticker.description}` : 'Bạn đã mở toàn bộ sticker hiện có.'}</p></div><details className="rw-sticker-details"><summary>Xem bộ sưu tập {motivation.stickers?.length || 0} sticker</summary><ul className="rw-sticker-list" aria-label="Bộ sưu tập sticker">{motivation.stickers?.map(item => <li key={item.id} className={`rw-sticker ${item.earned ? 'earned' : 'locked'}`}><span aria-hidden="true">{item.earned ? '✿' : '◇'}</span><div><strong>{item.title}</strong><small>{item.earned ? 'Đã mở' : 'Chưa mở'} · {item.description}</small></div></li>)}</ul></details></div>
+    <button type="button" className="rw-motivation-link" onClick={onNavigate}>{view === 'submissions' ? 'Khám phá thử thách tiếp theo' : 'Xem hành trình bài đã nộp'} <ArrowRight size={15} aria-hidden="true" /></button>
+  </section>;
+}
+
 export default function ReviewWorkspace({ currentUser, go, onOpenPolicy, initialTab = 'catalog', initialChallengeId }) {
   const role = currentUser?.type || 'guest';
   const mentor = role === 'mentor', admin = role === 'admin';
   const tabs = admin ? [['applications', 'Duyệt mentor'], ['payments', 'Đối soát & chi trả'], ['quality', 'Chất lượng'], ['complaints', 'Khiếu nại']] : mentor ? [['queue', 'Bài cần review'], ['scope', 'Hồ sơ & chuyên môn'], ['earnings', 'Thu nhập'], ['talent', 'Sinh viên nổi trội'], ['support', 'Hỗ trợ']] : [['catalog', 'Thử thách'], ['submit', 'Nộp bài'], ['submissions', 'Bài đã nộp'], ['resources', 'Học liệu'], ['support', 'Hỗ trợ']];
   const normalizeTab = value => tabs.some(([key]) => key === value) ? value : mentor ? 'queue' : admin ? 'applications' : ['history', 'feedback'].includes(value) ? 'submissions' : value === 'learning' ? 'resources' : 'catalog';
   const [tab, setTab] = useState(() => normalizeTab(initialTab));
-  const [data, setData] = useState({ catalog: CHALLENGES, resources: RESOURCES, mentors: [], submissions: [], orders: [], talents: [], applications: [], complaints: [], earnings: {} });
+  const [data, setData] = useState({ catalog: CHALLENGES, resources: RESOURCES, mentors: [], submissions: [], orders: [], talents: [], applications: [], complaints: [], earnings: {}, motivation: null });
   const [loading, setLoading] = useState(false), [busy, setBusy] = useState(false), [error, setError] = useState(''), [notice, setNotice] = useState(''), [online, setOnline] = useState(false);
   const [filters, setFilters] = useState({ major: '', specialization: '', level: '', access: '', query: '' });
   const [filtersExpanded, setFiltersExpanded] = useState(false);
@@ -104,7 +122,9 @@ export default function ReviewWorkspace({ currentUser, go, onOpenPolicy, initial
     if (status !== 'draft' && skills.length < 2) { setError('Hãy nêu ít nhất 2 kỹ năng đã dùng trong bài.'); return; }
     if (status !== 'draft' && !links.length) { setError(`Hãy thêm ${selected.submission?.label?.toLocaleLowerCase('vi') || 'đường dẫn bài làm'} để người review xem được sản phẩm.`); return; }
     if (status !== 'draft' && links.length && !form.linksAccessible) { setError('Hãy mở thử các đường dẫn và xác nhận người review có thể xem bài.'); return; }
-    const ok = await mutate(`/submissions${editingId ? `/${editingId}` : ''}`, { ...form, format: 'project', links, skills, challengeId: selected.id, status }, editingId ? 'PUT' : 'POST', status === 'draft' ? 'Đã lưu bản nháp.' : 'Đã tiếp nhận bài nộp. Xem kết quả và trạng thái bên dưới.');
+    const newMilestone = status !== 'draft' && !data.submissions.some(s => s.challengeId === selected.id && ['queued', 'in_review', 'needs_revision', 'completed'].includes(s.status));
+    const success = status === 'draft' ? 'Đã lưu bản nháp.' : newMilestone ? `Đã nhận bài! Bạn vừa có thêm ${pointsForChallenge(selected)} điểm hoạt động. Xem tiến độ trong Góc của Bee bên dưới.` : 'Đã tiếp nhận bài nộp. Xem kết quả và trạng thái bên dưới.';
+    const ok = await mutate(`/submissions${editingId ? `/${editingId}` : ''}`, { ...form, format: 'project', links, skills, challengeId: selected.id, status }, editingId ? 'PUT' : 'POST', success);
     if (ok) { window.sessionStorage.removeItem('rw:challengeId'); setSelected(null); setEditingId(null); setTab('submissions'); go('submissionHistory'); }
   }
   const gated = selected?.access === 'premium' && !data.paid;
@@ -125,6 +145,7 @@ export default function ReviewWorkspace({ currentUser, go, onOpenPolicy, initial
     {error && <div className="rw-alert rw-error" role="alert">{error}</div>}
     {notice && <div className="rw-alert rw-success" role="status">{notice}</div>}
     {!online && !loading && !error && <div className="rw-alert">Không thể tải dữ liệu tài khoản lúc này. Bạn vẫn có thể xem đề bài; hãy thử lại trước khi nộp bài hoặc xem phản hồi.</div>}
+    {role === 'student' && online && data.motivation && ((tab === 'catalog' && !selected) || tab === 'submissions') && <MotivationPanel motivation={data.motivation} view={tab} onNavigate={() => { setSelected(null); setTab(tab === 'submissions' ? 'catalog' : 'submissions'); window.scrollTo(0, 0); }} />}
     {tab === 'catalog' && !selected && <>
       <div className="rw-section-heading"><div><h2>Chọn bài để thực hành</h2><p>So sánh sản phẩm cần hoàn thành, yêu cầu và thời gian dự kiến trước khi mở đề bài.</p></div>{online && <span className="rw-badge">{data.paid ? 'Tài khoản Premium' : 'Có thử thách miễn phí'}</span>}</div>
       <div className="rw-catalog-intro"><strong>{filteredCatalog.length} thử thách phù hợp</strong><span>Chọn một bài để xem đề và chuẩn bị sản phẩm theo khả năng của bạn.</span>{hasActiveFilters && <button type="button" className="rw-reset-filters" onClick={() => setFilters({ major: '', specialization: '', level: '', access: '', query: '' })}>Đặt lại bộ lọc</button>}</div>
@@ -138,7 +159,7 @@ export default function ReviewWorkspace({ currentUser, go, onOpenPolicy, initial
         <Field label="Quyền truy cập"><select value={filters.access} onChange={e => setFilters({ ...filters, access: e.target.value })}><option value="">Tất cả</option><option value="free">Miễn phí</option><option value="premium">Premium</option></select></Field>
         </div>
       </div>
-      <div className="rw-catalog">{filteredCatalog.slice(0, visibleCount).map(c => <article key={c.id} className="rw-challenge"><div className="rw-card-meta"><span>{MAJOR_LABELS[c.majorKey]} / {specializationLabel(c.specializationKey)}</span><span>{c.access === 'premium' ? 'Premium' : 'Miễn phí'}</span></div><h3>{c.title}</h3><p>{c.summary}</p><div className="rw-card-outcome"><small>Sản phẩm bạn sẽ có</small><p>{c.learningOutcome || 'Hoàn thành sản phẩm theo yêu cầu và lưu lại minh chứng để bổ sung vào portfolio.'}</p></div><div className="rw-card-requirements"><strong>Cần thực hiện</strong><ul>{(c.requirements || []).slice(0, 2).map((item, i) => <li key={i}>{item}</li>)}</ul></div><div className="rw-card-foot"><span>{LEVEL_LABELS[c.level]} · khoảng {c.estimatedHours} giờ</span><button onClick={() => choose(c)}>Xem đề bài <ArrowRight size={16} /></button></div>{c.curriculum?.subject && <small>Chủ đề liên quan: {c.curriculum.subject}</small>}</article>)}</div>
+      <div className="rw-catalog">{filteredCatalog.slice(0, visibleCount).map(c => <article key={c.id} className="rw-challenge"><div className="rw-card-meta"><span>{MAJOR_LABELS[c.majorKey]} / {specializationLabel(c.specializationKey)}</span><span>{c.access === 'premium' ? 'Premium' : 'Miễn phí'}</span></div><h3>{c.title}</h3><p>{c.summary}</p><div className="rw-card-outcome"><small>Sản phẩm bạn sẽ có</small><p>{c.learningOutcome || 'Hoàn thành sản phẩm theo yêu cầu và lưu lại minh chứng để bổ sung vào portfolio.'}</p></div><div className="rw-card-requirements"><strong>Cần thực hiện</strong><ul>{(c.requirements || []).slice(0, 2).map((item, i) => <li key={i}>{item}</li>)}</ul></div><div className="rw-card-foot"><span>{LEVEL_LABELS[c.level]} · khoảng {c.estimatedHours} giờ</span><button onClick={() => choose(c)}>Xem đề bài <ArrowRight size={16} /></button></div><small className="rw-activity-points">{role === 'student' && online && data.submissions.some(s => s.challengeId === c.id && ['queued', 'in_review', 'needs_revision', 'completed'].includes(s.status)) ? `Đã nhận ${pointsForChallenge(c)} điểm hoạt động` : `+${pointsForChallenge(c)} điểm hoạt động khi nộp bài này lần đầu`}</small>{c.curriculum?.subject && <small>Chủ đề liên quan: {c.curriculum.subject}</small>}</article>)}</div>
       {filteredCatalog.length > visibleCount && <div className="rw-show-more"><span>Đang hiển thị {visibleCount}/{filteredCatalog.length} thử thách</span><button type="button" className="rw-secondary" onClick={() => setVisibleCount(count => Math.min(count + 12, filteredCatalog.length))}>Xem thêm thử thách <ArrowRight size={16} /></button></div>}
       {!filteredCatalog.length && <Empty>Chưa có thử thách khớp bộ lọc. Hãy thử lĩnh vực, chuyên ngành hoặc trình độ khác.</Empty>}
     </>}
