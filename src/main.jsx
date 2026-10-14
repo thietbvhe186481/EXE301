@@ -1874,7 +1874,7 @@ function App() {
             go={go}
           />
         )}
-        {['hub', 'join', 'submit', 'feedback', 'submissionHistory', 'mentor'].includes(page) && <Suspense fallback={<p className="status-banner" role="status">Đang mở không gian thực hành…</p>}><ReviewWorkspace key={currentUser?.user?.id ?? 'guest'} currentUser={currentUser} go={go} onOpenPolicy={(key) => setFooterModalData(getFooterModalContent(key))} initialTab={['feedback', 'submissionHistory'].includes(page) ? 'submissions' : page === 'mentor' ? 'queue' : page === 'submit' ? 'submit' : 'catalog'} initialChallengeId={page === 'join' ? selectedChallengeId : undefined} /></Suspense>}
+        {['hub', 'join', 'submit', 'feedback', 'submissionHistory', 'mentor'].includes(page) && <Suspense fallback={<p className="status-banner" role="status">Đang mở không gian thực hành…</p>}><ReviewWorkspace key={currentUser?.user?.id ?? 'guest'} currentUser={currentUser} go={go} onOpenPolicy={(key) => setFooterModalData(getFooterModalContent(key))} initialTab={page === 'feedback' ? 'feedback' : page === 'submissionHistory' ? 'submissions' : page === 'mentor' ? 'queue' : page === 'submit' ? 'submit' : 'catalog'} initialChallengeId={page === 'join' ? selectedChallengeId : undefined} /></Suspense>}
         {page === 'learning' && <LearningPage go={go} />}
         {page === 'roadmap' && (
           <CareerMapPage
