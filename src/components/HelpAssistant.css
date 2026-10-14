@@ -40,3 +40,15 @@
 @keyframes bee-bubble-enter{from{opacity:0;transform:translateY(7px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
 @media(max-width:640px){.help-assistant{right:10px;bottom:10px}.help-assistant-bubble{display:none}.help-assistant-panel{position:fixed;left:max(10px,env(safe-area-inset-left));right:max(10px,env(safe-area-inset-right));bottom:78px;width:auto;max-width:none;margin:0;height:min(530px,calc(100dvh - 106px));max-height:calc(100dvh - 106px)}.help-assistant-launcher{width:68px;min-height:70px}.help-assistant-bee{width:65px;height:64px;border-radius:19px}.help-assistant-bee img{width:137px;height:137px;top:-20px;left:-34px}.help-assistant-launcher-label{min-width:57px;font-size:10px;padding:4px 7px}.help-assistant-launcher.is-open{width:56px;min-height:56px}}
 @media(prefers-reduced-motion:reduce){.help-assistant-bee,.help-assistant-bubble{animation:none}.help-assistant-launcher{transition:none}.help-assistant-launcher:hover{transform:none}}
+
+/* Keep the assistant accessible without covering challenge and journey actions. */
+@media(max-width:900px){
+  body:has(.rw-student-workspace, .career-page) .help-assistant{right:6px;bottom:6px}
+  body:has(.rw-student-workspace, .career-page) .help-assistant-launcher:not(.is-open){width:44px;min-height:44px}
+  body:has(.rw-student-workspace, .career-page) .help-assistant-launcher:not(.is-open) .help-assistant-bee{width:42px;height:42px;border-radius:12px}
+  body:has(.rw-student-workspace, .career-page) .help-assistant-launcher:not(.is-open) .help-assistant-bee img{width:92px;height:92px;top:-14px;left:-23px}
+  body:has(.rw-student-workspace, .career-page) .help-assistant-launcher:not(.is-open) .help-assistant-launcher-label,
+  body:has(.rw-student-workspace, .career-page) .help-assistant-bubble{display:none}
+  body:has(.rw-student-workspace, .career-page) .rw-student-workspace,
+  body:has(.rw-student-workspace, .career-page) .career-page{padding-bottom:112px}
+}

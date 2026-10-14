@@ -1241,7 +1241,7 @@ function App() {
   const [autoOpenPublicPortfolio, setAutoOpenPublicPortfolio] = useState(false);
   const [selectedMajorKey, setSelectedMajorKey] = useState('dev');
   const [selectedRoleId, setSelectedRoleId] = useState('dev-fullstack-trung-cap');
-  const [path, setPath] = useState(['dev-frontend-so-cap', 'dev-fullstack-trung-cap', 'dev-architecture-cao-cap']);
+  const [path, setPath] = useState([]);
   const [selectedChallengeId, setSelectedChallengeId] = useState('dev-api');
   const [activeTrack, setActiveTrack] = useState('Tất cả');
   const [savedPathName, setSavedPathName] = useState('');
@@ -1375,11 +1375,11 @@ function App() {
 
     const activeRole = currentUser?.type ?? currentUser?.user?.role;
 
-    if (activeRole === 'student' && currentUser.user?.path?.length) {
+    if (activeRole === 'student') {
       setSelectedMajorKey(currentUser.user.selectedMajorKey ?? 'dev');
-      setPath(currentUser.user.path);
-    } else if (!currentUser && appData.demoUser.path?.length) {
-      setPath(appData.demoUser.path);
+      setPath(currentUser.user.path ?? []);
+    } else if (!currentUser) {
+      setPath([]);
     }
     const activeUser = activeRole === 'student' ? currentUser.user : appData.demoUser;
     const userSubmissions = (appData.submissions ?? []).filter((item) => item.userId === activeUser?.id);
@@ -1421,12 +1421,11 @@ function App() {
   const changeMajor = (majorKey) => {
     const nextMajor = catalog.find((item) => item.key === majorKey) ?? catalog[0];
     const nextRole = nextMajor.columns[0].roles[2];
-    const nextPath = nextMajor.columns.slice(0, 3).map((column, index) => column.roles[Math.min(index + 1, levels.length - 1)].id);
     const nextChallenge = challengeList.find((item) => item.majorKey === majorKey);
     setSelectedMajorKey(majorKey);
     setSelectedRoleId(nextRole.id);
     if (!currentUser || majorKey === userMajorKey) {
-      setPath(currentRole === 'student' && currentUser.user.path?.length ? currentUser.user.path : nextPath);
+      setPath(currentRole === 'student' ? (currentUser.user.path ?? []) : []);
     }
     setActiveTrack('Tất cả');
     setSelectedChallengeId(nextChallenge?.id ?? selectedChallengeId);
@@ -1444,15 +1443,18 @@ function App() {
     if (!canBuildPath) return;
     setPath([]);
   };
-  const savePath = () => {
+  const savePath = async () => {
     if (!canBuildPath) {
       setSavedPathName('Chỉ ngành đã chọn khi đăng nhập mới được lưu lộ trình');
       return;
     }
-    const savedAt = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    setSavedPathName(`Đã lưu lộ trình ${currentMajor.short} lúc ${savedAt}`);
-    if (apiStatus === 'mongo') {
-      fetch(`${API_BASE_URL}/api/users/${userId}/path`, {
+    if (apiStatus !== 'mongo') {
+      setSavedPathName('Chưa kết nối tài khoản. Hãy thử lưu lại sau.');
+      return;
+    }
+    setSavedPathName('Đang lưu lộ trình…');
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/users/${userId}/path`, {
         method: 'PUT',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
@@ -1461,12 +1463,13 @@ function App() {
           selectedMajorKey,
           careerGoal: pathRoles[pathRoles.length - 1]?.title ?? currentMajor.title
         })
-      })
-        .then((response) => response.ok ? response.json() : null)
-        .then((user) => {
-          if (user) setCurrentUser((current) => ({ ...(current ?? { type: 'student' }), type: 'student', user }));
-        })
-        .catch(() => undefined);
+      });
+      if (!response.ok) throw new Error('Không thể lưu lộ trình. Vui lòng thử lại.');
+      const user = await response.json();
+      setCurrentUser((current) => ({ ...(current ?? { type: 'student' }), type: 'student', user }));
+      setSavedPathName(`Đã lưu lộ trình ${currentMajor.short}.`);
+    } catch {
+      setSavedPathName('Không thể lưu lộ trình. Vui lòng thử lại.');
     }
   };
   const applyAuthenticatedUser = (data, navigate = true) => {
@@ -1946,6 +1949,7 @@ function App() {
 function CareerMapPage({ majors, currentMajor, changeMajor, columns, levels, selectedColumn, selectedRole, selectedRoleId, setSelectedRoleId, path, pathRoles, allRoles, addToPath, removeFromPath, movePath, clearPath, savePath, savedPathName, canBuildPath, userMajorKey, challenges, setSelectedChallengeId, marketSignalsByMajor = {}, go }) {
   const [query, setQuery] = useState('');
   const [careerStep, setCareerStep] = useState('specialization');
+  const [careerView, setCareerView] = useState('explore');
   const [detailTab, setDetailTab] = useState('overview');
   const filteredRoleIds = useMemo(() => {
     const normalized = query.trim().toLowerCase();
@@ -1967,6 +1971,11 @@ function CareerMapPage({ majors, currentMajor, changeMajor, columns, levels, sel
     mkt: { content: 'content', performance: 'performance', research: 'market-research' },
     design: { ui: 'ui', research: 'ux-research' }
   }[currentMajor.key] ?? {};
+  const relatedChallengeKeys = {
+    dev: { fullstack: ['frontend', 'backend'], mobile: ['frontend'], devops: ['backend', 'security'], architecture: ['backend', 'security'] },
+    mkt: { seo: ['performance'], social: ['content'], brand: ['content'], growth: ['marketing-analytics', 'performance'], crm: ['marketing-analytics'] },
+    design: { ux: ['ux-research'], product: ['ui', 'design-system'], graphic: ['ui'], motion: ['ui'], brand: ['design-system'] }
+  }[currentMajor.key] ?? {};
   const suitableChallenges = (challenges ?? []).filter((challenge) => challenge.majorKey === currentMajor.key
     && (challengeLevelRank[challenge.level] ?? 0) <= targetChallengeRank);
   const sortByLevel = (a, b) => Math.abs(targetChallengeRank - challengeLevelRank[a.level]) - Math.abs(targetChallengeRank - challengeLevelRank[b.level]);
@@ -1976,10 +1985,26 @@ function CareerMapPage({ majors, currentMajor, changeMajor, columns, levels, sel
   const relatedChallenges = suitableChallenges.filter((challenge) => !isExactChallenge(challenge)).sort(sortByLevel);
   const suggestedChallenges = [...exactChallenges.map((challenge) => ({ challenge, relation: 'Đúng chuyên ngành' })),
     ...relatedChallenges.map((challenge) => ({ challenge, relation: 'Bài liên quan' }))].slice(0, 3);
+  const journeyRoles = selectedColumn.roles;
+  const majorChallenges = (challenges ?? []).filter((challenge) => challenge.majorKey === currentMajor.key);
+  const focusKeys = [exactChallengeKeys[selectedColumn.key], ...(relatedChallengeKeys[selectedColumn.key] ?? [])].filter(Boolean);
+  const focusChallenges = majorChallenges.filter((challenge) => focusKeys.includes(challenge.specializationKey));
+  const journeyChallenges = focusChallenges.length ? focusChallenges : majorChallenges;
+  const journeyCatalogCount = focusKeys.length === 1 && focusChallenges.length ? focusChallenges.length : majorChallenges.length;
+  const journeyChallengeLabel = focusChallenges.length
+    ? `bài gợi ý liên quan đến ${selectedColumn.title} trong ${majorChallenges.length} bài ${currentMajor.short}`
+    : `bài thực hành trong lĩnh vực ${currentMajor.title}`;
+  const openJourneyCatalog = () => {
+    window.sessionStorage.setItem('rw:catalogMajor', currentMajor.key);
+    if (focusKeys.length === 1) window.sessionStorage.setItem('rw:catalogSpecialization', focusKeys[0]);
+    else window.sessionStorage.removeItem('rw:catalogSpecialization');
+    go('hub');
+  };
 
   useEffect(() => {
     document.querySelector('.career-page')?.scrollTo({ left: 0, top: 0 });
     setCareerStep('specialization');
+    setCareerView('explore');
   }, [currentMajor.key]);
 
   useEffect(() => { setDetailTab('overview'); }, [selectedRole.id]);
@@ -1999,6 +2024,35 @@ function CareerMapPage({ majors, currentMajor, changeMajor, columns, levels, sel
           ))}
         </div>
       </div>
+
+      <nav className="career-view-switch" aria-label="Chế độ xem bản đồ nghề">
+        <button type="button" className={careerView === 'explore' ? 'active' : ''} aria-current={careerView === 'explore' ? 'page' : undefined} onClick={() => setCareerView('explore')}>Khám phá vị trí</button>
+        <button type="button" className={careerView === 'journey' ? 'active' : ''} aria-current={careerView === 'journey' ? 'page' : undefined} onClick={() => setCareerView('journey')}>Lộ trình sự nghiệp{canBuildPath && pathRoles.length ? ` · ${pathRoles.length}` : ''}</button>
+      </nav>
+
+      {careerView === 'journey' ? <section className="career-journey" aria-labelledby="career-journey-title">
+        <div className="career-journey-intro">
+          <div><p className="mono-label">TỪ KHÁM PHÁ ĐẾN THỰC HÀNH</p><h2 id="career-journey-title">Lộ trình {selectedColumn.title}</h2><p>Khám phá các cấp độ của nghề, chọn vị trí quan tâm rồi luyện tập bằng sản phẩm cụ thể. Đây là lộ trình tham khảo, không phải chứng nhận cấp bậc nghề nghiệp.</p></div>
+          <aside><strong>{journeyChallenges.length}</strong><span>{journeyChallengeLabel}</span><button type="button" onClick={openJourneyCatalog}>Xem {journeyCatalogCount} bài {focusKeys.length === 1 && focusChallenges.length ? selectedColumn.title : currentMajor.short} <ArrowRight size={15} /></button></aside>
+        </div>
+        <div className="career-journey-levels" aria-label="Các cấp độ tham khảo">
+          {journeyRoles.map((roleItem, index) => {
+            const profile = getCareerRoleProfile(currentMajor.key, selectedColumn.key, roleItem.levelKey);
+            const selected = canBuildPath && path.includes(roleItem.id);
+            return <article key={roleItem.id} className={`career-journey-stage ${selected ? 'is-selected' : ''}`}>
+              <div className="career-journey-stage-no">{String(index + 1).padStart(2, '0')}</div>
+              <div className="career-journey-stage-copy"><span>{levels[index]?.label || roleItem.level}</span><h3>{roleItem.title}</h3><p>{profile.scope}</p></div>
+              <div className="career-journey-stage-actions"><button type="button" onClick={() => { setSelectedRoleId(roleItem.id); setCareerView('explore'); setCareerStep('detail'); }}>Xem công việc <ArrowRight size={15} /></button>{canBuildPath && <button type="button" className="career-journey-save" onClick={() => selected ? removeFromPath(roleItem.id) : addToPath(roleItem.id)}>{selected ? 'Bỏ khỏi lộ trình' : 'Thêm vào lộ trình'}</button>}</div>
+            </article>;
+          })}
+        </div>
+        <div className="career-journey-practice"><div><strong>Bắt đầu bằng một sản phẩm</strong><p>{focusChallenges.length ? `Có ${focusChallenges.length} bài gợi ý liên quan đến ${selectedColumn.title}. Chọn bài phù hợp, đọc yêu cầu rồi nộp minh chứng khi hoàn thành.` : 'Hiện chưa có bài riêng cho hướng này; bạn có thể chọn bài phù hợp trong cùng lĩnh vực.'}</p></div><button type="button" onClick={openJourneyCatalog}>Xem {journeyCatalogCount} bài {focusKeys.length === 1 && focusChallenges.length ? selectedColumn.title : currentMajor.short} <ArrowRight size={16} /></button></div>
+        {canBuildPath ? <section className="career-saved-path" aria-label="Lộ trình đã chọn">
+          <div><h3>Vị trí bạn quan tâm</h3><p>{pathRoles.length ? 'Sắp xếp theo thứ tự bạn muốn tìm hiểu và lưu vào hồ sơ.' : 'Chưa chọn vị trí nào. Hãy thêm một vị trí từ danh sách trên.'}</p></div>
+          {pathRoles.length > 0 && <ol>{pathRoles.map((roleItem, index) => <li key={roleItem.id}><span>{index + 1}. {roleItem.title}</span><div><button type="button" disabled={index === 0} onClick={() => movePath(index, -1)} aria-label={`Đưa ${roleItem.title} lên`}>↑</button><button type="button" disabled={index === pathRoles.length - 1} onClick={() => movePath(index, 1)} aria-label={`Đưa ${roleItem.title} xuống`}>↓</button><button type="button" onClick={() => removeFromPath(roleItem.id)} aria-label={`Bỏ ${roleItem.title}`}>Bỏ</button></div></li>)}</ol>}
+          <div className="career-saved-actions"><button type="button" className="primary-action compact" disabled={!pathRoles.length} onClick={savePath}>Lưu lộ trình</button>{pathRoles.length > 0 && <button type="button" className="ghost-action compact" onClick={clearPath}>Xóa lựa chọn</button>}{savedPathName && <span role="status">{savedPathName}</span>}</div>
+        </section> : <p className="career-journey-guest">Đăng nhập tài khoản sinh viên và chọn đúng ngành đã đăng ký để lưu lộ trình. Bạn vẫn có thể khám phá mọi vị trí và bài thực hành.</p>}
+      </section> : <>
 
       <div className="career-step-progress">
         {[
@@ -2184,6 +2238,7 @@ function CareerMapPage({ majors, currentMajor, changeMajor, columns, levels, sel
           )}
         </section>
       )}
+      </>}
     </section>
   );
 }
