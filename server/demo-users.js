@@ -90,6 +90,7 @@ export async function ensureDemoStudents({ UserProfile, ReviewSubmission, target
   const batchIds = new Set(batchUsers.map(user => user.id));
   const expectedSubmissions = DEMO_CANDIDATES.filter(({ user }) => batchIds.has(user.id));
   if (expectedSubmissions.length) await ReviewSubmission.bulkWrite(expectedSubmissions.map(({ submission }) => ({ updateOne: { filter: { id: submission.id }, update: { $setOnInsert: submission }, upsert: true } })), { timestamps: false });
+  if (expectedSubmissions.length) await ReviewSubmission.updateMany({ id: { $in: expectedSubmissions.map(({ submission }) => submission.id) }, userId: { $in: [...batchIds] } }, { $set: { demoData: true, demoBatch: DEMO_BATCH } }, { timestamps: false });
   const [total, demoTotal, demoSubmissions] = await Promise.all([
     UserProfile.countDocuments(), UserProfile.countDocuments({ demoBatch: DEMO_BATCH }), ReviewSubmission.countDocuments({ demoBatch: DEMO_BATCH })
   ]);

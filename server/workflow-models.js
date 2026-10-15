@@ -3,6 +3,7 @@ const { Schema } = mongoose;
 const submission = new Schema({
   id: { type: String, unique: true, required: true },
   userId: { type: String, required: true, index: true }, studentName: String,
+  demoData: { type: Boolean, default: false }, demoBatch: { type: String, default: '' },
   challengeId: { type: String, required: true }, mentorId: { type: String, default: '', index: true },
   mode: { type: String, enum: ['ai', 'human'], required: true },
   format: { type: String, enum: ['project', 'cv', 'chat'], required: true },

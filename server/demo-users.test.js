@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { DEMO_CANDIDATES, planDemoSeed } from './demo-users.js';
+import { ReviewSubmission } from './workflow-models.js';
 
 test('fills only the gap to 63 and never changes existing users', () => {
   for (const count of [26, 27]) {
@@ -15,6 +16,8 @@ test('fills only the gap to 63 and never changes existing users', () => {
 });
 
 test('demo identities and evidence are unique, non-login, and visibly synthetic', () => {
+  assert.ok(ReviewSubmission.schema.path('demoData'));
+  assert.ok(ReviewSubmission.schema.path('demoBatch'));
   assert.equal(new Set(DEMO_CANDIDATES.map(item => item.user.id)).size, 63);
   assert.equal(new Set(DEMO_CANDIDATES.map(item => item.user.email)).size, 63);
   assert.equal(new Set(DEMO_CANDIDATES.map(item => item.user.name)).size, 63);
