@@ -167,3 +167,35 @@
 .rw-specialization-row{display:grid;grid-template-columns:120px minmax(0,1fr);gap:12px;align-items:center;margin:0 0 16px}.rw-specialization-row>strong{color:#28516b;font-size:13px}.rw-specialization-row>div{display:flex;gap:7px;overflow-x:auto;padding:2px 2px 8px;scrollbar-width:thin}.rw-workspace .rw-specialization-row button{flex-shrink:0;min-height:34px;padding:5px 10px;border-color:#d4e5ed;border-radius:7px;background:#fff;color:#315970;font-size:12px}.rw-workspace .rw-specialization-row button.active{border-color:#157ac2;background:#e5f5fc;color:#125e8e}.rw-specialization-row button span{display:inline-grid;place-items:center;min-width:19px;height:19px;padding:0 3px;border-radius:5px;background:#eff6f9;color:#3f667a;font-size:10px}
 @media(max-width:520px){.rw-specialization-row{grid-template-columns:1fr;gap:5px}}
 @media(max-width:900px){.rw-student-workspace .rw-jump-submit{max-width:calc(100% - 52px)}.rw-student-workspace .rw-filter-toggle{max-width:calc(100% - 52px)}}
+
+/* Student challenge flow: concise cards, a readable brief, and one submit action at the end. */
+.rw-catalog-view .rw-challenge{display:flex;flex-direction:column;min-height:210px}
+.rw-catalog-view .rw-challenge>p{max-width:64ch;margin-bottom:18px}
+.rw-catalog-view .rw-challenge .rw-card-foot{padding-top:13px;border-top:1px solid #e3edf2;gap:12px}
+.rw-catalog-view .rw-challenge .rw-card-foot>span{line-height:1.45}
+.rw-brief-page .rw-detail-outcome{background:#f8fafb;border:1px solid #dce5e9;border-radius:9px;padding:17px 19px}
+.rw-brief-page .rw-detail-outcome small{color:#456376;letter-spacing:0;text-transform:none;font-size:13px}
+.rw-brief-page .rw-detail-outcome p{font-size:15px;font-weight:650;color:#17384a}
+.rw-brief-context{margin:23px 0 0;padding-bottom:15px;border-bottom:1px solid #e3eaf0}
+.rw-brief-context h3{font-size:18px;margin:0 0 7px}
+.rw-brief-context p{font-size:15px;line-height:1.65;color:#39556a;margin:0}
+.rw-brief-page .rw-definition-done{background:#fff;border-color:#dce6eb}
+.rw-brief-page .rw-definition-done li>span{background:#edf3f7;color:#34627a}
+.rw-brief-page .rw-scoring-legend{display:none}
+.rw-brief-page .rw-rubric{gap:0;margin-top:12px;border-top:1px solid #dce6eb}
+.rw-brief-page .rw-rubric-item{border:0;border-bottom:1px solid #dce6eb;padding:16px 2px}
+.rw-brief-page .rw-rubric-item>p{font-size:14px;line-height:1.55;margin-top:5px}
+.rw-brief-page .rw-rubric-title b{font-size:13px;padding:4px 8px;background:#eef4f8;border-radius:5px;color:#315a76}
+.rw-brief-page .rw-rubric-details summary{color:#235e83;font-size:13px}
+.rw-brief-page .rw-rubric-details .rw-rubric-anchors{padding-top:5px}
+.rw-brief-end{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;margin-top:30px;padding:20px 0 0;border-top:2px solid #cfe0e9}
+.rw-brief-end p{flex-basis:100%;font-size:14px;line-height:1.55;color:#40596b;margin:0 0 4px}
+.rw-brief-page .rw-brief-end .rw-jump-submit{margin:0}
+.rw-other-majors{display:flex;align-items:center;justify-content:space-between;gap:18px;margin:30px 0 0;padding:20px 22px;background:#f4f8fa;border:1px solid #dbe8ee;border-radius:12px}
+.rw-other-majors strong{font-size:16px}
+.rw-other-majors p{margin:4px 0 0;font-size:14px;color:#476073}
+.rw-other-majors button{flex-shrink:0}
+@media(max-width:700px){.rw-other-majors{align-items:stretch;flex-direction:column}.rw-other-majors button{justify-content:center}.rw-brief-end{align-items:stretch;flex-direction:column}.rw-brief-end .rw-primary{justify-content:center}}
+.rw-catalog-view .rw-filters{grid-template-columns:minmax(200px,2fr) minmax(170px,1fr)}
+.rw-offline-note{margin:12px 0 20px;padding:11px 14px;border:1px solid #d5e4eb;border-radius:8px;background:#f4f8fa;color:#3d586b;font-size:13px;line-height:1.55}
+@media(max-width:520px){.rw-catalog-view .rw-filters{grid-template-columns:1fr}}

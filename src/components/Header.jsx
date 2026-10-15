@@ -14,7 +14,6 @@ const links = {
   ],
   student: [
     { id: 'hub', label: 'Thử thách', icon: Rocket },
-    { id: 'submit', label: 'Nộp bài', icon: FileUp },
     { id: 'feedback', label: 'Góp ý Mentor', icon: GraduationCap },
     { id: 'submissionHistory', label: 'Bài đã nộp', icon: FileUp },
     { id: 'portfolio', label: 'Hồ sơ Portfolio', icon: UserRound },
