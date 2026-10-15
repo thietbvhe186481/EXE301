@@ -3,12 +3,13 @@ import { ArrowRight, BookOpen, ExternalLink, RefreshCw, ShieldCheck, Star } from
 import { CHALLENGES, RESOURCES, SPECIALIZATIONS, MAJOR_LABELS, LEVEL_LABELS, REVIEW_FEE } from '../../shared/catalog.js';
 import { pointsForChallenge } from '../../shared/motivation.js';
 import { fetchWithAuth } from '../services/api';
+import { skillOptionsFor } from '../data/submissionSkills.js';
 import './ReviewWorkspace.css';
 
 const money = n => `${Number(n || 0).toLocaleString('vi-VN')} đ`;
 const idOf = x => x?.id || x?._id;
 const statuses = { draft: 'Bản nháp', queued: 'Đang chờ mentor', in_review: 'Đang được review', needs_revision: 'Cần bổ sung', completed: 'Đã hoàn thành', cancelled: 'Đã hủy' };
-const emptyForm = { format: 'project', links: '', skills: '', notes: '', mode: 'ai', mentorId: '', acceptDelay: false, linksAccessible: false, shareTalent: false };
+const emptyForm = { format: 'project', links: '', skills: [], notes: '', mode: 'ai', mentorId: '', acceptDelay: false, linksAccessible: false, shareTalent: false };
 const safeUrl = url => { try { return ['http:', 'https:'].includes(new URL(url).protocol); } catch { return false; } };
 const specializationLabel = key => SPECIALIZATIONS.find(item => item.key === key)?.label || 'Liên ngành';
 const mentorRating = person => person.ratingCount ? `${Number(person.ratingAvg || 0).toFixed(1)}★ (${person.ratingCount} lượt)` : 'Chưa có đánh giá';
@@ -24,6 +25,11 @@ const verifiedAiSummary = feedback => {
 function Link({ url, children }) { return safeUrl(url) ? <a href={url} target="_blank" rel="noopener noreferrer">{children || url} <ExternalLink size={13} /></a> : <span>{children || 'Liên kết không hợp lệ'}</span>; }
 function Empty({ children }) { return <div className="rw-empty"><BookOpen size={28} /><p>{children}</p></div>; }
 function Field({ label, children, hint }) { return <label className="rw-field"><span>{label}</span>{children}{hint && <small>{hint}</small>}</label>; }
+function SkillPicker({ challenge, value, onChange }) {
+  const options = skillOptionsFor(challenge, value);
+  const toggle = skill => onChange(value.includes(skill) ? value.filter(item => item !== skill) : [...value, skill]);
+  return <fieldset className="rw-skill-picker"><legend>Kỹ năng đã vận dụng <span>({value.length}/15)</span></legend><p>Chọn ít nhất 2 kỹ năng bạn thực sự dùng trong bài.</p><div className="rw-skill-options">{options.map(skill => <label key={skill} className={value.includes(skill) ? 'selected' : ''}><input type="checkbox" checked={value.includes(skill)} disabled={!value.includes(skill) && value.length >= 15} onChange={() => toggle(skill)} />{skill}</label>)}</div></fieldset>;
+}
 
 function MotivationPanel({ motivation, view, onNavigate }) {
   const nextSticker = motivation.stickers?.find(item => !item.earned);
@@ -43,7 +49,7 @@ function MotivationPanel({ motivation, view, onNavigate }) {
 }
 
 export default function ReviewWorkspace({ currentUser, go, onOpenPolicy, initialTab = 'catalog', initialChallengeId }) {
-  const role = currentUser?.type || 'guest';
+  const role = currentUser?.type || currentUser?.user?.role || 'guest';
   const mentor = role === 'mentor', admin = role === 'admin';
   const tabs = admin ? [['applications', 'Duyệt mentor'], ['payments', 'Đối soát & chi trả'], ['quality', 'Chất lượng'], ['complaints', 'Khiếu nại']] : mentor ? [['queue', 'Bài cần review'], ['scope', 'Hồ sơ & chuyên môn'], ['earnings', 'Thu nhập'], ['talent', 'Sinh viên nổi trội'], ['support', 'Hỗ trợ']] : [['catalog', 'Thử thách'], ['submit', 'Nộp bài'], ['submissions', 'Bài đã nộp'], ['feedback', 'Góp ý Mentor'], ['resources', 'Học liệu'], ['support', 'Hỗ trợ']];
   const normalizeTab = value => tabs.some(([key]) => key === value) ? value : mentor ? 'queue' : admin ? 'applications' : value === 'history' ? 'submissions' : value === 'learning' ? 'resources' : 'catalog';
@@ -88,14 +94,15 @@ export default function ReviewWorkspace({ currentUser, go, onOpenPolicy, initial
         setScope({ challengeIds: next.profile.challengeIds || [], capacity: next.profile.capacity || 5, available: next.profile.available !== false });
         setApplication(previous => ({ method: next.profile.application?.method || previous.method, profileUrl: next.profile.application?.profileUrl || currentUser?.user?.profileUrl || previous.profileUrl, notes: next.profile.application?.notes || previous.notes }));
       }
-    } catch (e) { setOnline(false); setError(e.message); }
+      return next;
+    } catch (e) { setOnline(false); setError(e.status === 401 ? 'Phiên đăng nhập đã hết hạn. Hãy đăng nhập lại để tiếp tục dùng không gian Mentor.' : e.message); return null; }
     finally { setLoading(false); }
   }
   useEffect(() => { refresh(); }, [role, currentUser?.user?.id, currentUser?.user?._id]);
   async function mutate(path, body, method = 'POST', success = 'Đã lưu thay đổi.') {
     if (busy) return false;
     setBusy(true); setError(''); setNotice('');
-    try { await fetchWithAuth(`/api/workflow${path}`, { method, body: JSON.stringify(body), ...(path.endsWith('/ai-advice') ? { signal: AbortSignal.timeout(45000) } : {}) }); await refresh(); setNotice(success); return true; }
+    try { await fetchWithAuth(`/api/workflow${path}`, { method, body: JSON.stringify(body), ...(path.endsWith('/ai-advice') ? { signal: AbortSignal.timeout(45000) } : {}) }); const updated = await refresh(); if (!updated) return false; setNotice(success); return true; }
     catch (e) { setError(e.message); return false; }
     finally { setBusy(false); }
   }
@@ -127,15 +134,15 @@ export default function ReviewWorkspace({ currentUser, go, onOpenPolicy, initial
   function startSubmission(c) { window.sessionStorage.setItem('rw:challengeId', c.id); if (role === 'guest') { window.sessionStorage.setItem('rw:returnToSubmit', '1'); go('auth'); return; } const unfinished = unfinishedSubmissions.find(s => s.challengeId === c.id); if (unfinished) { edit(unfinished); return; } setSelected(c); setEditingId(null); setForm(emptyForm); setError(''); setTab('submit'); go('submit'); }
   function openBrief(c) { window.sessionStorage.setItem('rw:challengeId', c.id); window.sessionStorage.setItem('rw:briefChallengeId', c.id); setSelected(c); setTab('catalog'); go('hub'); window.scrollTo(0, 0); }
   function resetSubmissionChoice() { window.sessionStorage.removeItem('rw:challengeId'); setSelected(null); setEditingId(null); setForm(emptyForm); setSubmitQuery(''); }
-  function edit(s, upgrade = false) { const challenge = challengeOf(s); if (challenge) window.sessionStorage.setItem('rw:challengeId', challenge.id); setSelected(challenge); setEditingId(idOf(s)); setForm({ ...emptyForm, ...s, format: 'project', mode: upgrade ? 'human' : s.mode, links: (s.links || []).join('\n'), skills: (s.skills || []).join(', '), mentorId: String(s.mentorId || '') }); setTab('submit'); go('submit'); }
+  function edit(s, upgrade = false) { const challenge = challengeOf(s); if (challenge) window.sessionStorage.setItem('rw:challengeId', challenge.id); setSelected(challenge); setEditingId(idOf(s)); setForm({ ...emptyForm, ...s, format: 'project', mode: upgrade ? 'human' : s.mode, links: (s.links || []).join('\n'), skills: s.skills || [], mentorId: String(s.mentorId || '') }); setTab('submit'); go('submit'); }
   async function submit(status) {
     if (role === 'guest') { go('auth'); return; }
     const links = form.links.split('\n').map(s => s.trim()).filter(Boolean);
-    const skills = form.skills.split(',').map(s => s.trim()).filter(Boolean);
+    const skills = form.skills;
     if (links.length > 3 || links.some(url => !safeUrl(url))) { setError('Dùng tối đa 3 đường dẫn HTTP/HTTPS hợp lệ.'); return; }
-    if (skills.length > 15) { setError('Vui lòng nhập tối đa 15 kỹ năng.'); return; }
+    if (skills.length > 15) { setError('Vui lòng chọn tối đa 15 kỹ năng.'); return; }
     if (status !== 'draft' && form.notes.trim().length < 40) { setError('Hãy mô tả bài làm và điều bạn muốn được góp ý bằng ít nhất 40 ký tự.'); return; }
-    if (status !== 'draft' && skills.length < 2) { setError('Hãy nêu ít nhất 2 kỹ năng đã dùng trong bài.'); return; }
+    if (status !== 'draft' && skills.length < 2) { setError('Hãy chọn ít nhất 2 kỹ năng đã dùng trong bài.'); return; }
     if (status !== 'draft' && !links.length) { setError(`Hãy thêm ${selected.submission?.label?.toLocaleLowerCase('vi') || 'đường dẫn bài làm'} để người review xem được sản phẩm.`); return; }
     if (status !== 'draft' && links.length && !form.linksAccessible) { setError('Hãy mở thử các đường dẫn và xác nhận người review có thể xem bài.'); return; }
     const newMilestone = status !== 'draft' && !data.submissions.some(s => s.challengeId === selected.id && ['queued', 'in_review', 'needs_revision', 'completed'].includes(s.status));
@@ -205,7 +212,7 @@ export default function ReviewWorkspace({ currentUser, go, onOpenPolicy, initial
     {tab === 'submit' && selected &&      <section id="rw-submit-form" className="rw-panel rw-submit"><div className="rw-submit-top"><div><h2>{editingId ? 'Chỉnh sửa bài nộp' : 'Chia sẻ bài làm'}</h2><p>Bạn có thể lưu nháp nếu chưa sẵn sàng gửi.</p></div><button type="button" className="rw-secondary" onClick={resetSubmissionChoice}>Đổi thử thách</button></div><div className="rw-submission-context"><div><span>BÀI THỰC HÀNH</span><h3>{selected.title}</h3><p>{MAJOR_LABELS[selected.majorKey]} · {specializationLabel(selected.specializationKey)} · {LEVEL_LABELS[selected.level]}</p></div><button type="button" className="rw-text-button" onClick={() => openBrief(selected)}>Xem đề đầy đủ <ArrowRight size={15} /></button></div><p className="rw-submit-help">Dán đường dẫn đến sản phẩm đã hoàn thành; CV chỉ dùng làm minh chứng bổ sung. Hãy kiểm tra người nhận mở được đường dẫn mà không cần xin quyền truy cập.</p>{gated && <div className="rw-alert">Thử thách này dành cho tài khoản Premium. <button onClick={() => go('premium')}>Xem gói Premium</button></div>}
       <Field label={selected.submission?.label || 'Đường dẫn tới bài làm'} hint={`Tối đa 3 đường dẫn, mỗi dòng một link. ${selected.submission?.evidence || 'Người review cần mở được sản phẩm.'}`}><textarea value={form.links} onChange={e => setForm({ ...form, links: e.target.value })} placeholder={selected.submission?.example || 'https://…'} rows={3} maxLength={1600} /></Field>
       <label className="rw-check"><input type="checkbox" checked={form.linksAccessible} onChange={e => setForm({ ...form, linksAccessible: e.target.checked })} />Tôi đã kiểm tra người nhận đường dẫn có thể xem bài; không đưa mật khẩu hoặc dữ liệu nhạy cảm vào minh chứng.</label>
-      <Field label="Kỹ năng đã vận dụng" hint="Ngăn cách bằng dấu phẩy, từ 2 đến 15 kỹ năng."><input value={form.skills} onChange={e => setForm({ ...form, skills: e.target.value })} maxLength={1000} placeholder={selected.majorKey === 'dev' ? 'Ví dụ: React, xử lý dữ liệu, kiểm thử' : selected.majorKey === 'design' ? 'Ví dụ: phỏng vấn người dùng, Figma, prototype' : 'Ví dụ: phân tích khách hàng, viết nội dung, đo lường'} /></Field>
+      <SkillPicker challenge={selected} value={form.skills} onChange={skills => setForm({ ...form, skills })} />
       <Field label="Cách bạn thực hiện và câu hỏi muốn được góp ý" hint={`${form.notes.length}/3000 ký tự · Tối thiểu 40 khi nộp bài`}><textarea rows={5} maxLength={3000} value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} placeholder={selected.submission?.notePrompt || 'Bạn đã làm những phần nào? Vì sao chọn cách này?'} /></Field>
       {revising && <p className="rw-alert">Bài bổ sung gửi lại mentor đang review. Nếu mentor bị tạm ngưng, hãy vào Bài của tôi, hủy bài rồi chỉnh sửa để chọn mentor khác.</p>}<fieldset className="rw-modes"><legend>Bạn muốn nhận phản hồi thế nào?</legend><label className={form.mode === 'ai' ? 'selected' : ''}><input type="radio" name="reviewMode" disabled={revising} checked={form.mode === 'ai'} onChange={() => setForm({ ...form, mode: 'ai', mentorId: '' })} /><div><strong>Tự luyện & nhận góp ý bằng AI</strong><small>Miễn phí. Sau khi gửi, dán một trích đoạn bài làm để nhận góp ý theo tiêu chí. Kết quả chỉ áp dụng cho trích đoạn đó.</small></div></label><label className={form.mode === 'human' ? 'selected' : ''}><input type="radio" name="reviewMode" disabled={revising} checked={form.mode === 'human'} onChange={() => setForm({ ...form, mode: 'human' })} /><div><strong>Mentor thật · góp ý theo tiêu chí</strong><small>Dành cho Premium. Nhận điểm và nhận xét cụ thể cho từng tiêu chí, có thể trao đổi để hoàn thiện bài.</small></div></label></fieldset>
       {form.mode === 'human' && <><Field label="Mentor phù hợp với thử thách" hint="Thời gian chỉ là ước tính theo số bài đang chờ, không phải thời hạn cam kết."><select disabled={revising} value={form.mentorId} onChange={e => setForm({ ...form, mentorId: e.target.value, acceptDelay: false })}><option value="">Chọn mentor</option>{mentors.map(m => <option value={idOf(m)} key={idOf(m)}>{m.name} · {mentorRating(m)} · {m.queueCount}/{m.capacity} bài đang nhận · khoảng {m.estimatedDays} ngày</option>)}</select></Field>{!mentors.length && <p className="rw-muted">Chưa có mentor đã được duyệt nhận chấm thử thách này. Tài khoản Premium có thể lưu nháp; nếu chưa nâng cấp, hãy chọn kiểm tra thông tin nộp với bài miễn phí.</p>}{chosenMentor?.overloaded && !revising && <div className="rw-alert"><strong>Mentor đang nhận nhiều bài, phản hồi có thể chậm đáng kể.</strong><p>Ước tính khoảng {chosenMentor.estimatedDays} ngày theo hàng chờ hiện tại. Bạn vẫn có thể chọn nếu đồng ý chờ.</p>{mentors.filter(m => !m.overloaded && idOf(m) !== idOf(chosenMentor)).slice(0, 3).map(m => <button key={idOf(m)} className="rw-secondary" onClick={() => setForm({ ...form, mentorId: String(idOf(m)), acceptDelay: false })}>Chọn {m.name} · {mentorRating(m)}</button>)}<label className="rw-check"><input type="checkbox" checked={form.acceptDelay} onChange={e => setForm({ ...form, acceptDelay: e.target.checked })} />Tôi hiểu thời gian phản hồi có thể lâu hơn ước tính.</label></div>}{!data.paid && <p className="rw-alert">Cần Premium đã được xác nhận để lưu nháp hoặc gửi bài cho mentor thật. <button onClick={() => go('premium')}>Xem Premium</button></p>}</>}
@@ -281,7 +288,7 @@ function Payment({ order: o, busy, mutate }) {
 function PayoutAccount({ value, busy, mutate }) {
   const [bank, setBank] = useState({ bankName: '', accountNumber: '', accountHolder: '' });
   useEffect(() => { setBank({ bankName: value?.bankName || '', accountNumber: value?.accountNumber || '', accountHolder: value?.accountHolder || '' }); }, [value?.bankName, value?.accountNumber, value?.accountHolder]);
-  return <section className="rw-panel rw-payout-account"><h3>Tài khoản nhận thù lao</h3><p>Admin dùng thông tin này để chuyển khoản và lưu bản ghi chi trả. Kiểm tra kỹ trước khi lưu; thay đổi về sau không sửa lịch sử khoản đã chi.</p><div className="rw-payout-fields"><Field label="Ngân hàng"><input value={bank.bankName} maxLength={100} onChange={e => setBank({ ...bank, bankName: e.target.value })} placeholder="Ví dụ: TPBank" /></Field><Field label="Số tài khoản"><input value={bank.accountNumber} inputMode="numeric" maxLength={19} onChange={e => setBank({ ...bank, accountNumber: e.target.value.replace(/\D/g, '') })} placeholder="6–19 chữ số" /></Field><Field label="Tên chủ tài khoản"><input value={bank.accountHolder} maxLength={100} onChange={e => setBank({ ...bank, accountHolder: e.target.value.toUpperCase() })} placeholder="Theo tài khoản ngân hàng" /></Field></div><button className="rw-primary" disabled={busy || bank.bankName.trim().length < 2 || !/^\d{6,19}$/.test(bank.accountNumber) || bank.accountHolder.trim().length < 3} onClick={() => mutate('/mentor/payout-account', bank, 'PUT', 'Đã lưu tài khoản nhận thù lao.')}>Lưu tài khoản nhận tiền</button></section>;
+  return <section className="rw-panel rw-payout-account"><h3>Tài khoản nhận thù lao</h3><p>Admin dùng thông tin này để chuyển khoản và lưu bản ghi chi trả. Kiểm tra kỹ trước khi lưu; thay đổi về sau không sửa lịch sử khoản đã chi.</p>{value?.accountNumber && <p className="rw-payout-saved" role="status">Đã lưu trên hệ thống: {value.bankName} · tài khoản kết thúc bằng {value.accountNumber.slice(-4)}</p>}<div className="rw-payout-fields"><Field label="Ngân hàng"><input value={bank.bankName} maxLength={100} onChange={e => setBank({ ...bank, bankName: e.target.value })} placeholder="Ví dụ: TPBank" /></Field><Field label="Số tài khoản"><input value={bank.accountNumber} inputMode="numeric" maxLength={19} onChange={e => setBank({ ...bank, accountNumber: e.target.value.replace(/\D/g, '') })} placeholder="6–19 chữ số" /></Field><Field label="Tên chủ tài khoản"><input value={bank.accountHolder} maxLength={100} onChange={e => setBank({ ...bank, accountHolder: e.target.value.toUpperCase() })} placeholder="Theo tài khoản ngân hàng" /></Field></div><button type="button" className="rw-primary" disabled={busy || bank.bankName.trim().length < 2 || !/^\d{6,19}$/.test(bank.accountNumber) || bank.accountHolder.trim().length < 3} onClick={() => mutate('/mentor/payout-account', bank, 'PUT', 'Đã lưu tài khoản nhận thù lao.')}>{value?.accountNumber ? 'Cập nhật tài khoản nhận tiền' : 'Lưu tài khoản nhận tiền'}</button></section>;
 }
 function PayrollSummary({ submissions, accounts }) {
   const payable = submissions.filter(s => s.reward && Number(s.reward.base) > 0);

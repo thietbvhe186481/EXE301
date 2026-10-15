@@ -341,7 +341,8 @@ export function createWorkflowRouter({ UserProfile, MentorAccount, AdminAccount,
       accountNumber: z.string().trim().regex(/^[0-9]{6,19}$/, 'Số tài khoản cần có 6–19 chữ số.'),
       accountHolder: z.string().trim().min(3).max(100)
     }).parse(req.body);
-    await MentorAccount.updateOne({ id: req.account.id, status: 'active' }, { $set: { bankInfo } });
+    const account = await MentorAccount.findOneAndUpdate({ id: req.account.id, status: 'active' }, { $set: { bankInfo } }, { new: true, runValidators: true });
+    if (!account) fail(409, 'Tài khoản mentor không còn hoạt động. Vui lòng đăng nhập lại hoặc liên hệ quản trị.');
     res.json({ bankInfo });
   }));
   router.post('/mentor/application', run(async (req, res) => {

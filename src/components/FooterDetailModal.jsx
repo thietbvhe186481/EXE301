@@ -14,7 +14,7 @@ export function getFooterModalContent(key) {
     return {
       category: 'Về chúng tôi',
       title: 'Giới Thiệu Nền Tảng BeeLearn',
-      subtitle: 'Dự án khởi nghiệp công nghệ giáo dục từ nhóm sinh viên EXE301 - Đại học FPT',
+      subtitle: 'Dự án khởi nghiệp công nghệ giáo dục từ nhóm sinh viên EXE201 - Đại học FPT',
       body: (
         <div>
           <p style={{ lineHeight: 1.6 }}>
@@ -42,7 +42,7 @@ export function getFooterModalContent(key) {
     return {
       category: 'Về chúng tôi',
       title: 'Thông Tin Liên Hệ & Hỗ Trợ Sinh Viên',
-      subtitle: 'Đội ngũ phát triển EXE301 - Đại học FPT luôn sẵn sàng đồng hành cùng bạn',
+      subtitle: 'Đội ngũ phát triển EXE201 - Đại học FPT luôn sẵn sàng đồng hành cùng bạn',
       type: 'contact-form',
       body: null
     };

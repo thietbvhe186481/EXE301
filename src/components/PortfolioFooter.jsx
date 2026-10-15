@@ -89,7 +89,7 @@ export function PortfolioFooter({ go, isGuest, onOpenUpgrade, onOpenFooterModal,
             © 2026 BeeLearn. Tất cả các quyền được bảo lưu.
           </div>
           <div>
-            Dự án nghiên cứu & khởi nghiệp của nhóm sinh viên <b>EXE301 - Đại học FPT</b>
+            Dự án nghiên cứu & khởi nghiệp của nhóm sinh viên <b>EXE201 - Đại học FPT</b>
           </div>
         </div>
       </div>
