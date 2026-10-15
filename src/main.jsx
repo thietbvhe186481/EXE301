@@ -4388,7 +4388,7 @@ function AdminPage({ apiStatus, data, notice, currentUser, refreshData, setAdmin
           {userPage.items.map((user) => (
             <div className="admin-row" key={user.id}>
               <div>
-                <strong>{user.name}{user.demoData && <span className="admin-demo-label">Dữ liệu mẫu</span>}</strong>
+                <strong>{user.name}</strong>
                 <span>{user.email} · ngành {user.selectedMajorKey} · {user.status ?? 'active'} · {user.path?.length ?? 0} vị trí</span>
                 <small>{user.school ?? 'Chưa cập nhật trường'} · {user.academicMajor ?? 'Chưa cập nhật chuyên ngành'} · {user.academicYear ?? 'Chưa cập nhật năm học'}</small>
               </div>
