@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Bài thực hành minh họa · BeeLearn</title>
+  <style>
+    :root{font-family:Inter,system-ui,sans-serif;color:#102b3c;background:#f4f9fb}*{box-sizing:border-box}body{margin:0}header{background:#fff;border-bottom:1px solid #d8e7ef;padding:20px max(20px,calc((100vw - 900px)/2))}header a{font-size:23px;font-weight:850;text-decoration:none;color:#1166ad}main{max-width:900px;margin:46px auto;padding:0 20px 70px}.eyebrow{font-size:12px;font-weight:800;letter-spacing:.12em;color:#21648c;text-transform:uppercase}.notice{margin:20px 0;padding:13px 17px;background:#fff7df;border:1px solid #ead28e;border-radius:9px;color:#5d4a16;line-height:1.55}h1{font-size:clamp(30px,5vw,47px);line-height:1.14;margin:10px 0 13px}h2{font-size:19px;margin:0 0 12px}p,li{line-height:1.7;color:#37546a}.meta{display:flex;gap:8px;flex-wrap:wrap;margin:20px 0 28px}.meta span{padding:7px 10px;background:#e3f2f8;border-radius:7px;font-size:13px;font-weight:700;color:#195579}.card{background:white;border:1px solid #d6e7ee;border-radius:13px;padding:23px 26px;margin:15px 0}.card ul{margin:0;padding-left:21px}.card li{margin:7px 0}.empty{padding:25px;background:white;border:1px solid #d6e7ee;border-radius:10px}@media(max-width:600px){main{margin-top:28px}.card{padding:19px}}
+  </style>
+</head>
+<body>
+  <header><a href="/">🐝 BeeLearn</a></header>
+  <main id="content"><p class="empty">Đang tải bài minh họa…</p></main>
+  <script type="module">
+    const root = document.getElementById('content');
+    const id = new URLSearchParams(location.search).get('id');
+    const data = await fetch('/demo-work-data.json').then(response => response.ok ? response.json() : []).catch(() => []);
+    const item = data.find(entry => entry.id === id && entry.completed);
+    if (!item) { root.textContent = 'Không tìm thấy bài minh họa này.'; }
+    else {
+      const add = (parent, tag, value, className) => { const node = document.createElement(tag); node.textContent = value; if (className) node.className = className; parent.append(node); return node; };
+      add(root, 'p', 'HỒ SƠ BÀI THỰC HÀNH', 'eyebrow');
+      add(root, 'h1', item.title);
+      add(root, 'p', item.summary);
+      const meta = add(root, 'div', '', 'meta');
+      [item.studentName, item.school, item.major].forEach(value => add(meta, 'span', value));
+      add(root, 'p', 'Đây là bài và hồ sơ giả lập nhằm kiểm tra giao diện BeeLearn. Nội dung không phải kết quả học tập của một sinh viên có thật và chưa được mentor hay AI chấm điểm.', 'notice');
+      const work = add(root, 'section', '', 'card');
+      add(work, 'h2', 'Cách tiếp cận'); add(work, 'p', item.note);
+      const requirements = add(root, 'section', '', 'card');
+      add(requirements, 'h2', 'Yêu cầu được đối chiếu');
+      const list = add(requirements, 'ul', '');
+      item.requirement.forEach(value => add(list, 'li', value));
+      const skills = add(root, 'section', '', 'card');
+      add(skills, 'h2', 'Kỹ năng thực hành');
+      add(skills, 'p', item.skills.join(' · '));
+    }
+  </script>
+</body>
+</html>

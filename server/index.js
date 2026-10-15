@@ -15,6 +15,7 @@ import { ReviewSubmission, ReviewerProfile, Complaint } from './workflow-models.
 import { connectDb, mongoUriFromEnvironment } from './config/db.js';
 import { AdminAccount, Category, Challenge, Major, MentorAccount, MentorFeedback, Notification, Resource, Submission, SubmissionRule, UserProfile, StudentReview, SubscriptionOrder, ContactInquiry, Founder, PremiumPlan, MarketData } from './models.js';
 import { describePremiumPlan } from '../shared/premiumCopy.js';
+import { ensureDemoStudents } from './demo-users.js';
 
 const app = express();
 const port = process.env.PORT || 4000;
@@ -188,10 +189,12 @@ app.get('/api/bootstrap', async (req, res, next) => {
 
     const [reviewerProfiles, allWorkflowSubmissions] = await Promise.all([
       ReviewerProfile.find({}, { mentorId: 1, available: 1, 'application.status': 1, _id: 0 }).lean(),
-      ReviewSubmission.find({}, { userId: 1, challengeId: 1, status: 1, mode: 1, mentorId: 1, rating: 1, reward: 1, _id: 0 }).lean()
+      ReviewSubmission.find({}, { userId: 1, challengeId: 1, status: 1, mode: 1, mentorId: 1, rating: 1, reward: 1, demoData: 1, _id: 0 }).lean()
     ]);
     const kpi = {
-      ...buildPlatformMetrics({ students: profiles, mentors, reviewerProfiles, legacySubmissions: submissions, workflowSubmissions: allWorkflowSubmissions }),
+      ...buildPlatformMetrics({ students: profiles.filter(item => !item.demoData), mentors, reviewerProfiles, legacySubmissions: submissions, workflowSubmissions: allWorkflowSubmissions.filter(item => !item.demoData) }),
+      totalUserRecords: profiles.length,
+      demoUserCount: profiles.filter(item => item.demoData).length,
       totalChallenges: challenges.length
     };
 
@@ -1119,7 +1122,11 @@ app.use((error, _req, res, _next) => {
 });
 
 databaseReady
-  .then(() => {
+  .then(async () => {
+    if (process.env.BEELEARN_DEMO_SEED_TO_63 === '1') {
+      try { await ensureDemoStudents({ UserProfile, ReviewSubmission }); }
+      catch (error) { console.error('Demo seed failed; API will continue serving existing accounts:', error.message); }
+    }
     app.listen(port, () => {
       console.log(`Portfolio API running at http://127.0.0.1:${port}`);
     });
