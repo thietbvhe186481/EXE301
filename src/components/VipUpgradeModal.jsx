@@ -133,7 +133,7 @@ export function VipUpgradeModal({ isOpen, onClose, plans = [], initialPlan, curr
   const checkout = payment?.checkoutUrl;
   return <div className="vietqr-modal-overlay" onClick={onClose}>
     <div className="vip-upgrade-modal-card vip-checkout" role="dialog" aria-modal="true" aria-label="Thanh toán gói Premium" onClick={event => event.stopPropagation()}>
-      <header className="vip-checkout-head"><div><span className="vip-checkout-kicker"><Crown size={17} /> PORTFOLIO PREMIUM</span><h2>{step === 'select' ? 'Chọn thời hạn phù hợp' : step === 'waiting' ? 'Đang chờ xác nhận thanh toán' : 'Kiểm tra đơn thanh toán'}</h2><p>{step === 'select' ? 'Cùng quyền lợi Premium, khác thời hạn và mức giá.' : 'Gói có hiệu lực sau khi giao dịch được xác nhận.'}</p></div><button className="vip-close" type="button" onClick={onClose} aria-label="Đóng"><X size={22} /></button></header>
+      <header className="vip-checkout-head"><div><span className="vip-checkout-kicker"><Crown size={17} /> BEELEARN PREMIUM</span><h2>{step === 'select' ? 'Chọn thời hạn phù hợp' : step === 'waiting' ? 'Đang chờ xác nhận thanh toán' : 'Kiểm tra đơn thanh toán'}</h2><p>{step === 'select' ? 'Cùng quyền lợi Premium, khác thời hạn và mức giá.' : 'Gói có hiệu lực sau khi giao dịch được xác nhận.'}</p></div><button className="vip-close" type="button" onClick={onClose} aria-label="Đóng"><X size={22} /></button></header>
       {error && <p className="vip-message vip-error" role="alert">{error}</p>}
       {notice && <p className="vip-message" role="status">{notice}</p>}
       {step === 'select' && <>
