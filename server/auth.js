@@ -117,7 +117,7 @@ export function createAuthRouter({ UserProfile, MentorAccount, AdminAccount, Rev
         if (await findAccount(payload.email)) return null;
         const agreementAcceptedAt = new Date();
         const common = {
-          id: `${payload.role}-${randomUUID()}`, name: payload.name, email: payload.email,
+          id: `${payload.role}-${randomUUID()}`, name: payload.name, email: payload.email, createdAt: agreementAcceptedAt,
           passwordHash: await bcrypt.hash(payload.password, 12), status: verificationRequired ? 'unverified' : 'active', emailVerified: !verificationRequired,
           majorKey: payload.selectedMajorKey, selectedMajorKey: payload.selectedMajorKey,
           termsAcceptedAt: new Date(), termsVersion: '2026-09-26',

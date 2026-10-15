@@ -35,7 +35,7 @@ const candidate = (index) => {
   const challengePool = CHALLENGES.filter(item => item.majorKey === majorKey && item.access === 'free');
   const challenge = challengePool[(index - 1) % challengePool.length];
   const completed = index % 3 !== 0;
-  const createdAt = new Date(Date.UTC(2026, 8, 2 + (index % 28), 2 + (index % 9), 0));
+  const createdAt = new Date(Date.UTC(2026, 9, 3 + ((index - 1) % 13), 1 + (index % 13), (index * 7) % 60));
   const id = `demo-beelearn-${number}`;
   const note = sampleNotes[majorKey][index % 2];
   const artifactUrl = `https://portfolio.id.vn/demo-work.html?id=${id}`;
