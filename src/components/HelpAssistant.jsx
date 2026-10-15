@@ -48,6 +48,13 @@ export default function HelpAssistant({ go, currentUser, page, quiet = false }) 
   }, [isQuietPage]);
 
   useEffect(() => {
+    if (isQuietPage) return undefined;
+    const openFromPage = () => { setBubbleVisible(false); setOpen(true); };
+    window.addEventListener('beelearn:open-assistant', openFromPage);
+    return () => window.removeEventListener('beelearn:open-assistant', openFromPage);
+  }, [isQuietPage]);
+
+  useEffect(() => {
     setBubbleVisible(false);
     if (!encouragementEnabled || open || isQuietPage || !encouragements[page]) return undefined;
     const session = readSession();

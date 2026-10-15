@@ -11047,3 +11047,25 @@ body:has(.app-shell) { overflow: visible !important; }
 }
 .career-page .career-view-switch button.active,
 .career-page .career-view-switch button.active * { color: #fff !important; }
+
+/* Distinct student learning surfaces; keep semantic amber only in small badges. */
+.career-page,.challenge-hub-page,.fpt-learning-page{background:#f5f8fb}
+.career-page .career-scene,.career-page .career-journey,.fpt-learning-page .learning-hero{border-color:#cadfe9}
+.fpt-learning-page .learning-toolbar,.fpt-learning-page .learning-resource-card{background:#fff;border-color:#d6e5ed}
+
+/* Let the learning page shrink inside narrow grid containers. */
+.fpt-learning-page{min-width:0;max-width:100%;grid-template-columns:minmax(0,1fr)}
+.fpt-learning-page > *,.fpt-learning-page .learning-hero > div,.fpt-learning-page .learning-resource-card{min-width:0;max-width:100%}
+@media(max-width:600px){
+  .fpt-learning-page .learning-hero,.fpt-learning-page .learning-toolbar,.fpt-learning-page .learning-resources-grid{width:100%;min-width:0;grid-template-columns:minmax(0,1fr)}
+  .fpt-learning-page .learning-hero{display:grid;gap:16px;padding:22px 17px}
+  .fpt-learning-page .learning-hero .primary-action{max-width:100%;white-space:normal;text-align:center}
+  .fpt-learning-page .learning-toolbar{display:grid;gap:12px;padding:13px}
+  .fpt-learning-page .learning-search{min-width:0;width:100%;flex-basis:auto}
+  .fpt-learning-page .learning-filters{min-width:0;width:100%;flex-basis:auto;flex-wrap:nowrap;overflow-x:auto;overscroll-behavior-inline:contain}
+  .fpt-learning-page .learning-filters button{flex:0 0 auto;min-height:40px}
+  .fpt-learning-page .learning-provider{min-width:0;display:grid;grid-template-columns:minmax(0,1fr);gap:5px}
+  .fpt-learning-page .learning-provider select{width:100%;min-width:0}
+  .fpt-learning-page .learning-resources-grid{display:grid;gap:13px}
+  .fpt-learning-page .learning-resource-card{overflow-wrap:anywhere}
+}

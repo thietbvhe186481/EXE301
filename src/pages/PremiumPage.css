@@ -6,6 +6,7 @@
   margin: 0 auto;
   padding: clamp(20px, 4vw, 48px) 24px 68px;
   color: var(--premium-ink);
+  background: #f5f8fb;
 }
 .premium-page h1, .premium-page h2, .premium-page h3 { font-family: 'Plus Jakarta Sans', Inter, system-ui, sans-serif; letter-spacing: -.035em; }
 .premium-hero {
@@ -48,7 +49,7 @@
 .premium-value-number { color: #8aa9bd; font-size: 12px; font-weight: 900; }
 .premium-value-item > svg { color: #0284c7; }
 .premium-value-item strong { display: block; color: #153c58; font-size: 14px; }
-.premium-value-item p { margin: 7px 0 0; color: var(--premium-muted); font-size: 12px; line-height: 1.55; }
+.premium-value-item p { margin: 7px 0 0; color: var(--premium-muted); font-size: 14px; line-height: 1.55; }
 .premium-section-intro { display: flex; align-items: end; justify-content: space-between; gap: 28px; margin: 70px 0 23px; scroll-margin-top: 100px; }
 .premium-section-intro > div { max-width: 650px; }
 .premium-section-kicker { margin: 0 0 10px; color: #0e8cb4 !important; font-size: 11px; font-weight: 900; letter-spacing: .15em; }
@@ -60,7 +61,7 @@
 .premium-plan-term { color: #1b6f9a; font-size: 12px; font-weight: 850; text-transform: uppercase; letter-spacing: .1em; }
 .premium-plan-tag { display: inline-block; margin-left: 10px; padding: 5px 8px; border-radius: 6px; background: #d9f3fa; color: #096386; font-size: 10px; font-weight: 800; vertical-align: middle; }
 .premium-plan-option h3 { margin: 21px 0 8px; color: #10364f; font-size: 24px; }
-.premium-plan-option p { margin: 0; color: var(--premium-muted); font-size: 13px; line-height: 1.65; }
+.premium-plan-option p { margin: 0; color: var(--premium-muted); font-size: 14px; line-height: 1.65; }
 .premium-plan-saving { display: inline-block; margin-top: 14px; color: #0a7d71; font-weight: 800; line-height: 1.45; }
 .premium-plan-purchase { display: grid; gap: 15px; margin-top: 25px; padding-top: 20px; border-top: 1px solid #e3edf3; }
 .premium-plan-purchase > div { display: flex; align-items: baseline; gap: 7px; }
@@ -83,7 +84,7 @@
 .premium-comparison td:last-child { color: #036f9f; font-weight: 800; }
 .premium-comparison svg { color: #0995bd; }
 .premium-bottom-grid { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(28px, 5vw, 75px); margin: 85px 0 70px; }
-.premium-how, .premium-faq { min-width: 0; }
+.premium-how, .premium-faq { min-width: 0; padding: clamp(18px, 2.5vw, 28px); border: 1px solid var(--premium-line); border-radius: 15px; background: #fff; }
 .premium-how ol { margin: 28px 0 0; padding: 0; list-style: none; border-top: 1px solid var(--premium-line); }
 .premium-how li { display: flex; gap: 20px; padding: 19px 0; border-bottom: 1px solid var(--premium-line); }
 .premium-how li > span { color: #0b88b5; font-size: 13px; font-weight: 900; }
