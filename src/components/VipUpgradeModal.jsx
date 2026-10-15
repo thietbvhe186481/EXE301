@@ -48,8 +48,7 @@ export function VipUpgradeModal({ isOpen, onClose, plans = [], initialPlan, curr
       if (checking || stopped) return;
       checking = true;
       try {
-        const state = await apiService.getWorkflowState();
-        const latest = (state.orders || []).find(item => item.orderId === order.orderId);
+        const { order: latest } = await apiService.refreshPayosOrder(order.orderId);
         if (latest?.status === 'completed' && !stopped) {
           stopped = true;
           window.clearInterval(timer);
@@ -114,9 +113,11 @@ export function VipUpgradeModal({ isOpen, onClose, plans = [], initialPlan, curr
   async function checkStatus() {
     setBusy(true); setError('');
     try {
-      const state = await apiService.getWorkflowState();
-      const latest = (state.orders || []).find(item => item.orderId === order?.orderId);
+      const latest = payment?.checkoutUrl
+        ? (await apiService.refreshPayosOrder(order.orderId)).order
+        : (await apiService.getWorkflowState()).orders?.find(item => item.orderId === order?.orderId);
       if (latest?.status === 'completed') { onPaymentSuccess?.(latest); onClose(); }
+      else if (latest?.status === 'cancelled') { setOrder(latest); setError('Giao dịch đã hủy. Bạn có thể chọn gói khác.'); }
       else setNotice(payment?.checkoutUrl ? 'Cổng thanh toán chưa xác nhận giao dịch. Hệ thống sẽ tự kích hoạt gói khi nhận thông báo thành công.' : 'Đơn đang chờ xác nhận khoản tiền đã chuyển. Vui lòng kiểm tra lại sau.');
     } catch (cause) { setError(cause.message || 'Không thể kiểm tra trạng thái.'); }
     finally { setBusy(false); }

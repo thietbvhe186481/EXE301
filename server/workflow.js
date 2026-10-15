@@ -54,6 +54,7 @@ export function nextPremiumExpiry(currentExpiry, now, planId) {
 export function createWorkflowRouter({ UserProfile, MentorAccount, AdminAccount, ReviewSubmission, ReviewerProfile, Complaint, SubscriptionOrder, PremiumPlan }) {
   const router = Router();
   const userOrderQueues = new Map();
+  const providerRefreshTimes = new Map();
   const run = handler => async (req, res, next) => { try { await handler(req, res); } catch (error) { next(error); } };
   const serializeUserOrder = async (userId, action) => {
     const previous = userOrderQueues.get(userId) || Promise.resolve();
@@ -414,6 +415,40 @@ export function createWorkflowRouter({ UserProfile, MentorAccount, AdminAccount,
     const order = await SubscriptionOrder.create({ orderId, userId: req.account.id, planId: plan.id, planName: plan.name, price: plan.price, transactionCode, receivingBank: bank, paymentMethod: 'VietQR · đối soát thủ công', status: 'pending', activatedAt: null,
       statusHistory: [{ status: 'pending', changedAt: new Date(), note: 'Đơn được tạo; chờ chuyển khoản.' }] });
     res.status(201).json({ order, success: true, payment: manualPayment(order) });
+  }));
+  router.post('/orders/:id/refresh', run(async (req, res) => {
+    requireRole(req, 'student');
+    const initial = await SubscriptionOrder.findOne({ orderId: req.params.id, userId: req.account.id }).lean();
+    if (!initial) fail(404, 'Không tìm thấy đơn thanh toán.');
+    if (!initial.providerOrderCode || !initial.providerPaymentLinkId) fail(409, 'Đơn này không dùng payOS.');
+    await serializeUserOrder(initial.userId, async () => {
+      const fresh = await SubscriptionOrder.findOne({ orderId: initial.orderId, userId: req.account.id }).lean();
+      if (!fresh) fail(404, 'Không tìm thấy đơn thanh toán.');
+      if (fresh.status === 'completed') return res.json({ order: await activateOrder(fresh, fresh.paymentReference || String(fresh.providerPaymentLinkId), 'payOS') });
+      if (fresh.status !== 'pending') return res.json({ order: fresh });
+      const lastChecked = providerRefreshTimes.get(fresh.orderId) || 0;
+      if (Date.now() - lastChecked < 12_000) return res.json({ order: fresh });
+      providerRefreshTimes.set(fresh.orderId, Date.now());
+      let provider;
+      try { provider = await getPayosLink(fresh.providerOrderCode); }
+      catch { providerRefreshTimes.delete(fresh.orderId); fail(503, 'Chưa thể đối chiếu với payOS. Vui lòng thử lại sau.'); }
+      if (Number(provider.orderCode) !== Number(fresh.providerOrderCode) ||
+          String(provider.id || '') !== String(fresh.providerPaymentLinkId) ||
+          Number(provider.amount) !== Number(fresh.price)) {
+        fail(409, 'Thông tin đơn trên payOS không khớp. Vui lòng liên hệ hỗ trợ.');
+      }
+      if (provider.status === 'PAID' && Number(provider.amountPaid) >= Number(fresh.price)) {
+        providerRefreshTimes.delete(fresh.orderId);
+        return res.json({ order: await activateOrder(fresh, `payOS:${provider.id}`, 'payOS') });
+      }
+      if (provider.status === 'CANCELLED' && Number(provider.amountPaid || 0) === 0) {
+        const order = await SubscriptionOrder.findOneAndUpdate({ orderId: fresh.orderId, status: 'pending' },
+          { $set: { status: 'cancelled' }, $push: { statusHistory: { status: 'cancelled', changedAt: new Date(), note: 'payOS xác nhận link đã hủy và chưa nhận tiền.' } } }, { new: true });
+        providerRefreshTimes.delete(fresh.orderId);
+        return res.json({ order: order || await SubscriptionOrder.findOne({ orderId: fresh.orderId }).lean() });
+      }
+      res.json({ order: fresh });
+    });
   }));
   router.post('/orders/:id/mark-transferred', run(async (req, res) => {
     requireRole(req, 'student');

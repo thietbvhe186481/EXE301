@@ -246,6 +246,45 @@ test('PayOS webhook validates HMAC and exact amount, then activates and extends 
   } finally { for (const key of keys) old[key] === undefined ? delete process.env[key] : process.env[key] = old[key]; }
 });
 
+test('student can recover a paid payOS order by verifying provider status without a webhook', async () => {
+  const keys = ['PAYOS_CLIENT_ID', 'PAYOS_API_KEY', 'PAYOS_CHECKSUM_KEY', 'PAYOS_RETURN_URL', 'PAYOS_CANCEL_URL'];
+  const old = Object.fromEntries(keys.map(key => [key, process.env[key]]));
+  const originalFetch = globalThis.fetch;
+  Object.assign(process.env, { PAYOS_CLIENT_ID: 'test-client', PAYOS_API_KEY: 'test-key', PAYOS_CHECKSUM_KEY: 'test-checksum', PAYOS_RETURN_URL: 'https://site.example/return', PAYOS_CANCEL_URL: 'https://site.example/cancel' });
+  const orders = [
+    { orderId: 'ORD-REFRESH-PENDING', providerOrderCode: 1900000701, providerPaymentLinkId: 'LINK-PENDING', userId: 'free', planId: 'premium-month', planName: 'Tháng', price: 79000, transactionCode: 'JR701', status: 'pending' },
+    { orderId: 'ORD-REFRESH-BAD', providerOrderCode: 1900000702, providerPaymentLinkId: 'LINK-BAD', userId: 'free', planId: 'premium-month', planName: 'Tháng', price: 79000, transactionCode: 'JR702', status: 'pending' },
+    { orderId: 'ORD-REFRESH-PAID', providerOrderCode: 1900000703, providerPaymentLinkId: 'LINK-PAID', userId: 'free', planId: 'premium-month', planName: 'Tháng', price: 79000, transactionCode: 'JR703', status: 'pending' }
+  ];
+  for (const order of orders) await models.SubscriptionOrder.create(order);
+  let providerCalls = 0;
+  globalThis.fetch = (url, options) => {
+    if (!String(url).startsWith('https://api-merchant.payos.vn/')) return originalFetch(url, options);
+    providerCalls++;
+    const code = Number(String(url).split('/').at(-1));
+    const order = orders.find(item => item.providerOrderCode === code);
+    return Promise.resolve({ ok: true, json: async () => ({ code: '00', data: { id: order.providerPaymentLinkId, orderCode: code,
+      amount: order.orderId === 'ORD-REFRESH-BAD' ? 1 : 79000, amountPaid: order.orderId === 'ORD-REFRESH-PAID' ? 79000 : 0,
+      status: order.orderId === 'ORD-REFRESH-PAID' ? 'PAID' : 'PENDING' } }) });
+  };
+  try {
+    assert.equal((await request('/orders/ORD-REFRESH-PAID/refresh', 'stranger', {}, 'POST')).status, 404);
+    assert.equal((await request('/orders/ORD-REFRESH-PENDING/refresh', 'free', {}, 'POST')).data.order.status, 'pending');
+    assert.equal((await request('/orders/ORD-REFRESH-BAD/refresh', 'free', {}, 'POST')).status, 409);
+    const result = await request('/orders/ORD-REFRESH-PAID/refresh', 'free', {}, 'POST');
+    assert.equal(result.status, 200);
+    assert.equal(result.data.order.status, 'completed');
+    assert.equal((await request('/state', 'free')).data.paid, true);
+    const expiry = new Date((await models.UserProfile.findOne({ id: 'free' }).lean()).subscriptionExpiresAt).getTime();
+    assert.equal((await request('/orders/ORD-REFRESH-PAID/refresh', 'free', {}, 'POST')).status, 200);
+    assert.equal(new Date((await models.UserProfile.findOne({ id: 'free' }).lean()).subscriptionExpiresAt).getTime(), expiry);
+    assert.equal(providerCalls, 3);
+  } finally {
+    globalThis.fetch = originalFetch;
+    for (const key of keys) old[key] === undefined ? delete process.env[key] : process.env[key] = old[key];
+  }
+});
+
 test('student cannot manually report or locally cancel a PayOS order before provider confirms cancellation', async () => {
   const keys = ['PAYOS_CLIENT_ID', 'PAYOS_API_KEY', 'PAYOS_CHECKSUM_KEY', 'PAYOS_RETURN_URL', 'PAYOS_CANCEL_URL'];
   const old = Object.fromEntries(keys.map(key => [key, process.env[key]]));

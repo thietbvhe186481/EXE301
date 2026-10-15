@@ -100,6 +100,9 @@ export const apiService = {
   async cancelPaymentOrder(orderId) {
     return fetchWithAuth(`/api/workflow/orders/${encodeURIComponent(orderId)}/cancel`, { method: 'POST', body: JSON.stringify({ confirmNotTransferred: true }) });
   },
+  async refreshPayosOrder(orderId) {
+    return fetchWithAuth(`/api/workflow/orders/${encodeURIComponent(orderId)}/refresh`, { method: 'POST' });
+  },
 
   // Contact Inquiries (MongoDB)
   async sendInquiry(inquiryData) {
