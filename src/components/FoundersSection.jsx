@@ -86,7 +86,9 @@ export function FoundersSection({ founders }) {
         {foundersList.map((founder) => (
           <div className="jr-founder-unboxed-card" key={founder.id}>
             <div className="jr-founder-avatar-unboxed">
-              <CuteFounderAvatar id={founder.id} name={founder.name} role={founder.role} />
+              {['CEO', 'CTO', 'COO', 'CPO', 'CMO', 'CFO'].includes(founder.role) ? (
+                <img src={`${import.meta.env.BASE_URL}founders/${founder.role.toLowerCase()}.png`} alt={founder.name} width={110} height={110} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              ) : <CuteFounderAvatar id={founder.id} name={founder.name} role={founder.role} />}
             </div>
             <strong className="jr-founder-name-unboxed">{founder.name}</strong>
             <span className="jr-founder-role-pill">{founder.role}</span>
