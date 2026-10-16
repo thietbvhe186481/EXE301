@@ -85,6 +85,30 @@ test('public catalog has real sources and rubric weights total 100; private stat
   }
   assert.equal((await request('/state')).status, 401);
 });
+test('admin can view safe student directory and audit account status changes', async () => {
+  await models.UserProfile.create({ id: 'directory-student', name: 'Directory Student', email: 'directory@example.com', role: 'student', status: 'active', passwordHash: 'SECRET', verificationCodeHash: 'OTP_SECRET', majorKey: 'design' });
+  const adminState = await request('/state', 'admin');
+  assert.equal(adminState.status, 200);
+  const student = adminState.data.students.find(item => item.id === 'directory-student');
+  assert.equal(student.email, 'directory@example.com');
+  assert.equal(student.majorKey, 'design');
+  assert.equal(student.passwordHash, undefined);
+  assert.equal(student.verificationCodeHash, undefined);
+  assert.equal((await request('/state', 'student')).data.students.length, 0);
+  const path = '/admin/students/directory-student/status';
+  assert.equal((await request(path, 'student', { status: 'suspended', reason: 'Repeated conduct violation' }, 'PATCH')).status, 403);
+  assert.equal((await request(path, 'admin', { status: 'suspended', reason: 'Too short' }, 'PATCH')).status, 422);
+  assert.equal((await request(path, 'admin', { status: 'unverified', reason: 'Repeated conduct violation' }, 'PATCH')).status, 422);
+  const suspended = await request(path, 'admin', { status: 'suspended', reason: 'Repeated conduct violation' }, 'PATCH');
+  assert.equal(suspended.status, 200);
+  assert.equal(suspended.data.student.status, 'suspended');
+  assert.equal((await request('/state', 'directory-student')).status, 401);
+  assert.equal((await request(path, 'admin', { status: 'suspended', reason: 'Repeated conduct violation' }, 'PATCH')).status, 409);
+  const restored = await request(path, 'admin', { status: 'active', reason: 'Reviewed and restored account' }, 'PATCH');
+  assert.equal(restored.status, 200);
+  const record = await models.UserProfile.findOne({ id: 'directory-student' }).lean();
+  assert.deepEqual(record.statusHistory.map(item => item.status), ['suspended', 'active']);
+});
 test('mentor needs current agreement before accepting new reviews but can finish assigned work', () => {
   const profile = { available: true, application: { status: 'approved' } };
   const legacy = mentorSummary({ id: 'legacy', status: 'active', mentorAgreementVersion: 'older' }, profile, []);
@@ -526,7 +550,9 @@ test('mentor can save a payout account, while a student cannot change it', async
   assert.equal((await request('/mentor/payout-account', 'student', bankInfo, 'PUT')).status, 403);
   assert.equal((await request('/mentor/payout-account', 'mentor', { ...bankInfo, accountNumber: 'invalid' }, 'PUT')).status, 422);
   assert.equal((await request('/mentor/payout-account', 'mentor', bankInfo, 'PUT')).status, 200);
-  assert.deepEqual((await request('/state', 'mentor')).data.payoutAccount, bankInfo);
+  const savedAccount = (await request('/state', 'mentor')).data.payoutAccount;
+  assert.deepEqual({ bankName: savedAccount.bankName, accountNumber: savedAccount.accountNumber, accountHolder: savedAccount.accountHolder }, bankInfo);
+  assert.ok(savedAccount.savedAt);
   assert.equal((await request('/state', 'student')).data.payoutAccounts.length, 0);
   assert.equal((await models.ReviewSubmission.findOne({ id: submissionId }).lean()).reward.payoutLog.accountNumber, '123456789');
 });

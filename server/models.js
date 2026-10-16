@@ -38,7 +38,8 @@ const UserProfileSchema = new mongoose.Schema({
   statusHistory: [{
     status: String,
     changedAt: { type: Date, default: Date.now },
-    reason: String
+    reason: String,
+    changedBy: String
   }],
   xp: { type: Number, default: 0 },
   level: { type: Number, default: 1 },
@@ -83,7 +84,8 @@ const MentorAccountSchema = new mongoose.Schema({
   bankInfo: {
     bankName: { type: String, default: '' },
     accountNumber: { type: String, default: '' },
-    accountHolder: { type: String, default: '' }
+    accountHolder: { type: String, default: '' },
+    savedAt: { type: Date }
   }
 }, baseSchemaOptions);
 

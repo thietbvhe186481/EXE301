@@ -144,13 +144,14 @@ export function createWorkflowRouter({ UserProfile, MentorAccount, AdminAccount,
   router.get('/state', run(async (req, res) => {
     const { id, role } = req.session.user;
     const filter = role === 'admin' ? {} : role === 'mentor' ? { mentorId: id } : { userId: id };
-    const [mentors, submissions, profile, orders, profiles, complaints, payoutAccounts] = await Promise.all([
+    const [mentors, submissions, profile, orders, profiles, complaints, payoutAccounts, studentAccounts] = await Promise.all([
       loadMentors(), ReviewSubmission.find(filter).sort({ updatedAt: -1 }).lean(),
       role === 'mentor' ? ReviewerProfile.findOne({ mentorId: id }).lean() : null,
       role === 'admin' ? SubscriptionOrder.find({}).sort({ createdAt: -1 }).lean() : role === 'student' ? SubscriptionOrder.find({ userId: id }).sort({ createdAt: -1 }).lean() : [],
       role === 'admin' ? ReviewerProfile.find({}).lean() : [],
       Complaint ? Complaint.find(role === 'admin' ? {} : { reporterId: id }).sort({ updatedAt: -1 }).lean() : [],
-      role === 'admin' ? MentorAccount.find({}).lean() : []
+      role === 'admin' ? MentorAccount.find({}).lean() : [],
+      role === 'admin' ? UserProfile.find({}).lean() : []
     ]);
     const mentor = mentors.find(item => item.id === id);
     const approved = mentor?.eligible;
@@ -165,7 +166,34 @@ export function createWorkflowRouter({ UserProfile, MentorAccount, AdminAccount,
       earnings: role === 'student' ? {} : earningsFor(submissions), complaints,
       payoutAccount: role === 'mentor' ? req.account.bankInfo || null : null,
       payoutAccounts: role === 'admin' ? payoutAccounts.map(item => ({ mentorId: item.id, name: item.name, bankInfo: item.bankInfo || null })) : [],
+      students: role === 'admin' ? studentAccounts.filter(item => !item.role || item.role === 'student').map(item => {
+        const work = submissions.filter(submission => submission.userId === item.id);
+        const lastActivityAt = work.reduce((latest, submission) => {
+          const at = submission.updatedAt || submission.createdAt;
+          return at && (!latest || new Date(at) > new Date(latest)) ? at : latest;
+        }, null);
+        return { id: item.id, name: item.name, email: item.email, status: item.status,
+          majorKey: item.majorKey || 'dev', specialization: item.specialization || '',
+          createdAt: item.createdAt || null, isPremium: hasPaidAccess(item),
+          planName: item.planName || '', subscriptionExpiresAt: item.subscriptionExpiresAt || null,
+          submissionCount: work.length, lastActivityAt };
+      }) : [],
       talents: talents.map(item => ({ id: item.id, studentName: item.studentName, challengeId: item.challengeId, score: item.review.score, links: item.links, notes: item.notes })) });
+  }));
+
+  router.patch('/admin/students/:id/status', run(async (req, res) => {
+    requireRole(req, 'admin');
+    const payload = z.object({ status: z.enum(['active', 'suspended']), reason: z.string().trim().min(10).max(500) }).parse(req.body);
+    const student = await UserProfile.findOne({ id: req.params.id }).lean();
+    if (!student || (student.role && student.role !== 'student')) fail(404, 'Không tìm thấy tài khoản sinh viên.');
+    if (!['active', 'suspended'].includes(student.status)) fail(409, 'Trạng thái này cần được xử lý bằng quy trình xác thực riêng.');
+    if (student.status === payload.status) fail(409, 'Tài khoản đã ở trạng thái này.');
+    const updated = await UserProfile.findOneAndUpdate({ id: student.id, status: student.status }, {
+      $set: { status: payload.status, statusReason: payload.reason },
+      $push: { statusHistory: { status: payload.status, changedAt: new Date(), reason: payload.reason, changedBy: req.account.id } }
+    }, { new: true, runValidators: true });
+    if (!updated) fail(409, 'Trạng thái tài khoản vừa thay đổi. Vui lòng tải lại.');
+    res.json({ student: { id: updated.id, status: updated.status, statusReason: updated.statusReason } });
   }));
 
   router.post('/mentor/agreement', run(async (req, res) => {
@@ -341,6 +369,7 @@ export function createWorkflowRouter({ UserProfile, MentorAccount, AdminAccount,
       accountNumber: z.string().trim().regex(/^[0-9]{6,19}$/, 'Số tài khoản cần có 6–19 chữ số.'),
       accountHolder: z.string().trim().min(3).max(100)
     }).parse(req.body);
+    bankInfo.savedAt = new Date();
     const account = await MentorAccount.findOneAndUpdate({ id: req.account.id, status: 'active' }, { $set: { bankInfo } }, { new: true, runValidators: true });
     if (!account) fail(409, 'Tài khoản mentor không còn hoạt động. Vui lòng đăng nhập lại hoặc liên hệ quản trị.');
     res.json({ bankInfo });
