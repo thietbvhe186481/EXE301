@@ -3,6 +3,13 @@ import { Sparkles } from 'lucide-react';
 import { CuteFounderAvatar } from './CuteFounderAvatar';
 import { apiService } from '../services/api';
 
+// Source portrait positions in the supplied 972 × 587 collage.
+// Crop in the browser to preserve the original image detail.
+const portraitCrops = {
+  CEO: [27, 0], CTO: [348, 0], COO: [339, 287],
+  CPO: [21, 285], CMO: [661, 285], CFO: [665, 0]
+};
+
 const defaultFounders = [
   {
     id: 'founder-huy',
@@ -85,9 +92,9 @@ export function FoundersSection({ founders }) {
       <div className="jr-founders-grid-unboxed">
         {foundersList.map((founder) => (
           <div className="jr-founder-unboxed-card" key={founder.id}>
-            <div className="jr-founder-avatar-unboxed">
+            <div className="jr-founder-avatar-unboxed" style={{ position: 'relative' }}>
               {['CEO', 'CTO', 'COO', 'CPO', 'CMO', 'CFO'].includes(founder.role) ? (
-                <img src={`${import.meta.env.BASE_URL}founders/${founder.role.toLowerCase()}.png`} alt={founder.name} width={110} height={110} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                <img src={`${import.meta.env.BASE_URL}founders/team-portraits.png`} alt={founder.name} width={972} height={587} loading="lazy" style={{ position: 'absolute', width: `${972 / 290 * 100}%`, maxWidth: 'none', height: 'auto', left: `${-portraitCrops[founder.role][0] / 290 * 100}%`, top: `${-portraitCrops[founder.role][1] / 290 * 100}%` }} />
               ) : <CuteFounderAvatar id={founder.id} name={founder.name} role={founder.role} />}
             </div>
             <strong className="jr-founder-name-unboxed">{founder.name}</strong>
