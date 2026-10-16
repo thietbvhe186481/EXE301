@@ -1242,6 +1242,7 @@ function App() {
   const [apiStatus, setApiStatus] = useState('local');
   const [currentUser, setCurrentUser] = useState(null);
   const [sessionChecked, setSessionChecked] = useState(false);
+  const currentUserRef = useRef(null);
   const [adminNotice, setAdminNotice] = useState('');
   const [flowNotice, setFlowNotice] = useState('');
   const [cvResultData, setCvResultData] = useState(null);
@@ -1255,6 +1256,7 @@ function App() {
   const [joinedChallengeIds, setJoinedChallengeIds] = useState([]);
   const [submissionStatus, setSubmissionStatus] = useState({});
   const currentRole = currentUser?.type ?? currentUser?.user?.role ?? null;
+  currentUserRef.current = currentUser;
   useEffect(() => {
     if (!paymentReturnCode || !sessionChecked) return;
     if (currentRole === 'student') setIsVipModalOpen(true);
@@ -1510,6 +1512,44 @@ function App() {
     }).catch(() => {}).finally(() => { if (!cancelled) setSessionChecked(true); });
     return () => { cancelled = true; };
   }, []);
+
+  useEffect(() => {
+    if (!sessionChecked) return undefined;
+    let cancelled = false;
+    let checking = false;
+    const synchronizeSession = async () => {
+      if (cancelled || checking || document.visibilityState === 'hidden') return;
+      checking = true;
+      try {
+        const account = await apiService.getMe();
+        if (cancelled) return;
+        const previous = currentUserRef.current;
+        const previousId = previous?.user?.id ?? previous?.user?._id;
+        const accountId = account.user?.id ?? account.user?._id;
+        if (previousId !== accountId || previous?.type !== account.type) {
+          applyAuthenticatedUser(account, Boolean(previous));
+        }
+      } catch (error) {
+        if (cancelled || error.status !== 401 || !currentUserRef.current) return;
+        setCurrentUser(null);
+        setJoinedChallengeIds([]);
+        setSubmissionStatus({});
+        setPage('auth');
+        setFlowNotice('Phiên đăng nhập đã thay đổi. Vui lòng đăng nhập lại để tiếp tục.');
+      } finally {
+        checking = false;
+      }
+    };
+    const onFocus = () => { synchronizeSession(); };
+    const onVisible = () => { if (document.visibilityState === 'visible') synchronizeSession(); };
+    window.addEventListener('focus', onFocus);
+    document.addEventListener('visibilitychange', onVisible);
+    return () => {
+      cancelled = true;
+      window.removeEventListener('focus', onFocus);
+      document.removeEventListener('visibilitychange', onVisible);
+    };
+  }, [sessionChecked]);
 
   useEffect(() => {
     const activeRole = currentUser?.type ?? currentUser?.user?.role;
