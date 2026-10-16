@@ -3,8 +3,8 @@ import { z } from 'zod';
 const groqReady = () => Boolean(process.env.GROQ_API_KEY?.trim());
 export const aiConfigured = () => groqReady();
 
-// Only the opted-in excerpt and public challenge criteria reach the model.
-// Submission links, identities and files are not fetched or forwarded.
+// Only the reviewed, opted-in text and public challenge criteria reach the model.
+// Document/GitHub extraction is a separate preview step; raw files are not sent.
 export async function generateAiAdvice(challenge, _submission, evidenceText = '', transport = fetch) {
   if (!aiConfigured()) throw new Error('Dịch vụ AI chưa được cấu hình.');
   const evidence = String(evidenceText).trim();
@@ -89,5 +89,5 @@ export async function generateAiAdvice(challenge, _submission, evidenceText = ''
   const strengths = rubricFeedback.filter(item => item.evidence && item.score >= 7).slice(0, 3).map(item => `${item.label}: ${item.assessment}`);
   const improvements = [...rubricFeedback].sort((a, b) => a.score - b.score).slice(0, 3).map(item => item.action);
   return { summary, rubricFeedback, strengths, improvements, score, evidencedCriteria: evidenced, provider, model, at: new Date(),
-    note: 'Điểm tham khảo chỉ tính trên trích đoạn bạn đã dán, không phải điểm của toàn bộ sản phẩm. AI không mở link, chạy mã hoặc xác minh sản phẩm; chỉ mentor mới cấp điểm review được xác nhận.' };
+    note: 'Điểm tham khảo chỉ tính trên phần văn bản bạn đã kiểm tra và gửi, không phải điểm của toàn bộ sản phẩm. AI không đánh giá hình ảnh, chạy mã hoặc kiểm thử; đánh giá chuyên môn do mentor thực hiện.' };
 }

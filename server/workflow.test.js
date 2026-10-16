@@ -134,6 +134,31 @@ test('AI readiness is real rule output, owns its data, no file payloads or unsaf
   assert.equal(strangerState.submissions.length, 0);
   assert.equal(strangerState.motivation.totalPoints, 0);
 });
+test('evidence imports enforce submission ownership and reject invalid binary without grading', async () => {
+  const own = (await request('/state', 'free')).data.submissions[0];
+  const path = `/submissions/${own.id}/ai-evidence`;
+  assert.equal((await request(path, 'stranger', { githubUrl: 'https://github.com/a/b' })).status, 404);
+  assert.equal((await request(path, 'mentor', { githubUrl: 'https://github.com/a/b' })).status, 403);
+  assert.equal((await request(path, 'free', { githubUrl: 'https://127.0.0.1/private' })).status, 422);
+  const invalid = await fetch(base + path + '?format=pdf', { method: 'POST', headers: { 'Content-Type': 'application/octet-stream', 'x-test-user': 'free' }, body: Buffer.from('not a PDF') });
+  assert.equal(invalid.status, 422);
+  const oversized = await fetch(base + path + '?format=pdf', { method: 'POST', headers: { 'Content-Type': 'application/octet-stream', 'x-test-user': 'free' }, body: Buffer.alloc(2 * 1024 * 1024 + 1) });
+  assert.equal(oversized.status, 413);
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = (url, options) => {
+    if (!String(url).startsWith('https://api.github.com/')) return originalFetch(url, options);
+    if (String(url).includes('/git/trees/')) return Promise.resolve(Response.json({ tree: [{ type: 'blob', path: 'README.md', size: 500, sha: 'a'.repeat(40) }] }));
+    if (String(url).includes('/git/blobs/')) return Promise.resolve(Response.json({ encoding: 'base64', content: Buffer.from('Accessible form implementation with input labels and error states. '.repeat(4)).toString('base64') }));
+    return Promise.resolve(Response.json({ private: false, default_branch: 'main' }));
+  };
+  try {
+    const imported = await request(path, 'free', { githubUrl: 'https://github.com/student/project' });
+    assert.equal(imported.status, 200);
+    assert.match(imported.data.evidenceText, /Accessible form/);
+  } finally { globalThis.fetch = originalFetch; }
+  assert.equal((await request('/state', 'free')).data.submissions[0].ai.modelFeedback, undefined);
+});
+
 test('assignment requires confident mentor; overload requires acknowledgement and recommends alternatives', async () => {
   const result = await request('/submissions', 'student', payload());
   assert.equal(result.status, 201); submissionId = result.data.submission.id;

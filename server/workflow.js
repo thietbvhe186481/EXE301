@@ -1,7 +1,9 @@
-import { Router } from 'express';
+import { Router, raw } from 'express';
 import { randomUUID } from 'node:crypto';
 import { z } from 'zod';
 import { aiConfigured, generateAiAdvice } from './ai-review.js';
+import { readDocument, readGithub, MAX_FILE_BYTES } from './ai-evidence.js';
+import { createIpRateLimiter } from './rate-limit.js';
 import { CHALLENGES, RESOURCES, REVIEW_FEE, scoreReview, readinessCheck, ratingBonus, qualityFromRatings } from '../shared/catalog.js';
 import { summarizeMotivation } from '../shared/motivation.js';
 import { cancelPayosLink, createPayosLink, getPayosLink, payosConfigured, verifyPayosWebhook } from './payos.js';
@@ -55,7 +57,7 @@ export function createWorkflowRouter({ UserProfile, MentorAccount, AdminAccount,
   const router = Router();
   const userOrderQueues = new Map();
   const providerRefreshTimes = new Map();
-  const run = handler => async (req, res, next) => { try { await handler(req, res); } catch (error) { next(error); } };
+  const run = handler => async (req, res, next) => { try { await handler(req, res, next); } catch (error) { next(error); } };
   const serializeUserOrder = async (userId, action) => {
     const previous = userOrderQueues.get(userId) || Promise.resolve();
     let release;
@@ -269,6 +271,22 @@ export function createWorkflowRouter({ UserProfile, MentorAccount, AdminAccount,
   });
   router.post('/submissions', saveSubmission);
   router.put('/submissions/:id', saveSubmission);
+  router.post('/submissions/:id/ai-evidence',
+    createIpRateLimiter({ maxRequests: 10, windowMs: 60000 }),
+    run(async (req, _res, next) => {
+      requireRole(req, 'student');
+      const item = await ReviewSubmission.findOne({ id: req.params.id, userId: req.account.id, mode: 'ai', status: 'completed' }).lean();
+      if (!item) fail(404, 'Không tìm thấy bài tự luyện của bạn.');
+      if (item.ai?.modelFeedback) fail(409, 'Bài đã có nhận xét AI được lưu.');
+      next();
+    }),
+    raw({ type: 'application/octet-stream', limit: MAX_FILE_BYTES, inflate: false }),
+    run(async (req, res) => {
+      const result = Buffer.isBuffer(req.body)
+        ? await readDocument(req.body, req.query.format)
+        : await readGithub(z.object({ githubUrl: z.string().trim().max(300) }).parse(req.body).githubUrl);
+      res.json(result);
+    }));
   router.post('/submissions/:id/ai-advice', run(async (req, res) => {
     requireRole(req, 'student');
     const { evidenceText } = z.object({ consent: z.literal(true), evidenceText: z.string().trim().min(120).max(6000) }).parse(req.body);
