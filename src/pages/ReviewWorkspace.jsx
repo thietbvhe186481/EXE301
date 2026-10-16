@@ -423,10 +423,12 @@ function MentorProfile({ profile, application, setApplication, scope, setScope, 
 
 function PayoutAccount({ value, busy, mutate }) {
   const [editing, setEditing] = useState(!value?.accountNumber);
+  const [showNumber, setShowNumber] = useState(false);
   const [bank, setBank] = useState({ bankName: '', accountNumber: '', accountHolder: '' });
   useEffect(() => {
     setBank({ bankName: value?.bankName || '', accountNumber: '', accountHolder: value?.accountHolder || '' });
     setEditing(!value?.accountNumber);
+    setShowNumber(false);
   }, [value?.bankName, value?.accountNumber, value?.accountHolder]);
   const saved = Boolean(value?.accountNumber);
   const canSave = !busy && bank.bankName.trim().length >= 2 && /^\d{6,19}$/.test(bank.accountNumber) && bank.accountHolder.trim().length >= 3;
@@ -440,10 +442,14 @@ function PayoutAccount({ value, busy, mutate }) {
   };
   return <section className="rw-panel rw-payout-account" aria-labelledby="rw-payout-title">
     <div className="rw-payout-heading"><div><span className="rw-mentor-kicker">THÔNG TIN CHI TRẢ</span><h3 id="rw-payout-title">Tài khoản nhận thù lao</h3></div>{saved && !editing && <button type="button" className="rw-secondary" onClick={() => setEditing(true)}>Thay đổi tài khoản</button>}</div>
-    {saved && <div className="rw-payout-saved" role="status"><ShieldCheck size={20} aria-hidden="true" /><div><strong>Đã lưu trong hồ sơ Mentor</strong><p>{value.bankName} · Tài khoản kết thúc bằng {value.accountNumber.slice(-4)}</p><small>Admin dùng thông tin này khi đối soát và chuyển thù lao.{value.savedAt ? ` Cập nhật lúc ${formatDate(value.savedAt)}.` : ''}</small></div></div>}
+    {saved && <div className="rw-payout-record">
+      <div className="rw-payout-record-status" role="status"><ShieldCheck size={20} aria-hidden="true" /><div><strong>Đã lưu tài khoản nhận thù lao</strong><span>{value.savedAt ? `Cập nhật lúc ${formatDate(value.savedAt)}` : 'Thông tin đã được lưu trong hồ sơ Mentor'}</span></div></div>
+      <dl className="rw-payout-record-details"><div><dt>Ngân hàng</dt><dd>{value.bankName}</dd></div><div><dt>Chủ tài khoản</dt><dd>{value.accountHolder || 'Chưa có thông tin'}</dd></div><div className="rw-payout-record-number"><dt>Số tài khoản</dt><dd><span id="rw-own-account-number">{showNumber ? value.accountNumber : `•••• ${value.accountNumber.slice(-4)}`}</span><button type="button" className="rw-secondary" aria-controls="rw-own-account-number" aria-pressed={showNumber} onClick={() => setShowNumber(previous => !previous)}>{showNumber ? 'Ẩn số tài khoản' : 'Xem đầy đủ'}</button></dd></div></dl>
+      <p>Admin sẽ chuyển thù lao vào tài khoản này sau khi đối soát bài đánh giá.</p>
+    </div>}
     {editing && <form className="rw-payout-form" onSubmit={save}>
       <p>{saved ? 'Nhập lại thông tin tài khoản mới để thay đổi nơi nhận thù lao.' : 'Thêm tài khoản để admin có thể chuyển thù lao cho bạn sau khi đối soát.'}</p>
-      <div className="rw-payout-fields"><Field label="Ngân hàng"><input autoComplete="off" value={bank.bankName} maxLength={100} onChange={event => setBank({ ...bank, bankName: event.target.value })} placeholder="Tên ngân hàng" /></Field><Field label="Số tài khoản" hint="6–19 chữ số. Vì bảo mật, số cũ không được hiển thị lại."><input autoComplete="off" value={bank.accountNumber} inputMode="numeric" maxLength={19} onChange={event => setBank({ ...bank, accountNumber: event.target.value.replace(/\D/g, '') })} placeholder="Nhập số tài khoản" /></Field><Field label="Tên chủ tài khoản"><input autoComplete="off" value={bank.accountHolder} maxLength={100} onChange={event => setBank({ ...bank, accountHolder: event.target.value.toUpperCase() })} placeholder="Theo tài khoản ngân hàng" /></Field></div>
+      <div className="rw-payout-fields"><Field label="Ngân hàng"><input autoComplete="off" value={bank.bankName} maxLength={100} onChange={event => setBank({ ...bank, bankName: event.target.value })} placeholder="Tên ngân hàng" /></Field><Field label="Số tài khoản" hint="Nhập lại đầy đủ 6–19 chữ số để xác nhận tài khoản nhận tiền."><input autoComplete="off" value={bank.accountNumber} inputMode="numeric" maxLength={19} onChange={event => setBank({ ...bank, accountNumber: event.target.value.replace(/\D/g, '') })} placeholder="Nhập số tài khoản" /></Field><Field label="Tên chủ tài khoản"><input autoComplete="off" value={bank.accountHolder} maxLength={100} onChange={event => setBank({ ...bank, accountHolder: event.target.value.toUpperCase() })} placeholder="Theo tài khoản ngân hàng" /></Field></div>
       <div className="rw-payout-actions"><button type="submit" className="rw-primary" disabled={!canSave}>{saved ? 'Lưu tài khoản mới' : 'Lưu tài khoản nhận tiền'}</button>{saved && <button type="button" onClick={() => { setEditing(false); setBank({ bankName: value.bankName || '', accountNumber: '', accountHolder: value.accountHolder || '' }); }}>Hủy thay đổi</button>}</div>
     </form>}
   </section>;

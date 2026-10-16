@@ -3250,7 +3250,20 @@ function SubmissionHistoryPage({ demoUser, submissions, challenges, feedbackList
 }
 
 
-function PremiumPage({ plans, activeSubscription, onOpenQr, go }) {
+function PremiumPage({ plans: providedPlans, activeSubscription, onOpenQr, go }) {
+  const plans = Array.isArray(providedPlans) ? providedPlans : [];
+  const defaultPlanId = (activeSubscription?.status === 'active' && plans.some(plan => plan.id === activeSubscription.planId)
+    ? activeSubscription.planId : plans.find(plan => plan.id === 'premium-quarter')?.id) || plans[0]?.id || '';
+  const [selectedPlanId, setSelectedPlanId] = useState(defaultPlanId);
+  useEffect(() => { setSelectedPlanId(defaultPlanId); }, [defaultPlanId]);
+  const selectedPlan = plans.find(plan => plan.id === selectedPlanId) || plans.find(plan => plan.id === defaultPlanId);
+  const benefits = [
+    { text: 'Khám phá đề bài và tiêu chí đánh giá', free: true },
+    { text: 'Thực hiện thử thách miễn phí', free: true },
+    { text: 'Nộp thử thách Premium', free: false },
+    { text: 'Chọn mentor góp ý theo tiêu chí', free: false },
+    { text: 'Xem lại bài nộp và phản hồi', free: true },
+  ];
   const isActive = (plan) => activeSubscription?.status === 'active' && activeSubscription?.planId === plan.id;
   const monthPrice = Number(plans.find(plan => plan.id === 'premium-month')?.price);
   const termMonths = { 'premium-month': 1, 'premium-quarter': 3, 'premium-year': 12 };
@@ -3293,25 +3306,25 @@ function PremiumPage({ plans, activeSubscription, onOpenQr, go }) {
       </div>
 
       <div className="premium-section-intro" id="premium-plans">
-        <div><p className="premium-section-kicker">CHỌN THỜI HẠN</p><h2>Cùng quyền lợi. Linh hoạt theo mục tiêu.</h2></div>
-        <p>Mỗi gói mở cùng các tính năng Premium. Thời hạn và mức giá là điểm khác nhau; bạn có thể gia hạn khi đang sử dụng.</p>
+        <div><p className="premium-section-kicker">SO SÁNH & CHỌN GÓI</p><h2>Chọn cách học phù hợp với bạn.</h2></div>
+        <p>Bắt đầu miễn phí hoặc mở thêm thử thách và góp ý từ mentor với Premium.</p>
       </div>
-
-      {plans.length ? <div className="premium-plan-list">
-        {plans.map((plan) => {
-          const discount = savings(plan);
-          return <article className={`premium-plan-option ${plan.id === 'premium-quarter' ? 'premium-plan-recommended' : ''}`} key={plan.id}>
-            <div className="premium-plan-main">
-              <span className="premium-plan-term">{plan.duration}</span>
-              {plan.id === 'premium-quarter' && <span className="premium-plan-tag">Phù hợp để hoàn thiện portfolio</span>}
-              <h3>{plan.name}</h3>
-              <p>{plan.description}</p>
-              {discount > 0 && <small className="premium-plan-saving">Tiết kiệm khoảng {discount}% so với mua từng tháng</small>}
-            </div>
-            <div className="premium-plan-purchase"><div><strong>{formatPrice(plan)}</strong><span>/ {plan.duration}</span></div><button type="button" className="premium-link-button premium-link-button-primary" onClick={() => onOpenQr(plan)}>{isActive(plan) ? 'Gia hạn gói' : 'Chọn gói'} <ArrowRight size={17} /></button></div>
-          </article>;
-        })}
-      </div> : <div className="premium-plan-empty" role="status">Hiện chưa có gói Premium để đăng ký. Vui lòng quay lại sau.</div>}
+      <div className="premium-choice-grid">
+        <article className="premium-choice premium-choice-free" aria-labelledby="free-choice-title">
+          <header><span className="premium-choice-label">BẮT ĐẦU THỰC HÀNH</span><h3 id="free-choice-title">Miễn phí</h3><p>Khám phá chuyên ngành và bắt đầu với bài thực hành phù hợp.</p></header>
+          <ul className="premium-benefits" aria-label="Quyền lợi miễn phí">{benefits.map(item => <li key={item.text} className={item.free ? '' : 'premium-benefit-unavailable'}>{item.free ? <CheckCircle2 size={19} aria-hidden="true" /> : <span className="premium-benefit-dash" aria-hidden="true">—</span>}<span>{item.text}{!item.free && <small>Cần nâng cấp Premium</small>}</span></li>)}</ul>
+          <div className="premium-choice-footer"><div className="premium-choice-price"><strong>0đ</strong><span>Không mất phí</span></div><button type="button" className="premium-link-button premium-link-button-light" onClick={() => go('hub')}>Khám phá thử thách <ArrowRight size={17} /></button></div>
+        </article>
+        <article className="premium-choice premium-choice-paid" aria-labelledby="paid-choice-title">
+          <header><span className="premium-choice-label"><Crown size={16} /> THỰC HÀNH CÓ GÓP Ý</span><h3 id="paid-choice-title">Premium</h3><p>Thêm bài thực hành chuyên sâu và nhận góp ý để cải thiện bài làm.</p></header>
+          <ul className="premium-benefits" aria-label="Quyền lợi Premium">{benefits.map(item => <li key={item.text} className={item.free ? '' : 'premium-benefit-extra'}><CheckCircle2 size={19} aria-hidden="true" /><span>{item.text}{!item.free && <small>Quyền lợi nâng cấp</small>}</span></li>)}</ul>
+          {selectedPlan ? <div className="premium-choice-footer">
+            <fieldset className="premium-duration"><legend>Chọn thời hạn sử dụng</legend><div className="premium-duration-options">{plans.map(plan => <label key={plan.id} className={selectedPlan.id === plan.id ? 'is-selected' : ''}><input type="radio" name="premium-duration" value={plan.id} checked={selectedPlan.id === plan.id} onChange={() => setSelectedPlanId(plan.id)} /><span>{plan.duration}</span></label>)}</div></fieldset>
+            <div className="premium-selection-summary" aria-live="polite" aria-atomic="true"><div className="premium-choice-price"><strong>{formatPrice(selectedPlan)}</strong><span>/ {selectedPlan.duration}</span></div><p className="premium-total-note">Thanh toán một lần cho toàn bộ thời hạn.</p>{savings(selectedPlan) > 0 && <p className="premium-choice-saving">Tiết kiệm khoảng {savings(selectedPlan)}% so với mua từng tháng</p>}</div>
+            <button type="button" className="premium-link-button premium-purchase-button" onClick={() => onOpenQr(selectedPlan)}>{isActive(selectedPlan) ? 'Gia hạn gói' : 'Chọn gói Premium'} <ArrowRight size={17} /></button>
+          </div> : <div className="premium-plan-empty" role="status">Hiện chưa có gói Premium để đăng ký. Vui lòng quay lại sau.</div>}
+        </article>
+      </div>
 
       <div className="premium-mobile-status" aria-label="Gói hiện tại">
         <Crown size={18} />
@@ -3319,23 +3332,6 @@ function PremiumPage({ plans, activeSubscription, onOpenQr, go }) {
       </div>
 
       <div className="premium-fineprint"><ShieldCheck size={18} /><p>Giá thanh toán hiển thị lại trước khi tạo đơn. Việc chọn mentor phụ thuộc vào chuyên môn và số bài mentor đang nhận; thời gian phản hồi là ước tính.</p></div>
-
-      <div className="premium-section-intro premium-compare-heading">
-        <div><p className="premium-section-kicker">BẠN NHẬN ĐƯỢC GÌ?</p><h2>Nhìn rõ khác biệt trước khi nâng cấp.</h2></div>
-        <p>Bắt đầu miễn phí, rồi nâng cấp khi bạn cần thêm bài thực hành và góp ý từ người có chuyên môn.</p>
-      </div>
-      <div className="premium-comparison-wrap">
-        <table className="premium-comparison">
-          <thead><tr><th scope="col">Quyền truy cập</th><th scope="col">Miễn phí</th><th scope="col">Premium</th></tr></thead>
-          <tbody>
-            <tr><th scope="row">Khám phá đề bài và tiêu chí đánh giá</th><td>Có</td><td>Có</td></tr>
-            <tr><th scope="row">Thực hiện thử thách miễn phí</th><td>Có</td><td>Có</td></tr>
-            <tr><th scope="row">Nộp thử thách Premium</th><td>—</td><td><CheckCircle2 size={17} aria-label="Có" /></td></tr>
-            <tr><th scope="row">Chọn mentor thật góp ý theo tiêu chí</th><td>—</td><td><CheckCircle2 size={17} aria-label="Có" /></td></tr>
-            <tr><th scope="row">Xem lại bài nộp và phản hồi</th><td>Có</td><td>Có</td></tr>
-          </tbody>
-        </table>
-      </div>
 
       <div className="premium-bottom-grid">
         <section className="premium-how" aria-labelledby="premium-how-title"><p className="premium-section-kicker">SAU KHI CHỌN GÓI</p><h2 id="premium-how-title">Ba bước để bắt đầu</h2><ol><li><span>01</span><div><strong>Chọn thời hạn</strong><p>So sánh giá và xác nhận gói phù hợp.</p></div></li><li><span>02</span><div><strong>Thanh toán qua payOS</strong><p>Kiểm tra số tiền và thông tin nhận tiền trên trang thanh toán.</p></div></li><li><span>03</span><div><strong>Sử dụng Premium</strong><p>Gói tự kích hoạt sau khi giao dịch thành công được xác nhận.</p></div></li></ol></section>

@@ -448,3 +448,11 @@
 @media(prefers-reduced-motion:reduce){.rw-workspace .rw-admin-person-list button{transition:none}}
 .rw-skill-picker .rw-skill-progress{margin:13px 0 0;color:#8b5020;font-size:14px;font-weight:650}
 .rw-skill-picker .rw-skill-progress.is-ready{color:#25724e}
+.rw-payout-record{margin:17px 0 22px;border:1px solid #cce1ee;border-radius:12px;background:#f8fcff;overflow:hidden}
+.rw-payout-record-status{display:flex;align-items:center;gap:12px;padding:17px 20px;border-bottom:1px solid #dceaf2;background:#eef8fc;color:#176489}
+.rw-payout-record-status svg{flex:none}.rw-payout-record-status strong{display:block;font-size:16px}.rw-payout-record-status span{display:block;margin-top:4px;font-size:13px;color:#4b6b7c}
+.rw-payout-record-details{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin:0;padding:22px 20px}
+.rw-payout-record-details dt{margin-bottom:7px;color:#597285;font-size:13px;font-weight:500}.rw-payout-record-details dd{margin:0;color:#183e57;font-size:17px;font-weight:600;overflow-wrap:anywhere}
+.rw-payout-record-number{grid-column:1/-1}.rw-payout-record-number dd{display:flex;align-items:center;gap:17px;flex-wrap:wrap}.rw-payout-record-number dd>span{font-variant-numeric:tabular-nums;letter-spacing:.04em}.rw-payout-record-number button{font-size:13px}
+.rw-payout-record>p{margin:0;padding:0 20px 20px;color:#4c687b;font-size:14px;line-height:1.6}
+@media(max-width:520px){.rw-payout-record-details{grid-template-columns:1fr;gap:18px;padding:18px 16px}.rw-payout-record-status{padding:16px}.rw-payout-record>p{padding:0 16px 18px}}
