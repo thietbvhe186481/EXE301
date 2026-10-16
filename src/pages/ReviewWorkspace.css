@@ -360,4 +360,10 @@
 .rw-payout-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:3px}
 @media(max-width:760px){.rw-mentor-profile-heading,.rw-payout-heading{align-items:flex-start;flex-direction:column}.rw-mentor-profile-summary{justify-items:start;min-width:0}.rw-mentor-status-panel{align-items:flex-start;flex-direction:column}.rw-mentor-scope-items{grid-template-columns:1fr}.rw-mentor-capacity{grid-template-columns:1fr;gap:14px}.rw-payout-fields{grid-template-columns:1fr}.rw-mentor-earnings .rw-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:520px){.rw-mentor-profile>.rw-panel,.rw-mentor-earnings .rw-payout-account{padding:19px 17px}.rw-mentor-profile-heading{gap:11px}.rw-mentor-application-details,.rw-mentor-application-summary{margin-left:0}.rw-mentor-scope-toolbar{align-items:stretch;flex-direction:column;gap:11px;padding:13px}.rw-mentor-scope-actions{align-items:stretch;flex-direction:column}.rw-mentor-scope-actions button,.rw-payout-actions button{width:100%}.rw-mentor-earnings .rw-metrics strong{font-size:18px}}
+@media(max-width:700px){
+  .rw-mentor-workspace .rw-tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:20px 0 24px;padding-bottom:0;border-bottom:0;overflow:visible}
+  .rw-mentor-workspace .rw-tabs button{width:100%;min-width:0;min-height:52px;padding:10px 12px;white-space:normal;overflow-wrap:anywhere;text-align:center;line-height:1.3;border:1px solid #cbdde8;border-radius:8px;background:#fff;color:#34566d;font-size:14px}
+  .rw-mentor-workspace .rw-tabs button:last-child{grid-column:1/-1}
+  .rw-mentor-workspace .rw-tabs button.active{border:1px solid #327eaf;background:#eaf5fb;color:#155b86;box-shadow:inset 0 0 0 1px #327eaf}
+}
 @media(prefers-reduced-motion:reduce){.rw-mentor-scope-chevron{transition:none}}
