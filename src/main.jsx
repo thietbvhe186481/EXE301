@@ -3258,11 +3258,10 @@ function PremiumPage({ plans: providedPlans, activeSubscription, onOpenQr, go })
   useEffect(() => { setSelectedPlanId(defaultPlanId); }, [defaultPlanId]);
   const selectedPlan = plans.find(plan => plan.id === selectedPlanId) || plans.find(plan => plan.id === defaultPlanId);
   const benefits = [
-    { text: 'Khám phá đề bài và tiêu chí đánh giá', free: true },
-    { text: 'Thực hiện thử thách miễn phí', free: true },
-    { text: 'Nộp thử thách Premium', free: false },
+    { text: 'Thử thách miễn phí, tiêu chí và lịch sử bài nộp', free: true },
+    { text: 'AI đọc PDF, DOCX, GitHub và góp ý theo tiêu chí', free: true },
+    { text: 'Mở thêm thử thách chuyên sâu Premium', free: false },
     { text: 'Chọn mentor góp ý theo tiêu chí', free: false },
-    { text: 'Xem lại bài nộp và phản hồi', free: true },
   ];
   const isActive = (plan) => activeSubscription?.status === 'active' && activeSubscription?.planId === plan.id;
   const monthPrice = Number(plans.find(plan => plan.id === 'premium-month')?.price);
@@ -3311,20 +3310,24 @@ function PremiumPage({ plans: providedPlans, activeSubscription, onOpenQr, go })
       </div>
       <div className="premium-choice-grid">
         <article className="premium-choice premium-choice-free" aria-labelledby="free-choice-title">
-          <header><span className="premium-choice-label">BẮT ĐẦU THỰC HÀNH</span><h3 id="free-choice-title">Miễn phí</h3><p>Khám phá chuyên ngành và bắt đầu với bài thực hành phù hợp.</p></header>
-          <ul className="premium-benefits" aria-label="Quyền lợi miễn phí">{benefits.map(item => <li key={item.text} className={item.free ? '' : 'premium-benefit-unavailable'}>{item.free ? <CheckCircle2 size={19} aria-hidden="true" /> : <span className="premium-benefit-dash" aria-hidden="true">—</span>}<span>{item.text}{!item.free && <small>Cần nâng cấp Premium</small>}</span></li>)}</ul>
+          <header><span className="premium-choice-label">BẮT ĐẦU THỰC HÀNH</span><h3 id="free-choice-title">Miễn phí</h3><p>Bắt đầu thực hành và nhận góp ý AI sơ bộ.</p></header>
+
           <div className="premium-choice-footer"><div className="premium-choice-price"><strong>0đ</strong><span>Không mất phí</span></div><button type="button" className="premium-link-button premium-link-button-light" onClick={() => go('hub')}>Khám phá thử thách <ArrowRight size={17} /></button></div>
+          <ul className="premium-benefits" aria-label="Quyền lợi miễn phí">{benefits.map(item => <li key={item.text} className={item.free ? '' : 'premium-benefit-unavailable'}>{item.free ? <CheckCircle2 size={19} aria-hidden="true" /> : <span className="premium-benefit-dash" aria-hidden="true">—</span>}<span>{item.text}</span></li>)}</ul>
         </article>
         <article className="premium-choice premium-choice-paid" aria-labelledby="paid-choice-title">
-          <header><span className="premium-choice-label"><Crown size={16} /> THỰC HÀNH CÓ GÓP Ý</span><h3 id="paid-choice-title">Premium</h3><p>Thêm bài thực hành chuyên sâu và nhận góp ý để cải thiện bài làm.</p></header>
-          <ul className="premium-benefits" aria-label="Quyền lợi Premium">{benefits.map(item => <li key={item.text} className={item.free ? '' : 'premium-benefit-extra'}><CheckCircle2 size={19} aria-hidden="true" /><span>{item.text}{!item.free && <small>Quyền lợi nâng cấp</small>}</span></li>)}</ul>
+          <header><span className="premium-choice-label"><Crown size={16} /> THỰC HÀNH CÓ GÓP Ý</span><h3 id="paid-choice-title">Premium</h3><p>Bài chuyên sâu, góp ý AI và mentor đồng hành.</p></header>
+
           {selectedPlan ? <div className="premium-choice-footer">
             <fieldset className="premium-duration"><legend>Chọn thời hạn sử dụng</legend><div className="premium-duration-options">{plans.map(plan => <label key={plan.id} className={selectedPlan.id === plan.id ? 'is-selected' : ''}><input type="radio" name="premium-duration" value={plan.id} checked={selectedPlan.id === plan.id} onChange={() => setSelectedPlanId(plan.id)} /><span>{plan.duration}</span></label>)}</div></fieldset>
-            <div className="premium-selection-summary" aria-live="polite" aria-atomic="true"><div className="premium-choice-price"><strong>{formatPrice(selectedPlan)}</strong><span>/ {selectedPlan.duration}</span></div><p className="premium-total-note">Thanh toán một lần cho toàn bộ thời hạn.</p>{savings(selectedPlan) > 0 && <p className="premium-choice-saving">Tiết kiệm khoảng {savings(selectedPlan)}% so với mua từng tháng</p>}</div>
+            <div className="premium-selection-summary" aria-live="polite" aria-atomic="true"><div className="premium-choice-price"><strong>{formatPrice(selectedPlan)}</strong><span>/ {selectedPlan.duration}</span></div><p className="premium-total-note">Trả một lần{savings(selectedPlan) > 0 ? ` · Tiết kiệm khoảng ${savings(selectedPlan)}% so với mua từng tháng` : ' cho toàn bộ thời hạn'}.</p></div>
             <button type="button" className="premium-link-button premium-purchase-button" onClick={() => onOpenQr(selectedPlan)}>{isActive(selectedPlan) ? 'Gia hạn gói' : 'Chọn gói Premium'} <ArrowRight size={17} /></button>
           </div> : <div className="premium-plan-empty" role="status">Hiện chưa có gói Premium để đăng ký. Vui lòng quay lại sau.</div>}
+          <ul className="premium-benefits" aria-label="Quyền lợi Premium">{benefits.map(item => <li key={item.text} className={item.free ? '' : 'premium-benefit-extra'}><CheckCircle2 size={19} aria-hidden="true" /><span>{item.text}</span></li>)}</ul>
         </article>
       </div>
+
+      <p className="premium-ai-note">AI có ở cả hai gói: tối đa 2 bài/ngày, một kết quả cho mỗi bài nộp. Premium mở thêm bài chuyên sâu và quyền chọn mentor. Hạn mức nhà cung cấp có thể khiến AI tạm dừng.</p>
 
       <div className="premium-mobile-status" aria-label="Gói hiện tại">
         <Crown size={18} />
@@ -3336,7 +3339,7 @@ function PremiumPage({ plans: providedPlans, activeSubscription, onOpenQr, go })
       <div className="premium-bottom-grid">
         <section className="premium-how" aria-labelledby="premium-how-title"><p className="premium-section-kicker">SAU KHI CHỌN GÓI</p><h2 id="premium-how-title">Ba bước để bắt đầu</h2><ol><li><span>01</span><div><strong>Chọn thời hạn</strong><p>So sánh giá và xác nhận gói phù hợp.</p></div></li><li><span>02</span><div><strong>Thanh toán qua payOS</strong><p>Kiểm tra số tiền và thông tin nhận tiền trên trang thanh toán.</p></div></li><li><span>03</span><div><strong>Sử dụng Premium</strong><p>Gói tự kích hoạt sau khi giao dịch thành công được xác nhận.</p></div></li></ol></section>
         <section className="premium-faq" aria-labelledby="premium-faq-title"><p className="premium-section-kicker">GIẢI ĐÁP NHANH</p><h2 id="premium-faq-title">Điều bạn nên biết</h2>
-          <details><summary>Gói có bao gồm chấm bài bằng AI không?</summary><p>Quyền lợi hiện tại tập trung vào thử thách Premium và góp ý của mentor thật. Các công cụ kiểm tra tự động, nếu có, không thay thế đánh giá chuyên môn.</p></details>
+          <details><summary>Gói có bao gồm chấm bài bằng AI không?</summary><p>Có. Cả hai gói đều có AI đối chiếu trích đoạn từ PDF, DOCX hoặc kho GitHub công khai với tiêu chí: tối đa 2 bài/ngày, một kết quả mỗi bài nộp. Bạn xem và đồng ý gửi nội dung trước khi chấm. AI không đọc ảnh quét hoặc chạy code; điểm chỉ để tham khảo. Premium bổ sung thử thách chuyên sâu và mentor thật.</p></details>
           <details><summary>Mua gói xong có phải chờ admin duyệt?</summary><p>Không. Khi payOS xác nhận thanh toán thành công, hệ thống tự kích hoạt Premium.</p></details>
           <details><summary>Gia hạn trước ngày hết hạn có mất ngày còn lại không?</summary><p>Không. Thời hạn gói mới được cộng tiếp sau thời hạn Premium đang còn hiệu lực.</p></details>
           <details><summary>Có được chọn bất kỳ mentor nào không?</summary><p>Bạn chọn trong danh sách mentor phù hợp đang nhận bài. Hệ thống hiển thị hàng chờ và cảnh báo nếu mentor bận.</p></details>

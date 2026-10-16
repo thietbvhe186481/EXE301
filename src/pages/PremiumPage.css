@@ -139,3 +139,19 @@
   .premium-duration-options { gap: 5px; }
   .premium-duration label { font-size: 12px; gap: 4px; padding: 12px 4px; }
 }
+
+/* Compact purchase-first comparison. */
+.premium-page .premium-choice-grid { align-items: start; }
+.premium-page .premium-choice { padding: 22px; }
+.premium-page .premium-choice h3 { margin: 8px 0; font-size: 28px; }
+.premium-page .premium-choice header > p { min-height: 0; font-size: 15px; line-height: 1.5; }
+.premium-page .premium-choice-footer { margin-top: 14px; gap: 10px; }
+.premium-page .premium-choice-price strong { font-size: 34px; }
+.premium-page .premium-benefits { margin: 14px 0 0; }
+.premium-page .premium-benefits li { min-height: 0; padding: 9px 0; gap: 10px; font-size: 15px; line-height: 1.4; }
+.premium-page .premium-benefits li:last-child { border-bottom: 0; }
+.premium-page .premium-duration legend { margin-bottom: 7px; }
+.premium-page .premium-duration label { padding: 9px 5px; }
+.premium-page .premium-total-note, .premium-page .premium-choice-saving { margin-top: 4px; line-height: 1.4; }
+.premium-page .premium-ai-note { margin: 14px 2px 0; color: #426276; font-size: 14px; line-height: 1.55; }
+@media (max-width: 600px) { .premium-page .premium-choice { padding: 20px 16px; } }
