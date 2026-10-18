@@ -66,3 +66,19 @@ test('GitHub reader restricts host/protocol and uses bounded public API blobs on
   await assert.rejects(readGithub('https://github.com/owner/repo', async () => Response.json({}, { status: 403 })), /giới hạn/);
   await assert.rejects(readGithub('https://github.com/owner/repo', async () => new Response('A'.repeat(1024 * 1024 + 1))), /quá lớn/);
 });
+
+test('when GitHub API quota is exhausted, public raw files remain readable', async () => {
+  const calls = [];
+  const transport = async url => {
+    calls.push(url);
+    if (url.startsWith('https://api.github.com/')) return Response.json({}, { status: 403 });
+    if (url.endsWith('/main/package.json')) return new Response(JSON.stringify({ name: 'sample-app', scripts: { test: 'node --test' }, dependencies: { react: '^19.0.0' }, description: prose }));
+    if (url.endsWith('/main/src/App.jsx')) return new Response(`export default function App() { return <main><h1>Accessible form</h1><label>Name<input required /></label><button>Submit</button></main> }; ${prose}`);
+    return new Response('', { status: 404 });
+  };
+  const result = await readGithub('https://github.com/owner/repo', transport);
+  assert.match(result.evidenceText, /Accessible form/);
+  assert.equal(result.truncated, true);
+  assert.match(result.note, /GitHub API đang giới hạn/);
+  assert.ok(calls.every(url => url.startsWith('https://api.github.com/') || url.startsWith('https://raw.githubusercontent.com/owner/repo/')));
+});

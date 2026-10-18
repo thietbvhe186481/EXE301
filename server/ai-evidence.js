@@ -57,6 +57,38 @@ async function githubJson(path, transport, signal, maxBytes = 1024 * 1024) {
   return JSON.parse(Buffer.concat(chunks).toString('utf8'));
 }
 
+async function readPublicRaw(owner, repo, transport, signal) {
+  // GitHub's shared unauthenticated API quota can be exhausted on free hosts.
+  // Keep a bounded, read-only fallback on GitHub's public raw content origin.
+  const paths = ['README.md', 'README.txt', 'package.json', 'src/App.jsx', 'src/main.jsx', 'src/index.js', 'src/styles.css', 'index.html', 'app/page.tsx', 'src/pages/AiEvidenceInput.jsx'];
+  for (const branch of ['main', 'master']) {
+    const found = [];
+    for (const path of paths) {
+      if (found.length >= 6) break;
+      const endpoint = `https://raw.githubusercontent.com/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/${branch}/${path}`;
+      const response = await transport(endpoint, { redirect: 'error', signal, headers: { 'User-Agent': 'BeeLearn-evidence-reader' } }).catch(() => null);
+      if (!response?.ok || Number(response.headers.get('content-length')) > 60000) continue;
+      const chunks = []; let bytes = 0;
+      try {
+        for await (const chunk of response.body) {
+          bytes += chunk.length;
+          if (bytes > 60000) { chunks.length = 0; break; }
+          chunks.push(Buffer.from(chunk));
+        }
+      } catch { continue; }
+      if (!chunks.length) continue;
+      const content = Buffer.concat(chunks).toString('utf8').replace(/\u0000/g, '').trim();
+      if (content.length >= 80) found.push({ path, content });
+    }
+    if (found.length) {
+      const perFile = Math.floor(5700 / found.length);
+      return previewEvidence(found.map(file => `--- ${file.path} ---\n${file.content.slice(0, perFile)}`).join('\n\n'),
+        `GitHub · ${owner}/${repo}`, `GitHub API đang giới hạn lượt; chỉ đọc ${found.length} tệp phổ biến trên nhánh ${branch}. Chưa kiểm tra toàn bộ kho hoặc chạy mã.`, true);
+    }
+  }
+  throw error('GitHub đang giới hạn lượt đọc và không thấy tệp công khai phổ biến. Hãy dán mã hoặc thử lại sau.', 429);
+}
+
 export async function readGithub(value, transport = fetch) {
   const { owner, repo } = parseGithubRepository(value);
   const root = `/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}`;
@@ -84,6 +116,9 @@ export async function readGithub(value, transport = fetch) {
     }));
     return previewEvidence(excerpts.join('\n\n'), `GitHub · ${owner}/${repo}`, `Đọc ${selected.length} tệp từ nhánh mặc định. Chỉ đọc đoạn mã, không chạy chương trình hay kiểm thử.`, partial);
   } catch (cause) {
+    if (cause.status === 429) {
+      return readPublicRaw(owner, repo, transport, signal);
+    }
     if (cause.status) throw cause;
     throw error('GitHub chưa phản hồi hoặc dữ liệu không đọc được. Hãy dán bài làm hoặc thử lại sau.');
   }
