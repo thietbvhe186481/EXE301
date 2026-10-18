@@ -19,17 +19,22 @@ const maskAccount = value => value ? `•••• ${String(value).slice(-4)}` :
 const studentStatusLabel = status => ({ active: 'Đang hoạt động', suspended: 'Tạm ngưng', unverified: 'Chưa xác thực', pending: 'Chờ xác thực', graduated: 'Đã tốt nghiệp', rejected: 'Không khả dụng', disqualified: 'Không khả dụng' })[status] || 'Chưa rõ trạng thái';
 const mentorApplicationLabel = status => ({ approved: 'Đã duyệt', suspended: 'Đã tạm ngưng', rejected: 'Cần điều chỉnh', pending: 'Đang chờ duyệt', submitted: 'Đang chờ duyệt', needs_review: 'Cần xem xét' })[status] || 'Chưa gửi hồ sơ';
 const openBriefAssistant = () => window.dispatchEvent(new Event('beelearn:open-assistant'));
+const readableAiAction = value => String(value || '').trim()
+  .replace(/^Bổ sung đoạn thể hiện:\s*(?:Minh chứng cần thấy:\s*)?/i, 'Bổ sung minh chứng: ')
+  .replace(/^Minh chứng cần thấy:\s*/i, 'Bổ sung minh chứng: ');
 function AiReviewResult({ feedback, challenge }) {
   const criteria = Array.isArray(feedback?.rubricFeedback) ? feedback.rubricFeedback : [];
   const verified = criteria.filter(item => !!item.evidence).length;
   const complete = criteria.length > 0 && verified === criteria.length;
   const priorities = [...criteria]
     .sort((a, b) => Number(!!a.evidence) - Number(!!b.evidence) || (Number(a.score) || 0) - (Number(b.score) || 0))
-    .map(item => ({ label: item.label || item.key || 'Tiêu chí', action: String(item.action || '').trim() }))
+    .map(item => ({ label: item.label || item.key || 'Tiêu chí', action: readableAiAction(item.action) }))
     .filter(item => item.action)
     .filter((item, index, list) => list.findIndex(other => other.action.toLocaleLowerCase('vi-VN') === item.action.toLocaleLowerCase('vi-VN')) === index)
     .slice(0, 3);
-  const limit = feedback.note || 'AI chỉ đối chiếu đoạn nội dung đã gửi. Hệ thống không mở liên kết, chạy mã nguồn hoặc thay thế đánh giá của mentor.';
+  const limit = complete
+    ? feedback.note || 'AI chỉ đối chiếu đoạn nội dung đã gửi. Hệ thống không mở liên kết, chạy mã nguồn hoặc thay thế đánh giá của mentor.'
+    : 'Chưa hiển thị điểm tổng vì trích đoạn chưa có minh chứng cho mọi tiêu chí. AI chỉ đọc nội dung bạn cung cấp, không mở liên kết hay chạy mã nguồn; kết quả này không thay thế đánh giá của mentor.';
   return <div className="rw-ai-report">
     <div className="rw-ai-overview">
       <div><span className="rw-ai-overline">Mức độ có thể đối chiếu</span><strong>{verified}/{criteria.length || '—'} tiêu chí</strong><p>{complete ? 'Đã tìm thấy minh chứng cho mọi tiêu chí trong trích đoạn.' : 'Một số tiêu chí chưa có minh chứng đủ rõ trong đoạn đã gửi. Điều này không có nghĩa bài làm sai.'}</p></div>
@@ -43,7 +48,7 @@ function AiReviewResult({ feedback, challenge }) {
     {criteria.length > 0 && <section className="rw-ai-rubric" aria-labelledby="rw-ai-rubric-title"><div className="rw-ai-section-heading"><h5 id="rw-ai-rubric-title">Phân tích theo tiêu chí</h5><p>Đọc yêu cầu, đối chiếu minh chứng, rồi thực hiện bước tiếp theo.</p></div><div className="rw-ai-criteria">{criteria.map((item, index) => {
       const expectation = challenge?.rubric?.find(r => r.key === item.key)?.expectation || item.expectation;
       const hasEvidence = !!item.evidence;
-      return <article key={`${item.key || index}`} className={`rw-ai-criterion ${hasEvidence ? 'has-evidence' : 'needs-evidence'}`}><header><span className="rw-ai-criterion-index">{String(index + 1).padStart(2, '0')}</span><div><h6>{item.label || item.key || `Tiêu chí ${index + 1}`}</h6><span className="rw-ai-criterion-status">{hasEvidence ? 'Đã đối chiếu' : 'Chưa đủ minh chứng'}</span></div><div className="rw-ai-criterion-grade">{hasEvidence && Number.isFinite(Number(item.score)) ? <strong>{item.score}/10</strong> : <strong>—</strong>}<small>Trọng số {item.weight ?? '—'}%</small></div></header><div className="rw-ai-criterion-body">{expectation && <div><strong>Đề bài cần thấy</strong><p>{expectation.replace(/^Minh chứng cần thấy:\s*/i, '')}</p></div>}<div><strong>AI nhận thấy</strong><p>{item.assessment || (hasEvidence ? 'Có minh chứng phù hợp trong đoạn đã đọc.' : 'Chưa thể xác định từ trích đoạn đã gửi.')}</p></div>{hasEvidence && <blockquote><strong>Minh chứng được trích</strong><p>“{item.evidence}”</p></blockquote>}{item.action && <div className="rw-ai-criterion-action"><strong>Bước tiếp theo</strong><p>{item.action}</p></div>}</div></article>;
+      return <article key={`${item.key || index}`} className={`rw-ai-criterion ${hasEvidence ? 'has-evidence' : 'needs-evidence'}`}><header><span className="rw-ai-criterion-index">{String(index + 1).padStart(2, '0')}</span><div><h6>{item.label || item.key || `Tiêu chí ${index + 1}`}</h6><span className="rw-ai-criterion-status">{hasEvidence ? 'Đã đối chiếu' : 'Chưa đủ minh chứng'}</span></div><div className="rw-ai-criterion-grade">{hasEvidence && Number.isFinite(Number(item.score)) ? <strong>{item.score}/10</strong> : <strong>—</strong>}<small>Trọng số {item.weight ?? '—'}%</small></div></header><div className="rw-ai-criterion-body">{expectation && <div><strong>Đề bài cần thấy</strong><p>{expectation.replace(/^Minh chứng cần thấy:\s*/i, '')}</p></div>}<div><strong>AI nhận thấy</strong><p>{item.assessment || (hasEvidence ? 'Có minh chứng phù hợp trong đoạn đã đọc.' : 'Chưa thể xác định từ trích đoạn đã gửi.')}</p></div>{hasEvidence && <blockquote><strong>Minh chứng được trích</strong><p>“{item.evidence}”</p></blockquote>}{item.action && <div className="rw-ai-criterion-action"><strong>Bước tiếp theo</strong><p>{readableAiAction(item.action)}</p></div>}</div></article>;
     })}</div></section>}
     {!criteria.length && <p className="rw-ai-empty">Chưa có phân tích theo từng tiêu chí. Bạn có thể đọc lại đề bài hoặc nhờ mentor đánh giá chi tiết.</p>}
     <p className="rw-ai-disclaimer">{limit}</p>
