@@ -397,9 +397,10 @@ test('free AI adapter grades only the consented excerpt and checks every quoted 
     assert.equal(advice.strengths.length, 1);
     assert.equal(advice.rubricFeedback[0].score, 8);
     assert.equal(advice.rubricFeedback[0].action, 'Thêm ảnh kiểm thử theo kích thước.');
-    assert.ok(advice.rubricFeedback.slice(1).every(item => item.score === 0 && item.evidence === ''));
+    assert.ok(advice.rubricFeedback.slice(1).every(item => item.score === null && item.evidence === ''));
     assert.equal(advice.evidencedCriteria, 1);
-    assert.ok(advice.score > 0 && advice.score < 80);
+    assert.equal(advice.score, null);
+    assert.ok(advice.rubricFeedback.every(item => item.expectation));
   } finally {
     if (oldKey === undefined) delete process.env.GROQ_API_KEY; else process.env.GROQ_API_KEY = oldKey;
   }
@@ -424,6 +425,8 @@ test('AI retries a Groq schema validation failure once in JSON object mode', asy
     });
     assert.equal(calls, 2);
     assert.ok(result.evidencedCriteria > 0);
+    assert.equal(result.evidencedCriteria, CHALLENGES[0].rubric.length);
+    assert.equal(result.score, 50);
   } finally {
     if (oldKey === undefined) delete process.env.GROQ_API_KEY; else process.env.GROQ_API_KEY = oldKey;
   }
@@ -438,11 +441,11 @@ test('AI does not turn unsupported output into a grade or strengths', async () =
     const excerpt = 'A'.repeat(160);
     const response = { summary: 'Bài đã hoàn thiện xuất sắc.', rubricFeedback: CHALLENGES[0].rubric.map(item => ({ key: item.key, score: 10, assessment: 'Xuất sắc.', action: 'Tiếp tục.', evidence: 'Bằng chứng không có trong bài.' })) };
     const advice = await generateAiAdvice(CHALLENGES[0], payload(), excerpt, async () => ({ ok: true, json: async () => ({ choices: [{ finish_reason: 'stop', message: { content: JSON.stringify(response) } }] }) }));
-    assert.equal(advice.score, 0);
+    assert.equal(advice.score, null);
     assert.equal(advice.evidencedCriteria, 0);
     assert.deepEqual(advice.strengths, []);
     assert.match(advice.summary, /chưa cung cấp bằng chứng/);
-    assert.ok(advice.rubricFeedback.every(item => item.action.includes('Bổ sung đoạn thể hiện')));
+    assert.ok(advice.rubricFeedback.every(item => item.action.includes('Bổ sung vào bài làm')));
   } finally {
     if (oldKey === undefined) delete process.env.GROQ_API_KEY; else process.env.GROQ_API_KEY = oldKey;
   }
