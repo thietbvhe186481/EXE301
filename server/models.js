@@ -281,6 +281,7 @@ const NotificationSchema = new mongoose.Schema({
   role: { type: String, default: 'student' },
   title: { type: String, required: true },
   message: { type: String, default: '' },
+  createdAt: { type: Date, default: Date.now },
   unread: { type: Boolean, default: true },
   status: { type: String, enum: ['unread', 'read', 'archived'], default: 'unread' }
 }, baseSchemaOptions);

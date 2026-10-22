@@ -53,7 +53,7 @@ export function nextPremiumExpiry(currentExpiry, now, planId) {
   return new Date(startTime + durationDays * 86400000);
 }
 
-export function createWorkflowRouter({ UserProfile, MentorAccount, AdminAccount, ReviewSubmission, ReviewerProfile, Complaint, SubscriptionOrder, PremiumPlan }) {
+export function createWorkflowRouter({ UserProfile, MentorAccount, AdminAccount, ReviewSubmission, ReviewerProfile, Complaint, SubscriptionOrder, PremiumPlan, Notification }) {
   const router = Router();
   const userOrderQueues = new Map();
   const providerRefreshTimes = new Map();
@@ -146,19 +146,20 @@ export function createWorkflowRouter({ UserProfile, MentorAccount, AdminAccount,
   router.get('/state', run(async (req, res) => {
     const { id, role } = req.session.user;
     const filter = role === 'admin' ? {} : role === 'mentor' ? { mentorId: id } : { userId: id };
-    const [mentors, submissions, profile, orders, profiles, complaints, payoutAccounts, studentAccounts] = await Promise.all([
+    const [mentors, submissions, profile, orders, profiles, complaints, payoutAccounts, studentAccounts, notifications] = await Promise.all([
       loadMentors(), ReviewSubmission.find(filter).sort({ updatedAt: -1 }).lean(),
       role === 'mentor' ? ReviewerProfile.findOne({ mentorId: id }).lean() : null,
       role === 'admin' ? SubscriptionOrder.find({}).sort({ createdAt: -1 }).lean() : role === 'student' ? SubscriptionOrder.find({ userId: id }).sort({ createdAt: -1 }).lean() : [],
       role === 'admin' ? ReviewerProfile.find({}).lean() : [],
       Complaint ? Complaint.find(role === 'admin' ? {} : { reporterId: id }).sort({ updatedAt: -1 }).lean() : [],
       role === 'admin' ? MentorAccount.find({}).lean() : [],
-      role === 'admin' ? UserProfile.find({}).lean() : []
+      role === 'admin' ? UserProfile.find({}).lean() : [],
+      Notification && role !== 'admin' ? Notification.find({ userId: id }).sort({ createdAt: -1 }).lean() : []
     ]);
     const mentor = mentors.find(item => item.id === id);
     const approved = mentor?.eligible;
     const talents = role === 'mentor' && approved ? await ReviewSubmission.find({ shareTalent: true, status: 'completed', mode: 'human', 'review.score': { $gte: 85 } }).lean() : [];
-    res.json({ catalog: CHALLENGES, resources: RESOURCES, mentors, submissions: role === 'student' ? submissions.map(studentVisibleSubmission) : submissions, aiEnabled: aiConfigured(),
+    res.json({ catalog: CHALLENGES, resources: RESOURCES, mentors: role === 'admin' ? mentors.map(item => { const account = payoutAccounts.find(entry => entry.id === item.id); return { ...item, email: account?.email || '', createdAt: account?.createdAt || null, emailVerified: account?.emailVerified === true }; }) : mentors, notifications, submissions: role === 'student' ? submissions.map(studentVisibleSubmission) : submissions, aiEnabled: aiConfigured(),
       mentorAgreement: role === 'mentor' ? { accepted: req.account.mentorAgreementVersion === MENTOR_AGREEMENT_VERSION && Boolean(req.account.mentorAgreementAcceptedAt), version: MENTOR_AGREEMENT_VERSION, acceptedAt: req.account.mentorAgreementAcceptedAt || null } : null,
       profile, paid: role === 'student' && hasPaidAccess(req.account), orders,
       motivation: role === 'student' ? summarizeMotivation(submissions) : null,
@@ -176,11 +177,53 @@ export function createWorkflowRouter({ UserProfile, MentorAccount, AdminAccount,
         }, null);
         return { id: item.id, name: item.name, email: item.email, status: item.status,
           majorKey: item.majorKey || 'dev', specialization: item.specialization || '',
-          createdAt: item.createdAt || null, isPremium: hasPaidAccess(item),
+          createdAt: item.createdAt || null, emailVerified: item.emailVerified === true, isPremium: hasPaidAccess(item),
           planName: item.planName || '', subscriptionExpiresAt: item.subscriptionExpiresAt || null,
           submissionCount: work.length, lastActivityAt };
       }) : [],
       talents: talents.map(item => ({ id: item.id, studentName: item.studentName, challengeId: item.challengeId, score: item.review.score, links: item.links, notes: item.notes })) });
+  }));
+
+  router.patch('/admin/accounts/:role/:id', run(async (req, res) => {
+    requireRole(req, 'admin');
+    const model = req.params.role === 'student' ? UserProfile : req.params.role === 'mentor' ? MentorAccount : null;
+    if (!model) fail(400, 'Chỉ có thể chỉnh sửa tài khoản sinh viên hoặc mentor.');
+    const payload = z.object({ createdAt: z.string().datetime({ offset: true }).optional(), emailVerified: z.boolean().optional() }).strict().parse(req.body);
+    if (payload.createdAt === undefined && payload.emailVerified === undefined) fail(400, 'Chưa có thông tin cần cập nhật.');
+    const account = await model.findOne({ id: req.params.id }).lean();
+    if (!account || (req.params.role === 'student' && account.role && account.role !== 'student')) fail(404, 'Không tìm thấy tài khoản.');
+    const changes = {};
+    if (payload.createdAt !== undefined) {
+      const date = new Date(payload.createdAt);
+      if (date.getTime() < Date.UTC(2020, 0, 1) || date.getTime() > Date.now()) fail(400, 'Ngày tạo phải từ năm 2020 đến hiện tại.');
+      changes.createdAt = date;
+    }
+    if (payload.emailVerified !== undefined) {
+      changes.emailVerified = payload.emailVerified;
+      changes.emailVerifiedAt = payload.emailVerified ? new Date() : null;
+      if (payload.emailVerified && account.status === 'unverified') changes.status = 'active';
+      if (!payload.emailVerified && account.status === 'active') changes.status = 'unverified';
+    }
+    const updated = await model.findOneAndUpdate({ id: account.id }, { $set: changes }, { new: true, runValidators: true });
+    res.json({ account: { id: updated.id, createdAt: updated.createdAt, emailVerified: updated.emailVerified === true, status: updated.status } });
+  }));
+
+  router.post('/admin/notifications', run(async (req, res) => {
+    requireRole(req, 'admin');
+    if (!Notification) fail(503, 'Thông báo chưa khả dụng.');
+    const payload = z.object({ recipientRole: z.enum(['student', 'mentor']), recipientId: z.string().min(1).max(120), title: z.string().trim().min(3).max(120), message: z.string().trim().min(5).max(2000) }).strict().parse(req.body);
+    const model = payload.recipientRole === 'student' ? UserProfile : MentorAccount;
+    const recipient = await model.findOne({ id: payload.recipientId }).lean();
+    if (!recipient || (payload.recipientRole === 'student' && recipient.role && recipient.role !== 'student')) fail(404, 'Không tìm thấy người nhận.');
+    const notification = await Notification.create({ id: `notification-${randomUUID()}`, userId: recipient.id, role: payload.recipientRole, title: payload.title, message: payload.message, unread: true, status: 'unread', createdAt: new Date() });
+    res.status(201).json({ notification: { id: notification.id, userId: notification.userId } });
+  }));
+
+  router.patch('/notifications/:id/read', run(async (req, res) => {
+    if (!Notification || !['student', 'mentor'].includes(req.session.user.role)) fail(403, 'Không thể xem thông báo.');
+    const updated = await Notification.findOneAndUpdate({ id: req.params.id, userId: req.account.id }, { $set: { unread: false, status: 'read' } }, { new: true });
+    if (!updated) fail(404, 'Không tìm thấy thông báo.');
+    res.json({ notification: { id: updated.id, unread: false } });
   }));
 
   router.patch('/admin/students/:id/status', run(async (req, res) => {

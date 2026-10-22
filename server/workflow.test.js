@@ -44,7 +44,7 @@ function model(uniqueFields = []) {
   return { rows, find: filter => query(rows.filter(row => match(row, filter))), findOne: filter => query(rows.find(row => match(row, filter)) || null), create: async data => create(data),
     findOneAndUpdate: async (...args) => update(...args), updateOne: async (...args) => update(...args) };
 }
-const models = { UserProfile: model(['id']), MentorAccount: model(['id']), AdminAccount: model(['id']), ReviewerProfile: model(['mentorId']), ReviewSubmission: model(['userId', 'challengeId']), SubscriptionOrder: model(['orderId']), PremiumPlan: model(['id']) };
+const models = { UserProfile: model(['id']), MentorAccount: model(['id']), AdminAccount: model(['id']), ReviewerProfile: model(['mentorId']), ReviewSubmission: model(['userId', 'challengeId']), SubscriptionOrder: model(['orderId']), PremiumPlan: model(['id']), Notification: model(['id']) };
 let server, base;
 const actors = { student: { id: 'student', role: 'student' }, free: { id: 'free', role: 'student' }, stranger: { id: 'stranger', role: 'student' }, mentor: { id: 'mentor', role: 'mentor' }, other: { id: 'other', role: 'mentor' }, newMentor: { id: 'new-mentor', role: 'mentor' }, admin: { id: 'admin', role: 'admin' } };
 before(async () => {
@@ -67,6 +67,27 @@ const request = async (path, actor, body, method = body === undefined ? 'GET' : 
   return { status: response.status, data: await response.json() };
 };
 const payload = (challengeId = CHALLENGES[0].id) => ({ challengeId, mode: 'human', format: 'project', links: ['https://example.com/project'], skills: ['React', 'CSS'], notes: 'This project includes a clear explanation of the user flow, implementation tradeoffs and test cases.', shareTalent: false, linksAccessible: true, mentorId: 'mentor', acceptDelay: false, status: 'queued' });
+test('admin edits account fields and sends an in-app notification to its owner only', async () => {
+  const date = '2026-10-10T08:00:00.000+07:00';
+  assert.equal((await request('/admin/accounts/student/student', 'student', { createdAt: date, emailVerified: true }, 'PATCH')).status, 403);
+  assert.equal((await request('/admin/accounts/student/student', 'admin', { createdAt: '2040-01-01T00:00:00.000Z' }, 'PATCH')).status, 400);
+  const edited = await request('/admin/accounts/student/student', 'admin', { createdAt: date, emailVerified: true }, 'PATCH');
+  assert.equal(edited.status, 200);
+  assert.equal(new Date(edited.data.account.createdAt).toISOString(), '2026-10-10T01:00:00.000Z');
+  assert.equal(edited.data.account.emailVerified, true);
+  const mentorEdit = await request('/admin/accounts/mentor/mentor', 'admin', { emailVerified: false }, 'PATCH');
+  assert.equal(mentorEdit.status, 200);
+  assert.equal(mentorEdit.data.account.status, 'unverified');
+  await request('/admin/accounts/mentor/mentor', 'admin', { emailVerified: true }, 'PATCH');
+  assert.equal((await request('/admin/notifications', 'student', { recipientRole: 'student', recipientId: 'student', title: 'Tin mới', message: 'Nội dung thông báo' })).status, 403);
+  const sent = await request('/admin/notifications', 'admin', { recipientRole: 'student', recipientId: 'student', title: 'Tin mới', message: 'Nội dung thông báo' });
+  assert.equal(sent.status, 201);
+  const noteId = sent.data.notification.id;
+  assert.equal((await request('/state', 'student')).data.notifications.some(item => item.id === noteId), true);
+  assert.equal((await request('/state', 'free')).data.notifications.some(item => item.id === noteId), false);
+  assert.equal((await request(`/notifications/${noteId}/read`, 'free', {}, 'PATCH')).status, 404);
+  assert.equal((await request(`/notifications/${noteId}/read`, 'student', {}, 'PATCH')).data.notification.unread, false);
+});
 const review = id => ({ decision: 'complete', scores: Object.fromEntries(CHALLENGES.find(item => item.id === id).rubric.map(item => [item.key, 9])), criterionFeedback: Object.fromEntries(CHALLENGES.find(item => item.id === id).rubric.map(item => [item.key, `Tiêu chí ${item.label} đã có minh chứng trong phần bài nộp; cần kiểm tra thêm trường hợp biên.`])), strengths: 'Có cấu trúc rõ ràng', improvements: 'Bổ sung kiểm thử lỗi', comment: 'Bài làm đáp ứng yêu cầu và có minh chứng phù hợp.' });
 let submissionId;
 test('public catalog has real sources and rubric weights total 100; private state requires authentication', async () => {

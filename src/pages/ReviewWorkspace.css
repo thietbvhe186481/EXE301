@@ -407,6 +407,17 @@
 .rw-admin-facts dd{margin:3px 0 0;color:#173d58;font-size:15px;font-weight:650;overflow-wrap:anywhere}
 .rw-admin-facts small{display:block;margin-top:4px;color:#5b7182;font-size:12px}
 .rw-admin-decision,.rw-admin-detail-section{padding-top:19px;border-top:1px solid #e0e9f0}
+.rw-admin-account-tools{padding:20px 0;border-top:1px solid #e0e9f0}
+.rw-admin-account-tools h4{margin:0 0 14px;font-size:18px}
+.rw-admin-edit-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-bottom:14px}
+.rw-admin-account-tools .rw-field{margin:0 0 12px}
+.rw-admin-notice-compose{border-top:1px solid #e0e9f0;margin-top:22px;padding-top:20px}
+.rw-notifications{max-width:860px;margin:0 auto}
+.rw-notifications article{background:#fff;border:1px solid #dce8f0;border-radius:16px;padding:18px;margin:12px 0}
+.rw-notifications article.is-unread{border-color:#43a9d9;background:#f0faff}
+.rw-notifications article>div{display:flex;justify-content:space-between;gap:12px}
+.rw-notifications article p{white-space:pre-wrap;margin:10px 0}
+@media(max-width:640px){.rw-admin-edit-grid{grid-template-columns:1fr}.rw-notifications article>div{flex-direction:column}}
 .rw-admin-decision h4,.rw-admin-detail-section h4{display:flex;align-items:center;gap:8px;margin:0 0 5px;font-size:18px}
 .rw-admin-detail-section h4 span{padding:2px 7px;border-radius:6px;background:#eaf3f9;color:#246389;font-size:13px}
 .rw-admin-decision>p,.rw-admin-detail-section>p{margin:0 0 15px;color:#536c7e;font-size:14px}
