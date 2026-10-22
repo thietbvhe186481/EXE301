@@ -111,6 +111,14 @@ export function createWorkflowRouter({ UserProfile, MentorAccount, AdminAccount,
     return updated;
   };
   const requireRole = (req, role) => { if (req.session.user?.role !== role) fail(403, 'Bạn không có quyền thực hiện thao tác này.'); };
+  const sendPayoutNotification = async job => {
+    if (!Notification || !job?.reward?.paid || !job.reward.payoutLog?.notificationTitle) return false;
+    const log = job.reward.payoutLog;
+    const existing = await Notification.findOne({ payoutSubmissionId: job.id }).lean();
+    if (!existing) await Notification.create({ id: `notification-${randomUUID()}`, userId: job.mentorId, role: 'mentor', title: log.notificationTitle, message: log.notificationMessage, payoutSubmissionId: job.id, payoutAmount: log.amount, payoutReference: log.reference, receiptAvailable: Boolean(log.receiptImage), unread: true, status: 'unread', createdAt: log.confirmedAt });
+    await ReviewSubmission.updateOne({ id: job.id, 'reward.paid': true }, { $set: { 'reward.payoutLog.notificationSent': true } });
+    return true;
+  };
   const catalogItem = id => CHALLENGES.find(item => item.id === id) || fail(404, 'Không tìm thấy thử thách.');
   const loadMentors = async () => {
     const [accounts, profiles, jobs] = await Promise.all([MentorAccount.find({}).lean(), ReviewerProfile.find({}).lean(), ReviewSubmission.find({ mode: 'human' }).lean()]);
@@ -482,7 +490,7 @@ export function createWorkflowRouter({ UserProfile, MentorAccount, AdminAccount,
   }));
   router.post('/admin/payouts/:id', run(async (req, res) => {
     requireRole(req, 'admin');
-    const { reference, note, receiptImage } = z.object({ reference: z.string().trim().min(5).max(160), note: z.string().trim().max(500).default(''), confirmed: z.literal(true), receiptImage: z.string().max(350000).optional() }).strict().parse(req.body);
+    const { reference, note, receiptImage, notificationTitle, notificationMessage } = z.object({ reference: z.string().trim().min(5).max(160), note: z.string().trim().max(500).default(''), confirmed: z.literal(true), receiptImage: z.string().max(350000).optional(), notificationTitle: z.string().trim().min(3).max(120), notificationMessage: z.string().trim().min(10).max(2000) }).strict().parse(req.body);
     if (receiptImage) {
       const match = /^data:image\/(png|jpeg|webp);base64,([A-Za-z0-9+/]+={0,2})$/.exec(receiptImage);
       if (!match) fail(422, 'Chứng từ chỉ nhận ảnh PNG, JPG hoặc WebP.');
@@ -505,17 +513,18 @@ export function createWorkflowRouter({ UserProfile, MentorAccount, AdminAccount,
       $or: [{ rating: { $exists: true } }, { reviewedAt: { $lte: new Date(Date.now() - 7 * 86400000) } }] }, {
       $set: { 'reward.paid': true, 'reward.paymentRef': reference, 'reward.paidAt': paidAt, 'reward.paidBy': req.account.id,
         'reward.payoutLog': { amount, base: Number(job.reward.base), bonus: Number(job.reward.bonus || 0), method: 'bank_transfer', reference,
-          bankName: bank.bankName, accountNumber: bank.accountNumber, accountHolder: bank.accountHolder, note, receiptImage: receiptImage || '', confirmedBy: req.account.id, confirmedAt: paidAt } }
+          bankName: bank.bankName, accountNumber: bank.accountNumber, accountHolder: bank.accountHolder, note, receiptImage: receiptImage || '', notificationTitle, notificationMessage, confirmedBy: req.account.id, confirmedAt: paidAt } }
     }, { new: true });
     if (!submission) fail(409, 'Khoản đã chi trả, vừa thay đổi tiền thưởng hoặc chưa đủ điều kiện đối soát. Hãy tải lại.');
     let notificationSent = false;
-    if (Notification) {
-      try {
-        await Notification.create({ id: `notification-${randomUUID()}`, userId: job.mentorId, role: 'mentor', title: 'Đã ghi nhận chi trả thù lao', message: `Bài ${job.challengeId}: ${amount.toLocaleString('vi-VN')} đ đã được Admin đối soát. Mã giao dịch: ${reference}. Xem chi tiết và chứng từ trong mục Thu nhập.`, unread: true, status: 'unread', createdAt: paidAt });
-        notificationSent = true;
-      } catch { /* The payout remains settled; the mentor can still see its receipt in earnings. */ }
-    }
+    try { notificationSent = await sendPayoutNotification(submission); } catch { /* Admin can retry the notification without recording payment again. */ }
     res.json({ submission, notificationSent });
+  }));
+  router.post('/admin/payouts/:id/notify', run(async (req, res) => {
+    requireRole(req, 'admin');
+    const job = await ReviewSubmission.findOne({ id: req.params.id, 'reward.paid': true }).lean();
+    if (!job?.reward?.payoutLog?.notificationTitle) fail(404, 'Không tìm thấy thông báo chi trả cần gửi.');
+    res.json({ notificationSent: await sendPayoutNotification(job) });
   }));
   router.post('/orders', run(async (req, res) => {
     requireRole(req, 'student');

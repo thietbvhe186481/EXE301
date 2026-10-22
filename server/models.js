@@ -281,6 +281,10 @@ const NotificationSchema = new mongoose.Schema({
   role: { type: String, default: 'student' },
   title: { type: String, required: true },
   message: { type: String, default: '' },
+  payoutSubmissionId: { type: String, default: '' },
+  payoutAmount: { type: Number, default: 0 },
+  payoutReference: { type: String, default: '' },
+  receiptAvailable: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now },
   unread: { type: Boolean, default: true },
   status: { type: String, enum: ['unread', 'read', 'archived'], default: 'unread' }

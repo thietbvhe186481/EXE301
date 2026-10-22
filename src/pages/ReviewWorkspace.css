@@ -515,6 +515,21 @@
 .rw-finance-mentor-detail .rw-list{display:grid;gap:12px}
 .rw-payout-action{margin-top:12px;border-top:1px solid #e5edf2;padding-top:12px}
 .rw-payout-action .rw-field{margin:12px 0}
+.rw-payout-step{padding:14px 0;border-top:1px solid #e4edf3}
+.rw-payout-step h4{margin:0 0 5px;font-size:16px}
+.rw-payout-step>p{margin:0 0 10px;color:#5b7184;font-size:13px}
+.rw-payout-preview{display:grid;gap:6px;padding:15px 17px;margin:13px 0;background:#f1f8fc;border:1px solid #d5e7f1;border-radius:10px}
+.rw-payout-preview small{font-size:11px;font-weight:800;color:#317398;letter-spacing:.06em}
+.rw-payout-preview strong{font-size:17px}
+.rw-payout-preview p{white-space:pre-wrap;margin:0;color:#31566f}
+.rw-payout-preview span{font-size:13px;color:#17658f}
+.rw-payout-preview img{display:block;max-width:100%;max-height:180px;object-fit:contain;justify-self:start;border-radius:7px}
+.rw-notice-payout{display:grid;gap:8px;background:#f1f8fc;padding:14px;margin:12px 0;border-radius:10px}
+.rw-notice-payout span{color:#42667e;font-size:13px}
+.rw-notice-payout .rw-receipt{margin:0}
+.rw-notice-payout button{justify-self:start}
+.rw-notice-retry{padding:12px;margin-top:12px;background:#fff5eb;border:1px solid #ebcbaa;border-radius:8px}
+.rw-notice-retry p{margin:0 0 8px;color:#805222}
 .rw-finance-wait{padding:10px 12px;border-radius:8px;background:#edf4f8;color:#4d6879;font-size:13px}
 .rw-receipt{margin:8px 0}
 .rw-receipt img{display:block;max-width:100%;max-height:330px;object-fit:contain;margin:10px 0;border:1px solid #d6e4ed;border-radius:8px}
