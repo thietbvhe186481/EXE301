@@ -42,7 +42,6 @@ app.use(cors({
   },
   credentials: true
 }));
-app.use(express.json({ limit: '64kb' }));
 app.use(session({
   store: sessionStore,
   name: 'portfolio.sid',
@@ -57,6 +56,9 @@ app.use(session({
   }
 }));
 
+// Allow a small transfer receipt only for an authenticated admin payout request.
+app.use('/api/workflow/admin/payouts', (req, res, next) => req.session?.user?.role === 'admin' ? next() : res.status(req.session?.user ? 403 : 401).json({ message: 'Bạn không có quyền ghi nhận chi trả.' }), express.json({ limit: '360kb' }));
+app.use(express.json({ limit: '64kb' }));
 app.use('/api', createApiAccessMiddleware(allowedClientOrigins));
 app.use('/api/inquiries', createInquiriesRouter({ ContactInquiry }));
 app.use('/api/assistant', createHelpAssistantRouter());

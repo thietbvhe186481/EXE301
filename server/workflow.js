@@ -46,6 +46,11 @@ export const earningsFor = jobs => jobs.reduce((total, item) => {
   return total;
 }, { base: 0, bonus: 0, total: 0, pending: 0, paid: 0, count: 0 });
 const studentVisibleSubmission = item => item ? { ...item, ...(item.reward ? { reward: { paid: item.reward.paid === true } } : {}) } : item;
+const payoutVisibleSubmission = item => {
+  if (!item?.reward?.payoutLog?.receiptImage) return item;
+  const { receiptImage, ...payoutLog } = item.reward.payoutLog;
+  return { ...item, reward: { ...item.reward, payoutLog: { ...payoutLog, receiptAvailable: true } } };
+};
 
 export function nextPremiumExpiry(currentExpiry, now, planId) {
   const durationDays = planId === 'premium-year' ? 365 : planId === 'premium-quarter' ? 90 : 30;
@@ -160,7 +165,7 @@ export function createWorkflowRouter({ UserProfile, MentorAccount, AdminAccount,
     const mentor = mentors.find(item => item.id === id);
     const approved = mentor?.eligible;
     const talents = role === 'mentor' && approved ? await ReviewSubmission.find({ shareTalent: true, status: 'completed', mode: 'human', 'review.score': { $gte: 85 } }).lean() : [];
-    res.json({ catalog: CHALLENGES, resources: RESOURCES, mentors: role === 'admin' ? mentors.map(item => { const account = payoutAccounts.find(entry => entry.id === item.id); return { ...item, email: account?.email || '', createdAt: account?.createdAt || null, emailVerified: account?.emailVerified === true }; }) : mentors, notifications, submissions: role === 'student' ? submissions.map(studentVisibleSubmission) : submissions, aiEnabled: aiConfigured(),
+    res.json({ catalog: CHALLENGES, resources: RESOURCES, mentors: role === 'admin' ? mentors.map(item => { const account = payoutAccounts.find(entry => entry.id === item.id); return { ...item, email: account?.email || '', createdAt: account?.createdAt || null, emailVerified: account?.emailVerified === true }; }) : mentors, notifications, submissions: role === 'student' ? submissions.map(studentVisibleSubmission) : submissions.map(payoutVisibleSubmission), aiEnabled: aiConfigured(),
       mentorAgreement: role === 'mentor' ? { accepted: req.account.mentorAgreementVersion === MENTOR_AGREEMENT_VERSION && Boolean(req.account.mentorAgreementAcceptedAt), version: MENTOR_AGREEMENT_VERSION, acceptedAt: req.account.mentorAgreementAcceptedAt || null } : null,
       profile, paid: role === 'student' && hasPaidAccess(req.account), orders,
       motivation: role === 'student' ? summarizeMotivation(submissions) : null,
@@ -183,6 +188,13 @@ export function createWorkflowRouter({ UserProfile, MentorAccount, AdminAccount,
           submissionCount: work.length, lastActivityAt };
       }) : [],
       talents: talents.map(item => ({ id: item.id, studentName: item.studentName, challengeId: item.challengeId, score: item.review.score, links: item.links, notes: item.notes })) });
+  }));
+
+  router.get('/submissions/:id/payout-receipt', run(async (req, res) => {
+    if (!['admin', 'mentor'].includes(req.session.user.role)) fail(403, 'Bạn không có quyền xem chứng từ.');
+    const job = await ReviewSubmission.findOne({ id: req.params.id }).lean();
+    if (!job?.reward?.paid || !job.reward.payoutLog?.receiptImage || (req.session.user.role === 'mentor' && job.mentorId !== req.account.id)) fail(404, 'Không tìm thấy chứng từ chi trả.');
+    res.json({ receiptImage: job.reward.payoutLog.receiptImage });
   }));
 
   router.get('/admin/analytics', run(async (req, res) => {
@@ -470,9 +482,19 @@ export function createWorkflowRouter({ UserProfile, MentorAccount, AdminAccount,
   }));
   router.post('/admin/payouts/:id', run(async (req, res) => {
     requireRole(req, 'admin');
-    const { reference, note } = z.object({ reference: z.string().trim().min(5).max(160), note: z.string().trim().max(500).default(''), confirmed: z.literal(true) }).parse(req.body);
+    const { reference, note, receiptImage } = z.object({ reference: z.string().trim().min(5).max(160), note: z.string().trim().max(500).default(''), confirmed: z.literal(true), receiptImage: z.string().max(350000).optional() }).strict().parse(req.body);
+    if (receiptImage) {
+      const match = /^data:image\/(png|jpeg|webp);base64,([A-Za-z0-9+/]+={0,2})$/.exec(receiptImage);
+      if (!match) fail(422, 'Chứng từ chỉ nhận ảnh PNG, JPG hoặc WebP.');
+      const bytes = Buffer.from(match[2], 'base64');
+      const valid = match[1] === 'png' ? bytes.subarray(0, 8).equals(Buffer.from('89504e470d0a1a0a', 'hex'))
+        : match[1] === 'jpeg' ? bytes.subarray(0, 3).equals(Buffer.from('ffd8ff', 'hex'))
+        : bytes.subarray(0, 4).toString() === 'RIFF' && bytes.subarray(8, 12).toString() === 'WEBP';
+      if (!valid || bytes.length > 250000) fail(422, 'Ảnh chứng từ không hợp lệ hoặc vượt 250 KB.');
+    }
     const job = await ReviewSubmission.findOne({ id: req.params.id, status: 'completed', mode: 'human', 'reward.paid': false }).lean();
     if (!job?.paidAtSubmission || !job.mentorId || !(Number(job.reward?.base) > 0)) fail(409, 'Không tìm thấy thù lao hợp lệ chưa chi trả.');
+    if (await ReviewSubmission.findOne({ 'reward.paymentRef': reference, 'reward.paid': true }).lean()) fail(409, 'Mã giao dịch đã được dùng cho khoản chi khác.');
     const mentorAccount = await MentorAccount.findOne({ id: job.mentorId }).lean();
     const bank = mentorAccount?.bankInfo;
     if (!bank?.bankName || !/^[0-9]{6,19}$/.test(bank.accountNumber || '') || !bank.accountHolder) fail(409, 'Mentor chưa cung cấp tài khoản nhận thù lao hợp lệ.');
@@ -483,10 +505,17 @@ export function createWorkflowRouter({ UserProfile, MentorAccount, AdminAccount,
       $or: [{ rating: { $exists: true } }, { reviewedAt: { $lte: new Date(Date.now() - 7 * 86400000) } }] }, {
       $set: { 'reward.paid': true, 'reward.paymentRef': reference, 'reward.paidAt': paidAt, 'reward.paidBy': req.account.id,
         'reward.payoutLog': { amount, base: Number(job.reward.base), bonus: Number(job.reward.bonus || 0), method: 'bank_transfer', reference,
-          bankName: bank.bankName, accountNumber: bank.accountNumber, accountHolder: bank.accountHolder, note, confirmedBy: req.account.id, confirmedAt: paidAt } }
+          bankName: bank.bankName, accountNumber: bank.accountNumber, accountHolder: bank.accountHolder, note, receiptImage: receiptImage || '', confirmedBy: req.account.id, confirmedAt: paidAt } }
     }, { new: true });
     if (!submission) fail(409, 'Khoản đã chi trả, vừa thay đổi tiền thưởng hoặc chưa đủ điều kiện đối soát. Hãy tải lại.');
-    res.json({ submission });
+    let notificationSent = false;
+    if (Notification) {
+      try {
+        await Notification.create({ id: `notification-${randomUUID()}`, userId: job.mentorId, role: 'mentor', title: 'Đã ghi nhận chi trả thù lao', message: `Bài ${job.challengeId}: ${amount.toLocaleString('vi-VN')} đ đã được Admin đối soát. Mã giao dịch: ${reference}. Xem chi tiết và chứng từ trong mục Thu nhập.`, unread: true, status: 'unread', createdAt: paidAt });
+        notificationSent = true;
+      } catch { /* The payout remains settled; the mentor can still see its receipt in earnings. */ }
+    }
+    res.json({ submission, notificationSent });
   }));
   router.post('/orders', run(async (req, res) => {
     requireRole(req, 'student');
