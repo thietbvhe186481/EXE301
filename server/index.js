@@ -15,7 +15,6 @@ import { ReviewSubmission, ReviewerProfile, Complaint } from './workflow-models.
 import { connectDb, mongoUriFromEnvironment } from './config/db.js';
 import { AdminAccount, Category, Challenge, Major, MentorAccount, MentorFeedback, Notification, Resource, Submission, SubmissionRule, UserProfile, StudentReview, SubscriptionOrder, ContactInquiry, Founder, PremiumPlan, MarketData } from './models.js';
 import { describePremiumPlan } from '../shared/premiumCopy.js';
-import { ensureDemoStudents } from './demo-users.js';
 import { alignRegistrationDates } from './registration-dates.js';
 
 const app = express();
@@ -1124,10 +1123,6 @@ app.use((error, _req, res, _next) => {
 
 databaseReady
   .then(async () => {
-    if (process.env.BEELEARN_DEMO_SEED_TO_63 === '1') {
-      try { await ensureDemoStudents({ UserProfile, ReviewSubmission }); }
-      catch (error) { console.error('Demo seed failed; API will continue serving existing accounts:', error.message); }
-    }
     if (process.env.BEELEARN_ALIGN_REGISTRATION_DATES === '1') {
       try { await alignRegistrationDates({ UserProfile, ReviewSubmission }); }
       catch (error) { console.error('Registration date alignment failed; API will continue serving existing accounts:', error.message); }

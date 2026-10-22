@@ -1,5 +1,7 @@
 # Tài khoản minh họa BeeLearn
 
+> Đợt dữ liệu này đã ngừng sử dụng. Mã khởi động không còn tự tạo lại hồ sơ mẫu, kể cả khi biến môi trường `BEELEARN_DEMO_SEED_TO_63` vẫn tồn tại. Các hướng dẫn nạp dưới đây chỉ ghi lại quy trình cũ; không áp dụng cho bản hiện tại.
+
 Đợt `beelearn-2026-10` bổ sung **UserProfile** tới tổng 63 bản ghi, giữ nguyên toàn bộ 33 tài khoản đã có và thêm 30 hồ sơ minh họa. Chạy lại không tạo trùng.
 
 Tài khoản minh họa có tên, trường, chuyên ngành, mục tiêu nghề và một bản nháp hoặc bài tự luyện theo thử thách miễn phí. Bài đã nộp trỏ tới trang minh họa trên chính BeeLearn. Trang đó ghi rõ nội dung giả lập và không phải sản phẩm học tập của một người thật. Không tạo điểm AI, nhận xét mentor, giao dịch Premium, đánh giá hoặc khoản chi trả giả.
