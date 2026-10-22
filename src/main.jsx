@@ -1226,6 +1226,7 @@ function matchMentorForChallenge(challenge, mentors = []) {
 }
 
 function App() {
+  const studentSignupLink = new URLSearchParams(window.location.search).get('register') === 'student';
   const [qrModalPlan, setQrModalPlan] = useState(null);
   const [isVipModalOpen, setIsVipModalOpen] = useState(false);
   const [paymentReturnCode, setPaymentReturnCode] = useState(() => {
@@ -1234,8 +1235,8 @@ function App() {
     return params.get('payment')?.startsWith('payos') && /^\d{1,10}$/.test(code || '') ? Number(code) : null;
   });
   const [footerModalData, setFooterModalData] = useState(null);
-  const [page, setPage] = useState('home');
-  const [authMode, setAuthMode] = useState('login');
+  const [page, setPage] = useState(studentSignupLink ? 'auth' : 'home');
+  const [authMode, setAuthMode] = useState(studentSignupLink ? 'signup' : 'login');
   const [signupRole, setSignupRole] = useState('student');
   const theme = 'light';
   const [remoteData, setRemoteData] = useState(null);
