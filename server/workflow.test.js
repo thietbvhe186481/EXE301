@@ -44,7 +44,7 @@ function model(uniqueFields = []) {
   return { rows, find: filter => query(rows.filter(row => match(row, filter))), findOne: filter => query(rows.find(row => match(row, filter)) || null), create: async data => create(data),
     findOneAndUpdate: async (...args) => update(...args), updateOne: async (...args) => update(...args) };
 }
-const models = { UserProfile: model(['id']), MentorAccount: model(['id']), AdminAccount: model(['id']), ReviewerProfile: model(['mentorId']), ReviewSubmission: model(['userId', 'challengeId']), SubscriptionOrder: model(['orderId']), PremiumPlan: model(['id']), Notification: model(['id']) };
+const models = { UserProfile: model(['id']), MentorAccount: model(['id']), AdminAccount: model(['id']), ReviewerProfile: model(['mentorId']), ReviewSubmission: model(['userId', 'challengeId']), SubscriptionOrder: model(['orderId']), PremiumPlan: model(['id']), Notification: model(['id']), StudentReview: model(['id']) };
 let server, base;
 const actors = { student: { id: 'student', role: 'student' }, free: { id: 'free', role: 'student' }, stranger: { id: 'stranger', role: 'student' }, mentor: { id: 'mentor', role: 'mentor' }, other: { id: 'other', role: 'mentor' }, newMentor: { id: 'new-mentor', role: 'mentor' }, admin: { id: 'admin', role: 'admin' } };
 before(async () => {
@@ -67,6 +67,14 @@ const request = async (path, actor, body, method = body === undefined ? 'GET' : 
   return { status: response.status, data: await response.json() };
 };
 const payload = (challengeId = CHALLENGES[0].id) => ({ challengeId, mode: 'human', format: 'project', links: ['https://example.com/project'], skills: ['React', 'CSS'], notes: 'This project includes a clear explanation of the user flow, implementation tradeoffs and test cases.', shareTalent: false, linksAccessible: true, mentorId: 'mentor', acceptDelay: false, status: 'queued' });
+test('analytics are available to admins only with bounded date ranges', async () => {
+  assert.equal((await request('/admin/analytics?days=30', 'student')).status, 403);
+  assert.equal((await request('/admin/analytics?days=365', 'admin')).status, 422);
+  const response = await request('/admin/analytics?days=7', 'admin');
+  assert.equal(response.status, 200);
+  assert.equal(response.data.series.length, 7);
+  assert.equal(response.data.totals.students, 3);
+});
 test('admin edits account fields and sends an in-app notification to its owner only', async () => {
   const date = '2026-10-10T08:00:00.000+07:00';
   assert.equal((await request('/admin/accounts/student/student', 'student', { createdAt: date, emailVerified: true }, 'PATCH')).status, 403);

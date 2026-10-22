@@ -9,6 +9,7 @@ import { summarizeMotivation } from '../shared/motivation.js';
 import { cancelPayosLink, createPayosLink, getPayosLink, payosConfigured, verifyPayosWebhook } from './payos.js';
 import { MENTOR_AGREEMENT_VERSION } from '../shared/mentorAgreement.js';
 import { DEFAULT_RECEIVING_ACCOUNT } from '../shared/paymentAccount.js';
+import { buildAdminAnalytics } from './admin-analytics.js';
 
 const url = z.string().trim().max(500).refine(value => {
   try { const parsed = new URL(value); return ['https:', 'http:'].includes(parsed.protocol) && !parsed.username && !parsed.password; } catch { return false; }
@@ -53,7 +54,7 @@ export function nextPremiumExpiry(currentExpiry, now, planId) {
   return new Date(startTime + durationDays * 86400000);
 }
 
-export function createWorkflowRouter({ UserProfile, MentorAccount, AdminAccount, ReviewSubmission, ReviewerProfile, Complaint, SubscriptionOrder, PremiumPlan, Notification }) {
+export function createWorkflowRouter({ UserProfile, MentorAccount, AdminAccount, ReviewSubmission, ReviewerProfile, Complaint, SubscriptionOrder, PremiumPlan, Notification, StudentReview }) {
   const router = Router();
   const userOrderQueues = new Map();
   const providerRefreshTimes = new Map();
@@ -182,6 +183,18 @@ export function createWorkflowRouter({ UserProfile, MentorAccount, AdminAccount,
           submissionCount: work.length, lastActivityAt };
       }) : [],
       talents: talents.map(item => ({ id: item.id, studentName: item.studentName, challengeId: item.challengeId, score: item.review.score, links: item.links, notes: item.notes })) });
+  }));
+
+  router.get('/admin/analytics', run(async (req, res) => {
+    requireRole(req, 'admin');
+    const days = z.coerce.number().int().refine(value => [7, 30, 90].includes(value)).parse(req.query.days || 30);
+    const [students, mentors, submissions, reviews] = await Promise.all([
+      UserProfile.find({}, { role: 1, createdAt: 1, demoData: 1 }).lean(),
+      MentorAccount.find({}, { createdAt: 1, demoData: 1 }).lean(),
+      ReviewSubmission.find({}, { status: 1, createdAt: 1, queuedAt: 1, rating: 1, demoData: 1 }).lean(),
+      StudentReview ? StudentReview.find({}, { status: 1, studentId: 1, rating: 1 }).lean() : []
+    ]);
+    res.json(buildAdminAnalytics({ students, mentors, submissions, reviews, days }));
   }));
 
   router.patch('/admin/accounts/:role/:id', run(async (req, res) => {

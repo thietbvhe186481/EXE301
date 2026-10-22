@@ -61,7 +61,7 @@ app.use('/api', createApiAccessMiddleware(allowedClientOrigins));
 app.use('/api/inquiries', createInquiriesRouter({ ContactInquiry }));
 app.use('/api/assistant', createHelpAssistantRouter());
 app.use('/api/auth', createAuthRouter({ UserProfile, MentorAccount, AdminAccount, ReviewerProfile }));
-app.use('/api/workflow', createWorkflowRouter({ UserProfile, MentorAccount, AdminAccount, ReviewSubmission, ReviewerProfile, Complaint, SubscriptionOrder, PremiumPlan, Notification }));
+app.use('/api/workflow', createWorkflowRouter({ UserProfile, MentorAccount, AdminAccount, ReviewSubmission, ReviewerProfile, Complaint, SubscriptionOrder, PremiumPlan, Notification, StudentReview }));
 app.use('/api/reviews', createTestimonialsRouter({ StudentReview, UserProfile, ReviewSubmission, Submission }));
 
 function cleanDoc(doc) {
