@@ -142,7 +142,7 @@ async function findMatchedMentor(challenge) {
 }
 
 app.get('/api/health', async (_req, res) => {
-  res.json({ ok: true, service: 'portfolio-api', time: new Date().toISOString() });
+  res.json({ ok: true, service: 'portfolio-api', revision: process.env.RENDER_GIT_COMMIT?.slice(0, 7) || '', time: new Date().toISOString() });
 });
 
 app.get('/api/bootstrap', async (req, res, next) => {
