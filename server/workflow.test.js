@@ -97,6 +97,22 @@ test('admin edits account fields and sends an in-app notification to its owner o
   assert.equal((await request(`/notifications/${noteId}/read`, 'free', {}, 'PATCH')).status, 404);
   assert.equal((await request(`/notifications/${noteId}/read`, 'student', {}, 'PATCH')).data.notification.unread, false);
 });
+test('changing a verified account email requires fresh mailbox verification', async () => {
+  await models.UserProfile.create({ id: 'email-change-test', name: 'Email test', email: 'old-address@example.com', role: 'student', status: 'active', emailVerified: true, emailVerifiedAt: new Date(), verificationCodeHash: 'stale-code' });
+  await models.MentorAccount.create({ id: 'email-change-mentor', name: 'Mentor email test', email: 'mentor-address@example.com', status: 'active', emailVerified: true });
+  const path = '/admin/accounts/student/email-change-test';
+  assert.equal((await request(path, 'student', { email: 'new-address@example.com' }, 'PATCH')).status, 403);
+  assert.equal((await request(path, 'admin', { email: 'mentor-address@example.com' }, 'PATCH')).status, 409);
+  assert.equal((await request(path, 'admin', { email: 'new-address@example.com', emailVerified: true }, 'PATCH')).status, 400);
+  const changed = await request(path, 'admin', { email: 'new-address@example.com' }, 'PATCH');
+  assert.equal(changed.status, 200);
+  assert.equal(changed.data.account.email, 'new-address@example.com');
+  assert.equal(changed.data.account.emailVerified, false);
+  assert.equal(changed.data.account.status, 'unverified');
+  const saved = await models.UserProfile.findOne({ id: 'email-change-test' }).lean();
+  assert.equal(saved.emailVerifiedAt, null);
+  assert.equal(saved.verificationCodeHash, undefined);
+});
 const review = id => ({ decision: 'complete', scores: Object.fromEntries(CHALLENGES.find(item => item.id === id).rubric.map(item => [item.key, 9])), criterionFeedback: Object.fromEntries(CHALLENGES.find(item => item.id === id).rubric.map(item => [item.key, `Tiêu chí ${item.label} đã có minh chứng trong phần bài nộp; cần kiểm tra thêm trường hợp biên.`])), strengths: 'Có cấu trúc rõ ràng', improvements: 'Bổ sung kiểm thử lỗi', comment: 'Bài làm đáp ứng yêu cầu và có minh chứng phù hợp.' });
 let submissionId;
 test('public catalog has real sources and rubric weights total 100; private state requires authentication', async () => {

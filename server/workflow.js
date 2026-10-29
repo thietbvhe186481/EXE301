@@ -221,24 +221,39 @@ export function createWorkflowRouter({ UserProfile, MentorAccount, AdminAccount,
     requireRole(req, 'admin');
     const model = req.params.role === 'student' ? UserProfile : req.params.role === 'mentor' ? MentorAccount : null;
     if (!model) fail(400, 'Chỉ có thể chỉnh sửa tài khoản sinh viên hoặc mentor.');
-    const payload = z.object({ createdAt: z.string().datetime({ offset: true }).optional(), emailVerified: z.boolean().optional() }).strict().parse(req.body);
-    if (payload.createdAt === undefined && payload.emailVerified === undefined) fail(400, 'Chưa có thông tin cần cập nhật.');
+    const payload = z.object({ createdAt: z.string().datetime({ offset: true }).optional(), emailVerified: z.boolean().optional(), email: z.email().trim().toLowerCase().max(254).optional() }).strict().parse(req.body);
+    if (payload.createdAt === undefined && payload.emailVerified === undefined && payload.email === undefined) fail(400, 'Chưa có thông tin cần cập nhật.');
     const account = await model.findOne({ id: req.params.id }).lean();
     if (!account || (req.params.role === 'student' && account.role && account.role !== 'student')) fail(404, 'Không tìm thấy tài khoản.');
     const changes = {};
+    const emailChanged = payload.email !== undefined && payload.email !== account.email;
+    if (emailChanged) {
+      if (payload.emailVerified === true) fail(400, 'Email mới phải được xác minh qua hộp thư trước khi đánh dấu đã xác minh.');
+      const duplicate = await Promise.all([UserProfile, MentorAccount, AdminAccount].map(entry => entry.findOne({ email: payload.email }).lean()));
+      if (duplicate.some(Boolean)) fail(409, 'Email này đã được sử dụng bởi tài khoản khác.');
+      changes.email = payload.email;
+      changes.emailVerified = false;
+      changes.emailVerifiedAt = null;
+      if (account.status === 'active') changes.status = 'unverified';
+    }
     if (payload.createdAt !== undefined) {
       const date = new Date(payload.createdAt);
       if (date.getTime() < Date.UTC(2020, 0, 1) || date.getTime() > Date.now()) fail(400, 'Ngày tạo phải từ năm 2020 đến hiện tại.');
       changes.createdAt = date;
     }
-    if (payload.emailVerified !== undefined) {
+    if (payload.emailVerified !== undefined && !emailChanged) {
       changes.emailVerified = payload.emailVerified;
       changes.emailVerifiedAt = payload.emailVerified ? new Date() : null;
       if (payload.emailVerified && account.status === 'unverified') changes.status = 'active';
       if (!payload.emailVerified && account.status === 'active') changes.status = 'unverified';
     }
-    const updated = await model.findOneAndUpdate({ id: account.id }, { $set: changes }, { new: true, runValidators: true });
-    res.json({ account: { id: updated.id, createdAt: updated.createdAt, emailVerified: updated.emailVerified === true, status: updated.status } });
+    const update = { $set: changes };
+    if (emailChanged) update.$unset = { verificationCodeHash: 1, verificationExpiresAt: 1, verificationAttempts: 1, verificationSentAt: 1 };
+    let updated;
+    try { updated = await model.findOneAndUpdate({ id: account.id, ...(emailChanged ? { email: account.email } : {}) }, update, { new: true, runValidators: true }); }
+    catch (error) { if (error.code === 11000) fail(409, 'Email này đã được sử dụng bởi tài khoản khác.'); throw error; }
+    if (!updated) fail(409, 'Tài khoản vừa thay đổi. Hãy tải lại trước khi lưu.');
+    res.json({ account: { id: updated.id, email: updated.email, createdAt: updated.createdAt, emailVerified: updated.emailVerified === true, status: updated.status } });
   }));
 
   router.post('/admin/notifications', run(async (req, res) => {
