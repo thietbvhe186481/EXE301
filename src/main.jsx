@@ -1,3 +1,4 @@
+import { startWebMetrics } from './services/webMetrics';
 import React, { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { careerExamples, careerSkillsByTrack, careerLevelHeadings } from './data/careerExamples.js';
@@ -4571,4 +4572,6 @@ function StatCard({ icon: Icon, title, value }) {
   return <article className="stat-card"><Icon size={22} /><strong>{value}</strong><span>{title}</span></article>;
 }
 
+startWebMetrics();
 createRoot(document.getElementById('root')).render(<App />);
+

@@ -13,6 +13,7 @@ export function createApiAccessMiddleware(allowedOrigins = []) {
     }
 
     const path = req.path;
+    if (path === '/web-metrics' && req.method === 'POST') return next();
     if (path.startsWith('/auth/')) return next();
     if (path === '/assistant/topics' && req.method === 'GET') return next();
     if (path === '/assistant/ask' && req.method === 'POST') return next();
@@ -37,3 +38,4 @@ export function createApiAccessMiddleware(allowedOrigins = []) {
     return res.status(403).json({ message: 'Chức năng này dành cho quản trị viên hoặc cần sử dụng luồng review mới.' });
   };
 }
+

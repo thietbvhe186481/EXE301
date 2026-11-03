@@ -27,7 +27,7 @@ export function buildAdminAnalytics({ students = [], mentors = [], submissions =
   const series = rows.map(row => ({ ...row, cumulativeStudents: cumulativeStudents += row.students }));
   return {
     days, from: first, to: today, series, revenue: buildRevenue(orders, submissions, dates),
-    totals: { students: validStudents.length, mentors: validMentors.length, submissions: sent.length, completed: sent.filter(item => item.status === 'completed').length,
+    totals: { students: validStudents.length, mentors: validMentors.length, submissions: sent.length, mentorCompleted: sent.filter(item => item.mode === 'human' && item.status === 'completed').length, aiCompleted: sent.filter(item => item.mode === 'ai' && item.status === 'completed').length, completed: sent.filter(item => item.status === 'completed').length,
       ratedMentorReviews: rated.length, positiveMentorReviews: rated.filter(item => Number(item.rating.stars) >= 4).length,
       approvedTestimonials: testimonials.length, positiveTestimonials: testimonials.filter(item => Number(item.rating) >= 4).length },
     period: { students: rows.reduce((total, row) => total + row.students, 0), submissions: rows.reduce((total, row) => total + row.submissions, 0), positiveRatings: rows.reduce((total, row) => total + row.positiveRatings, 0) }
@@ -51,3 +51,4 @@ export function buildRevenue(orders, submissions, dates) {
     plans: [...new Set(period.map(o => o.planId))].map(id => ({ id, name: period.find(o => o.planId === id)?.planName || id || 'Gói khác', orders: period.filter(o => o.planId === id).length, revenue: period.filter(o => o.planId === id).reduce((sum, o) => sum + amount(o.price), 0) }))
   };
 }
+

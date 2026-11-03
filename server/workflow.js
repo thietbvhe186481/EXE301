@@ -211,7 +211,7 @@ export function createWorkflowRouter({ UserProfile, MentorAccount, AdminAccount,
     const [students, mentors, submissions, reviews, orders] = await Promise.all([
       UserProfile.find({}, { role: 1, createdAt: 1, demoData: 1 }).lean(),
       MentorAccount.find({}, { createdAt: 1, demoData: 1 }).lean(),
-      ReviewSubmission.find({}, { status: 1, createdAt: 1, queuedAt: 1, rating: 1, reward: 1, demoData: 1 }).lean(),
+      ReviewSubmission.find({}, { status: 1, mode: 1, createdAt: 1, queuedAt: 1, rating: 1, reward: 1, demoData: 1 }).lean(),
       StudentReview ? StudentReview.find({}, { status: 1, studentId: 1, rating: 1 }).lean() : [],
       SubscriptionOrder.find({}, { status: 1, price: 1, planId: 1, planName: 1, activatedAt: 1, demoData: 1 }).lean()
     ]);
@@ -684,4 +684,5 @@ export function createWorkflowRouter({ UserProfile, MentorAccount, AdminAccount,
   });
   return router;
 }
+
 

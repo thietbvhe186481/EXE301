@@ -16,7 +16,7 @@ test('Vietnam date bucketing respects midnight and separates real submissions, r
     ],
     reviews: [{ studentId: 's1', status: 'approved', rating: 5 }, { status: 'approved', rating: 5 }, { studentId: 's2', status: 'pending', rating: 5 }]
   });
-  assert.deepEqual(report.totals, { students: 2, mentors: 1, submissions: 2, completed: 2, ratedMentorReviews: 2, positiveMentorReviews: 1, approvedTestimonials: 1, positiveTestimonials: 1 });
+  assert.deepEqual(report.totals, { students: 2, mentors: 1, submissions: 2, completed: 2, mentorCompleted: 0, aiCompleted: 0, ratedMentorReviews: 2, positiveMentorReviews: 1, approvedTestimonials: 1, positiveTestimonials: 1 });
   assert.deepEqual(report.series.at(-1), { date: '2026-10-22', students: 1, mentors: 1, submissions: 1, positiveRatings: 1, cumulativeStudents: 2 });
 });
 
@@ -34,3 +34,4 @@ test('revenue counts completed payments by Vietnam activation day and separates 
   assert.equal(report.revenue.mentorPaid, 5000);
   assert.equal(report.revenue.undatedOrders, 1);
 });
+

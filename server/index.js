@@ -1,3 +1,4 @@
+import { createWebMetricsRouter } from './web-metrics.js';
 import 'dotenv/config';
 import bcrypt from 'bcryptjs';
 import cors from 'cors';
@@ -60,6 +61,7 @@ app.use(session({
 app.use('/api/workflow/admin/payouts', (req, res, next) => req.session?.user?.role === 'admin' ? next() : res.status(req.session?.user ? 403 : 401).json({ message: 'Bạn không có quyền ghi nhận chi trả.' }), express.json({ limit: '360kb' }));
 app.use(express.json({ limit: '64kb' }));
 app.use('/api', createApiAccessMiddleware(allowedClientOrigins));
+app.use('/api/web-metrics', createWebMetricsRouter());
 app.use('/api/inquiries', createInquiriesRouter({ ContactInquiry }));
 app.use('/api/assistant', createHelpAssistantRouter());
 app.use('/api/auth', createAuthRouter({ UserProfile, MentorAccount, AdminAccount, ReviewerProfile }));
@@ -1137,3 +1139,4 @@ databaseReady
     console.error('Cannot connect to MongoDB:', error.message);
     process.exit(1);
   });
+
