@@ -629,3 +629,48 @@
 .rw-ai-disclaimer{border-top:1px solid #e2eaf1;margin:25px 0 0!important;padding-top:14px;color:#52687b;font-size:14px;line-height:1.6}
 .rw-ai-empty{font-size:16px;color:#405b71}
 @media(max-width:650px){.rw-ai-feedback{padding:18px}.rw-ai-feedback .rw-result-heading{align-items:flex-start;gap:9px;flex-wrap:wrap}.rw-ai-overview{grid-template-columns:1fr;gap:8px}.rw-ai-overview>div:first-child{padding:4px 0}.rw-ai-grade{padding:15px}.rw-ai-priorities{padding:17px}.rw-ai-criterion header{padding:14px;flex-wrap:wrap}.rw-ai-criterion-grade{margin-left:auto}.rw-ai-criterion-body{padding:15px}.rw-ai-feedback .rw-result-heading h4{font-size:22px}}
+
+/* Keep the AI report scannable: verdict, next step, then optional evidence. */
+.rw-ai-report{color:#17344a}
+.rw-ai-overview{border-bottom:1px solid #e1eaf0;padding-bottom:20px;gap:24px}
+.rw-ai-overview>div:first-child{padding:6px 0}
+.rw-ai-overview h5{font-size:clamp(23px,3vw,30px);line-height:1.25;letter-spacing:-.025em;margin:5px 0 0;color:#12344c}
+.rw-ai-overview p{max-width:57ch;margin-top:9px}
+.rw-ai-overline{font-size:12px;letter-spacing:.1em;font-weight:800;color:#28708c}
+.rw-ai-grade{background:#f2f8fb;border-color:#cbdfe8;border-left:4px solid #4c96a8;padding:18px 20px}
+.rw-ai-grade.is-pending{background:#f8fafb;border-left-color:#b18449}
+.rw-ai-grade.is-pending strong{font-size:20px}
+.rw-ai-grade small{font-size:14px}
+.rw-ai-priorities{margin-top:20px;background:#f1f7fa;border-color:#d3e5ec;padding:20px 23px}
+.rw-ai-priorities h5{font-size:22px}
+.rw-ai-priorities>div>p{margin:4px 0 0;color:#455e70;font-size:15px}
+.rw-ai-priorities ol{margin-top:13px}
+.rw-ai-priorities li{padding:12px 0;border-color:#d4e4eb}
+.rw-ai-priorities li strong{font-size:16px}
+.rw-ai-priority-index{background:#226e87}
+.rw-ai-rubric{margin-top:25px}
+.rw-ai-rubric .rw-ai-criterion{border-radius:9px;transition:border-color .15s ease,box-shadow .15s ease}
+.rw-ai-rubric .rw-ai-criterion[open]{border-color:#aacbd9;box-shadow:0 5px 20px rgba(20,70,100,.06)}
+.rw-ai-criterion summary{display:flex;align-items:center;gap:14px;min-height:74px;padding:14px 18px;cursor:pointer;list-style:none;background:#f9fbfc}
+.rw-ai-criterion summary::-webkit-details-marker{display:none}
+.rw-ai-criterion summary:hover{background:#f2f7f9}
+.rw-ai-criterion summary:focus-visible{outline:3px solid #288aad;outline-offset:-3px}
+.rw-ai-criterion[open] summary{border-bottom:1px solid #e1e9ef;background:#f4f9fb}
+.rw-ai-criterion-label{display:flex;flex:1;min-width:0;flex-direction:column;gap:2px}
+.rw-ai-criterion-label strong{font-size:17px;line-height:1.35;color:#183b54}
+.rw-ai-criterion-label small{font-size:14px;color:#2f7069;font-weight:700}
+.rw-ai-criterion.needs-evidence .rw-ai-criterion-label small{color:#8b602c}
+.rw-ai-criterion-chevron{font-size:25px;color:#52778a;line-height:1;transition:transform .15s ease}
+.rw-ai-criterion[open] .rw-ai-criterion-chevron{transform:rotate(180deg)}
+.rw-ai-criterion-grade small{font-size:13px}
+.rw-ai-criterion-body{padding:19px 22px 22px;gap:18px}
+.rw-ai-criterion-body>div>strong,.rw-ai-criterion blockquote strong{font-size:15px}
+.rw-ai-criterion blockquote{background:#eff8f7;border-left-color:#2c9388}
+.rw-ai-criterion-body .rw-ai-criterion-action{background:#f1f7fa;border:1px solid #dceaf0;border-radius:7px;padding:13px 15px}
+.rw-ai-disclaimer{font-size:15px}
+@media(max-width:650px){.rw-ai-overview{gap:14px}.rw-ai-overview h5{font-size:23px}.rw-ai-priorities{padding:17px}.rw-ai-criterion summary{gap:10px;padding:13px;flex-wrap:wrap}.rw-ai-criterion-label{flex-basis:calc(100% - 45px)}.rw-ai-criterion-grade{margin-left:32px;align-items:flex-start;text-align:left}.rw-ai-criterion-chevron{margin-left:auto}.rw-ai-criterion-body{padding:16px}}
+.rw-readiness-collapsed{margin-top:16px;border:1px solid #d6e3eb;border-radius:9px;background:#f8fbfc;overflow:hidden}
+.rw-readiness-collapsed>summary{padding:15px 18px;color:#285670;font-size:16px;font-weight:700;cursor:pointer}
+.rw-readiness-collapsed>summary:hover{background:#f0f7fa}
+.rw-readiness-collapsed>summary:focus-visible{outline:3px solid #288aad;outline-offset:-3px}
+.rw-readiness-collapsed .rw-readiness{margin:0;padding:17px;border:0;border-top:1px solid #dce8ee;background:#fff}
