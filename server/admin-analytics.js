@@ -6,7 +6,7 @@ export const vietnamDay = value => {
   return Number.isFinite(time) ? new Date(time + HCM_OFFSET).toISOString().slice(0, 10) : null;
 };
 
-export function buildAdminAnalytics({ students = [], mentors = [], submissions = [], reviews = [], days = 30, now = new Date() }) {
+export function buildAdminAnalytics({ students = [], mentors = [], submissions = [], reviews = [], orders = [], days = 30, now = new Date() }) {
   const today = vietnamDay(now);
   const end = Date.parse(`${today}T00:00:00.000Z`);
   const dates = Array.from({ length: days }, (_, index) => new Date(end - (days - 1 - index) * DAY).toISOString().slice(0, 10));
@@ -26,10 +26,28 @@ export function buildAdminAnalytics({ students = [], mentors = [], submissions =
   let cumulativeStudents = validStudents.filter(item => { const date = vietnamDay(item.createdAt); return date && date < first; }).length;
   const series = rows.map(row => ({ ...row, cumulativeStudents: cumulativeStudents += row.students }));
   return {
-    days, from: first, to: today, series,
+    days, from: first, to: today, series, revenue: buildRevenue(orders, submissions, dates),
     totals: { students: validStudents.length, mentors: validMentors.length, submissions: sent.length, completed: sent.filter(item => item.status === 'completed').length,
       ratedMentorReviews: rated.length, positiveMentorReviews: rated.filter(item => Number(item.rating.stars) >= 4).length,
       approvedTestimonials: testimonials.length, positiveTestimonials: testimonials.filter(item => Number(item.rating) >= 4).length },
     period: { students: rows.reduce((total, row) => total + row.students, 0), submissions: rows.reduce((total, row) => total + row.submissions, 0), positiveRatings: rows.reduce((total, row) => total + row.positiveRatings, 0) }
+  };
+}
+
+export function buildRevenue(orders, submissions, dates) {
+  const amount = value => Number.isSafeInteger(Number(value)) && Number(value) > 0 ? Number(value) : 0;
+  const paid = orders.filter(o => o.status === 'completed' && o.demoData !== true && amount(o.price));
+  const inPeriod = date => dates.includes(vietnamDay(date));
+  const period = paid.filter(o => inPeriod(o.activatedAt));
+  const payouts = submissions.filter(s => s.demoData !== true && s.reward?.paid === true);
+  const payoutAmount = s => amount(s.reward.payoutLog?.amount ?? (Number(s.reward.base || 0) + Number(s.reward.bonus || 0)));
+  return {
+    total: paid.reduce((sum, o) => sum + amount(o.price), 0),
+    period: period.reduce((sum, o) => sum + amount(o.price), 0),
+    orders: period.length,
+    mentorPaid: payouts.filter(s => inPeriod(s.reward.paidAt || s.reward.payoutLog?.confirmedAt)).reduce((sum, s) => sum + payoutAmount(s), 0),
+    undatedOrders: paid.filter(o => !o.activatedAt || !vietnamDay(o.activatedAt)).length,
+    series: dates.map(date => ({ date, revenue: period.filter(o => vietnamDay(o.activatedAt) === date).reduce((sum, o) => sum + amount(o.price), 0) })),
+    plans: [...new Set(period.map(o => o.planId))].map(id => ({ id, name: period.find(o => o.planId === id)?.planName || id || 'Gói khác', orders: period.filter(o => o.planId === id).length, revenue: period.filter(o => o.planId === id).reduce((sum, o) => sum + amount(o.price), 0) }))
   };
 }

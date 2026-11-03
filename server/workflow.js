@@ -208,13 +208,14 @@ export function createWorkflowRouter({ UserProfile, MentorAccount, AdminAccount,
   router.get('/admin/analytics', run(async (req, res) => {
     requireRole(req, 'admin');
     const days = z.coerce.number().int().refine(value => [7, 30, 90].includes(value)).parse(req.query.days || 30);
-    const [students, mentors, submissions, reviews] = await Promise.all([
+    const [students, mentors, submissions, reviews, orders] = await Promise.all([
       UserProfile.find({}, { role: 1, createdAt: 1, demoData: 1 }).lean(),
       MentorAccount.find({}, { createdAt: 1, demoData: 1 }).lean(),
-      ReviewSubmission.find({}, { status: 1, createdAt: 1, queuedAt: 1, rating: 1, demoData: 1 }).lean(),
-      StudentReview ? StudentReview.find({}, { status: 1, studentId: 1, rating: 1 }).lean() : []
+      ReviewSubmission.find({}, { status: 1, createdAt: 1, queuedAt: 1, rating: 1, reward: 1, demoData: 1 }).lean(),
+      StudentReview ? StudentReview.find({}, { status: 1, studentId: 1, rating: 1 }).lean() : [],
+      SubscriptionOrder.find({}, { status: 1, price: 1, planId: 1, planName: 1, activatedAt: 1, demoData: 1 }).lean()
     ]);
-    res.json(buildAdminAnalytics({ students, mentors, submissions, reviews, days }));
+    res.json(buildAdminAnalytics({ students, mentors, submissions, reviews, orders, days }));
   }));
 
   router.patch('/admin/accounts/:role/:id', run(async (req, res) => {
@@ -683,3 +684,4 @@ export function createWorkflowRouter({ UserProfile, MentorAccount, AdminAccount,
   });
   return router;
 }
+

@@ -19,3 +19,18 @@ test('Vietnam date bucketing respects midnight and separates real submissions, r
   assert.deepEqual(report.totals, { students: 2, mentors: 1, submissions: 2, completed: 2, ratedMentorReviews: 2, positiveMentorReviews: 1, approvedTestimonials: 1, positiveTestimonials: 1 });
   assert.deepEqual(report.series.at(-1), { date: '2026-10-22', students: 1, mentors: 1, submissions: 1, positiveRatings: 1, cumulativeStudents: 2 });
 });
+
+test('revenue counts completed payments by Vietnam activation day and separates payouts', () => {
+  const report = buildAdminAnalytics({ now: '2026-11-03T12:00:00+07:00', days: 7, orders: [
+    { status: 'completed', price: 79000, activatedAt: '2026-11-02T18:00:00Z', planId: 'month' },
+    { status: 'cancelled', price: 199000, activatedAt: '2026-11-03T00:00:00Z' },
+    { status: 'completed', price: 499000, demoData: true, activatedAt: '2026-11-03T00:00:00Z' },
+    { status: 'completed', price: 199000 }
+  ], submissions: [{ reward: { paid: true, paidAt: '2026-11-03T00:00:00Z', payoutLog: { amount: 5000 } } }] });
+  assert.equal(report.revenue.total, 278000);
+  assert.equal(report.revenue.period, 79000);
+  assert.equal(report.revenue.orders, 1);
+  assert.equal(report.revenue.series.at(-1).revenue, 79000);
+  assert.equal(report.revenue.mentorPaid, 5000);
+  assert.equal(report.revenue.undatedOrders, 1);
+});
