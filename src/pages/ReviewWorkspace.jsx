@@ -25,8 +25,8 @@ const readableAiAction = value => String(value || '').trim()
   .replace(/^Minh chứng cần thấy:\s*/i, 'Bổ sung minh chứng: ');
 function AiReviewResult({ feedback }) {
   const criteria = Array.isArray(feedback?.rubricFeedback) ? feedback.rubricFeedback : [];
-  const actions = [...criteria].sort((a, b) => Number(!!a.evidence) - Number(!!b.evidence) || (Number(a.score) || 0) - (Number(b.score) || 0)).map(item => readableAiAction(item.action)).filter(Boolean).filter((action, index, list) => list.indexOf(action) === index).slice(0, 3);
-  return <div className="rw-ai-report rw-ai-simple"><p>{criteria.some(item => item.evidence) ? 'Bạn có thể cải thiện bài làm bằng các bước dưới đây.' : 'Nội dung đã gửi chưa đủ để nhận xét cụ thể. Hãy bổ sung các phần dưới đây.'}</p>{actions.length > 0 ? <ol>{actions.map((action, index) => <li key={action}><span>{index + 1}</span><p>{action}</p></li>)}</ol> : <p>Hãy bổ sung nội dung bài làm hoặc nhờ mentor góp ý trực tiếp.</p>}<small>Góp ý chỉ dựa trên phần nội dung AI đã đọc.</small></div>;
+  const actions = [...criteria].sort((a, b) => Number(!!a.evidence) - Number(!!b.evidence) || (Number(a.score) || 0) - (Number(b.score) || 0)).map(item => ({ action: readableAiAction(item.action), assessment: item.evidence ? item.assessment : '' })).filter(item => item.action).filter((item, index, list) => list.findIndex(other => other.action === item.action) === index).slice(0, 3);
+  return <div className="rw-ai-report rw-ai-simple"><p>{criteria.some(item => item.evidence) ? 'Bạn có thể cải thiện bài làm bằng các bước dưới đây.' : 'Nội dung đã gửi chưa đủ để nhận xét cụ thể. Hãy bổ sung các phần dưới đây.'}</p>{actions.length > 0 ? <ol>{actions.map((action, index) => <li key={action.action}><span>{index + 1}</span><div>{action.assessment && <p>{action.assessment}</p>}<p><strong>Cách sửa: </strong>{action.action}</p></div></li>)}</ol> : <p>Hãy bổ sung nội dung bài làm hoặc nhờ mentor góp ý trực tiếp.</p>}<small>Góp ý chỉ dựa trên phần nội dung AI đã đọc.</small></div>;
 }
 function Link({ url, children }) { return safeUrl(url) ? <a href={url} target="_blank" rel="noopener noreferrer">{children || url} <ExternalLink size={13} /></a> : <span>{children || 'Liên kết không hợp lệ'}</span>; }
 function Empty({ children }) { return <div className="rw-empty"><BookOpen size={28} /><p>{children}</p></div>; }
@@ -579,4 +579,5 @@ function Reward({ submission: s, title, account, admin, busy, mutate }) {
     {admin && !s.reward.paid && !payoutEligible && <p className="rw-finance-wait">Chờ sinh viên đánh giá hoặc đến {Number.isFinite(eligibleAt) ? formatDate(eligibleAt) : 'thời điểm đủ điều kiện'}. Chưa thể ghi nhận chi trả.</p>}
   </article>;
 }
+
 
