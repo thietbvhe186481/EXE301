@@ -337,8 +337,35 @@ function AdminPremiumUsers({ students, orders }) {
     return { ...student, completed, active };
   }).filter(Boolean);
   const visible = rows.filter(row => (filter === 'all' || (filter === 'active' ? row.active : !row.active)) && `${row.name} ${row.email}`.toLocaleLowerCase('vi-VN').includes(query.trim().toLocaleLowerCase('vi-VN')));
+  const [exporting, setExporting] = useState(false);
+  const [exportError, setExportError] = useState('');
+  async function exportExcel() {
+    setExporting(true); setExportError('');
+    try {
+      const { default: ExcelJS } = await import('exceljs');
+      const book = new ExcelJS.Workbook();
+      book.creator = 'BeeLearn';
+      const sheet = book.addWorksheet('Tài khoản Premium');
+      sheet.columns = [
+        { header: 'STT', key: 'index', width: 8 }, { header: 'Họ tên', key: 'name', width: 28 },
+        { header: 'Email', key: 'email', width: 38 }, { header: 'Gói Premium', key: 'plan', width: 25 },
+        { header: 'Trạng thái Premium', key: 'status', width: 24 }, { header: 'Ngày hết hạn (VN)', key: 'expires', width: 26 },
+        { header: 'Số đơn hoàn tất', key: 'count', width: 20 }, { header: 'Tổng tiền đơn hoàn tất (VND)', key: 'total', width: 30 }
+      ];
+      visible.forEach((row, index) => sheet.addRow({ index: index + 1, name: row.name || '', email: row.email || '', plan: row.planName || row.completed[0]?.planName || 'Premium', status: row.active ? 'Còn hạn' : row.subscriptionExpiresAt && new Date(row.subscriptionExpiresAt) <= new Date() ? 'Hết hạn' : 'Không hoạt động', expires: row.subscriptionExpiresAt ? formatDate(row.subscriptionExpiresAt) : '', count: row.completed.length, total: row.completed.reduce((sum, order) => sum + Number(order.price || 0), 0) }));
+      sheet.getRow(1).font = { bold: true, color: { argb: 'FFFFFFFF' } };
+      sheet.getRow(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1858C5' } };
+      sheet.views = [{ state: 'frozen', ySplit: 1 }];
+      sheet.autoFilter = { from: 'A1', to: 'H1' };
+      sheet.getColumn('total').numFmt = '#,##0';
+      const buffer = await book.xlsx.writeBuffer();
+      const url = URL.createObjectURL(new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }));
+      const link = document.createElement('a'); link.href = url; link.download = `BeeLearn-Premium-${new Date().toISOString().slice(0, 10)}.xlsx`; document.body.appendChild(link); link.click(); link.remove(); setTimeout(() => URL.revokeObjectURL(url), 10000);
+    } catch { setExportError('Chưa xuất được Excel. Hãy thử lại.'); }
+    finally { setExporting(false); }
+  }
   const person = rows.find(row => row.id === selected);
-  return <section className="rw-premium-directory"><div className="rw-admin-directory-head"><div><h2>Tài khoản Premium</h2><p>Theo dõi quyền Premium đã kích hoạt và các đơn thanh toán hoàn tất của sinh viên.</p></div></div><div className="rw-analytics-kpis"><article><small>Đã có Premium</small><strong>{rows.length}</strong></article><article><small>Còn hạn</small><strong>{rows.filter(row => row.active).length}</strong></article><article><small>Hết hạn / không hoạt động</small><strong>{rows.filter(row => !row.active).length}</strong></article></div><div className="rw-analytics-controls"><label>Tìm sinh viên<input type="search" value={query} onChange={event => setQuery(event.target.value)} placeholder="Tên hoặc email" /></label><label>Trạng thái<select value={filter} onChange={event => setFilter(event.target.value)}><option value="all">Tất cả</option><option value="active">Còn hạn</option><option value="expired">Hết hạn / không hoạt động</option></select></label></div><div className="rw-analytics-table rw-premium-table"><table><thead><tr><th>Sinh viên</th><th>Gói hiện tại</th><th>Trạng thái Premium</th><th>Hết hạn</th><th>Đơn hoàn tất</th><th></th></tr></thead><tbody>{visible.length ? visible.map(row => <tr key={row.id}><td><strong>{row.name || 'Chưa có tên'}</strong><br />{row.email}</td><td>{row.planName || row.completed[0]?.planName || 'Premium'}</td><td><span className="rw-badge">{row.active ? 'Còn hạn' : row.subscriptionExpiresAt && new Date(row.subscriptionExpiresAt) <= new Date() ? 'Hết hạn' : 'Không hoạt động'}</span></td><td>{row.subscriptionExpiresAt ? formatDate(row.subscriptionExpiresAt) : 'Chưa có ngày hết hạn'}</td><td>{row.completed.length}</td><td><button type="button" className="rw-secondary" onClick={() => setSelected(selected === row.id ? null : row.id)}>{selected === row.id ? 'Đóng' : 'Xem giao dịch'}</button></td></tr>) : <tr><td colSpan={6}>Không có tài khoản phù hợp.</td></tr>}</tbody></table></div>{person && <section className="rw-panel"><h3>Giao dịch của {person.name}</h3>{person.completed.length ? person.completed.map(order => <article key={order.orderId} className="rw-panel"><strong>{order.planName} · {money(order.price)}</strong><p>Kích hoạt: {formatDate(order.activatedAt)}</p><p>Mã đơn: {order.orderId}</p><p>Mã giao dịch: {order.paymentReference || 'Chưa có'}</p></article>) : <p>Tài khoản có thông tin Premium nhưng chưa tìm thấy đơn thanh toán hoàn tất. Cần đối chiếu nguồn cấp quyền.</p>}</section>}</section>;
+  return <section className="rw-premium-directory"><div className="rw-admin-directory-head"><div><h2>Tài khoản Premium</h2><p>Theo dõi quyền Premium đã kích hoạt và các đơn thanh toán hoàn tất của sinh viên.</p></div><button type="button" className="rw-primary" disabled={exporting || !visible.length} onClick={exportExcel}>{exporting ? 'Đang xuất…' : 'Xuất Excel'}</button></div>{exportError && <p role="alert">{exportError}</p>}<div className="rw-analytics-kpis"><article><small>Đã có Premium</small><strong>{rows.length}</strong></article><article><small>Còn hạn</small><strong>{rows.filter(row => row.active).length}</strong></article><article><small>Hết hạn / không hoạt động</small><strong>{rows.filter(row => !row.active).length}</strong></article></div><div className="rw-analytics-controls"><label>Tìm sinh viên<input type="search" value={query} onChange={event => setQuery(event.target.value)} placeholder="Tên hoặc email" /></label><label>Trạng thái<select value={filter} onChange={event => setFilter(event.target.value)}><option value="all">Tất cả</option><option value="active">Còn hạn</option><option value="expired">Hết hạn / không hoạt động</option></select></label></div><div className="rw-analytics-table rw-premium-table"><table><thead><tr><th>Sinh viên</th><th>Gói hiện tại</th><th>Trạng thái Premium</th><th>Hết hạn</th><th>Đơn hoàn tất</th><th></th></tr></thead><tbody>{visible.length ? visible.map(row => <tr key={row.id}><td><strong>{row.name || 'Chưa có tên'}</strong><br />{row.email}</td><td>{row.planName || row.completed[0]?.planName || 'Premium'}</td><td><span className="rw-badge">{row.active ? 'Còn hạn' : row.subscriptionExpiresAt && new Date(row.subscriptionExpiresAt) <= new Date() ? 'Hết hạn' : 'Không hoạt động'}</span></td><td>{row.subscriptionExpiresAt ? formatDate(row.subscriptionExpiresAt) : 'Chưa có ngày hết hạn'}</td><td>{row.completed.length}</td><td><button type="button" className="rw-secondary" onClick={() => setSelected(selected === row.id ? null : row.id)}>{selected === row.id ? 'Đóng' : 'Xem giao dịch'}</button></td></tr>) : <tr><td colSpan={6}>Không có tài khoản phù hợp.</td></tr>}</tbody></table></div>{person && <section className="rw-panel"><h3>Giao dịch của {person.name}</h3>{person.completed.length ? person.completed.map(order => <article key={order.orderId} className="rw-panel"><strong>{order.planName} · {money(order.price)}</strong><p>Kích hoạt: {formatDate(order.activatedAt)}</p><p>Mã đơn: {order.orderId}</p><p>Mã giao dịch: {order.paymentReference || 'Chưa có'}</p></article>) : <p>Tài khoản có thông tin Premium nhưng chưa tìm thấy đơn thanh toán hoàn tất. Cần đối chiếu nguồn cấp quyền.</p>}</section>}</section>;
 }
 function AdminStudents({ students, busy, mutate, loading }) {
   const [query, setQuery] = useState('');
@@ -601,6 +628,7 @@ function Reward({ submission: s, title, account, admin, busy, mutate }) {
     {admin && !s.reward.paid && !payoutEligible && <p className="rw-finance-wait">Chờ sinh viên đánh giá hoặc đến {Number.isFinite(eligibleAt) ? formatDate(eligibleAt) : 'thời điểm đủ điều kiện'}. Chưa thể ghi nhận chi trả.</p>}
   </article>;
 }
+
 
 
 
