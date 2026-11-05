@@ -17,7 +17,7 @@ export async function fetchWithAuth(url, options = {}) {
   try {
     response = await fetch(`${API_BASE_URL}${url}`, {
       ...defaultOptions,
-      signal: AbortSignal.timeout(15000),
+      signal: AbortSignal.timeout(url === '/api/auth/login' ? 60000 : 15000),
       ...options
     });
   } catch {
@@ -32,7 +32,7 @@ export async function fetchWithAuth(url, options = {}) {
     error.email = errorBody.email || '';
     throw error;
   }
-  return response.json();
+  return response.status === 204 ? null : response.json();
 }
 
 export const apiService = {
@@ -275,3 +275,4 @@ export const apiService = {
     return fetchWithAuth(`/api/market-data/${id}`, { method: 'DELETE' });
   }
 };
+
