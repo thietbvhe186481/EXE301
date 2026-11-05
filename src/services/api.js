@@ -21,7 +21,7 @@ export async function fetchWithAuth(url, options = {}) {
       ...options
     });
   } catch {
-    throw new Error('Không thể kết nối máy chủ. Vui lòng thử lại sau.');
+    throw new Error(url === '/api/auth/login' ? 'Máy chủ đang khởi động hoặc phản hồi chậm. Hãy chờ khoảng một phút rồi đăng nhập lại.' : 'Không thể kết nối máy chủ. Vui lòng thử lại sau.');
   }
   if (!response.ok) {
     const errorBody = await response.json().catch(() => ({}));
@@ -275,4 +275,5 @@ export const apiService = {
     return fetchWithAuth(`/api/market-data/${id}`, { method: 'DELETE' });
   }
 };
+
 
